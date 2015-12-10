@@ -92,7 +92,7 @@ public class LetsEncryptAcmeClientProvider extends AbstractAcmeClientProvider {
      * Lazily creates an {@link SSLSocketFactory} that exclusively accepts the Let's
      * Encrypt certificate.
      */
-    private SSLSocketFactory createSocketFactory() throws IOException {
+    protected SSLSocketFactory createSocketFactory() throws IOException {
         if (sslSocketFactory == null) {
             try {
                 KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
