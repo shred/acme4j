@@ -41,7 +41,7 @@ public interface AcmeClientProvider {
      * @return {@code true} if this provider accepts the server URI, {@code false}
      *         otherwise
      */
-    boolean accepts(String serverUri);
+    boolean accepts(URI serverUri);
 
     /**
      * Connects to an {@link AcmeClient} for communication with the ACME server.
@@ -50,7 +50,7 @@ public interface AcmeClientProvider {
      *            Server URI to connect to
      * @return {@link AcmeClient} connected to the server
      */
-    AcmeClient connect(String serverUri);
+    AcmeClient connect(URI serverUri);
 
     /**
      * Creates a {@link Challenge} instance that is able to respond to the challenge of

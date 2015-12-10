@@ -14,7 +14,6 @@
 package org.shredzone.acme4j.provider;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 
 import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.impl.GenericAcmeClient;
@@ -30,22 +29,18 @@ import org.shredzone.acme4j.impl.GenericAcmeClient;
 public class GenericAcmeClientProvider extends AbstractAcmeClientProvider {
 
     @Override
-    public boolean accepts(String serverUri) {
-        return serverUri.startsWith("http://") || serverUri.startsWith("https://");
+    public boolean accepts(URI serverUri) {
+        return "http".equals(serverUri.getScheme())
+                        || "https".equals(serverUri.getScheme());
     }
 
     @Override
-    public AcmeClient connect(String serverUri) {
+    public AcmeClient connect(URI serverUri) {
         if (!accepts(serverUri)) {
             throw new IllegalArgumentException("This provider does not accept " + serverUri);
         }
 
-        try {
-            URI directoryUri = new URI(serverUri);
-            return new GenericAcmeClient(this, directoryUri);
-        } catch (URISyntaxException ex) {
-            throw new IllegalArgumentException(serverUri, ex);
-        }
+        return new GenericAcmeClient(this, serverUri);
     }
 
 }

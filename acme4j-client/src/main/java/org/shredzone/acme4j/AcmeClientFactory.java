@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -45,6 +47,23 @@ public final class AcmeClientFactory {
      * @return {@link AcmeClient} for communication with the server
      */
     public static AcmeClient connect(String serverUri) throws AcmeException {
+        try {
+            return connect(new URI(serverUri));
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException(ex);
+        }
+    }
+
+    /**
+     * Connects to an ACME server and provides an {@link AcmeClient} for communication.
+     *
+     * @param serverUri
+     *            URI of the ACME server. This can either be a http/https URI to the
+     *            server's directory service, or a special acme URI for specific
+     *            implementations.
+     * @return {@link AcmeClient} for communication with the server
+     */
+    public static AcmeClient connect(URI serverUri) throws AcmeException {
         List<AcmeClientProvider> candidates = new ArrayList<>();
         for (AcmeClientProvider acp : ServiceLoader.load(AcmeClientProvider.class)) {
             if (acp.accepts(serverUri)) {

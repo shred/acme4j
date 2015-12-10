@@ -51,25 +51,25 @@ public class LetsEncryptAcmeClientProvider extends AbstractAcmeClientProvider {
     private SSLSocketFactory sslSocketFactory;
 
     @Override
-    public boolean accepts(String serverUri) {
-        return serverUri.startsWith("acme://letsencrypt.org");
+    public boolean accepts(URI serverUri) {
+        return "acme".equals(serverUri.getScheme())
+                && "letsencrypt.org".equals(serverUri.getHost());
     }
 
     @Override
-    public AcmeClient connect(String serverUri) {
+    public AcmeClient connect(URI serverUri) {
+        if (accepts(serverUri)) {
+            throw new IllegalArgumentException("Unknown URI " + serverUri);
+        }
+
+        String path = serverUri.getPath();
         String directoryUri;
-        switch (serverUri) {
-            case "acme://letsencrypt.org/staging":
-                directoryUri = STAGING_DIRECTORY_URI;
-                break;
-
-            case "acme://letsencrypt.org/v01":
-            case "acme://letsencrypt.org":
-                directoryUri = V01_DIRECTORY_URI;
-                break;
-
-            default:
-                throw new IllegalArgumentException("Unknown URI " + serverUri);
+        if (path == null || "v01".equals(path)) {
+            directoryUri = V01_DIRECTORY_URI;
+        } else if ("staging".equals(path)) {
+            directoryUri = STAGING_DIRECTORY_URI;
+        } else {
+            throw new IllegalArgumentException("Unknown URI " + serverUri);
         }
 
         try {
