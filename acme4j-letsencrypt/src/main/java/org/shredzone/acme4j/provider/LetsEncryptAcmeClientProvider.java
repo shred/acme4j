@@ -58,25 +58,7 @@ public class LetsEncryptAcmeClientProvider extends AbstractAcmeClientProvider {
 
     @Override
     public AcmeClient connect(URI serverUri) {
-        if (accepts(serverUri)) {
-            throw new IllegalArgumentException("Unknown URI " + serverUri);
-        }
-
-        String path = serverUri.getPath();
-        String directoryUri;
-        if (path == null || "v01".equals(path)) {
-            directoryUri = V01_DIRECTORY_URI;
-        } else if ("staging".equals(path)) {
-            directoryUri = STAGING_DIRECTORY_URI;
-        } else {
-            throw new IllegalArgumentException("Unknown URI " + serverUri);
-        }
-
-        try {
-            return new GenericAcmeClient(this, new URI(directoryUri));
-        } catch (URISyntaxException ex) {
-            throw new IllegalArgumentException(directoryUri, ex);
-        }
+        return createAcmeClient(resolve(serverUri));
     }
 
     @Override
@@ -86,6 +68,48 @@ public class LetsEncryptAcmeClientProvider extends AbstractAcmeClientProvider {
             ((HttpsURLConnection) conn).setSSLSocketFactory(createSocketFactory());
         }
         return conn;
+    }
+
+    /**
+     * Creates an {@link AcmeClient} for the given directory URI.
+     *
+     * @param directoryUri
+     *            Directory {@link URI}
+     * @return {@link AcmeClient}
+     */
+    protected AcmeClient createAcmeClient(URI directoryUri) {
+        return new GenericAcmeClient(this, directoryUri);
+    }
+
+    /**
+     * Resolves the server URI and returns the matching directory URI.
+     *
+     * @param serverUri
+     *            Server {@link URI} to resolve
+     * @return Directory {@link URI}
+     * @throws IllegalArgumentException
+     *             if the server URI cannot be resolved
+     */
+    protected URI resolve(URI serverUri) {
+        if (!accepts(serverUri)) {
+            throw new IllegalArgumentException("Unknown URI " + serverUri);
+        }
+
+        String path = serverUri.getPath();
+        String directoryUri;
+        if (path == null || "".equals(path) || "/".equals(path) || "/v01".equals(path)) {
+            directoryUri = V01_DIRECTORY_URI;
+        } else if ("/staging".equals(path)) {
+            directoryUri = STAGING_DIRECTORY_URI;
+        } else {
+            throw new IllegalArgumentException("Unknown URI " + serverUri);
+        }
+
+        try {
+            return new URI(directoryUri);
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException(directoryUri, ex);
+        }
     }
 
     /**
