@@ -27,6 +27,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.shredzone.acme4j.AcmeClient;
 
 /**
  * Unit tests for {@link LetsEncryptAcmeClientProvider}.
@@ -36,6 +37,9 @@ import org.junit.experimental.categories.Category;
 public class LetsEncryptAcmeClientProviderTest {
 
     public interface RequiresNetwork {}
+
+    private static final String V01_DIRECTORY_URI = "https://acme-v01.api.letsencrypt.org/directory";
+    private static final String STAGING_DIRECTORY_URI = "https://acme-staging.api.letsencrypt.org/directory";
 
     /**
      * Tests if the provider accepts the correct URIs.
@@ -51,6 +55,57 @@ public class LetsEncryptAcmeClientProviderTest {
         assertThat(provider.accepts(new URI("acme://example.com")), is(false));
         assertThat(provider.accepts(new URI("http://example.com/acme")), is(false));
         assertThat(provider.accepts(new URI("https://example.com/acme")), is(false));
+    }
+
+    /**
+     * Test if acme URIs are properly resolved.
+     */
+    @Test
+    public void testResolve() throws URISyntaxException {
+        LetsEncryptAcmeClientProvider provider = new LetsEncryptAcmeClientProvider();
+
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org")), is(new URI(V01_DIRECTORY_URI)));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org/")), is(new URI(V01_DIRECTORY_URI)));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org/v01")), is(new URI(V01_DIRECTORY_URI)));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org/staging")), is(new URI(STAGING_DIRECTORY_URI)));
+
+        try {
+            provider.resolve(new URI("acme://letsencrypt.org/v99"));
+            fail("accepted unknown path");
+        } catch (IllegalArgumentException ex) {
+            // expected
+        }
+
+        try {
+            provider.resolve(new URI("acme://example.com"));
+            fail("accepted foreign server");
+        } catch (IllegalArgumentException ex) {
+            // expected
+        }
+
+        try {
+            provider.resolve(new URI("http://example.com/acme"));
+            fail("accepted http schema");
+        } catch (IllegalArgumentException ex) {
+            // expected
+        }
+    }
+
+    /**
+     * Test if an {@link AcmeClient} is properly generated and configurated.
+     */
+    @Test
+    public void testConnect() throws URISyntaxException {
+        LetsEncryptAcmeClientProvider provider = new LetsEncryptAcmeClientProvider() {
+            @Override
+            protected AcmeClient createAcmeClient(URI directoryUri) {
+                assertThat(directoryUri.toString(), is(V01_DIRECTORY_URI));
+                return super.createAcmeClient(directoryUri);
+            }
+        };
+
+        AcmeClient client = provider.connect(new URI("acme://letsencrypt.org"));
+        assertThat(client, is(notNullValue()));
     }
 
     /**
