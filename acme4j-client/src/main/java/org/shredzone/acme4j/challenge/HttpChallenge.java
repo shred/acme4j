@@ -29,7 +29,7 @@ public class HttpChallenge extends GenericChallenge {
      */
     public static final String TYPE = "http-01";
 
-    private String authorization;
+    private String authorization = null;
 
     /**
      * Returns the token to be used for this challenge.
@@ -53,6 +53,9 @@ public class HttpChallenge extends GenericChallenge {
      * (like white-spaces or line breaks). Otherwise the challenge will fail.
      */
     public String getAuthorization() {
+        if (authorization == null) {
+            throw new IllegalStateException("not yet authorized");
+        }
         return authorization;
     }
 

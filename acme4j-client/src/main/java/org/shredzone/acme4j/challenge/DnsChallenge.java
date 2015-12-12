@@ -29,7 +29,7 @@ public class DnsChallenge extends GenericChallenge {
      */
     public static final String TYPE = "dns-01";
 
-    private String authorization;
+    private String authorization = null;
 
     /**
      * Returns the token to be used for this challenge.
@@ -49,6 +49,9 @@ public class DnsChallenge extends GenericChallenge {
      * Returns the authorization string to be used for the response.
      */
     public String getAuthorization() {
+        if (authorization == null) {
+            throw new IllegalStateException("not yet authorized");
+        }
         return authorization;
     }
 
