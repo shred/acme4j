@@ -60,8 +60,13 @@ public class GenericChallenge implements Challenge {
 
     @Override
     public URI getUri() {
+        String uri = get(KEY_URI);
+        if (uri == null) {
+            return null;
+        }
+
         try {
-            return new URI(get(KEY_URI).toString());
+            return new URI(uri);
         } catch (URISyntaxException ex) {
             throw new IllegalStateException("Invalid URI", ex);
         }
