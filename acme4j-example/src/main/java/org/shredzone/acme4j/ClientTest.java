@@ -82,7 +82,8 @@ public class ClientTest {
         Account account = new Account(userKeyPair);
 
         // Create an AcmeClient for Let's Encrypt
-        AcmeClient client = AcmeClientFactory.connect("acme://letsencrypt.org");
+        // Use "acme://letsencrypt.org" for production server
+        AcmeClient client = AcmeClientFactory.connect("acme://letsencrypt.org/staging");
 
         // Register a new user
         Registration reg = new Registration();
