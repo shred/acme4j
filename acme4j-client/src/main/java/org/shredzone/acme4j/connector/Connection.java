@@ -27,6 +27,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.jose4j.base64url.Base64Url;
 import org.jose4j.json.JsonUtil;
@@ -50,6 +51,8 @@ import org.slf4j.LoggerFactory;
 public class Connection implements AutoCloseable {
 
     private static final Logger LOG = LoggerFactory.getLogger(Connection.class);
+
+    private static final Pattern BASE64URL_PATTERN = Pattern.compile("[0-9A-Za-z_-]+");
 
     private final AcmeClientProvider provider;
     protected HttpURLConnection conn;
@@ -77,7 +80,6 @@ public class Connection implements AutoCloseable {
             LOG.debug("Initial replay nonce from {}", uri);
             HttpURLConnection localConn = provider.openConnection(uri);
             localConn.setRequestMethod("HEAD");
-            localConn.setRequestProperty("Accept-Charset", "utf-8");
             localConn.connect();
 
             session.setNonce(getNonceFromHeader(localConn));
@@ -301,8 +303,12 @@ public class Connection implements AutoCloseable {
      */
     protected byte[] getNonceFromHeader(HttpURLConnection localConn) throws AcmeException {
         String nonceHeader = localConn.getHeaderField("Replay-Nonce");
-        if (nonceHeader == null) {
+        if (nonceHeader == null || nonceHeader.trim().isEmpty()) {
             throw new AcmeException("No replay nonce");
+        }
+
+        if (!BASE64URL_PATTERN.matcher(nonceHeader).matches()) {
+            throw new AcmeException("Invalid replay nonce: " + nonceHeader);
         }
 
         LOG.debug("Replay Nonce: {}", nonceHeader);
