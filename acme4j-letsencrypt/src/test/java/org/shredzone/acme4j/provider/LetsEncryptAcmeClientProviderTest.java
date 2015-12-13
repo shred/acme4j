@@ -27,7 +27,6 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.shredzone.acme4j.AcmeClient;
 
 /**
  * Unit tests for {@link LetsEncryptAcmeClientProvider}.
@@ -73,37 +72,6 @@ public class LetsEncryptAcmeClientProviderTest {
         } catch (IllegalArgumentException ex) {
             // expected
         }
-
-        try {
-            provider.resolve(new URI("acme://example.com"));
-            fail("accepted foreign server");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
-
-        try {
-            provider.resolve(new URI("http://example.com/acme"));
-            fail("accepted http schema");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
-    }
-
-    /**
-     * Test if an {@link AcmeClient} is properly generated and configurated.
-     */
-    @Test
-    public void testConnect() throws URISyntaxException {
-        LetsEncryptAcmeClientProvider provider = new LetsEncryptAcmeClientProvider() {
-            @Override
-            protected AcmeClient createAcmeClient(URI directoryUri) {
-                assertThat(directoryUri.toString(), is(V01_DIRECTORY_URI));
-                return super.createAcmeClient(directoryUri);
-            }
-        };
-
-        AcmeClient client = provider.connect(new URI("acme://letsencrypt.org"));
-        assertThat(client, is(notNullValue()));
     }
 
     /**
