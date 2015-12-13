@@ -16,7 +16,6 @@ package org.shredzone.acme4j;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 
 import org.shredzone.acme4j.challenge.Challenge;
@@ -30,7 +29,7 @@ public class Authorization {
 
     private String domain;
     private String status;
-    private Date expires;
+    private String expires;
     private List<Challenge> challenges;
     private List<List<Challenge>> combinations;
 
@@ -65,14 +64,14 @@ public class Authorization {
     /**
      * Gets the expiry date of the authorization, if set by the server.
      */
-    public Date getExpires() {
+    public String getExpires() {
         return expires;
     }
 
     /**
      * Sets the expiry date of the authorization.
      */
-    public void setExpires(Date expires) {
+    public void setExpires(String expires) {
         this.expires = expires;
     }
 

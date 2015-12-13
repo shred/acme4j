@@ -14,7 +14,6 @@
 package org.shredzone.acme4j.challenge;
 
 import java.net.URI;
-import java.util.Date;
 import java.util.Map;
 
 import org.shredzone.acme4j.Account;
@@ -52,7 +51,7 @@ public interface Challenge {
     /**
      * Returns the validation date, if returned by the server.
      */
-    Date getValidated();
+    String getValidated();
 
     /**
      * Authorizes a {@link Challenge} by signing it with an {@link Account}. This is

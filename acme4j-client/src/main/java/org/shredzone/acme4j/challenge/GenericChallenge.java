@@ -19,7 +19,6 @@ import java.net.URISyntaxException;
 import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -73,7 +72,7 @@ public class GenericChallenge implements Challenge {
     }
 
     @Override
-    public Date getValidated() {
+    public String getValidated() {
         return get(KEY_VALIDATED);
     }
 
