@@ -16,13 +16,10 @@ package org.shredzone.acme4j.provider;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.DnsChallenge;
@@ -74,33 +71,6 @@ public class AbstractAcmeClientProviderTest {
         } catch (IllegalArgumentException ex) {
             // expected
         }
-    }
-
-    /**
-     * Test if a HTTP connection can be opened.
-     * <p>
-     * This test requires a network connection. It should be excluded from automated
-     * builds.
-     */
-    @Test
-    @Category(HttpURLConnection.class)
-    public void testOpenConnection() throws IOException, URISyntaxException {
-        AbstractAcmeClientProvider provider = new AbstractAcmeClientProvider() {
-            @Override
-            public boolean accepts(URI serverUri) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            protected URI resolve(URI serverUri) {
-                throw new UnsupportedOperationException();
-            }
-        };
-
-        HttpURLConnection conn = provider.openConnection(new URI("http://example.com"));
-        assertThat(conn, not(nullValue()));
-        conn.connect();
-        assertThat(conn.getResponseCode(), is(HttpURLConnection.HTTP_OK));
     }
 
     /**

@@ -66,11 +66,11 @@ public abstract class AbstractAcmeClient implements AcmeClient {
      *
      * @return {@link Connection} instance
      */
-    protected abstract Connection connect();
+    protected abstract Connection createConnection();
 
     @Override
     public void newRegistration(Account account, Registration registration) throws AcmeException {
-        try (Connection conn = connect()) {
+        try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource(Resource.NEW_REG);
             if (!registration.getContacts().isEmpty()) {
@@ -98,7 +98,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             throw new IllegalArgumentException("location must be set. Use newRegistration() if not known.");
         }
 
-        try (Connection conn = connect()) {
+        try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource("reg");
             if (!registration.getContacts().isEmpty()) {
@@ -116,7 +116,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public void newAuthorization(Account account, Authorization auth) throws AcmeException {
-        try (Connection conn = connect()) {
+        try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource(Resource.NEW_AUTHZ);
             claims.object("identifier")
@@ -163,7 +163,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public void triggerChallenge(Account account, Challenge challenge) throws AcmeException {
-        try (Connection conn = connect()) {
+        try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource("challenge");
             challenge.marshall(claims);
@@ -176,7 +176,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public void updateChallenge(Account account, Challenge challenge) throws AcmeException {
-        try (Connection conn = connect()) {
+        try (Connection conn = createConnection()) {
             conn.sendRequest(challenge.getUri());
             challenge.unmarshall(conn.readJsonResponse());
         }
@@ -184,7 +184,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public URI requestCertificate(Account account, byte[] csr) throws AcmeException {
-        try (Connection conn = connect()) {
+        try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource(Resource.NEW_CERT);
             claims.putBase64("csr", csr);
@@ -200,7 +200,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public X509Certificate downloadCertificate(URI certUri) throws AcmeException {
-        try (Connection conn = connect()) {
+        try (Connection conn = createConnection()) {
             conn.sendRequest(certUri);
             return conn.readCertificate();
         }

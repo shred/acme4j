@@ -38,7 +38,6 @@ import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeServerException;
-import org.shredzone.acme4j.provider.AcmeClientProvider;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,16 +48,15 @@ import org.slf4j.LoggerFactory;
  * @author Richard "Shred" Körber
  */
 public class Connection implements AutoCloseable {
-
     private static final Logger LOG = LoggerFactory.getLogger(Connection.class);
 
     private static final Pattern BASE64URL_PATTERN = Pattern.compile("[0-9A-Za-z_-]+");
 
-    private final AcmeClientProvider provider;
+    protected final HttpConnector httpConnector;
     protected HttpURLConnection conn;
 
-    public Connection(AcmeClientProvider provider) {
-        this.provider = provider;
+    public Connection(HttpConnector httpConnector) {
+        this.httpConnector = httpConnector;
     }
 
     @Override
@@ -78,7 +76,7 @@ public class Connection implements AutoCloseable {
     public void startSession(URI uri, Session session) throws AcmeException {
         try {
             LOG.debug("Initial replay nonce from {}", uri);
-            HttpURLConnection localConn = provider.openConnection(uri);
+            HttpURLConnection localConn = httpConnector.openConnection(uri);
             localConn.setRequestMethod("HEAD");
             localConn.connect();
 
@@ -99,7 +97,7 @@ public class Connection implements AutoCloseable {
         try {
             LOG.debug("GET {}", uri);
 
-            conn = provider.openConnection(uri);
+            conn = httpConnector.openConnection(uri);
             conn.setRequestMethod("GET");
             conn.setRequestProperty("Accept-Charset", "utf-8");
             conn.setDoOutput(false);
@@ -140,7 +138,7 @@ public class Connection implements AutoCloseable {
 
             LOG.debug("POST {} with claims: {}", uri, claims);
 
-            conn = provider.openConnection(uri);
+            conn = httpConnector.openConnection(uri);
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Accept", "application/json");
             conn.setRequestProperty("Accept-Charset", "utf-8");

@@ -13,14 +13,13 @@
  */
 package org.shredzone.acme4j.provider;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.ServiceLoader;
 
 import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.GenericChallenge;
+import org.shredzone.acme4j.connector.Connection;
 
 /**
  * An {@link AcmeClientProvider} creates {@link AcmeClient} instances to be used for
@@ -70,13 +69,10 @@ public interface AcmeClientProvider {
     <T extends Challenge> T createChallenge(String type);
 
     /**
-     * Opens a {@link HttpURLConnection} to the given {@link URI}. Implementations may
-     * configure the connection, e.g. pin it to a concrete SSL certificate.
+     * Creates a {@link Connection} for communication with the ACME server.
      *
-     * @param uri
-     *            {@link URI} to connect to
-     * @return {@link HttpURLConnection} connected to the {@link URI}
+     * @return {@link Connection} that was generated
      */
-    HttpURLConnection openConnection(URI uri) throws IOException;
+    Connection createConnection();
 
 }

@@ -55,14 +55,14 @@ public class GenericAcmeClient extends AbstractAcmeClient {
     }
 
     @Override
-    protected Connection connect() {
-        return new Connection(provider);
+    protected Connection createConnection() {
+        return provider.createConnection();
     }
 
     @Override
     protected URI resourceUri(Resource resource) throws AcmeException {
         if (directoryMap.isEmpty()) {
-            try (Connection conn = connect()) {
+            try (Connection conn = createConnection()) {
                 conn.sendRequest(directoryUri);
                 directoryMap.putAll(conn.readDirectory());
             }

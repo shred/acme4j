@@ -13,8 +13,6 @@
  */
 package org.shredzone.acme4j.provider;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,6 +26,8 @@ import org.shredzone.acme4j.challenge.GenericChallenge;
 import org.shredzone.acme4j.challenge.HttpChallenge;
 import org.shredzone.acme4j.challenge.ProofOfPossessionChallenge;
 import org.shredzone.acme4j.challenge.TlsSniChallenge;
+import org.shredzone.acme4j.connector.Connection;
+import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.impl.GenericAcmeClient;
 
 /**
@@ -40,8 +40,6 @@ import org.shredzone.acme4j.impl.GenericAcmeClient;
  * @author Richard "Shred" Körber
  */
 public abstract class AbstractAcmeClientProvider implements AcmeClientProvider {
-
-    private static final int TIMEOUT = 10000;
 
     private final Map<String, Class<? extends Challenge>> challenges = new HashMap<>();
 
@@ -86,13 +84,16 @@ public abstract class AbstractAcmeClientProvider implements AcmeClientProvider {
     }
 
     @Override
-    public HttpURLConnection openConnection(URI uri) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
-        conn.setConnectTimeout(TIMEOUT);
-        conn.setReadTimeout(TIMEOUT);
-        conn.setUseCaches(false);
-        conn.setRequestProperty("User-Agent", "acme4j");
-        return conn;
+    public Connection createConnection() {
+        return new Connection(createHttpConnector());
+    }
+
+    /**
+     * Creates a {@link HttpConnector}. Subclasses may override this method to
+     * configure the {@link HttpConnector}.
+     */
+    protected HttpConnector createHttpConnector() {
+        return new HttpConnector();
     }
 
     /**

@@ -41,7 +41,6 @@ import org.junit.Test;
 import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeServerException;
-import org.shredzone.acme4j.provider.AcmeClientProvider;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
@@ -53,8 +52,8 @@ import org.shredzone.acme4j.util.TestUtils;
 public class ConnectionTest {
 
     private URI requestUri;
-    private AcmeClientProvider mockProvider;
     private HttpURLConnection mockUrlConnection;
+    private HttpConnector mockHttpConnection;
 
     @Before
     public void setup() throws IOException, URISyntaxException {
@@ -62,8 +61,8 @@ public class ConnectionTest {
 
         mockUrlConnection = mock(HttpURLConnection.class);
 
-        mockProvider = mock(AcmeClientProvider.class);
-        when(mockProvider.openConnection(requestUri)).thenReturn(mockUrlConnection);
+        mockHttpConnection = mock(HttpConnector.class);
+        when(mockHttpConnection.openConnection(requestUri)).thenReturn(mockUrlConnection);
     }
 
     /**
@@ -74,7 +73,7 @@ public class ConnectionTest {
     public void testNoNonceFromHeader() throws AcmeException {
         when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(null);
 
-        try (Connection conn = new Connection(mockProvider)) {
+        try (Connection conn = new Connection(mockHttpConnection)) {
             conn.getNonceFromHeader(mockUrlConnection);
             fail("Expected to fail");
         } catch (AcmeException ex) {
@@ -83,7 +82,6 @@ public class ConnectionTest {
 
         verify(mockUrlConnection).getHeaderField("Replay-Nonce");
         verifyNoMoreInteractions(mockUrlConnection);
-        verifyZeroInteractions(mockProvider);
     }
 
     /**
@@ -97,14 +95,13 @@ public class ConnectionTest {
         when(mockUrlConnection.getHeaderField("Replay-Nonce"))
                 .thenReturn(Base64Url.encode(nonce));
 
-        try (Connection conn = new Connection(mockProvider)) {
+        try (Connection conn = new Connection(mockHttpConnection)) {
             byte[] nonceFromHeader = conn.getNonceFromHeader(mockUrlConnection);
             assertThat(nonceFromHeader, is(nonce));
         }
 
         verify(mockUrlConnection).getHeaderField("Replay-Nonce");
         verifyNoMoreInteractions(mockUrlConnection);
-        verifyZeroInteractions(mockProvider);
     }
 
     /**
@@ -117,7 +114,7 @@ public class ConnectionTest {
 
         when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(badNonce);
 
-        try (Connection conn = new Connection(mockProvider)) {
+        try (Connection conn = new Connection(mockHttpConnection)) {
             conn.getNonceFromHeader(mockUrlConnection);
             fail("Expected to fail");
         } catch (AcmeException ex) {
@@ -126,7 +123,6 @@ public class ConnectionTest {
 
         verify(mockUrlConnection).getHeaderField("Replay-Nonce");
         verifyNoMoreInteractions(mockUrlConnection);
-        verifyZeroInteractions(mockProvider);
     }
 
     /**
@@ -136,7 +132,7 @@ public class ConnectionTest {
     public void testGetLocation() throws Exception {
         when(mockUrlConnection.getHeaderField("Location")).thenReturn("http://example.com/otherlocation");
 
-        try (Connection conn = new Connection(mockProvider)) {
+        try (Connection conn = new Connection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             URI location = conn.getLocation();
             assertThat(location, is(new URI("http://example.com/otherlocation")));
@@ -144,7 +140,6 @@ public class ConnectionTest {
 
         verify(mockUrlConnection).getHeaderField("Location");
         verifyNoMoreInteractions(mockUrlConnection);
-        verifyZeroInteractions(mockProvider);
     }
 
     /**
@@ -152,7 +147,7 @@ public class ConnectionTest {
      */
     @Test
     public void testNoLocation() throws Exception {
-        try (Connection conn = new Connection(mockProvider)) {
+        try (Connection conn = new Connection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             URI location = conn.getLocation();
             assertThat(location, is(nullValue()));
@@ -160,7 +155,6 @@ public class ConnectionTest {
 
         verify(mockUrlConnection).getHeaderField("Location");
         verifyNoMoreInteractions(mockUrlConnection);
-        verifyZeroInteractions(mockProvider);
     }
 
     /**
@@ -170,14 +164,13 @@ public class ConnectionTest {
     public void testNoThrowException() throws AcmeException {
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/json");
 
-        try (Connection conn = new Connection(mockProvider)) {
+        try (Connection conn = new Connection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             conn.throwException();
         }
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verifyNoMoreInteractions(mockUrlConnection);
-        verifyZeroInteractions(mockProvider);
     }
 
     /**
@@ -191,7 +184,7 @@ public class ConnectionTest {
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
         when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
 
-        try (Connection conn = new Connection(mockProvider)) {
+        try (Connection conn = new Connection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             conn.throwException();
             fail("Expected to fail");
@@ -207,7 +200,6 @@ public class ConnectionTest {
         verify(mockUrlConnection).getResponseCode();
         verify(mockUrlConnection).getErrorStream();
         verifyNoMoreInteractions(mockUrlConnection);
-        verifyZeroInteractions(mockProvider);
     }
 
     /**
@@ -218,7 +210,7 @@ public class ConnectionTest {
         when(mockUrlConnection.getHeaderField("Content-Type"))
                 .thenReturn("application/problem+json");
 
-        try (Connection conn = new Connection(mockProvider) {
+        try (Connection conn = new Connection(mockHttpConnection) {
             @Override
             public Map<String,Object> readJsonResponse() throws AcmeException {
                 Map<String, Object> result = new HashMap<String, Object>();
@@ -240,7 +232,6 @@ public class ConnectionTest {
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verifyNoMoreInteractions(mockUrlConnection);
-        verifyZeroInteractions(mockProvider);
     }
 
     /**
@@ -254,7 +245,7 @@ public class ConnectionTest {
                 .thenReturn(Base64Url.encode(nonce));
 
         Session session = new Session();
-        try (Connection conn = new Connection(mockProvider)) {
+        try (Connection conn = new Connection(mockHttpConnection)) {
             conn.startSession(requestUri, session);
         }
         assertThat(session.getNonce(), is(nonce));
@@ -262,9 +253,7 @@ public class ConnectionTest {
         verify(mockUrlConnection).setRequestMethod("HEAD");
         verify(mockUrlConnection).connect();
         verify(mockUrlConnection).getHeaderField("Replay-Nonce");
-        verify(mockProvider).openConnection(requestUri);
         verifyNoMoreInteractions(mockUrlConnection);
-        verifyNoMoreInteractions(mockProvider);
     }
 
     /**
@@ -274,7 +263,7 @@ public class ConnectionTest {
     public void testSendRequest() throws Exception {
         final Set<String> invoked = new HashSet<>();
 
-        try (Connection conn = new Connection(mockProvider) {
+        try (Connection conn = new Connection(mockHttpConnection) {
             @Override
             protected void throwException() throws AcmeException {
                 invoked.add("throwException");
@@ -288,9 +277,7 @@ public class ConnectionTest {
         verify(mockUrlConnection).setDoOutput(false);
         verify(mockUrlConnection).connect();
         verify(mockUrlConnection).getResponseCode();
-        verify(mockProvider).openConnection(requestUri);
         verifyNoMoreInteractions(mockUrlConnection);
-        verifyNoMoreInteractions(mockProvider);
         assertThat(invoked, hasItem("throwException"));
     }
 
@@ -308,7 +295,7 @@ public class ConnectionTest {
         when(mockUrlConnection.getOutputStream()).thenReturn(outputStream);
         when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(Base64Url.encode(nonce2));
 
-        try (Connection conn = new Connection(mockProvider) {
+        try (Connection conn = new Connection(mockHttpConnection) {
             @Override
             protected void throwException() throws AcmeException {
                 invoked.add("throwException");
@@ -342,9 +329,7 @@ public class ConnectionTest {
         verify(mockUrlConnection, atLeastOnce()).getHeaderField(anyString());
         verify(mockUrlConnection).getOutputStream();
         verify(mockUrlConnection).getResponseCode();
-        verify(mockProvider).openConnection(requestUri);
         verifyNoMoreInteractions(mockUrlConnection);
-        verifyNoMoreInteractions(mockProvider);
         assertThat(invoked, hasItems("throwException", "startSession"));
 
         String[] written = CompactSerializer.deserialize(new String(outputStream.toByteArray(), "utf-8"));
@@ -378,7 +363,7 @@ public class ConnectionTest {
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
         when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
 
-        try (Connection conn = new Connection(mockProvider)) {
+        try (Connection conn = new Connection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             Map<String, Object> result = conn.readJsonResponse();
             assertThat(result.keySet(), hasSize(2));
@@ -390,7 +375,6 @@ public class ConnectionTest {
         verify(mockUrlConnection).getResponseCode();
         verify(mockUrlConnection).getInputStream();
         verifyNoMoreInteractions(mockUrlConnection);
-        verifyZeroInteractions(mockProvider);
     }
 
     /**
@@ -408,7 +392,7 @@ public class ConnectionTest {
         when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(original.getEncoded()));
 
         X509Certificate downloaded;
-        try (Connection conn = new Connection(mockProvider)) {
+        try (Connection conn = new Connection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             downloaded = conn.readCertificate();
         }
@@ -420,7 +404,6 @@ public class ConnectionTest {
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verify(mockUrlConnection).getInputStream();
         verifyNoMoreInteractions(mockUrlConnection);
-        verifyZeroInteractions(mockProvider);
     }
 
     /**
@@ -438,7 +421,7 @@ public class ConnectionTest {
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/json");
         when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(jsonData.toString().getBytes("utf-8")));
 
-        try (Connection conn = new Connection(mockProvider)) {
+        try (Connection conn = new Connection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             Map<Resource, URI> result = conn.readDirectory();
             assertThat(result.keySet(), hasSize(2));
@@ -450,7 +433,6 @@ public class ConnectionTest {
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verify(mockUrlConnection).getInputStream();
         verifyNoMoreInteractions(mockUrlConnection);
-        verifyZeroInteractions(mockProvider);
     }
 
 }

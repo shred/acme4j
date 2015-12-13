@@ -13,20 +13,10 @@
  */
 package org.shredzone.acme4j.provider;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManagerFactory;
+import org.shredzone.acme4j.connector.HttpConnector;
 
 /**
  * An {@link AcmeClientProvider} for <em>Let's Encrypt</em>.
@@ -44,8 +34,6 @@ public class LetsEncryptAcmeClientProvider extends AbstractAcmeClientProvider {
 
     private static final String V01_DIRECTORY_URI = "https://acme-v01.api.letsencrypt.org/directory";
     private static final String STAGING_DIRECTORY_URI = "https://acme-staging.api.letsencrypt.org/directory";
-
-    private SSLSocketFactory sslSocketFactory;
 
     @Override
     public boolean accepts(URI serverUri) {
@@ -73,38 +61,8 @@ public class LetsEncryptAcmeClientProvider extends AbstractAcmeClientProvider {
     }
 
     @Override
-    public HttpURLConnection openConnection(URI uri) throws IOException {
-        HttpURLConnection conn = super.openConnection(uri);
-        if (conn instanceof HttpsURLConnection) {
-            ((HttpsURLConnection) conn).setSSLSocketFactory(createSocketFactory());
-        }
-        return conn;
-    }
-
-    /**
-     * Lazily creates an {@link SSLSocketFactory} that exclusively accepts the Let's
-     * Encrypt certificate.
-     */
-    protected SSLSocketFactory createSocketFactory() throws IOException {
-        if (sslSocketFactory == null) {
-            try {
-                KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-                keystore.load(getClass().getResourceAsStream("/org/shredzone/acme4j/letsencrypt.truststore"),
-                                "acme4j".toCharArray());
-
-                TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-                tmf.init(keystore);
-
-                SSLContext ctx = SSLContext.getInstance("TLS");
-                ctx.init(null, tmf.getTrustManagers(), null);
-
-                sslSocketFactory = ctx.getSocketFactory();
-            } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException
-                            | KeyManagementException ex) {
-                throw new IOException("Could not create truststore", ex);
-            }
-        }
-        return sslSocketFactory;
+    protected HttpConnector createHttpConnector() {
+        return new LetsEncryptHttpConnector();
     }
 
 }

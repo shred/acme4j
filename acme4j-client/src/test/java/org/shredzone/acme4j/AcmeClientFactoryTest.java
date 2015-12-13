@@ -17,14 +17,13 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ServiceLoader;
 
 import org.junit.Test;
 import org.shredzone.acme4j.challenge.Challenge;
+import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeClientProvider;
 
@@ -88,7 +87,7 @@ public class AcmeClientFactoryTest {
         }
 
         @Override
-        public HttpURLConnection openConnection(URI uri) throws IOException {
+        public Connection createConnection() {
             fail("not supposed to be invoked");
             return null;
         }
@@ -114,7 +113,7 @@ public class AcmeClientFactoryTest {
         }
 
         @Override
-        public HttpURLConnection openConnection(URI uri) throws IOException {
+        public Connection createConnection() {
             fail("not supposed to be invoked");
             return null;
         }

@@ -13,20 +13,13 @@
  */
 package org.shredzone.acme4j.provider;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLSocketFactory;
-
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 
 /**
  * Unit tests for {@link LetsEncryptAcmeClientProvider}.
@@ -72,52 +65,6 @@ public class LetsEncryptAcmeClientProviderTest {
         } catch (IllegalArgumentException ex) {
             // expected
         }
-    }
-
-    /**
-     * Test if the {@link LetsEncryptAcmeClientProvider#openConnection(URI)} accepts only
-     * the Let's Encrypt certificate.
-     * <p>
-     * This test requires a network connection. It should be excluded from automated
-     * builds.
-     */
-    @Test
-    @Category(HttpURLConnection.class)
-    public void testCertificate() throws IOException, URISyntaxException {
-        LetsEncryptAcmeClientProvider provider = new LetsEncryptAcmeClientProvider();
-
-        try {
-            HttpURLConnection goodConn = provider.openConnection(
-                            new URI("https://acme-staging.api.letsencrypt.org/directory"));
-            assertThat(goodConn, is(instanceOf(HttpsURLConnection.class)));
-            goodConn.connect();
-        } catch (SSLHandshakeException ex) {
-            fail("Connection does not accept Let's Encrypt certificate");
-        }
-
-        try {
-            HttpURLConnection badConn = provider.openConnection(
-                            new URI("https://www.google.com"));
-            assertThat(badConn, is(instanceOf(HttpsURLConnection.class)));
-            badConn.connect();
-            fail("Connection accepts foreign certificate");
-        } catch (SSLHandshakeException ex) {
-            // expected
-        }
-    }
-
-    /**
-     * Test that the {@link SSLSocketFactory} can be instantiated and is cached.
-     */
-    @Test
-    public void testCreateSocketFactory() throws IOException {
-        LetsEncryptAcmeClientProvider provider = new LetsEncryptAcmeClientProvider();
-
-        SSLSocketFactory factory1 = provider.createSocketFactory();
-        assertThat(factory1, is(notNullValue()));
-
-        SSLSocketFactory factory2 = provider.createSocketFactory();
-        assertThat(factory1, is(sameInstance(factory2)));
     }
 
 }
