@@ -74,7 +74,7 @@ public final class AcmeClientFactory {
         if (candidates.isEmpty()) {
             throw new AcmeException("No ACME provider found for " + serverUri);
         } else if (candidates.size() > 1) {
-            throw new IllegalArgumentException("There are " + candidates.size() + " "
+            throw new AcmeException("There are " + candidates.size() + " "
                 + AcmeClientProvider.class.getSimpleName() + " accepting " + serverUri
                 + ". Please check your classpath.");
         } else {
