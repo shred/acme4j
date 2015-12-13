@@ -184,6 +184,12 @@ public class Connection implements AutoCloseable {
             throw new IllegalStateException("Not connected");
         }
 
+        String contentType = conn.getHeaderField("Content-Type");
+        if (!("application/json".equals(contentType)
+                    || "application/problem+json".equals(contentType))) {
+            throw new AcmeException("Unexpected content type: " + contentType);
+        }
+
         StringBuilder sb = new StringBuilder();
         Map<String, Object> result = null;
 
@@ -215,6 +221,11 @@ public class Connection implements AutoCloseable {
             throw new IllegalStateException("Not connected");
         }
 
+        String contentType = conn.getHeaderField("Content-Type");
+        if (!("application/pkix-cert".equals(contentType))) {
+            throw new AcmeException("Unexpected content type: " + contentType);
+        }
+
         try (InputStream in = conn.getInputStream()) {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             return (X509Certificate) cf.generateCertificate(in);
@@ -231,6 +242,11 @@ public class Connection implements AutoCloseable {
      * @return Map of {@link Resource} and the respective {@link URI} to invoke
      */
     public Map<Resource, URI> readDirectory() throws AcmeException {
+        String contentType = conn.getHeaderField("Content-Type");
+        if (!("application/json".equals(contentType))) {
+            throw new AcmeException("Unexpected content type: " + contentType);
+        }
+
         EnumMap<Resource, URI> resourceMap = new EnumMap<>(Resource.class);
 
         StringBuilder sb = new StringBuilder();
