@@ -124,30 +124,39 @@ public class Authorization {
 
     /**
      * Finds a combination of {@link Challenge} types that the client supports. The client
-     * has to respond to <em>all</em> of the {@link Challenge}s returned.
+     * has to respond to <em>all</em> of the {@link Challenge}s returned. However, this
+     * method attempts to find the combination with the smallest number of
+     * {@link Challenge}s.
      *
      * @param types
      *            Challenge name or names (e.g. "http-01"), in no particular order.
+     *            Basically this is a collection of all challenge types supported by your
+     *            implementation.
      * @return Matching {@link Challenge} combination, or {@code null} if the ACME server
-     *         does not support this challenge combination. The challenges are returned
-     *         in no particular order.
+     *         does not support any of your challenges. The challenges are returned in no
+     *         particular order. The result may be a subset of the types you have
+     *         provided, if fewer challenges are actually required for a successful
+     *         validation.
      */
     public Collection<Challenge> findCombination(String... types) {
-        Collection<String> reference = Arrays.asList(types);
+        Collection<String> available = Arrays.asList(types);
+        Collection<String> combinationTypes = new ArrayList<>();
+
+        Collection<Challenge> result = null;
 
         for (List<Challenge> combination : combinations) {
-            Collection<String> combinationTypes = new ArrayList<>();
+            combinationTypes.clear();
             for (Challenge c : combination) {
                 combinationTypes.add(c.getType());
             }
 
-            if (reference.size() == combinationTypes.size()
-                    && reference.containsAll(combinationTypes)) {
-                return combination;
+            if (available.containsAll(combinationTypes) &&
+                    (result == null || result.size() > combination.size())) {
+                result = combination;
             }
         }
 
-        return null;
+        return result;
     }
 
 }
