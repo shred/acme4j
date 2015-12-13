@@ -16,8 +16,8 @@ package org.shredzone.acme4j.util;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
+import java.io.IOException;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
@@ -118,10 +118,8 @@ public class ClaimBuilderTest {
      */
     @Test
     @SuppressWarnings("unchecked")
-    public void testKey() throws NoSuchAlgorithmException, JoseException {
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-        keyGen.initialize(512);
-        KeyPair keyPair = keyGen.generateKeyPair();
+    public void testKey() throws IOException, NoSuchAlgorithmException, JoseException {
+        KeyPair keyPair = TestUtils.createKeyPair();
 
         ClaimBuilder res;
 
@@ -134,9 +132,9 @@ public class ClaimBuilderTest {
 
         Map<String, String> jwk = (Map<String, String>) json.get("foo");
         assertThat(jwk.keySet(), hasSize(3));
-        assertThat(jwk.get("n"), not(isEmptyOrNullString()));
-        assertThat(jwk, hasEntry("e", "AQAB"));
-        assertThat(jwk, hasEntry("kty", "RSA"));
+        assertThat(jwk, hasEntry("n", TestUtils.N));
+        assertThat(jwk, hasEntry("e", TestUtils.E));
+        assertThat(jwk, hasEntry("kty", TestUtils.KTY));
     }
 
     /**

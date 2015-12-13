@@ -65,6 +65,32 @@ public class AuthorizationTest {
     }
 
     /**
+     * Test getters and setters.
+     */
+    @Test
+    public void testGetterAndSetter() {
+        Authorization auth = new Authorization();
+
+        assertThat(auth.getDomain(), is(nullValue()));
+        assertThat(auth.getStatus(), is(nullValue()));
+        assertThat(auth.getExpires(), is(nullValue()));
+        assertThat(auth.getChallenges(), is(nullValue()));
+        assertThat(auth.getCombinations(), is(nullValue()));
+
+        auth.setDomain("example.com");
+        auth.setStatus("invalid");
+        auth.setExpires("2015-12-12T17:19:36.336785823Z");
+        auth.setChallenges(authorization.getChallenges());
+        auth.setCombinations(authorization.getCombinations());
+
+        assertThat(auth.getDomain(), is("example.com"));
+        assertThat(auth.getStatus(), is("invalid"));
+        assertThat(auth.getExpires(), is("2015-12-12T17:19:36.336785823Z"));
+        assertThat(auth.getChallenges(), is(sameInstance(authorization.getChallenges())));
+        assertThat(auth.getCombinations(), is(sameInstance(authorization.getCombinations())));
+    }
+
+    /**
      * Test that {@link Authorization#findChallenge(String)} does only find standalone
      * challenges, and nothing else.
      */
