@@ -33,6 +33,10 @@ public class Account {
      *            {@link KeyPair} that identifies the account.
      */
     public Account(KeyPair keyPair) {
+        if (keyPair == null) {
+            throw new NullPointerException("keypair must be set");
+        }
+
         this.keyPair = keyPair;
     }
 
