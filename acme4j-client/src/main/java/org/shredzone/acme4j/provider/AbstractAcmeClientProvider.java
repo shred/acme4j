@@ -16,19 +16,26 @@ package org.shredzone.acme4j.provider;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.DnsChallenge;
 import org.shredzone.acme4j.challenge.GenericChallenge;
 import org.shredzone.acme4j.challenge.HttpChallenge;
 import org.shredzone.acme4j.challenge.ProofOfPossessionChallenge;
 import org.shredzone.acme4j.challenge.TlsSniChallenge;
+import org.shredzone.acme4j.impl.GenericAcmeClient;
 
 /**
  * Abstract implementation of {@link AcmeClientProvider}. It consists of a challenge
  * registry and a standard {@link #openConnection(URI)} implementation.
+ * <p>
+ * Implementing classes must implement at least {@link AcmeClientProvider#accepts(URI)}
+ * and {@link AbstractAcmeClientProvider#resolve(URI)}.
  *
  * @author Richard "Shred" Körber
  */
@@ -40,6 +47,26 @@ public abstract class AbstractAcmeClientProvider implements AcmeClientProvider {
 
     public AbstractAcmeClientProvider() {
         registerBaseChallenges();
+    }
+
+    /**
+     * Resolves the server URI and returns the matching directory URI.
+     *
+     * @param serverUri
+     *            Server {@link URI}
+     * @return Resolved directory {@link URI}
+     * @throws IllegalArgumentException
+     *             if the server {@link URI} is not accepted
+     */
+    protected abstract URI resolve(URI serverUri);
+
+    @Override
+    public AcmeClient connect(URI serverUri) {
+        if (!accepts(serverUri)) {
+            throw new IllegalArgumentException("This provider does not accept " + serverUri);
+        }
+
+        return createAcmeClient(resolve(serverUri));
     }
 
     @Override
@@ -79,7 +106,24 @@ public abstract class AbstractAcmeClientProvider implements AcmeClientProvider {
      *            constructor.
      */
     protected void registerChallenge(String type, Class<? extends Challenge> clazz) {
+        if (type == null) {
+            throw new NullPointerException("type must not be null");
+        }
+        if (clazz == null) {
+            throw new NullPointerException("Challenge class must not be null");
+        }
+        if (type.trim().isEmpty()) {
+            throw new IllegalArgumentException("type must not be empty");
+        }
+
         challenges.put(type, clazz);
+    }
+
+    /**
+     * Returns all registered challenge types.
+     */
+    protected Collection<String> getRegisteredChallengeTypes() {
+        return Collections.unmodifiableCollection(challenges.keySet());
     }
 
     /**
@@ -93,6 +137,17 @@ public abstract class AbstractAcmeClientProvider implements AcmeClientProvider {
         registerChallenge(TlsSniChallenge.TYPE, TlsSniChallenge.class);
         registerChallenge(ProofOfPossessionChallenge.TYPE, ProofOfPossessionChallenge.class);
         registerChallenge(HttpChallenge.TYPE, HttpChallenge.class);
+    }
+
+    /**
+     * Creates an {@link AcmeClient} for the given directory URI.
+     *
+     * @param directoryUri
+     *            Directory {@link URI}
+     * @return {@link AcmeClient}
+     */
+    protected AcmeClient createAcmeClient(URI directoryUri) {
+        return new GenericAcmeClient(this, directoryUri);
     }
 
 }

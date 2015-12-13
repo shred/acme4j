@@ -15,9 +15,6 @@ package org.shredzone.acme4j.provider;
 
 import java.net.URI;
 
-import org.shredzone.acme4j.AcmeClient;
-import org.shredzone.acme4j.impl.GenericAcmeClient;
-
 /**
  * A generic {@link AcmeClientProvider}. It should be working for all ACME servers
  * complying to the ACME specifications.
@@ -35,12 +32,8 @@ public class GenericAcmeClientProvider extends AbstractAcmeClientProvider {
     }
 
     @Override
-    public AcmeClient connect(URI serverUri) {
-        if (!accepts(serverUri)) {
-            throw new IllegalArgumentException("This provider does not accept " + serverUri);
-        }
-
-        return new GenericAcmeClient(this, serverUri);
+    protected URI resolve(URI serverUri) {
+        return serverUri;
     }
 
 }

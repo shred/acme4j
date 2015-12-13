@@ -28,9 +28,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.shredzone.acme4j.AcmeClient;
-import org.shredzone.acme4j.impl.GenericAcmeClient;
-
 /**
  * An {@link AcmeClientProvider} for <em>Let's Encrypt</em>.
  * <p>
@@ -57,44 +54,7 @@ public class LetsEncryptAcmeClientProvider extends AbstractAcmeClientProvider {
     }
 
     @Override
-    public AcmeClient connect(URI serverUri) {
-        return createAcmeClient(resolve(serverUri));
-    }
-
-    @Override
-    public HttpURLConnection openConnection(URI uri) throws IOException {
-        HttpURLConnection conn = super.openConnection(uri);
-        if (conn instanceof HttpsURLConnection) {
-            ((HttpsURLConnection) conn).setSSLSocketFactory(createSocketFactory());
-        }
-        return conn;
-    }
-
-    /**
-     * Creates an {@link AcmeClient} for the given directory URI.
-     *
-     * @param directoryUri
-     *            Directory {@link URI}
-     * @return {@link AcmeClient}
-     */
-    protected AcmeClient createAcmeClient(URI directoryUri) {
-        return new GenericAcmeClient(this, directoryUri);
-    }
-
-    /**
-     * Resolves the server URI and returns the matching directory URI.
-     *
-     * @param serverUri
-     *            Server {@link URI} to resolve
-     * @return Directory {@link URI}
-     * @throws IllegalArgumentException
-     *             if the server URI cannot be resolved
-     */
     protected URI resolve(URI serverUri) {
-        if (!accepts(serverUri)) {
-            throw new IllegalArgumentException("Unknown URI " + serverUri);
-        }
-
         String path = serverUri.getPath();
         String directoryUri;
         if (path == null || "".equals(path) || "/".equals(path) || "/v01".equals(path)) {
@@ -110,6 +70,15 @@ public class LetsEncryptAcmeClientProvider extends AbstractAcmeClientProvider {
         } catch (URISyntaxException ex) {
             throw new IllegalArgumentException(directoryUri, ex);
         }
+    }
+
+    @Override
+    public HttpURLConnection openConnection(URI uri) throws IOException {
+        HttpURLConnection conn = super.openConnection(uri);
+        if (conn instanceof HttpsURLConnection) {
+            ((HttpsURLConnection) conn).setSSLSocketFactory(createSocketFactory());
+        }
+        return conn;
     }
 
     /**
