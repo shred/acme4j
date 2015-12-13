@@ -228,7 +228,7 @@ public class Connection implements AutoCloseable {
      *
      * @return Map of {@link Resource} and the respective {@link URI} to invoke
      */
-    public Map<Resource, URI> readResourceMap() throws AcmeException {
+    public Map<Resource, URI> readDirectory() throws AcmeException {
         EnumMap<Resource, URI> resourceMap = new EnumMap<>(Resource.class);
 
         StringBuilder sb = new StringBuilder();

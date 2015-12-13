@@ -64,7 +64,7 @@ public class GenericAcmeClient extends AbstractAcmeClient {
         if (directoryMap.isEmpty()) {
             try (Connection conn = connect()) {
                 conn.sendRequest(directoryUri);
-                directoryMap.putAll(conn.readResourceMap());
+                directoryMap.putAll(conn.readDirectory());
             }
         }
         return directoryMap.get(resource);
