@@ -52,7 +52,7 @@ public class Connection implements AutoCloseable {
     private static final Logger LOG = LoggerFactory.getLogger(Connection.class);
 
     private final AcmeClientProvider provider;
-    private HttpURLConnection conn;
+    protected HttpURLConnection conn;
 
     public Connection(AcmeClientProvider provider) {
         this.provider = provider;
@@ -75,12 +75,12 @@ public class Connection implements AutoCloseable {
     public void startSession(URI uri, Session session) throws AcmeException {
         try {
             LOG.debug("Initial replay nonce from {}", uri);
-            HttpURLConnection conn = provider.openConnection(uri);
-            conn.setRequestMethod("HEAD");
-            conn.setRequestProperty("Accept-Charset", "utf-8");
-            conn.connect();
+            HttpURLConnection localConn = provider.openConnection(uri);
+            localConn.setRequestMethod("HEAD");
+            localConn.setRequestProperty("Accept-Charset", "utf-8");
+            localConn.connect();
 
-            session.setNonce(getNonceFromHeader(conn));
+            session.setNonce(getNonceFromHeader(localConn));
         } catch (IOException ex) {
             throw new AcmeException("Failed to request a nonce", ex);
         }
@@ -281,7 +281,7 @@ public class Connection implements AutoCloseable {
      * @throws AcmeException
      *             if the server returned a JSON problem
      */
-    private void throwException() throws AcmeException {
+    protected void throwException() throws AcmeException {
         if ("application/problem+json".equals(conn.getHeaderField("Content-Type"))) {
             Map<String, Object> map = readJsonResponse();
             String type = (String) map.get("type");
@@ -293,14 +293,14 @@ public class Connection implements AutoCloseable {
     /**
      * Extracts a nonce from the header.
      *
-     * @param conn
-     *            {@link HttpURLConnection} to read the headers from
+     * @param localConn
+     *            {@link HttpURLConnection} to get the nonce from
      * @return Nonce
      * @throws AcmeException
      *             if there was no {@code Replay-Nonce} header, or the nonce was invalid
      */
-    private static byte[] getNonceFromHeader(HttpURLConnection conn) throws AcmeException {
-        String nonceHeader = conn.getHeaderField("Replay-Nonce");
+    protected byte[] getNonceFromHeader(HttpURLConnection localConn) throws AcmeException {
+        String nonceHeader = localConn.getHeaderField("Replay-Nonce");
         if (nonceHeader == null) {
             throw new AcmeException("No replay nonce");
         }
