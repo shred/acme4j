@@ -28,21 +28,6 @@
     <name>acme4j Let's Encrypt</name>
     <description>Let's Encrypt service provider for acme4j</description>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <version>2.19</version>
-                <configuration>
-                    <parallel>classes</parallel>
-                    <threadCount>10</threadCount>
-                    <excludedGroups>org.shredzone.acme4j.provider.LetsEncryptAcmeClientProviderTest$RequiresNetwork</excludedGroups>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
     <dependencies>
         <dependency>
             <groupId>org.shredzone.acme4j</groupId>

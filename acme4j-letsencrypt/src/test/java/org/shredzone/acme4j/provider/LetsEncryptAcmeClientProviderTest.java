@@ -36,8 +36,6 @@ import org.shredzone.acme4j.AcmeClient;
  */
 public class LetsEncryptAcmeClientProviderTest {
 
-    public interface RequiresNetwork {}
-
     private static final String V01_DIRECTORY_URI = "https://acme-v01.api.letsencrypt.org/directory";
     private static final String STAGING_DIRECTORY_URI = "https://acme-staging.api.letsencrypt.org/directory";
 
@@ -111,9 +109,12 @@ public class LetsEncryptAcmeClientProviderTest {
     /**
      * Test if the {@link LetsEncryptAcmeClientProvider#openConnection(URI)} accepts only
      * the Let's Encrypt certificate.
+     * <p>
+     * This test requires a network connection. It should be excluded from automated
+     * builds.
      */
     @Test
-    @Category(RequiresNetwork.class)
+    @Category(HttpURLConnection.class)
     public void testCertificate() throws IOException, URISyntaxException {
         LetsEncryptAcmeClientProvider provider = new LetsEncryptAcmeClientProvider();
 
