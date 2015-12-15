@@ -44,8 +44,9 @@ public class CertificateUtilsTest {
     }
 
     /**
-     * Test if {@link CertificateUtilsTest#writeX509CertificateTest()} writes a
-     * proper X.509 certificate.
+     * Test if
+     * {@link CertificateUtils#writeX509Certificate(X509Certificate, java.io.Writer)}
+     * writes a proper X.509 certificate.
      */
     @Test
     public void testWriteX509Certificate() throws IOException, CertificateException {

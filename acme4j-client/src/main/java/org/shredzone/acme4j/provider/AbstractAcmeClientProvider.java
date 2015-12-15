@@ -32,7 +32,7 @@ import org.shredzone.acme4j.impl.GenericAcmeClient;
 
 /**
  * Abstract implementation of {@link AcmeClientProvider}. It consists of a challenge
- * registry and a standard {@link #openConnection(URI)} implementation.
+ * registry and a standard {@link HttpConnector}.
  * <p>
  * Implementing classes must implement at least {@link AcmeClientProvider#accepts(URI)}
  * and {@link AbstractAcmeClientProvider#resolve(URI)}.

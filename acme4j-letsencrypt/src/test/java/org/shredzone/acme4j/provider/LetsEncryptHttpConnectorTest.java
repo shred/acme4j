@@ -36,8 +36,7 @@ import org.junit.experimental.categories.Category;
 public class LetsEncryptHttpConnectorTest {
 
     /**
-     * Test if the {@link LetsEncryptAcmeClientProvider#openConnection(URI)} accepts only
-     * the Let's Encrypt certificate.
+     * Test if the connector accepts only the Let's Encrypt certificate.
      * <p>
      * This test requires a network connection. It should be excluded from automated
      * builds.
