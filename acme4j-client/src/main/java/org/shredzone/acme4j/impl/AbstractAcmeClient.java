@@ -81,8 +81,6 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             if (!registration.getContacts().isEmpty()) {
                 claims.put("contact", registration.getContacts());
             }
-            if (registration.getAgreementUrl() != null) {
-                claims.put("agreement", registration.getAgreementUrl());
 
             int rc = conn.sendSignedRequest(resourceUri(Resource.NEW_REG), claims, session, account);
             if (rc != HttpURLConnection.HTTP_CREATED && rc != HttpURLConnection.HTTP_CONFLICT) {
@@ -92,6 +90,11 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             URI location = conn.getLocation();
             if (location != null) {
                 registration.setLocation(location);
+            }
+
+            URI tos = conn.getLink("terms-of-service");
+            if (tos != null) {
+                registration.setAgreement(tos);
             }
 
             if (rc == HttpURLConnection.HTTP_CONFLICT) {
@@ -113,8 +116,8 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             if (!registration.getContacts().isEmpty()) {
                 claims.put("contact", registration.getContacts());
             }
-            if (registration.getAgreementUrl() != null) {
-                claims.put("agreement", registration.getAgreementUrl());
+            if (registration.getAgreement() != null) {
+                claims.put("agreement", registration.getAgreement());
             }
 
             int rc = conn.sendSignedRequest(registration.getLocation(), claims, session, account);
@@ -123,6 +126,11 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             }
 
             registration.setLocation(conn.getLocation());
+
+            URI tos = conn.getLink("terms-of-service");
+            if (tos != null) {
+                registration.setAgreement(tos);
+            }
         }
     }
 

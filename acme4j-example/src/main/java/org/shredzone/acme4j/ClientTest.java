@@ -28,6 +28,7 @@ import javax.swing.JOptionPane;
 
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.HttpChallenge;
+import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.util.CSRBuilder;
 import org.shredzone.acme4j.util.CertificateUtils;
@@ -60,10 +61,10 @@ public class ClientTest {
      *
      * @param domains
      *            Domains to get a common certificate for
-     * @param agreementUrl
-     *            Agreement URL to be used for creating an account
+     * @param agreement
+     *            Agreement URI to be used for creating an account
      */
-    public void fetchCertificate(Collection<String> domains, String agreementUrl)
+    public void fetchCertificate(Collection<String> domains, URI agreement)
                     throws IOException, AcmeException {
         // Load or create a key pair for the user's account
         KeyPair userKeyPair;
@@ -87,10 +88,12 @@ public class ClientTest {
 
         // Register a new user
         Registration reg = new Registration();
-        reg.setAgreementUrl(agreementUrl);
+        reg.setAgreement(agreement);
         try {
             client.newRegistration(account, reg);
             LOG.info("Registered a new user, URI: " + reg.getLocation());
+        } catch (AcmeConflictException ex) {
+            LOG.info("Account does already exist, URI: " + reg.getLocation());
         } catch (AcmeException ex) {
             LOG.warn("Registration failed", ex);
 
@@ -198,7 +201,7 @@ public class ClientTest {
         Collection<String> domains = Arrays.asList(args);
         try {
             ClientTest ct = new ClientTest();
-            ct.fetchCertificate(domains, AGREEMENT_URL);
+            ct.fetchCertificate(domains, new URI(AGREEMENT_URL));
         } catch (Exception ex) {
             LOG.error("Failed to get a certificate for domains " + domains, ex);
         }

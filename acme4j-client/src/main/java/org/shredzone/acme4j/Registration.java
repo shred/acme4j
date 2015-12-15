@@ -24,22 +24,22 @@ import java.util.List;
  */
 public class Registration {
 
-    private String agreementUrl;
     private List<String> contacts = new ArrayList<>();
+    private URI agreement;
     private URI location;
 
     /**
-     * Returns the URL of the agreement document the user is required to accept.
+     * Returns the URI of the agreement document the user is required to accept.
      */
-    public String getAgreementUrl() {
-        return agreementUrl;
+    public URI getAgreement() {
+        return agreement;
     }
 
     /**
-     * Sets the URL of the agreement document the user is required to accept.
+     * Sets the URI of the agreement document the user is required to accept.
      */
-    public void setAgreementUrl(String agreementUrl) {
-        this.agreementUrl = agreementUrl;
+    public void setAgreement(URI agreement) {
+        this.agreement = agreement;
     }
 
     /**
