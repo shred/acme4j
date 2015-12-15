@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.shredzone.acme4j.connector;
+package org.shredzone.acme4j.impl;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -39,6 +39,10 @@ import org.jose4j.jwx.CompactSerializer;
 import org.junit.Before;
 import org.junit.Test;
 import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.connector.Connection;
+import org.shredzone.acme4j.connector.HttpConnector;
+import org.shredzone.acme4j.connector.Resource;
+import org.shredzone.acme4j.connector.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.util.ClaimBuilder;
@@ -49,7 +53,7 @@ import org.shredzone.acme4j.util.TestUtils;
  *
  * @author Richard "Shred" Körber
  */
-public class ConnectionTest {
+public class DefaultConnectionTest {
 
     private URI requestUri;
     private HttpURLConnection mockUrlConnection;
@@ -73,7 +77,7 @@ public class ConnectionTest {
     public void testNoNonceFromHeader() throws AcmeException {
         when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(null);
 
-        try (Connection conn = new Connection(mockHttpConnection)) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.getNonceFromHeader(mockUrlConnection);
             fail("Expected to fail");
         } catch (AcmeException ex) {
@@ -95,7 +99,7 @@ public class ConnectionTest {
         when(mockUrlConnection.getHeaderField("Replay-Nonce"))
                 .thenReturn(Base64Url.encode(nonce));
 
-        try (Connection conn = new Connection(mockHttpConnection)) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             byte[] nonceFromHeader = conn.getNonceFromHeader(mockUrlConnection);
             assertThat(nonceFromHeader, is(nonce));
         }
@@ -114,7 +118,7 @@ public class ConnectionTest {
 
         when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(badNonce);
 
-        try (Connection conn = new Connection(mockHttpConnection)) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.getNonceFromHeader(mockUrlConnection);
             fail("Expected to fail");
         } catch (AcmeException ex) {
@@ -132,7 +136,7 @@ public class ConnectionTest {
     public void testGetLocation() throws Exception {
         when(mockUrlConnection.getHeaderField("Location")).thenReturn("http://example.com/otherlocation");
 
-        try (Connection conn = new Connection(mockHttpConnection)) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             URI location = conn.getLocation();
             assertThat(location, is(new URI("http://example.com/otherlocation")));
@@ -147,7 +151,7 @@ public class ConnectionTest {
      */
     @Test
     public void testNoLocation() throws Exception {
-        try (Connection conn = new Connection(mockHttpConnection)) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             URI location = conn.getLocation();
             assertThat(location, is(nullValue()));
@@ -164,7 +168,7 @@ public class ConnectionTest {
     public void testNoThrowException() throws AcmeException {
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/json");
 
-        try (Connection conn = new Connection(mockHttpConnection)) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             conn.throwException();
         }
@@ -184,7 +188,7 @@ public class ConnectionTest {
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
         when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
 
-        try (Connection conn = new Connection(mockHttpConnection)) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             conn.throwException();
             fail("Expected to fail");
@@ -210,7 +214,7 @@ public class ConnectionTest {
         when(mockUrlConnection.getHeaderField("Content-Type"))
                 .thenReturn("application/problem+json");
 
-        try (Connection conn = new Connection(mockHttpConnection) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
             public Map<String,Object> readJsonResponse() throws AcmeException {
                 Map<String, Object> result = new HashMap<String, Object>();
@@ -245,7 +249,7 @@ public class ConnectionTest {
                 .thenReturn(Base64Url.encode(nonce));
 
         Session session = new Session();
-        try (Connection conn = new Connection(mockHttpConnection)) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.startSession(requestUri, session);
         }
         assertThat(session.getNonce(), is(nonce));
@@ -263,7 +267,7 @@ public class ConnectionTest {
     public void testSendRequest() throws Exception {
         final Set<String> invoked = new HashSet<>();
 
-        try (Connection conn = new Connection(mockHttpConnection) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
             protected void throwException() throws AcmeException {
                 invoked.add("throwException");
@@ -295,7 +299,7 @@ public class ConnectionTest {
         when(mockUrlConnection.getOutputStream()).thenReturn(outputStream);
         when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(Base64Url.encode(nonce2));
 
-        try (Connection conn = new Connection(mockHttpConnection) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
             protected void throwException() throws AcmeException {
                 invoked.add("throwException");
@@ -363,7 +367,7 @@ public class ConnectionTest {
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
         when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
 
-        try (Connection conn = new Connection(mockHttpConnection)) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             Map<String, Object> result = conn.readJsonResponse();
             assertThat(result.keySet(), hasSize(2));
@@ -392,7 +396,7 @@ public class ConnectionTest {
         when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(original.getEncoded()));
 
         X509Certificate downloaded;
-        try (Connection conn = new Connection(mockHttpConnection)) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             downloaded = conn.readCertificate();
         }
@@ -421,7 +425,7 @@ public class ConnectionTest {
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/json");
         when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(jsonData.toString().getBytes("utf-8")));
 
-        try (Connection conn = new Connection(mockHttpConnection)) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             Map<Resource, URI> result = conn.readDirectory();
             assertThat(result.keySet(), hasSize(2));

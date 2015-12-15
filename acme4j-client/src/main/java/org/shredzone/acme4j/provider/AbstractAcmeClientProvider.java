@@ -24,6 +24,7 @@ import org.shredzone.acme4j.challenge.ProofOfPossessionChallenge;
 import org.shredzone.acme4j.challenge.TlsSniChallenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.HttpConnector;
+import org.shredzone.acme4j.impl.DefaultConnection;
 import org.shredzone.acme4j.impl.GenericAcmeClient;
 
 /**
@@ -75,7 +76,7 @@ public abstract class AbstractAcmeClientProvider implements AcmeClientProvider {
 
     @Override
     public Connection createConnection() {
-        return new Connection(createHttpConnector());
+        return new DefaultConnection(createHttpConnector());
     }
 
     /**
