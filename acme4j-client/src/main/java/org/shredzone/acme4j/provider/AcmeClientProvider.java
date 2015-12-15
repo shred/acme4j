@@ -18,7 +18,6 @@ import java.util.ServiceLoader;
 
 import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.challenge.Challenge;
-import org.shredzone.acme4j.challenge.GenericChallenge;
 import org.shredzone.acme4j.connector.Connection;
 
 /**
@@ -61,10 +60,6 @@ public interface AcmeClientProvider {
      * @throws ClassCastException
      *             if the expected {@link Challenge} type does not match the given type
      *             name.
-     * @throws IllegalArgumentException
-     *             if the given type name cannot be resolved to any {@link Challenge}
-     *             class. However, for unknown challenge types, a {@link GenericChallenge}
-     *             instance should be returned.
      */
     <T extends Challenge> T createChallenge(String type);
 

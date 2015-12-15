@@ -74,71 +74,6 @@ public class AbstractAcmeClientProviderTest {
     }
 
     /**
-     * Test that all base challenges are registered on initialization, and that additional
-     * challenges are properly registered.
-     */
-    @Test
-    public void testRegisterChallenges() {
-        AbstractAcmeClientProvider provider = new AbstractAcmeClientProvider() {
-            @Override
-            protected void registerBaseChallenges() {
-                assertThat(getRegisteredChallengeTypes(), is(empty()));
-                super.registerBaseChallenges();
-            }
-
-            @Override
-            public boolean accepts(URI serverUri) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            protected URI resolve(URI serverUri) {
-                throw new UnsupportedOperationException();
-            }
-        };
-
-        assertThat(provider.getRegisteredChallengeTypes(), hasSize(4));
-        assertThat(provider.getRegisteredChallengeTypes(), containsInAnyOrder(
-                DnsChallenge.TYPE,
-                HttpChallenge.TYPE,
-                ProofOfPossessionChallenge.TYPE,
-                TlsSniChallenge.TYPE
-        ));
-
-        provider.registerChallenge("foo", GenericChallenge.class);
-
-        assertThat(provider.getRegisteredChallengeTypes(), hasSize(5));
-        assertThat(provider.getRegisteredChallengeTypes(), containsInAnyOrder(
-                DnsChallenge.TYPE,
-                HttpChallenge.TYPE,
-                ProofOfPossessionChallenge.TYPE,
-                TlsSniChallenge.TYPE,
-                "foo"
-        ));
-
-        try {
-            provider.registerChallenge(null, GenericChallenge.class);
-            fail("accepts null type");
-        } catch (NullPointerException ex) {
-            // expected
-        }
-
-        try {
-            provider.registerChallenge("bar", null);
-            fail("accepts null class");
-        } catch (NullPointerException ex) {
-            // expected
-        }
-
-        try {
-            provider.registerChallenge("", GenericChallenge.class);
-            fail("accepts empty type");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
-    }
-
-    /**
      * Test that challenges are generated properly.
      */
     @Test
@@ -177,6 +112,20 @@ public class AbstractAcmeClientProviderTest {
         Challenge c6 = provider.createChallenge("foobar-01");
         assertThat(c6, not(nullValue()));
         assertThat(c6, instanceOf(GenericChallenge.class));
+
+        try {
+            provider.createChallenge(null);
+            fail("null was accepted");
+        } catch (IllegalArgumentException ex) {
+            // expected
+        }
+
+        try {
+            provider.createChallenge("");
+            fail("empty string was accepted");
+        } catch (IllegalArgumentException ex) {
+            // expected
+        }
     }
 
 }

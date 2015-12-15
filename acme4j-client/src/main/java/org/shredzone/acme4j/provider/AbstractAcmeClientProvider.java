@@ -14,10 +14,6 @@
 package org.shredzone.acme4j.provider;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -40,12 +36,6 @@ import org.shredzone.acme4j.impl.GenericAcmeClient;
  * @author Richard "Shred" Körber
  */
 public abstract class AbstractAcmeClientProvider implements AcmeClientProvider {
-
-    private final Map<String, Class<? extends Challenge>> challenges = new HashMap<>();
-
-    public AbstractAcmeClientProvider() {
-        registerBaseChallenges();
-    }
 
     /**
      * Resolves the server URI and returns the matching directory URI.
@@ -70,16 +60,16 @@ public abstract class AbstractAcmeClientProvider implements AcmeClientProvider {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends Challenge> T createChallenge(String type) {
-        Class<? extends Challenge> clazz = challenges.get(type);
-        if (clazz == null) {
-            return (T) new GenericChallenge();
+        if (type == null || type.isEmpty()) {
+            throw new IllegalArgumentException("no type given");
         }
 
-        try {
-            return (T) clazz.newInstance();
-        } catch (InstantiationException | IllegalAccessException ex) {
-            throw new IllegalArgumentException("Could not create Challenge for type "
-                + type, ex);
+        switch (type) {
+            case DnsChallenge.TYPE: return (T) new DnsChallenge();
+            case TlsSniChallenge.TYPE: return (T) new TlsSniChallenge();
+            case ProofOfPossessionChallenge.TYPE: return (T) new ProofOfPossessionChallenge();
+            case HttpChallenge.TYPE: return (T) new HttpChallenge();
+            default: return (T) new GenericChallenge();
         }
     }
 
@@ -94,50 +84,6 @@ public abstract class AbstractAcmeClientProvider implements AcmeClientProvider {
      */
     protected HttpConnector createHttpConnector() {
         return new HttpConnector();
-    }
-
-    /**
-     * Registers an individual {@link Challenge}. If a challenge of that type is already
-     * registered, it will be replaced.
-     *
-     * @param type
-     *            Challenge type string
-     * @param clazz
-     *            Class implementing the {@link Challenge}. It must have a default
-     *            constructor.
-     */
-    protected void registerChallenge(String type, Class<? extends Challenge> clazz) {
-        if (type == null) {
-            throw new NullPointerException("type must not be null");
-        }
-        if (clazz == null) {
-            throw new NullPointerException("Challenge class must not be null");
-        }
-        if (type.trim().isEmpty()) {
-            throw new IllegalArgumentException("type must not be empty");
-        }
-
-        challenges.put(type, clazz);
-    }
-
-    /**
-     * Returns all registered challenge types.
-     */
-    protected Collection<String> getRegisteredChallengeTypes() {
-        return Collections.unmodifiableCollection(challenges.keySet());
-    }
-
-    /**
-     * Registers all standard challenges as specified in the ACME specifications.
-     * <p>
-     * Subclasses may override this method in order to add further challenges. It is
-     * invoked on construction time.
-     */
-    protected void registerBaseChallenges() {
-        registerChallenge(DnsChallenge.TYPE, DnsChallenge.class);
-        registerChallenge(TlsSniChallenge.TYPE, TlsSniChallenge.class);
-        registerChallenge(ProofOfPossessionChallenge.TYPE, ProofOfPossessionChallenge.class);
-        registerChallenge(HttpChallenge.TYPE, HttpChallenge.class);
     }
 
     /**
