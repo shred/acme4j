@@ -27,8 +27,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -142,6 +144,31 @@ public class DefaultConnectionTest {
 
         verify(mockUrlConnection).getHeaderField("Location");
         verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    /**
+     * Test that Link headers are evaluated.
+     */
+    @Test
+    public void testGetLink() throws Exception {
+        Map<String, List<String>> headers = new HashMap<String, List<String>>();
+        headers.put("Content-Type", Arrays.asList("application/json"));
+        headers.put("Location", Arrays.asList("https://example.com/acme/reg/asdf"));
+        headers.put("Link", Arrays.asList(
+                        "<https://example.com/acme/new-authz>;rel=\"next\"",
+                        "<https://example.com/acme/recover-reg>;rel=recover",
+                        "<https://example.com/acme/terms>; rel=\"terms-of-service\""
+                    ));
+
+        when(mockUrlConnection.getHeaderFields()).thenReturn(headers);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            assertThat(conn.getLink("next"), is(new URI("https://example.com/acme/new-authz")));
+            assertThat(conn.getLink("recover"), is(new URI("https://example.com/acme/recover-reg")));
+            assertThat(conn.getLink("terms-of-service"), is(new URI("https://example.com/acme/terms")));
+            assertThat(conn.getLink("secret-stuff"), is(nullValue()));
+        }
     }
 
     /**

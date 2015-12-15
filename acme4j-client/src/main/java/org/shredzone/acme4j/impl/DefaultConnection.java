@@ -26,7 +26,9 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jose4j.base64url.Base64Url;
@@ -246,6 +248,25 @@ public class DefaultConnection implements Connection {
         } catch (URISyntaxException ex) {
             throw new AcmeException("Bad Location header: " + location);
         }
+    }
+
+    @Override
+    public URI getLink(String relation) throws AcmeException {
+        List<String> links = conn.getHeaderFields().get("Link");
+        if (links != null) {
+            Pattern p = Pattern.compile("<(.*?)>\\s*;\\s*rel=\"?"+ Pattern.quote(relation) + "\"?");
+            for (String link : links) {
+                Matcher m = p.matcher(link);
+                if (m.matches()) {
+                    try {
+                        return new URI(m.group(1));
+                    } catch (URISyntaxException ex) {
+                        throw new AcmeException("Bad Link header: " + link);
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @Override

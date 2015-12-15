@@ -92,6 +92,15 @@ public interface Connection extends AutoCloseable {
     URI getLocation() throws AcmeException;
 
     /**
+     * Gets a link relation from the header.
+     *
+     * @param relation
+     *            Link relation
+     * @return Link, or {@code null} if there was no such link relation
+     */
+    URI getLink(String relation) throws AcmeException;
+
+    /**
      * Closes the {@link Connection}, releasing all resources.
      */
     @Override
