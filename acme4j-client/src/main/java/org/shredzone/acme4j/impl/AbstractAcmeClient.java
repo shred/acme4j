@@ -31,6 +31,8 @@ import org.shredzone.acme4j.connector.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.util.ClaimBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An abstract implementation of the {@link AcmeClient} interface. It contains abstract
@@ -39,6 +41,7 @@ import org.shredzone.acme4j.util.ClaimBuilder;
  * @author Richard "Shred" Körber
  */
 public abstract class AbstractAcmeClient implements AcmeClient {
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractAcmeClient.class);
 
     private final Session session = new Session();
 
@@ -70,6 +73,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public void newRegistration(Account account, Registration registration) throws AcmeException {
+        LOG.debug("newRegistration");
         try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource(Resource.NEW_REG);
@@ -94,6 +98,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public void updateRegistration(Account account, Registration registration) throws AcmeException {
+        LOG.debug("updateRegistration");
         if (registration.getLocation() == null) {
             throw new IllegalArgumentException("location must be set. Use newRegistration() if not known.");
         }
@@ -116,6 +121,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public void newAuthorization(Account account, Authorization auth) throws AcmeException {
+        LOG.debug("newAuthorization");
         try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource(Resource.NEW_AUTHZ);
@@ -163,6 +169,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public void triggerChallenge(Account account, Challenge challenge) throws AcmeException {
+        LOG.debug("triggerChallenge");
         try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource("challenge");
@@ -176,6 +183,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public void updateChallenge(Account account, Challenge challenge) throws AcmeException {
+        LOG.debug("updateChallenge");
         try (Connection conn = createConnection()) {
             conn.sendRequest(challenge.getUri());
             challenge.unmarshall(conn.readJsonResponse());
@@ -184,6 +192,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public URI requestCertificate(Account account, byte[] csr) throws AcmeException {
+        LOG.debug("requestCertificate");
         try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource(Resource.NEW_CERT);
@@ -200,6 +209,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public X509Certificate downloadCertificate(URI certUri) throws AcmeException {
+        LOG.debug("downloadCertificate");
         try (Connection conn = createConnection()) {
             conn.sendRequest(certUri);
             return conn.readCertificate();

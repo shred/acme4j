@@ -259,7 +259,9 @@ public class DefaultConnection implements Connection {
                 Matcher m = p.matcher(link);
                 if (m.matches()) {
                     try {
-                        return new URI(m.group(1));
+                        String location = m.group(1);
+                        LOG.debug("Link: {} -> {}", relation, location);
+                        return new URI(location);
                     } catch (URISyntaxException ex) {
                         throw new AcmeException("Bad Link header: " + link);
                     }
