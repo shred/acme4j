@@ -1,2 +1,0 @@
-# Let's Encrypt: https://letsencrypt.org
-org.shredzone.acme4j.provider.LetsEncryptAcmeClientProvider

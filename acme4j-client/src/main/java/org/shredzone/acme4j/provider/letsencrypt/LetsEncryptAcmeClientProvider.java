@@ -11,12 +11,14 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.shredzone.acme4j.provider;
+package org.shredzone.acme4j.provider.letsencrypt;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.shredzone.acme4j.connector.HttpConnector;
+import org.shredzone.acme4j.provider.AbstractAcmeClientProvider;
+import org.shredzone.acme4j.provider.AcmeClientProvider;
 
 /**
  * An {@link AcmeClientProvider} for <em>Let's Encrypt</em>.

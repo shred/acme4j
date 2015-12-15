@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.shredzone.acme4j.provider;
+package org.shredzone.acme4j.provider.letsencrypt;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
@@ -20,6 +20,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.junit.Test;
+import org.shredzone.acme4j.provider.letsencrypt.LetsEncryptAcmeClientProvider;
 
 /**
  * Unit tests for {@link LetsEncryptAcmeClientProvider}.

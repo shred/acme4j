@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.shredzone.acme4j.provider;
+package org.shredzone.acme4j.provider.letsencrypt;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;

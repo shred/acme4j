@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.shredzone.acme4j.provider;
+package org.shredzone.acme4j.provider.letsencrypt;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
@@ -27,6 +27,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.shredzone.acme4j.provider.letsencrypt.LetsEncryptHttpConnector;
 
 /**
  * Unit test for {@link LetsEncryptHttpConnector}.

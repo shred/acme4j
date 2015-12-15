@@ -59,7 +59,6 @@
 
     <modules>
         <module>acme4j-client</module>
-        <module>acme4j-letsencrypt</module>
         <module>acme4j-utils</module>
         <module>acme4j-example</module>
     </modules>

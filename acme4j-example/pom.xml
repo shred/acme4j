@@ -56,11 +56,6 @@
         </dependency>
         <dependency>
             <groupId>org.shredzone.acme4j</groupId>
-            <artifactId>acme4j-letsencrypt</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.shredzone.acme4j</groupId>
             <artifactId>acme4j-utils</artifactId>
             <version>${project.version}</version>
         </dependency>

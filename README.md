@@ -31,7 +31,6 @@ How to Use
 _acme4j_ consists of a few modules:
 
 * _acme4j-client_: This is the main module. It contains the ACME client and everything needed for communication with an ACME server.
-* _acme4j-letsencrypt_: A _Let's Encrypt_ service. Just add it as dependency, it will neatly plug into the client.
 * _acme4j-utils_: Some utility classes that may be helpful for creating key pairs, certificates, and certificate signing requests. Requires [Bouncy Castle](https://www.bouncycastle.org/java.html).
 * _acme4j-example_: An example tool that performs all steps for registering a new account at _Let's Encrypt_ and getting a certificate for a set of domain names. This is a good starting point to find out how _acme4j_ is used.
 
