@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.impl;
 
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -28,8 +29,8 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.Session;
+import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,16 +83,19 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             }
             if (registration.getAgreementUrl() != null) {
                 claims.put("agreement", registration.getAgreementUrl());
+
+            int rc = conn.sendSignedRequest(resourceUri(Resource.NEW_REG), claims, session, account);
+            if (rc != HttpURLConnection.HTTP_CREATED && rc != HttpURLConnection.HTTP_CONFLICT) {
+                conn.throwAcmeException();
             }
 
-            try {
-                conn.sendSignedRequest(resourceUri(Resource.NEW_REG), claims, session, account);
-            } catch (AcmeServerException ex) {
-                URI location = conn.getLocation();
-                if (location != null) {
-                    registration.setLocation(location);
-                }
-                throw ex;
+            URI location = conn.getLocation();
+            if (location != null) {
+                registration.setLocation(location);
+            }
+
+            if (rc == HttpURLConnection.HTTP_CONFLICT) {
+                throw new AcmeConflictException("Account is already registered", location);
             }
         }
     }
@@ -113,7 +117,10 @@ public abstract class AbstractAcmeClient implements AcmeClient {
                 claims.put("agreement", registration.getAgreementUrl());
             }
 
-            conn.sendSignedRequest(registration.getLocation(), claims, session, account);
+            int rc = conn.sendSignedRequest(registration.getLocation(), claims, session, account);
+            if (rc != HttpURLConnection.HTTP_ACCEPTED) {
+                conn.throwAcmeException();
+            }
 
             registration.setLocation(conn.getLocation());
         }
@@ -129,7 +136,10 @@ public abstract class AbstractAcmeClient implements AcmeClient {
                     .put("type", "dns")
                     .put("value", auth.getDomain());
 
-            conn.sendSignedRequest(resourceUri(Resource.NEW_AUTHZ), claims, session, account);
+            int rc = conn.sendSignedRequest(resourceUri(Resource.NEW_AUTHZ), claims, session, account);
+            if (rc != HttpURLConnection.HTTP_CREATED) {
+                conn.throwAcmeException();
+            }
 
             Map<String, Object> result = conn.readJsonResponse();
 
@@ -175,7 +185,10 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             claims.putResource("challenge");
             challenge.marshall(claims);
 
-            conn.sendSignedRequest(challenge.getUri(), claims, session, account);
+            int rc = conn.sendSignedRequest(challenge.getUri(), claims, session, account);
+            if (rc != HttpURLConnection.HTTP_ACCEPTED) {
+                conn.throwAcmeException();
+            }
 
             challenge.unmarshall(conn.readJsonResponse());
         }
@@ -185,7 +198,11 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     public void updateChallenge(Account account, Challenge challenge) throws AcmeException {
         LOG.debug("updateChallenge");
         try (Connection conn = createConnection()) {
-            conn.sendRequest(challenge.getUri());
+            int rc = conn.sendRequest(challenge.getUri());
+            if (rc != HttpURLConnection.HTTP_ACCEPTED) {
+                conn.throwAcmeException();
+            }
+
             challenge.unmarshall(conn.readJsonResponse());
         }
     }
@@ -198,7 +215,10 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             claims.putResource(Resource.NEW_CERT);
             claims.putBase64("csr", csr);
 
-            conn.sendSignedRequest(resourceUri(Resource.NEW_CERT), claims, session, account);
+            int rc = conn.sendSignedRequest(resourceUri(Resource.NEW_CERT), claims, session, account);
+            if (rc != HttpURLConnection.HTTP_CREATED) {
+                conn.throwAcmeException();
+            }
 
             // Optionally returns the certificate. Currently it is just ignored.
             // X509Certificate cert = conn.readCertificate();
@@ -211,7 +231,11 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     public X509Certificate downloadCertificate(URI certUri) throws AcmeException {
         LOG.debug("downloadCertificate");
         try (Connection conn = createConnection()) {
-            conn.sendRequest(certUri);
+            int rc = conn.sendRequest(certUri);
+            if (rc != HttpURLConnection.HTTP_OK) {
+                conn.throwAcmeException();
+            }
+
             return conn.readCertificate();
         }
     }

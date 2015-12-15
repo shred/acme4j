@@ -91,8 +91,6 @@ public class DefaultConnection implements Connection {
 
             conn.connect();
 
-            throwException();
-
             return conn.getResponseCode();
         } catch (IOException ex) {
             throw new AcmeException("API access failed", ex);
@@ -138,8 +136,6 @@ public class DefaultConnection implements Connection {
             }
 
             session.setNonce(getNonceFromHeader(conn));
-
-            throwException();
 
             return conn.getResponseCode();
         } catch (JoseException | IOException ex) {
@@ -272,23 +268,25 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public void close() {
-        conn = null;
-    }
-
-    /**
-     * Checks if the server returned an error, and if so, throws a {@link AcmeException}.
-     *
-     * @throws AcmeException
-     *             if the server returned a JSON problem
-     */
-    protected void throwException() throws AcmeException {
+    public void throwAcmeException() throws AcmeException {
         if ("application/problem+json".equals(conn.getHeaderField("Content-Type"))) {
             Map<String, Object> map = readJsonResponse();
             String type = (String) map.get("type");
             String detail = (String) map.get("detail");
             throw new AcmeServerException(type, detail);
+        } else {
+            try {
+                throw new AcmeException("HTTP " + conn.getResponseCode() + ": "
+                    + conn.getResponseMessage());
+            } catch (IOException ex) {
+                throw new AcmeException("Network error");
+            }
         }
+    }
+
+    @Override
+    public void close() {
+        conn = null;
     }
 
     /**

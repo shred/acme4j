@@ -187,22 +187,6 @@ public class DefaultConnectionTest {
     }
 
     /**
-     * Test that no exception is thrown if there is no problem.
-     */
-    @Test
-    public void testNoThrowException() throws AcmeException {
-        when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/json");
-
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
-            conn.throwException();
-        }
-
-        verify(mockUrlConnection).getHeaderField("Content-Type");
-        verifyNoMoreInteractions(mockUrlConnection);
-    }
-
-    /**
      * Test if an {@link AcmeServerException} is thrown on an acme problem.
      */
     @Test
@@ -215,7 +199,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            conn.throwException();
+            conn.throwAcmeException();
             fail("Expected to fail");
         } catch (AcmeServerException ex) {
             assertThat(ex.getType(), is("urn:acme:error:unauthorized"));
@@ -249,7 +233,7 @@ public class DefaultConnectionTest {
             };
         }) {
             conn.conn = mockUrlConnection;
-            conn.throwException();
+            conn.throwAcmeException();
             fail("Expected to fail");
         } catch (AcmeServerException ex) {
             assertThat(ex.getType(), is("urn:zombie:error:apocalypse"));
@@ -290,14 +274,7 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testSendRequest() throws Exception {
-        final Set<String> invoked = new HashSet<>();
-
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
-            @Override
-            protected void throwException() throws AcmeException {
-                invoked.add("throwException");
-            };
-        }) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.sendRequest(requestUri);
         }
 
@@ -307,7 +284,6 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection).connect();
         verify(mockUrlConnection).getResponseCode();
         verifyNoMoreInteractions(mockUrlConnection);
-        assertThat(invoked, hasItem("throwException"));
     }
 
     /**
@@ -325,10 +301,6 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(Base64Url.encode(nonce2));
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
-            @Override
-            protected void throwException() throws AcmeException {
-                invoked.add("throwException");
-            };
             @Override
             public void startSession(URI uri, Session session) throws AcmeException {
                 assertThat(uri, is(requestUri));
@@ -359,7 +331,7 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection).getOutputStream();
         verify(mockUrlConnection).getResponseCode();
         verifyNoMoreInteractions(mockUrlConnection);
-        assertThat(invoked, hasItems("throwException", "startSession"));
+        assertThat(invoked, hasItem("startSession"));
 
         String[] written = CompactSerializer.deserialize(new String(outputStream.toByteArray(), "utf-8"));
         String header = Base64Url.decodeToUtf8String(written[0]);

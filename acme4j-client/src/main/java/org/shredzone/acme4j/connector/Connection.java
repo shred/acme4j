@@ -19,6 +19,7 @@ import java.util.Map;
 
 import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 
 /**
@@ -99,6 +100,13 @@ public interface Connection extends AutoCloseable {
      * @return Link, or {@code null} if there was no such link relation
      */
     URI getLink(String relation) throws AcmeException;
+
+    /**
+     * Handles a problem by throwing an exception. If a JSON problem was returned, an
+     * {@link AcmeServerException} will be thrown. Otherwise a generic
+     * {@link AcmeException} is thrown.
+     */
+    void throwAcmeException() throws AcmeException;
 
     /**
      * Closes the {@link Connection}, releasing all resources.
