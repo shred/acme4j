@@ -26,6 +26,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -129,6 +132,21 @@ public final class TestUtils {
 
             return new KeyPair(publicKey, privateKey);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    /**
+     * Creates a standard certificate for testing. This certificate is read from a test
+     * resource and is guaranteed not to change between test runs.
+     *
+     * @return {@link X509Certificate} for testing
+     */
+    public static X509Certificate createCertificate() throws IOException {
+        try (InputStream cert = TestUtils.class.getResourceAsStream("/cert.pem")) {
+            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+            return (X509Certificate) certificateFactory.generateCertificate(cert);
+        } catch (CertificateException ex) {
             throw new IOException(ex);
         }
     }

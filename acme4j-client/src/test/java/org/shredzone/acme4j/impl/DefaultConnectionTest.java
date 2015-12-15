@@ -22,12 +22,10 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyPair;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -386,11 +384,7 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testReadCertificate() throws Exception {
-        CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-        X509Certificate original;
-        try (InputStream cert = getClass().getResourceAsStream("/cert.pem")) {
-            original = (X509Certificate) certificateFactory.generateCertificate(cert);
-        }
+        X509Certificate original = TestUtils.createCertificate();
 
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/pkix-cert");
         when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(original.getEncoded()));
