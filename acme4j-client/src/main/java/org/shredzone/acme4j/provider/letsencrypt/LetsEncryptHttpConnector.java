@@ -37,7 +37,7 @@ import org.shredzone.acme4j.connector.HttpConnector;
  */
 public class LetsEncryptHttpConnector extends HttpConnector {
 
-    private SSLSocketFactory sslSocketFactory;
+    private static SSLSocketFactory sslSocketFactory;
 
     @Override
     public HttpURLConnection openConnection(URI uri) throws IOException {
@@ -52,7 +52,7 @@ public class LetsEncryptHttpConnector extends HttpConnector {
      * Lazily creates an {@link SSLSocketFactory} that exclusively accepts the Let's
      * Encrypt certificate.
      */
-    protected SSLSocketFactory createSocketFactory() throws IOException {
+    protected synchronized SSLSocketFactory createSocketFactory() throws IOException {
         if (sslSocketFactory == null) {
             try {
                 KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
