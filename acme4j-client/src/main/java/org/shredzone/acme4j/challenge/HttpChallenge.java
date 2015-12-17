@@ -70,6 +70,8 @@ public class HttpChallenge extends GenericChallenge {
         if (authorization == null) {
             throw new IllegalStateException("Challenge has not been authorized yet.");
         }
+        cb.put(KEY_TYPE, getType());
+        cb.put(KEY_TOKEN, getToken());
         cb.put(KEY_KEY_AUTHORIZSATION, authorization);
     }
 

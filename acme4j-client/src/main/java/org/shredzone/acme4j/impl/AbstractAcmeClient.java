@@ -151,6 +151,8 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
             Map<String, Object> result = conn.readJsonResponse();
 
+            auth.setStatus((String) result.get("status"));
+
             @SuppressWarnings("unchecked")
             Collection<Map<String, Object>> challenges =
                             (Collection<Map<String, Object>>) result.get("challenges");
@@ -194,7 +196,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             challenge.marshall(claims);
 
             int rc = conn.sendSignedRequest(challenge.getUri(), claims, session, account);
-            if (rc != HttpURLConnection.HTTP_ACCEPTED) {
+            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }
 
@@ -224,9 +226,11 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             claims.putBase64("csr", csr);
 
             int rc = conn.sendSignedRequest(resourceUri(Resource.NEW_CERT), claims, session, account);
-            if (rc != HttpURLConnection.HTTP_CREATED) {
+            if (rc != HttpURLConnection.HTTP_CREATED && rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }
+
+            // HTTP_ACCEPTED requires Retry-After header to be set
 
             // Optionally returns the certificate. Currently it is just ignored.
             // X509Certificate cert = conn.readCertificate();
