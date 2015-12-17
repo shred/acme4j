@@ -70,7 +70,7 @@ public class DefaultConnectionTest {
     }
 
     /**
-     * Test if {@link Connection#getNonceFromHeader(HttpURLConnection)} throws an
+     * Test if {@link DefaultConnection#getNonceFromHeader(HttpURLConnection)} throws an
      * exception if there is no {@code Replay-Nonce} header.
      */
     @Test
@@ -89,8 +89,8 @@ public class DefaultConnectionTest {
     }
 
     /**
-     * Test that {@link Connection#getNonceFromHeader(HttpURLConnection)} extracts a
-     * {@code Replay-Nonce} header correctly.
+     * Test that {@link DefaultConnection#getNonceFromHeader(HttpURLConnection)} extracts
+     * a {@code Replay-Nonce} header correctly.
      */
     @Test
     public void testGetNonceFromHeader() throws AcmeException {
@@ -109,8 +109,8 @@ public class DefaultConnectionTest {
     }
 
     /**
-     * Test that {@link Connection#getNonceFromHeader(HttpURLConnection)} fails on an
-     * invalid {@code Replay-Nonce} header.
+     * Test that {@link DefaultConnection#getNonceFromHeader(HttpURLConnection)} fails on
+     * an invalid {@code Replay-Nonce} header.
      */
     @Test
     public void testInvalidNonceFromHeader() throws AcmeException {
