@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.impl;
 
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.EnumMap;
 import java.util.Map;
@@ -63,7 +64,10 @@ public class GenericAcmeClient extends AbstractAcmeClient {
     protected URI resourceUri(Resource resource) throws AcmeException {
         if (directoryMap.isEmpty()) {
             try (Connection conn = createConnection()) {
-                conn.sendRequest(directoryUri);
+                int rc = conn.sendRequest(directoryUri);
+                if (rc != HttpURLConnection.HTTP_OK) {
+                    conn.throwAcmeException();
+                }
                 directoryMap.putAll(conn.readDirectory());
             }
         }
