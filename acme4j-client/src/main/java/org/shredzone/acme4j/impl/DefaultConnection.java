@@ -91,6 +91,8 @@ public class DefaultConnection implements Connection {
 
             conn.connect();
 
+            logHeaders();
+
             return conn.getResponseCode();
         } catch (IOException ex) {
             throw new AcmeException("API access failed", ex);
@@ -130,6 +132,8 @@ public class DefaultConnection implements Connection {
 
             conn.setFixedLengthStreamingMode(outputData.length);
             conn.connect();
+
+            logHeaders();
 
             try (OutputStream out = conn.getOutputStream()) {
                 out.write(outputData);
@@ -311,6 +315,20 @@ public class DefaultConnection implements Connection {
         LOG.debug("Replay Nonce: {}", nonceHeader);
 
         return Base64Url.decode(nonceHeader);
+    }
+
+    /**
+     * Log all HTTP headers in debug mode.
+     */
+    private void logHeaders() {
+        if (LOG.isDebugEnabled()) {
+            Map<String, List<String>> headers = conn.getHeaderFields();
+            for (String key : headers.keySet()) {
+                for (String value : headers.get(key)) {
+                    LOG.debug("HEADER {}: {}", key, value);
+                }
+            }
+        }
     }
 
 }
