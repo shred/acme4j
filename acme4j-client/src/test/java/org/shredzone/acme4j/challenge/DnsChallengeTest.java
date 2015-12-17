@@ -47,7 +47,7 @@ public class DnsChallengeTest {
         Account account = new Account(keypair);
 
         DnsChallenge challenge = new DnsChallenge();
-        challenge.unmarshall(TestUtils.getResourceAsJsonMap("/dnsChallenge.json"));
+        challenge.unmarshall(TestUtils.getJsonAsMap("dnsChallenge"));
 
         assertThat(challenge.getType(), is(DnsChallenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));

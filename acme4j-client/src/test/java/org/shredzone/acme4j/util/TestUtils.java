@@ -17,8 +17,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -33,6 +31,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.TreeMap;
 
 import org.jose4j.base64url.Base64Url;
@@ -51,6 +50,8 @@ public final class TestUtils {
     public static final String E = "AQAB";
     public static final String KTY = "RSA";
     public static final String THUMBPRINT = "HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0";
+
+    private static final ResourceBundle JSON_RESOURCE = ResourceBundle.getBundle("json");
 
     private TestUtils() {
         // utility class without constructor
@@ -76,36 +77,28 @@ public final class TestUtils {
     }
 
     /**
-     * Reads a resource as String.
+     * Reads a JSON string from {@code json.properties}.
      *
-     * @param name
-     *            Resource name. The content is expected to be utf-8 encoded.
+     * @param key
+     *            JSON resource
      * @return Resource contents as string
      */
-    public static String getResourceAsString(String name) throws IOException {
-        try (InputStreamReader in = new InputStreamReader(
-                        TestUtils.class.getResourceAsStream(name), "utf-8");
-                StringWriter out = new StringWriter()) {
-            int ch;
-            while ((ch = in.read()) >= 0) {
-                out.write(ch);
-            }
-            return out.toString();
-        }
+    public static String getJson(String key) {
+        return JSON_RESOURCE.getString(key);
     }
 
     /**
-     * Reads a JSON resource and parses it.
+     * Reads a JSON string from {@code json.properties} and parses it.
      *
-     * @param name
-     *            Resource name of a utf-8 encoded JSON file.
-     * @return Parsed contents
+     * @param key
+     *            JSON resource
+     * @return Parsed JSON resource
      */
-    public static Map<String, Object> getResourceAsJsonMap(String name) throws IOException {
+    public static Map<String, Object> getJsonAsMap(String key) {
         try {
-            return JsonUtil.parseJson(getResourceAsString(name));
+            return JsonUtil.parseJson(getJson(key));
         } catch (JoseException ex) {
-            throw new IOException("JSON error", ex);
+            throw new RuntimeException("JSON error", ex);
         }
     }
 

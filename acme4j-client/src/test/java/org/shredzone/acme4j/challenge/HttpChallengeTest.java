@@ -47,7 +47,7 @@ public class HttpChallengeTest {
         Account account = new Account(keypair);
 
         HttpChallenge challenge = new HttpChallenge();
-        challenge.unmarshall(TestUtils.getResourceAsJsonMap("/httpChallenge.json"));
+        challenge.unmarshall(TestUtils.getJsonAsMap("httpChallenge"));
 
         assertThat(challenge.getType(), is(HttpChallenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));

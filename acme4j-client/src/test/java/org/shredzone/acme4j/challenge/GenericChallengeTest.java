@@ -43,7 +43,7 @@ public class GenericChallengeTest {
      * Test that after unmarshalling, the challenge properties are set correctly.
      */
     @Test
-    public void testUnmarshall() throws IOException, URISyntaxException {
+    public void testUnmarshall() throws URISyntaxException {
         GenericChallenge challenge = new GenericChallenge();
 
         // Test default values
@@ -53,7 +53,7 @@ public class GenericChallengeTest {
         assertThat(challenge.getValidated(), is(nullValue()));
 
         // Unmarshall a challenge JSON
-        challenge.unmarshall(TestUtils.getResourceAsJsonMap("/genericChallenge.json"));
+        challenge.unmarshall(TestUtils.getJsonAsMap("genericChallenge"));
 
         // Test unmarshalled values
         assertThat(challenge.getType(), is("generic-01"));
@@ -85,8 +85,8 @@ public class GenericChallengeTest {
      * unmarshalled.
      */
     @Test
-    public void testMarshall() throws IOException, JoseException {
-        String json = TestUtils.getResourceAsString("/genericChallenge.json");
+    public void testMarshall() throws JoseException {
+        String json = TestUtils.getJson("genericChallenge");
 
         GenericChallenge challenge = new GenericChallenge();
         challenge.unmarshall(JsonUtil.parseJson(json));
