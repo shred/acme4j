@@ -133,11 +133,11 @@ public class DefaultConnection implements Connection {
             conn.setFixedLengthStreamingMode(outputData.length);
             conn.connect();
 
-            logHeaders();
-
             try (OutputStream out = conn.getOutputStream()) {
                 out.write(outputData);
             }
+
+            logHeaders();
 
             session.setNonce(getNonceFromHeader(conn));
 
