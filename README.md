@@ -14,7 +14,11 @@ Please note that even though _acme4j_ is already usable, it is currently in an e
 
 * _acme4j_ is not feature complete yet (see the "Missing" section below).
 * The API is not stable. It may change in a manner not compatible to previous versions and without prior notice.
-* _acme4j_ is not thoroughly tested yet, and may still have major bugs.
+* _acme4j_ could still have major bugs.
+
+As _Let's Encrypt_ is currently in public beta, some of the ACME services may be restricted or not yet available.
+
+The ACME specifications are in draft status and subject to change.
 
 ## Features
 
