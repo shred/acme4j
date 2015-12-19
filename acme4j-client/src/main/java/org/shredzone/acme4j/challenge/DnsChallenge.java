@@ -13,6 +13,10 @@
  */
 package org.shredzone.acme4j.challenge;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import org.jose4j.base64url.Base64Url;
 import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.util.ClaimBuilder;
@@ -53,6 +57,22 @@ public class DnsChallenge extends GenericChallenge {
             throw new IllegalStateException("not yet authorized");
         }
         return authorization;
+    }
+
+    /**
+     * Returns the digest string to be set in the domain's {@code _acme-challenge} TXT
+     * record.
+     */
+    public String getDigest() {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            md.update(getAuthorization().getBytes("UTF-8"));
+            byte[] digest = md.digest();
+            return Base64Url.encode(digest);
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
+            // both should be standard in JDK...
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override

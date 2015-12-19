@@ -63,6 +63,7 @@ public class DnsChallengeTest {
 
         assertThat(challenge.getToken(), is(TOKEN));
         assertThat(challenge.getAuthorization(), is(KEY_AUTHORIZATION));
+        assertThat(challenge.getDigest(), is("rzMmotrIgsithyBYc0vgiLUEEKYx0WetQRgEF2JIozA"));
 
         ClaimBuilder cb = new ClaimBuilder();
         challenge.marshall(cb);
