@@ -30,17 +30,6 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 public interface Connection extends AutoCloseable {
 
     /**
-     * Forcedly starts a new {@link Session}. Usually this method is not required, as a
-     * session is automatically started if necessary.
-     *
-     * @param uri
-     *            {@link URI} a HEAD request is sent to for starting the session
-     * @param session
-     *            {@link Session} instance to be used for tracking
-     */
-    void startSession(URI uri, Session session) throws AcmeException;
-
-    /**
      * Sends a simple GET request.
      *
      * @param uri
@@ -84,6 +73,14 @@ public interface Connection extends AutoCloseable {
      * @return Map of {@link Resource} and the respective {@link URI} to invoke
      */
     Map<Resource, URI> readDirectory() throws AcmeException;
+
+    /**
+     * Updates a {@link Session} by evaluating the HTTP response header.
+     *
+     * @param session
+     *            {@link Session} instance to be updated
+     */
+    void updateSession(Session session) throws AcmeException;
 
     /**
      * Gets a location from the {@code Location} header.

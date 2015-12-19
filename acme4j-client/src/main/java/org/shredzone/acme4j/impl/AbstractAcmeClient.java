@@ -72,6 +72,13 @@ public abstract class AbstractAcmeClient implements AcmeClient {
      */
     protected abstract Connection createConnection();
 
+    /**
+     * Returns the {@link Session} instance of this client.
+     */
+    protected Session getSession() {
+        return session;
+    }
+
     @Override
     public void newRegistration(Account account, Registration registration) throws AcmeException {
         LOG.debug("newRegistration");

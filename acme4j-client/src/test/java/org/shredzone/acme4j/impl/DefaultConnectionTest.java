@@ -15,7 +15,6 @@ package org.shredzone.acme4j.impl;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -29,10 +28,8 @@ import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.jose4j.base64url.Base64Url;
 import org.jose4j.jwx.CompactSerializer;
@@ -70,27 +67,28 @@ public class DefaultConnectionTest {
     }
 
     /**
-     * Test if {@link DefaultConnection#getNonceFromHeader(HttpURLConnection)} throws an
-     * exception if there is no {@code Replay-Nonce} header.
+     * Test if {@link DefaultConnection#updateSession(Session)} does nothing if there is
+     * no {@code Replay-Nonce} header.
      */
     @Test
     public void testNoNonceFromHeader() throws AcmeException {
         when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(null);
 
+        Session session = new Session();
+        assertThat(session.getNonce(), is(nullValue()));
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.getNonceFromHeader(mockUrlConnection);
-            fail("Expected to fail");
-        } catch (AcmeException ex) {
-            assertThat(ex.getMessage(), is("No replay nonce"));
+            conn.conn = mockUrlConnection;
+            conn.updateSession(session);
         }
+        assertThat(session.getNonce(), is(nullValue()));
 
         verify(mockUrlConnection).getHeaderField("Replay-Nonce");
         verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
-     * Test that {@link DefaultConnection#getNonceFromHeader(HttpURLConnection)} extracts
-     * a {@code Replay-Nonce} header correctly.
+     * Test that {@link DefaultConnection#updateSession(Session)} extracts a
+     * {@code Replay-Nonce} header correctly.
      */
     @Test
     public void testGetNonceFromHeader() throws AcmeException {
@@ -99,18 +97,20 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getHeaderField("Replay-Nonce"))
                 .thenReturn(Base64Url.encode(nonce));
 
+        Session session = new Session();
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            byte[] nonceFromHeader = conn.getNonceFromHeader(mockUrlConnection);
-            assertThat(nonceFromHeader, is(nonce));
+            conn.conn = mockUrlConnection;
+            conn.updateSession(session);
         }
+        assertThat(session.getNonce(), is(nonce));
 
         verify(mockUrlConnection).getHeaderField("Replay-Nonce");
         verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
-     * Test that {@link DefaultConnection#getNonceFromHeader(HttpURLConnection)} fails on
-     * an invalid {@code Replay-Nonce} header.
+     * Test that {@link DefaultConnection#updateSession(Session)} fails on an invalid
+     * {@code Replay-Nonce} header.
      */
     @Test
     public void testInvalidNonceFromHeader() throws AcmeException {
@@ -118,8 +118,10 @@ public class DefaultConnectionTest {
 
         when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(badNonce);
 
+        Session session = new Session();
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.getNonceFromHeader(mockUrlConnection);
+            conn.conn = mockUrlConnection;
+            conn.updateSession(session);
             fail("Expected to fail");
         } catch (AcmeException ex) {
             assertThat(ex.getMessage(), org.hamcrest.Matchers.startsWith("Invalid replay nonce"));
@@ -248,28 +250,6 @@ public class DefaultConnectionTest {
     }
 
     /**
-     * Test that a session is properly started.
-     */
-    @Test
-    public void testStartSession() throws Exception {
-        byte[] nonce = "foo-nonce-foo".getBytes();
-
-        when(mockUrlConnection.getHeaderField("Replay-Nonce"))
-                .thenReturn(Base64Url.encode(nonce));
-
-        Session session = new Session();
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.startSession(requestUri, session);
-        }
-        assertThat(session.getNonce(), is(nonce));
-
-        verify(mockUrlConnection).setRequestMethod("HEAD");
-        verify(mockUrlConnection).connect();
-        verify(mockUrlConnection).getHeaderField("Replay-Nonce");
-        verifyNoMoreInteractions(mockUrlConnection);
-    }
-
-    /**
      * Test GET requests.
      */
     @Test
@@ -294,25 +274,25 @@ public class DefaultConnectionTest {
         final byte[] nonce1 = "foo-nonce-1-foo".getBytes();
         final byte[] nonce2 = "foo-nonce-2-foo".getBytes();
         final Session testSession = new Session();
-        final Set<String> invoked = new HashSet<>();
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         when(mockUrlConnection.getOutputStream()).thenReturn(outputStream);
-        when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(Base64Url.encode(nonce2));
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
-            public void startSession(URI uri, Session session) throws AcmeException {
-                assertThat(uri, is(requestUri));
+            public void updateSession(Session session) throws AcmeException {
                 assertThat(session, is(sameInstance(testSession)));
-                assertThat(testSession.getNonce(), is(nullValue()));
-                invoked.add("startSession");
-                session.setNonce(nonce1);
+                if (session.getNonce() == null) {
+                    session.setNonce(nonce1);
+                } else if (session.getNonce() == nonce1) {
+                    session.setNonce(nonce2);
+                } else {
+                    fail("unknown nonce");
+                }
             };
         }) {
             ClaimBuilder cb = new ClaimBuilder();
             cb.put("foo", 123).put("bar", "a-string");
-
 
             KeyPair keypair = TestUtils.createKeyPair();
             Account account = new Account(keypair);
@@ -320,18 +300,18 @@ public class DefaultConnectionTest {
             conn.sendSignedRequest(requestUri, cb, testSession, account);
         }
 
+        verify(mockUrlConnection).setRequestMethod("HEAD");
+        verify(mockUrlConnection, times(2)).connect();
+
         verify(mockUrlConnection).setRequestMethod("POST");
         verify(mockUrlConnection).setRequestProperty("Accept", "application/json");
         verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
         verify(mockUrlConnection).setRequestProperty("Content-Type", "application/json");
         verify(mockUrlConnection).setDoOutput(true);
-        verify(mockUrlConnection).connect();
         verify(mockUrlConnection).setFixedLengthStreamingMode(outputStream.toByteArray().length);
-        verify(mockUrlConnection, atLeastOnce()).getHeaderField(anyString());
         verify(mockUrlConnection).getOutputStream();
         verify(mockUrlConnection).getResponseCode();
         verifyNoMoreInteractions(mockUrlConnection);
-        assertThat(invoked, hasItem("startSession"));
 
         String[] written = CompactSerializer.deserialize(new String(outputStream.toByteArray(), "utf-8"));
         String header = Base64Url.decodeToUtf8String(written[0]);

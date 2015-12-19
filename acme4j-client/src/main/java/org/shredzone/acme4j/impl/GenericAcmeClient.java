@@ -68,6 +68,10 @@ public class GenericAcmeClient extends AbstractAcmeClient {
                 if (rc != HttpURLConnection.HTTP_OK) {
                     conn.throwAcmeException();
                 }
+
+                // use nonce header if there is one, saves a HEAD request...
+                conn.updateSession(getSession());
+
                 directoryMap.putAll(conn.readDirectory());
             }
         }

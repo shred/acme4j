@@ -33,11 +33,6 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 public class DummyConnection implements Connection {
 
     @Override
-    public void startSession(URI uri, Session session) throws AcmeException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public int sendRequest(URI uri) throws AcmeException {
         throw new UnsupportedOperationException();
     }
@@ -59,6 +54,11 @@ public class DummyConnection implements Connection {
 
     @Override
     public Map<Resource, URI> readDirectory() throws AcmeException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void updateSession(Session session) throws AcmeException {
         throw new UnsupportedOperationException();
     }
 

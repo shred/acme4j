@@ -66,20 +66,6 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public void startSession(URI uri, Session session) throws AcmeException {
-        try {
-            LOG.debug("Initial replay nonce from {}", uri);
-            HttpURLConnection localConn = httpConnector.openConnection(uri);
-            localConn.setRequestMethod("HEAD");
-            localConn.connect();
-
-            session.setNonce(getNonceFromHeader(localConn));
-        } catch (IOException ex) {
-            throw new AcmeException("Failed to request a nonce", ex);
-        }
-    }
-
-    @Override
     public int sendRequest(URI uri) throws AcmeException {
         try {
             LOG.debug("GET {}", uri);
@@ -105,8 +91,13 @@ public class DefaultConnection implements Connection {
             KeyPair keypair = account.getKeyPair();
 
             if (session.getNonce() == null) {
-                startSession(uri, session);
+                LOG.debug("Getting initial nonce, HEAD {}", uri);
+                conn = httpConnector.openConnection(uri);
+                conn.setRequestMethod("HEAD");
+                conn.connect();
+                updateSession(session);
             }
+
             if (session.getNonce() == null) {
                 throw new AcmeException("No nonce available");
             }
@@ -139,7 +130,7 @@ public class DefaultConnection implements Connection {
 
             logHeaders();
 
-            session.setNonce(getNonceFromHeader(conn));
+            updateSession(session);
 
             return conn.getResponseCode();
         } catch (JoseException | IOException ex) {
@@ -236,6 +227,22 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
+    public void updateSession(Session session) throws AcmeException {
+        String nonceHeader = conn.getHeaderField("Replay-Nonce");
+        if (nonceHeader == null || nonceHeader.trim().isEmpty()) {
+            return;
+        }
+
+        if (!BASE64URL_PATTERN.matcher(nonceHeader).matches()) {
+            throw new AcmeException("Invalid replay nonce: " + nonceHeader);
+        }
+
+        LOG.debug("Replay Nonce: {}", nonceHeader);
+
+        session.setNonce(Base64Url.decode(nonceHeader));
+    }
+
+    @Override
     public URI getLocation() throws AcmeException {
         String location = conn.getHeaderField("Location");
         if (location == null) {
@@ -291,30 +298,6 @@ public class DefaultConnection implements Connection {
     @Override
     public void close() {
         conn = null;
-    }
-
-    /**
-     * Extracts a nonce from the header.
-     *
-     * @param localConn
-     *            {@link HttpURLConnection} to get the nonce from
-     * @return Nonce
-     * @throws AcmeException
-     *             if there was no {@code Replay-Nonce} header, or the nonce was invalid
-     */
-    protected byte[] getNonceFromHeader(HttpURLConnection localConn) throws AcmeException {
-        String nonceHeader = localConn.getHeaderField("Replay-Nonce");
-        if (nonceHeader == null || nonceHeader.trim().isEmpty()) {
-            throw new AcmeException("No replay nonce");
-        }
-
-        if (!BASE64URL_PATTERN.matcher(nonceHeader).matches()) {
-            throw new AcmeException("Invalid replay nonce: " + nonceHeader);
-        }
-
-        LOG.debug("Replay Nonce: {}", nonceHeader);
-
-        return Base64Url.decode(nonceHeader);
     }
 
     /**
