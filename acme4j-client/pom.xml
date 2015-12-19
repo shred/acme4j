@@ -25,7 +25,7 @@
 
     <artifactId>acme4j-client</artifactId>
 
-    <name>acme4j client</name>
+    <name>acme4j Client</name>
     <description>ACME client for Java</description>
 
     <dependencies>

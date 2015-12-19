@@ -20,18 +20,39 @@
   <version position="right"/>
   <body>
     <links>
-      <item name="Home" href="index.html"/>
-      <item name="Project Management" href="http://acme4j.shredzone.org"/>
+      <item name="API javadoc" href="./apidocs/index.html"/>
+      <item name="GitHub" href="https://github.com/shred/acme4j"/>
     </links>
     <breadcrumbs>
       <item name="shredzone.org" href="http://www.shredzone.org"/>
       <item name="acme4j" href="index.html"/>
     </breadcrumbs>
-    <menu name="Main">
+    <menu name="Documentation">
       <item name="Introduction" href="index.html"/>
-      <item name="Project Management" href="http://acme4j.shredzone.org"/>
+      <item name="How to Use" href="usage/index.html">
+        <item name="Connection" href="usage/connect.html"/>
+        <item name="Account" href="usage/register.html"/>
+        <item name="Authorization" href="usage/authorization.html"/>
+        <item name="Certificate" href="usage/certificate.html"/>
+      </item>
+      <item name="Challenges" href="challenge/index.html">
+        <item name="HTTP" href="challenge/http.html"/>
+        <item name="DNS" href="challenge/dns.html"/>
+        <item name="tls-sni" href="challenge/tls-sni.html"/>
+        <item name="Proof of Possession" href="challenge/proof-of-possession.html"/>
+      </item>
+      <item name="CAs" href="ca/index.html">
+        <item name="Let's Encrypt" href="ca/letsencrypt.html"/>
+      </item>
+      <item name="ACME Client Provider" href="provider.html"/>
     </menu>
     <menu ref="modules"/>
     <menu ref="reports"/>
   </body>
+
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>1.4</version>
+  </skin>
 </project>

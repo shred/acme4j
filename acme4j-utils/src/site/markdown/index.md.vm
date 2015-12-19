@@ -1,0 +1,19 @@
+acme4j Utils
+============
+
+Some utility classes to be used with _acme4j_. They will help generating and processing keys and signatures.
+
+Note that (unlike `acme4j-client`) this module requires [Bouncy Castle](https://www.bouncycastle.org/java.html).
+
+How to Use
+----------
+
+Just add this snippet to your `pom.xml`:
+
+```xml
+<dependency>
+  <groupId>${project.groupId}</groupId>
+  <artifactId>${project.artifactId}</artifactId>
+  <version>${project.version}</version>
+</dependency>
+```

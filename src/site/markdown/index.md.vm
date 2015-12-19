@@ -1,0 +1,37 @@
+acme4j
+======
+
+A Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-01) protocol.
+
+ACME is a protocol that a certificate authority (CA) and an applicant can use to automate the process of verification and certificate issuance.
+
+This Java client helps connecting to an ACME server, and performing all necessary steps to manage certificates.
+
+It is an independent open source implementation that is not affiliated with or endorsed by _Let's Encrypt_.
+
+The source code can be found at [GitHub](https://github.com/shred/acme4j) and is distributed under the terms of [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+
+Quick Start
+-----------
+
+_acme4j_ is available at Maven Central. Just add this snippet to your `pom.xml`:
+
+```xml
+<dependency>
+  <groupId>${project.groupId}</groupId>
+  <artifactId>${project.artifactId}-client</artifactId>
+  <version>${project.version}</version>
+</dependency>
+```
+
+There is also an optional utility module that will help you handling key pairs and certificates (but requires [Bouncy Castle](https://www.bouncycastle.org/java.html)):
+
+```xml
+<dependency>
+  <groupId>${project.groupId}</groupId>
+  <artifactId>${project.artifactId}-utils</artifactId>
+  <version>${project.version}</version>
+</dependency>
+```
+
+Now just have a look at [this source code](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/ClientTest.java) to see an example usage.

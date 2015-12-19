@@ -1,0 +1,19 @@
+acme4j Example
+==============
+
+An example tool that uses _acme4j_, and a good starting point to find out how _acme4j_ is used.
+
+This tool registers a new account with the _Let's Encrypt_ staging server, and fetches a certificate for a set of domains.
+
+How to Use
+----------
+
+Run the `org.shredzone.acme4j.ClientTest` class with the domains to be registered as parameters.
+
+You can also invoke the example tool via maven:
+
+```
+mvn exec:java -Dexec.args="example.com example.org"
+```
+
+Or just have a look at [the source code](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/ClientTest.java).

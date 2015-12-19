@@ -25,7 +25,7 @@
 
     <artifactId>acme4j-utils</artifactId>
 
-    <name>acme4j utils</name>
+    <name>acme4j Utils</name>
     <description>acme4j utilities</description>
 
     <dependencies>
