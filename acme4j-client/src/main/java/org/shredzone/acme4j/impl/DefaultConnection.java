@@ -44,6 +44,7 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeServerException;
+import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -284,7 +285,14 @@ public class DefaultConnection implements Connection {
             Map<String, Object> map = readJsonResponse();
             String type = (String) map.get("type");
             String detail = (String) map.get("detail");
-            throw new AcmeServerException(type, detail);
+
+            switch (type) {
+                case "urn:acme:error:unauthorized":
+                    throw new AcmeUnauthorizedException(type, detail);
+
+                default:
+                    throw new AcmeServerException(type, detail);
+            }
         } else {
             try {
                 throw new AcmeException("HTTP " + conn.getResponseCode() + ": "
