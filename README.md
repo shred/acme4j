@@ -38,7 +38,6 @@ The following features are planned to be completed for the first beta release, b
 
 * Support of account recovery.
 * `proofOfPossession-01` and `tls-sni-01` challenge support.
-* Better error handling.
 * Some hardening (like plausibility checks).
 
 ## License

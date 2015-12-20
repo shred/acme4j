@@ -82,7 +82,7 @@ public class DefaultConnection implements Connection {
 
             return conn.getResponseCode();
         } catch (IOException ex) {
-            throw new AcmeException("API access failed", ex);
+            throw new AcmeException("Request failed: " + uri, ex);
         }
     }
 
@@ -136,7 +136,7 @@ public class DefaultConnection implements Connection {
 
             return conn.getResponseCode();
         } catch (JoseException | IOException ex) {
-            throw new AcmeException("Failed to send request to " + uri, ex);
+            throw new AcmeException("Request failed: " + uri, ex);
         }
     }
 
@@ -187,10 +187,8 @@ public class DefaultConnection implements Connection {
         try (InputStream in = conn.getInputStream()) {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             return (X509Certificate) cf.generateCertificate(in);
-        } catch (IOException ex) {
+        } catch (CertificateException | IOException ex) {
             throw new AcmeException("Failed to read certificate", ex);
-        } catch (CertificateException ex) {
-            throw new AcmeException("Error while generating the X.509 certificate", ex);
         }
     }
 
@@ -206,15 +204,13 @@ public class DefaultConnection implements Connection {
         }
 
         EnumMap<Resource, URI> resourceMap = new EnumMap<>(Resource.class);
-
         StringBuilder sb = new StringBuilder();
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
-            sb.append(reader.readLine());
-        } catch (IOException ex) {
-            throw new AcmeException("Could not read resource map", ex);
-        }
 
         try {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                sb.append(reader.readLine());
+            }
+
             Map<String, Object> result = JsonUtil.parseJson(sb.toString());
             for (Map.Entry<String, Object> entry : result.entrySet()) {
                 Resource res = Resource.parse(entry.getKey());
@@ -225,8 +221,8 @@ public class DefaultConnection implements Connection {
             }
 
             LOG.debug("Resource directory: {}", resourceMap);
-        } catch (JoseException | URISyntaxException ex) {
-            throw new AcmeException("Could not parse resource map: " + sb, ex);
+        } catch (JoseException | URISyntaxException | IOException ex) {
+            throw new AcmeException("Failed to read directory: " + sb, ex);
         }
 
         return resourceMap;
@@ -288,7 +284,7 @@ public class DefaultConnection implements Connection {
                         LOG.debug("Link: {} -> {}", relation, location);
                         return new URI(location);
                     } catch (URISyntaxException ex) {
-                        throw new AcmeException("Bad Link header: " + link);
+                        throw new AcmeException("Bad '" + relation + "' Link header: " + link);
                     }
                 }
             }
