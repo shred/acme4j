@@ -49,7 +49,7 @@ public class GenericChallengeTest {
         // Test default values
         assertThat(challenge.getType(), is(nullValue()));
         assertThat(challenge.getStatus(), is(Status.PENDING));
-        assertThat(challenge.getUri(), is(nullValue()));
+        assertThat(challenge.getLocation(), is(nullValue()));
         assertThat(challenge.getValidated(), is(nullValue()));
 
         // Unmarshall a challenge JSON
@@ -58,7 +58,7 @@ public class GenericChallengeTest {
         // Test unmarshalled values
         assertThat(challenge.getType(), is("generic-01"));
         assertThat(challenge.getStatus(), is(Status.VALID));
-        assertThat(challenge.getUri(), is(new URI("http://example.com/challenge/123")));
+        assertThat(challenge.getLocation(), is(new URI("http://example.com/challenge/123")));
         assertThat(challenge.getValidated(), is("2015-12-12T17:19:36.336785823Z"));
     }
 

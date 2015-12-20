@@ -202,7 +202,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             claims.putResource("challenge");
             challenge.marshall(claims);
 
-            int rc = conn.sendSignedRequest(challenge.getUri(), claims, session, account);
+            int rc = conn.sendSignedRequest(challenge.getLocation(), claims, session, account);
             if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }
@@ -215,12 +215,33 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     public void updateChallenge(Account account, Challenge challenge) throws AcmeException {
         LOG.debug("updateChallenge");
         try (Connection conn = createConnection()) {
-            int rc = conn.sendRequest(challenge.getUri());
+            int rc = conn.sendRequest(challenge.getLocation());
             if (rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }
 
             challenge.unmarshall(conn.readJsonResponse());
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T extends Challenge> T restoreChallenge(Account account, URI challengeUri) throws AcmeException {
+        LOG.debug("restoreChallenge");
+        try (Connection conn = createConnection()) {
+            int rc = conn.sendRequest(challengeUri);
+            if (rc != HttpURLConnection.HTTP_ACCEPTED) {
+                conn.throwAcmeException();
+            }
+
+            Map<String, Object> json = conn.readJsonResponse();
+            if (!(json.containsKey("type"))) {
+                throw new AcmeException("Provided URI is not a challenge URI");
+            }
+
+            T challenge = (T) createChallenge(json.get("type").toString());
+            challenge.unmarshall(json);
+            return challenge;
         }
     }
 

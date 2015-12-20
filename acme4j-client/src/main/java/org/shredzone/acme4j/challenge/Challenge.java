@@ -39,9 +39,9 @@ public interface Challenge {
     String getType();
 
     /**
-     * Returns the {@link URI} of the challenge.
+     * Returns the location {@link URI} of the challenge.
      */
-    URI getUri();
+    URI getLocation();
 
     /**
      * Returns the current status of the challenge.

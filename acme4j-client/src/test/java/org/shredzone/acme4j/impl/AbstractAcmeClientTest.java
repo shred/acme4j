@@ -224,7 +224,7 @@ public class AbstractAcmeClientTest {
         client.triggerChallenge(testAccount, challenge);
 
         assertThat(challenge.getStatus(), is(Status.PENDING));
-        assertThat(challenge.getUri(), is(locationUri));
+        assertThat(challenge.getLocation(), is(locationUri));
     }
 
     /**
@@ -253,7 +253,31 @@ public class AbstractAcmeClientTest {
         client.updateChallenge(testAccount, challenge);
 
         assertThat(challenge.getStatus(), is(Status.VALID));
-        assertThat(challenge.getUri(), is(locationUri));
+        assertThat(challenge.getLocation(), is(locationUri));
+    }
+
+    @Test
+    public void testRestoreChallenge() throws AcmeException {
+        Connection connection = new DummyConnection() {
+            @Override
+            public int sendRequest(URI uri) throws AcmeException {
+                assertThat(uri, is(locationUri));
+                return HttpURLConnection.HTTP_ACCEPTED;
+            }
+
+            @Override
+            public Map<String, Object> readJsonResponse() throws AcmeException {
+                return getJsonAsMap("updateHttpChallengeResponse");
+            }
+        };
+
+        TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
+        client.putTestChallenge(HttpChallenge.TYPE, new HttpChallenge());
+
+        Challenge challenge = client.restoreChallenge(testAccount, locationUri);
+
+        assertThat(challenge.getStatus(), is(Status.VALID));
+        assertThat(challenge.getLocation(), is(locationUri));
     }
 
     /**

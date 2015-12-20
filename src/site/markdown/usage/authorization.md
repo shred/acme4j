@@ -62,3 +62,23 @@ As soon as the challenge is `VALID`, you have successfully associated the domain
 If your final certificate contains further domains or subdomains, repeat the authorization run with each of them.
 
 Note that wildcard certificates are not currently supported.
+
+## Restore a Challenge
+
+Validating a challenge can take a considerable amount of time and is a candidate for asynchronous execution. This can be a problem if you need to keep the `Challenge` object for a later time or a different Java environment.
+
+To recreate a `Challenge` object at a later time, all you need is to store the original object's `location` property:
+
+```java
+Challenge originalChallenge = ... // some Challenge instance
+URI challengeUri = originalChallenge.getLocation();
+```
+
+Later, you pass this `challengeUri` to `recreateChallenge()`:
+
+```java
+URI challengeUri = ... // challenge URI
+Challenge restoredChallenge = client.restoreChallenge(account, challengeUri);
+```
+
+The `restoredChallenge` already reflects the current state of the challenge.

@@ -58,7 +58,7 @@ public class GenericChallenge implements Challenge {
     }
 
     @Override
-    public URI getUri() {
+    public URI getLocation() {
         String uri = get(KEY_URI);
         if (uri == null) {
             return null;
