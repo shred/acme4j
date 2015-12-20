@@ -20,7 +20,10 @@ package org.shredzone.acme4j.connector;
  */
 public enum Resource {
 
-    NEW_REG("new-reg"), NEW_AUTHZ("new-authz"), NEW_CERT("new-cert");
+    NEW_REG("new-reg"),
+    NEW_AUTHZ("new-authz"),
+    NEW_CERT("new-cert"),
+    REVOKE_CERT("revoke-cert");
 
     /**
      * Parses the string and returns a matching {@link Resource} instance.

@@ -188,6 +188,9 @@ public class ClientTest {
         try (FileWriter fw = new FileWriter(DOMAIN_CERT_FILE)) {
             CertificateUtils.writeX509Certificate(cert, fw);
         }
+
+        // Revoke the certificate (uncomment if needed...)
+        // client.revokeCertificate(account, cert);
     }
 
     public static void main(String... args) {

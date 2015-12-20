@@ -109,4 +109,14 @@ public interface AcmeClient {
      */
     X509Certificate downloadCertificate(URI certUri) throws AcmeException;
 
+    /**
+     * Revokes a certificate.
+     *
+     * @param account
+     *            {@link Account} to be used for conversation
+     * @param certificate
+     *            Certificate to revoke
+     */
+    void revokeCertificate(Account account, X509Certificate certificate) throws AcmeException;
+
 }

@@ -337,6 +337,30 @@ public class AbstractAcmeClientTest {
     }
 
     /**
+     * Test that a certificate can be revoked.
+     */
+    @Test
+    public void testRevokeCertificate() throws AcmeException, IOException {
+        final X509Certificate cert = TestUtils.createCertificate();
+
+        Connection connection = new DummyConnection() {
+            @Override
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException {
+                assertThat(uri, is(resourceUri));
+                assertThat(claims.toString(), sameJSONAs(getJson("revokeCertificateRequest")));
+                assertThat(session, is(notNullValue()));
+                assertThat(account, is(sameInstance(testAccount)));
+                return HttpURLConnection.HTTP_OK;
+            }
+        };
+
+        TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
+        client.putTestResource(Resource.REVOKE_CERT, resourceUri);
+
+        client.revokeCertificate(testAccount, cert);
+    }
+
+    /**
      * Extends the {@link AbstractAcmeClient} to be tested, and implements the abstract
      * methods with a simple implementation specially made for testing purposes.
      */

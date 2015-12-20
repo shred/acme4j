@@ -1,6 +1,8 @@
-# Request a Certificate
+# Certificates
 
 Once you completed all the previous steps, it's time to request the signed certificate.
+
+## Request a Certificate
 
 To do so, prepare a PKCS#10 CSR file. A single domain may be set as _Common Name_. Multiple domains must be provided as _Subject Alternative Name_. Other properties (_Organization_, _Organization Unit_ etc.) depend on the CA. Some may require these properties to be set, while others may ignore them when generating the certificate.
 
@@ -36,3 +38,22 @@ Congratulations! You have just created your first certificate via _acme4j_.
 ## Renewal
 
 Renewing your certificate depends on the CA. Some may require you to go through the authorization process again, while others may just provide an updated certificate for download at the `certUri` above.
+
+## Revocation
+
+To revoke a certificate, just pass the it to the respective method:
+
+```java
+X509Certificate cert = ... // certificate to be revoked
+client.revokeCertificate(account, cert);
+```
+
+As an exception, ACME servers also accept the domain's key pair for revoking a certificate. _acme4j_ does not directly support this way of revocation. However, you can do so with this tiny hack:
+
+```java
+KeyPair domainKeyPair = ... // KeyPair to be used for HTTPS encryption
+X509Certificate cert = ... // certificate to be revoked
+client.revokeCertificate(new Account(domainKeyPair), cert);
+```
+
+If you have the choice, you should always prefer to use your account key.

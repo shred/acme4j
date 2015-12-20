@@ -36,7 +36,7 @@ See the [online documentation](http://www.shredzone.org/maven/acme4j/) for how t
 
 The following features are planned to be completed for the first beta release, but are still missing:
 
-* Support of account recovery and certificate revocation.
+* Support of account recovery.
 * `proofOfPossession-01` and `tls-sni-01` challenge support.
 * Better error handling.
 * Some hardening (like plausibility checks).

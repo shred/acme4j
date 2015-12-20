@@ -15,6 +15,7 @@ package org.shredzone.acme4j.impl;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -277,6 +278,28 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             }
 
             return conn.readCertificate();
+        }
+    }
+
+    @Override
+    public void revokeCertificate(Account account, X509Certificate certificate) throws AcmeException {
+        LOG.debug("revokeCertificate");
+        URI resUri = resourceUri(Resource.REVOKE_CERT);
+        if (resUri == null) {
+            throw new AcmeException("CA does not support certificate revocation");
+        }
+
+        try (Connection conn = createConnection()) {
+            ClaimBuilder claims = new ClaimBuilder();
+            claims.putResource(Resource.REVOKE_CERT);
+            claims.putBase64("certificate", certificate.getEncoded());
+
+            int rc = conn.sendSignedRequest(resUri, claims, session, account);
+            if (rc != HttpURLConnection.HTTP_OK) {
+                conn.throwAcmeException();
+            }
+        } catch (CertificateEncodingException ex) {
+            throw new IllegalArgumentException("Invalid certificate", ex);
         }
     }
 
