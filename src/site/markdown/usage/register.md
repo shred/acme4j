@@ -8,7 +8,7 @@ This code fragment registers your account with the CA. Optionally you can add co
 
 ```java
 Registration reg = new Registration();
-reg.getContacts().add("mailto:acme@example.com"); // optional
+reg.addContact("mailto:acme@example.com"); // optional
 
 client.newRegistration(account, reg);
 

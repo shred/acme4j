@@ -41,12 +41,15 @@ public class RegistrationTest {
 
         registration.setAgreement(new URI("http://example.com/agreement.pdf"));
         registration.setLocation(new URI("http://example.com/acme/12345"));
-        registration.getContacts().add("mailto:foo@example.com");
-        registration.getContacts().add("mailto:bar@example.com");
+        registration.getContacts().add(new URI("mailto:foo@example.com"));
+        registration.addContact(new URI("tel:+1-212-555-0101"));
+        registration.addContact("mailto:foo2@example.com");
 
         assertThat(registration.getAgreement(), is(new URI("http://example.com/agreement.pdf")));
         assertThat(registration.getLocation(), is(new URI("http://example.com/acme/12345")));
-        assertThat(registration.getContacts(), contains("mailto:foo@example.com", "mailto:bar@example.com"));
+        assertThat(registration.getContacts(), contains(
+                        new URI("mailto:foo@example.com"), new URI("tel:+1-212-555-0101"),
+                        new URI("mailto:foo2@example.com")));
     }
 
     /**

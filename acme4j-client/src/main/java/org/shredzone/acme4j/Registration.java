@@ -14,6 +14,7 @@
 package org.shredzone.acme4j;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +25,7 @@ import java.util.List;
  */
 public class Registration {
 
-    private List<String> contacts = new ArrayList<>();
+    private List<URI> contacts = new ArrayList<>();
     private URI agreement;
     private URI location;
 
@@ -57,10 +58,38 @@ public class Registration {
     }
 
     /**
-     * List of contact email addresses.
+     * List of contact addresses (emails, phone numbers etc).
      */
-    public List<String> getContacts() {
+    public List<URI> getContacts() {
         return contacts;
+    }
+
+    /**
+     * Add a contact URI to the list of contacts.
+     *
+     * @param contact
+     *            Contact URI
+     */
+    public void addContact(URI contact) {
+        getContacts().add(contact);
+    }
+
+    /**
+     * Add a contact address to the list of contacts.
+     * <p>
+     * This is a convenience call for {@link #addContact(URI)}.
+     *
+     * @param contact
+     *            Contact URI as string
+     * @throws IllegalArgumentException
+     *             if there is a syntax error in the URI string
+     */
+    public void addContact(String contact) {
+        try {
+            addContact(new URI(contact));
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException("Invalid contact URI", ex);
+        }
     }
 
     /**

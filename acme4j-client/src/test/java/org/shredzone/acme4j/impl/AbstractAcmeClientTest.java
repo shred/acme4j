@@ -69,7 +69,7 @@ public class AbstractAcmeClientTest {
     @Test
     public void testNewRegistration() throws AcmeException {
         Registration registration = new Registration();
-        registration.getContacts().add("mailto:foo@example.com");
+        registration.addContact("mailto:foo@example.com");
 
         Connection connection = new DummyConnection() {
             @Override
@@ -111,7 +111,7 @@ public class AbstractAcmeClientTest {
     public void testUpdateRegistration() throws AcmeException {
         Registration registration = new Registration();
         registration.setAgreement(agreementUri);
-        registration.getContacts().add("mailto:foo2@example.com");
+        registration.addContact("mailto:foo2@example.com");
         registration.setLocation(locationUri);
 
         Connection connection = new DummyConnection() {
