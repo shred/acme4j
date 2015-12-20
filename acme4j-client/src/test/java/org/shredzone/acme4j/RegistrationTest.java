@@ -53,7 +53,7 @@ public class RegistrationTest {
     }
 
     /**
-     * Test constructors;
+     * Test constructors.
      */
     @Test
     public void testConstructor() throws URISyntaxException {

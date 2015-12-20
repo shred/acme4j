@@ -186,41 +186,33 @@ public abstract class AbstractAcmeClient implements AcmeClient {
                 conn.throwAcmeException();
             }
 
+            auth.setLocation(conn.getLocation());
+
             Map<String, Object> result = conn.readJsonResponse();
+            unmarshalAuthorization(result, auth);
+        }
+    }
 
-            auth.setStatus((String) result.get("status"));
+    @Override
+    public void updateAuthorization(Authorization auth) throws AcmeException {
+        if (auth == null) {
+            throw new NullPointerException("auth must not be null");
+        }
+        if (auth.getLocation() == null) {
+            throw new IllegalArgumentException("auth location must not be null. Use newAuthorization() if not known.");
+        }
 
-            @SuppressWarnings("unchecked")
-            Collection<Map<String, Object>> challenges =
-                            (Collection<Map<String, Object>>) result.get("challenges");
-            List<Challenge> cr = new ArrayList<>();
-            for (Map<String, Object> c : challenges) {
-                Challenge ch = createChallenge((String) c.get("type"));
-                if (ch != null) {
-                    ch.unmarshall(c);
-                    cr.add(ch);
-                }
+        LOG.debug("updateAuthorization");
+        try (Connection conn = createConnection()) {
+            int rc = conn.sendRequest(auth.getLocation());
+            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
+                conn.throwAcmeException();
             }
-            auth.setChallenges(cr);
 
-            @SuppressWarnings("unchecked")
-            Collection<List<Number>> combinations =
-                            (Collection<List<Number>>) result.get("combinations");
-            if (combinations != null) {
-                List<List<Challenge>> cmb = new ArrayList<>(combinations.size());
-                for (List<Number> c : combinations) {
-                    List<Challenge> clist = new ArrayList<>(c.size());
-                    for (Number n : c) {
-                        clist.add(cr.get(n.intValue()));
-                    }
-                    cmb.add(clist);
-                }
-                auth.setCombinations(cmb);
-            } else {
-                List<List<Challenge>> cmb = new ArrayList<>(1);
-                cmb.add(cr);
-                auth.setCombinations(cmb);
-            }
+            // HTTP_ACCEPTED requires Retry-After header to be set
+
+            Map<String, Object> result = conn.readJsonResponse();
+            unmarshalAuthorization(result, auth);
         }
     }
 
@@ -368,6 +360,55 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             }
         } catch (CertificateEncodingException ex) {
             throw new IllegalArgumentException("Invalid certificate", ex);
+        }
+    }
+
+    /**
+     * Sets {@link Authorization} properties according to the given JSON data.
+     *
+     * @param json
+     *            JSON data
+     * @param auth
+     *            {@link Authorization} to update
+     */
+    @SuppressWarnings("unchecked")
+    private void unmarshalAuthorization(Map<String, Object> json, Authorization auth) {
+        auth.setStatus((String) json.get("status"));
+        auth.setExpires((String) json.get("expires"));
+
+        Map<String, Object> identifier = (Map<String, Object>) json.get("identifier");
+        if (identifier != null) {
+            auth.setDomain((String) identifier.get("value"));
+        }
+
+        Collection<Map<String, Object>> challenges =
+                        (Collection<Map<String, Object>>) json.get("challenges");
+        List<Challenge> cr = new ArrayList<>();
+        for (Map<String, Object> c : challenges) {
+            Challenge ch = createChallenge((String) c.get("type"));
+            if (ch != null) {
+                ch.unmarshall(c);
+                cr.add(ch);
+            }
+        }
+        auth.setChallenges(cr);
+
+        Collection<List<Number>> combinations =
+                        (Collection<List<Number>>) json.get("combinations");
+        if (combinations != null) {
+            List<List<Challenge>> cmb = new ArrayList<>(combinations.size());
+            for (List<Number> c : combinations) {
+                List<Challenge> clist = new ArrayList<>(c.size());
+                for (Number n : c) {
+                    clist.add(cr.get(n.intValue()));
+                }
+                cmb.add(clist);
+            }
+            auth.setCombinations(cmb);
+        } else {
+            List<List<Challenge>> cmb = new ArrayList<>(1);
+            cmb.add(cr);
+            auth.setCombinations(cmb);
         }
     }
 

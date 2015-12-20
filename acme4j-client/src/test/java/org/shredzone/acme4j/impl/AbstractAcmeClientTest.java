@@ -168,6 +168,11 @@ public class AbstractAcmeClientTest {
             public Map<String, Object> readJsonResponse() throws AcmeException {
                 return getJsonAsMap("newAuthorizationResponse");
             }
+
+            @Override
+            public URI getLocation() throws AcmeException {
+                return locationUri;
+            }
         };
 
         HttpChallenge httpChallenge = new HttpChallenge();
@@ -183,6 +188,51 @@ public class AbstractAcmeClientTest {
         assertThat(auth.getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is("pending"));
         assertThat(auth.getExpires(), is(nullValue()));
+        assertThat(auth.getLocation(), is(locationUri));
+
+        assertThat(auth.getChallenges(), containsInAnyOrder(
+                        (Challenge) httpChallenge, (Challenge) dnsChallenge));
+
+        assertThat(auth.getCombinations(), hasSize(2));
+        assertThat(auth.getCombinations().get(0), containsInAnyOrder(
+                        (Challenge) httpChallenge));
+        assertThat(auth.getCombinations().get(1), containsInAnyOrder(
+                        (Challenge) httpChallenge, (Challenge) dnsChallenge));
+    }
+
+    /**
+     * Test that {@link Authorization} are properly updated.
+     */
+    @Test
+    public void testUpdateAuthorization() throws AcmeException {
+        Authorization auth = new Authorization(locationUri);
+
+        Connection connection = new DummyConnection() {
+            @Override
+            public int sendRequest(URI uri) throws AcmeException {
+                assertThat(uri, is(locationUri));
+                return HttpURLConnection.HTTP_OK;
+            }
+
+            @Override
+            public Map<String, Object> readJsonResponse() throws AcmeException {
+                return getJsonAsMap("updateAuthorizationResponse");
+            }
+        };
+
+        HttpChallenge httpChallenge = new HttpChallenge();
+        DnsChallenge dnsChallenge = new DnsChallenge();
+
+        TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
+        client.putTestChallenge("http-01", httpChallenge);
+        client.putTestChallenge("dns-01", dnsChallenge);
+
+        client.updateAuthorization(auth);
+
+        assertThat(auth.getDomain(), is("example.org"));
+        assertThat(auth.getStatus(), is("valid"));
+        assertThat(auth.getExpires(), is("2015-03-01"));
+        assertThat(auth.getLocation(), is(locationUri));
 
         assertThat(auth.getChallenges(), containsInAnyOrder(
                         (Challenge) httpChallenge, (Challenge) dnsChallenge));

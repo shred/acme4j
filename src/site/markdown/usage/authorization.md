@@ -63,6 +63,20 @@ If your final certificate contains further domains or subdomains, repeat the aut
 
 Note that wildcard certificates are not currently supported.
 
+## Update an Authorization
+
+For each authorization, the server provides an URI where the status of the authorization can be queried. It can be retrieved from `Authorization.getLocation()` after `newAuthorization()` returned.
+
+To get a status overview of your authorization and all challenges, create a new `Authorization` object and pass the location URI to the constructor:
+
+```java
+URI authUri = ... // Authorization URI
+Authorization auth = new Authorization(authUri);
+client.updateAuthorization(auth);
+```
+
+After that call, the `Authorization` object contains the current server state about your authorization, including the domain name, the overall status, and an expiry date.
+
 ## Restore a Challenge
 
 Validating a challenge can take a considerable amount of time and is a candidate for asynchronous execution. This can be a problem if you need to keep the `Challenge` object for a later time or a different Java environment.

@@ -60,6 +60,14 @@ public interface AcmeClient {
     void newAuthorization(Account account, Authorization auth) throws AcmeException;
 
     /**
+     * Updates an {@link Authorization} to the current server state.
+     *
+     * @param auth
+     *            {@link Authorization} to update
+     */
+    void updateAuthorization(Authorization auth) throws AcmeException;
+
+    /**
      * Triggers a {@link Challenge}. The ACME server is requested to validate the
      * response. Note that the validation is performed asynchronously.
      *

@@ -14,6 +14,7 @@
 package org.shredzone.acme4j;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,11 +30,40 @@ import org.shredzone.acme4j.challenge.Challenge;
 public class Authorization implements Serializable {
     private static final long serialVersionUID = -3116928998379417741L;
 
+    private URI location;
     private String domain;
     private String status;
     private String expires;
     private List<Challenge> challenges;
     private List<List<Challenge>> combinations;
+
+    /**
+     * Create an empty {@link Authorization}.
+     */
+    public Authorization() {
+        // default constructor
+    }
+
+    /**
+     * Create an {@link Authorization} for the given location URI.
+     */
+    public Authorization(URI location) {
+        this.location = location;
+    }
+
+    /**
+     * Gets the server URI for the authorization.
+     */
+    public URI getLocation() {
+        return location;
+    }
+
+    /**
+     * Sets the server URI for the authorization.
+     */
+    public void setLocation(URI location) {
+        this.location = location;
+    }
 
     /**
      * Gets the domain name to be authorized.

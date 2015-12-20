@@ -16,6 +16,8 @@ package org.shredzone.acme4j;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -152,6 +154,18 @@ public class AuthorizationTest {
         // Does not find challenges that have not been provided
         Collection<Challenge> c7 = authorization.findCombination(ProofOfPossessionChallenge.TYPE);
         assertThat(c7, is(nullValue()));
+    }
+
+    /**
+     * Test constructors.
+     */
+    @Test
+    public void testConstructor() throws URISyntaxException {
+        Authorization auth1 = new Authorization();
+        assertThat(auth1.getLocation(), is(nullValue()));
+
+        Authorization auth2 = new Authorization(new URI("http://example.com/acme/12345"));
+        assertThat(auth2.getLocation(), is(new URI("http://example.com/acme/12345")));
     }
 
     /**
