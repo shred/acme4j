@@ -49,4 +49,16 @@ public class RegistrationTest {
         assertThat(registration.getContacts(), contains("mailto:foo@example.com", "mailto:bar@example.com"));
     }
 
+    /**
+     * Test constructors;
+     */
+    @Test
+    public void testConstructor() throws URISyntaxException {
+        Registration registration1 = new Registration();
+        assertThat(registration1.getLocation(), is(nullValue()));
+
+        Registration registration2 = new Registration(new URI("http://example.com/acme/12345"));
+        assertThat(registration2.getLocation(), is(new URI("http://example.com/acme/12345")));
+    }
+
 }

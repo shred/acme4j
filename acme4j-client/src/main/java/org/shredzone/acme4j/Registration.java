@@ -29,6 +29,20 @@ public class Registration {
     private URI location;
 
     /**
+     * Create an empty {@link Registration}.
+     */
+    public Registration() {
+        // default constructor
+    }
+
+    /**
+     * Create a {@link Registration} for the given location URI.
+     */
+    public Registration(URI location) {
+        this.location = location;
+    }
+
+    /**
      * Returns the URI of the agreement document the user is required to accept.
      */
     public URI getAgreement() {
