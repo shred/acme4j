@@ -28,7 +28,7 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 public class ProofOfPossessionChallenge extends GenericChallenge {
 
     /**
-     * Challenge type name.
+     * Challenge type name: {@value}
      */
     public static final String TYPE = "proofOfPossession-01";
 

@@ -23,7 +23,7 @@ package org.shredzone.acme4j.challenge;
 public class TlsSniChallenge extends GenericChallenge {
 
     /**
-     * Challenge type name.
+     * Challenge type name: {@value}
      */
     public static final String TYPE = "tls-sni-01";
 

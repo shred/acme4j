@@ -25,7 +25,7 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 public class HttpChallenge extends GenericChallenge {
 
     /**
-     * Challenge type name.
+     * Challenge type name: {@value}
      */
     public static final String TYPE = "http-01";
 
