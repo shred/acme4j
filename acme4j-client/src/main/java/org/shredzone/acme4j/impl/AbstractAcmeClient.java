@@ -212,7 +212,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     }
 
     @Override
-    public void updateChallenge(Account account, Challenge challenge) throws AcmeException {
+    public void updateChallenge(Challenge challenge) throws AcmeException {
         LOG.debug("updateChallenge");
         try (Connection conn = createConnection()) {
             int rc = conn.sendRequest(challenge.getLocation());
@@ -226,7 +226,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends Challenge> T restoreChallenge(Account account, URI challengeUri) throws AcmeException {
+    public <T extends Challenge> T restoreChallenge(URI challengeUri) throws AcmeException {
         LOG.debug("restoreChallenge");
         try (Connection conn = createConnection()) {
             int rc = conn.sendRequest(challengeUri);

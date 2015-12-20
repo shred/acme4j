@@ -73,25 +73,21 @@ public interface AcmeClient {
     /**
      * Updates the {@link Challenge} instance. It contains the current state.
      *
-     * @param account
-     *            {@link Account} to be used for conversation
      * @param challenge
      *            {@link Challenge} to update
      */
-    void updateChallenge(Account account, Challenge challenge) throws AcmeException;
+    void updateChallenge(Challenge challenge) throws AcmeException;
 
     /**
      * Restore a {@link Challenge} instance if only the challenge URI is known. It
      * contains the current state.
      *
-     * @param account
-     *            {@link Account} to be used for conversation
      * @param challengeUri
      *            {@link URI} of the challenge to restore
      * @throws ClassCastException
      *             if the challenge does not match the desired type
      */
-    <T extends Challenge> T restoreChallenge(Account account, URI challengeUri) throws AcmeException;
+    <T extends Challenge> T restoreChallenge(URI challengeUri) throws AcmeException;
 
     /**
      * Request a certificate.

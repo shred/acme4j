@@ -148,7 +148,7 @@ public class ClientTest {
                 } catch (InterruptedException ex) {
                     LOG.warn("interrupted", ex);
                 }
-                client.updateChallenge(account, challenge);
+                client.updateChallenge(challenge);
             }
             if (attempts == 0) {
                 LOG.error("Failed to pass the challenge... Giving up.");

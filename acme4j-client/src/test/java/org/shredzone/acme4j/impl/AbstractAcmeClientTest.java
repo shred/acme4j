@@ -250,7 +250,7 @@ public class AbstractAcmeClientTest {
         Challenge challenge = new HttpChallenge();
         challenge.unmarshall(getJsonAsMap("triggerHttpChallengeResponse"));
 
-        client.updateChallenge(testAccount, challenge);
+        client.updateChallenge(challenge);
 
         assertThat(challenge.getStatus(), is(Status.VALID));
         assertThat(challenge.getLocation(), is(locationUri));
@@ -274,7 +274,7 @@ public class AbstractAcmeClientTest {
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
         client.putTestChallenge(HttpChallenge.TYPE, new HttpChallenge());
 
-        Challenge challenge = client.restoreChallenge(testAccount, locationUri);
+        Challenge challenge = client.restoreChallenge(locationUri);
 
         assertThat(challenge.getStatus(), is(Status.VALID));
         assertThat(challenge.getLocation(), is(locationUri));
