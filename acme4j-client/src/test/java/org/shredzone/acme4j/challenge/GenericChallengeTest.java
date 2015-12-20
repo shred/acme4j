@@ -32,7 +32,7 @@ import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.lang.JoseException;
 import org.junit.Test;
-import org.shredzone.acme4j.challenge.Challenge.Status;
+import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
@@ -164,7 +164,7 @@ public class GenericChallengeTest {
         assertThat(testChallenge, not(sameInstance((Challenge) originalChallenge)));
         assertThat(testChallenge, is(instanceOf(HttpChallenge.class)));
         assertThat(testChallenge.getType(), is(HttpChallenge.TYPE));
-        assertThat(testChallenge.getStatus(), is(Challenge.Status.PENDING));
+        assertThat(testChallenge.getStatus(), is(Status.PENDING));
         assertThat(((HttpChallenge )testChallenge).getToken(), is("rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ"));
     }
 

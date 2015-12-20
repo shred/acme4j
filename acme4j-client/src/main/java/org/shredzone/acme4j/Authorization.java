@@ -32,7 +32,7 @@ public class Authorization implements Serializable {
 
     private URI location;
     private String domain;
-    private String status;
+    private Status status;
     private String expires;
     private List<Challenge> challenges;
     private List<List<Challenge>> combinations;
@@ -82,14 +82,14 @@ public class Authorization implements Serializable {
     /**
      * Gets the authorization status.
      */
-    public String getStatus() {
+    public Status getStatus() {
         return status;
     }
 
     /**
      * Sets the authorization status.
      */
-    public void setStatus(String status) {
+    public void setStatus(Status status) {
         this.status = status;
     }
 

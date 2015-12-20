@@ -26,7 +26,6 @@ import java.util.Collection;
 
 import javax.swing.JOptionPane;
 
-import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.HttpChallenge;
 import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -157,8 +156,8 @@ public class ClientTest {
 
             // Poll for the challenge to complete
             int attempts = 10;
-            while (challenge.getStatus() != Challenge.Status.VALID && attempts-- > 0) {
-                if (challenge.getStatus() == Challenge.Status.INVALID) {
+            while (challenge.getStatus() != Status.VALID && attempts-- > 0) {
+                if (challenge.getStatus() == Status.INVALID) {
                     LOG.error("Challenge failed... Giving up.");
                     return;
                 }

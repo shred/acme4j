@@ -18,6 +18,7 @@ import java.net.URI;
 import java.util.Map;
 
 import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.util.ClaimBuilder;
 
 /**
@@ -26,13 +27,6 @@ import org.shredzone.acme4j.util.ClaimBuilder;
  * @author Richard "Shred" Körber
  */
 public interface Challenge extends Serializable {
-
-    /**
-     * Challenge status enumeration.
-     */
-    public enum Status {
-        PENDING, PROCESSING, VALID, INVALID, REVOKED, UNKNOWN;
-    }
 
     /**
      * Returns the challenge type by name (e.g. "http-01").

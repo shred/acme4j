@@ -30,6 +30,7 @@ import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.util.ClaimBuilder;
 
 /**
@@ -58,8 +59,7 @@ public class GenericChallenge implements Challenge {
 
     @Override
     public Status getStatus() {
-        String status = get(KEY_STATUS);
-        return (status != null ? Status.valueOf(status.toUpperCase()) : Status.PENDING);
+        return Status.parse((String) get(KEY_STATUS), Status.PENDING);
     }
 
     @Override

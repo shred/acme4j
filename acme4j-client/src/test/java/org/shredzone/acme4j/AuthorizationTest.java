@@ -80,13 +80,13 @@ public class AuthorizationTest {
         assertThat(auth.getCombinations(), is(nullValue()));
 
         auth.setDomain("example.com");
-        auth.setStatus("invalid");
+        auth.setStatus(Status.INVALID);
         auth.setExpires("2015-12-12T17:19:36.336785823Z");
         auth.setChallenges(authorization.getChallenges());
         auth.setCombinations(authorization.getCombinations());
 
         assertThat(auth.getDomain(), is("example.com"));
-        assertThat(auth.getStatus(), is("invalid"));
+        assertThat(auth.getStatus(), is(Status.INVALID));
         assertThat(auth.getExpires(), is("2015-12-12T17:19:36.336785823Z"));
         assertThat(auth.getChallenges(), is(sameInstance(authorization.getChallenges())));
         assertThat(auth.getCombinations(), is(sameInstance(authorization.getCombinations())));

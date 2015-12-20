@@ -31,8 +31,8 @@ import org.junit.Test;
 import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Registration;
+import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Challenge;
-import org.shredzone.acme4j.challenge.Challenge.Status;
 import org.shredzone.acme4j.challenge.DnsChallenge;
 import org.shredzone.acme4j.challenge.GenericChallenge;
 import org.shredzone.acme4j.challenge.HttpChallenge;
@@ -186,7 +186,7 @@ public class AbstractAcmeClientTest {
         client.newAuthorization(testAccount, auth);
 
         assertThat(auth.getDomain(), is("example.org"));
-        assertThat(auth.getStatus(), is("pending"));
+        assertThat(auth.getStatus(), is(Status.PENDING));
         assertThat(auth.getExpires(), is(nullValue()));
         assertThat(auth.getLocation(), is(locationUri));
 
@@ -230,7 +230,7 @@ public class AbstractAcmeClientTest {
         client.updateAuthorization(auth);
 
         assertThat(auth.getDomain(), is("example.org"));
-        assertThat(auth.getStatus(), is("valid"));
+        assertThat(auth.getStatus(), is(Status.VALID));
         assertThat(auth.getExpires(), is("2015-03-01"));
         assertThat(auth.getLocation(), is(locationUri));
 

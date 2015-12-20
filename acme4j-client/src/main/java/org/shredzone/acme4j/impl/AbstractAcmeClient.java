@@ -26,6 +26,7 @@ import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Registration;
+import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
@@ -373,7 +374,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
      */
     @SuppressWarnings("unchecked")
     private void unmarshalAuthorization(Map<String, Object> json, Authorization auth) {
-        auth.setStatus((String) json.get("status"));
+        auth.setStatus(Status.parse((String) json.get("status"), Status.PENDING));
         auth.setExpires((String) json.get("expires"));
 
         Map<String, Object> identifier = (Map<String, Object>) json.get("identifier");

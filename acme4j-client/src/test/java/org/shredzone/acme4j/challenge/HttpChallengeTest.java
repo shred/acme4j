@@ -22,7 +22,7 @@ import java.security.KeyPair;
 
 import org.junit.Test;
 import org.shredzone.acme4j.Account;
-import org.shredzone.acme4j.challenge.Challenge.Status;
+import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
