@@ -51,6 +51,10 @@ public abstract class AbstractAcmeClientProvider implements AcmeClientProvider {
 
     @Override
     public AcmeClient connect(URI serverUri) {
+        if (serverUri == null) {
+            throw new NullPointerException("serverUri must not be null");
+        }
+
         if (!accepts(serverUri)) {
             throw new IllegalArgumentException("This provider does not accept " + serverUri);
         }

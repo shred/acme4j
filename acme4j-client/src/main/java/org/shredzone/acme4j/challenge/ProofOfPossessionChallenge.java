@@ -13,7 +13,7 @@
  */
 package org.shredzone.acme4j.challenge;
 
-import java.security.Key;
+import java.security.PublicKey;
 
 import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.util.ClaimBuilder;
@@ -32,7 +32,7 @@ public class ProofOfPossessionChallenge extends GenericChallenge {
      */
     public static final String TYPE = "proofOfPossession-01";
 
-    private Key accountKey;
+    private PublicKey accountKey;
 
     @Override
     public void authorize(Account account) {
@@ -44,6 +44,11 @@ public class ProofOfPossessionChallenge extends GenericChallenge {
     public void marshall(ClaimBuilder cb) {
         super.marshall(cb);
         cb.putKey("accountKey", accountKey);
+    }
+
+    @Override
+    protected boolean acceptable(String type) {
+        return TYPE.equals(type);
     }
 
 }

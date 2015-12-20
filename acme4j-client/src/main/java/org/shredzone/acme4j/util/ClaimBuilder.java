@@ -14,6 +14,7 @@
 package org.shredzone.acme4j.util;
 
 import java.security.Key;
+import java.security.PublicKey;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -50,6 +51,10 @@ public class ClaimBuilder {
      * @return {@code this}
      */
     public ClaimBuilder put(String key, Object value) {
+        if (key == null) {
+            throw new NullPointerException("key must not be null");
+        }
+
         data.put(key, value);
         return this;
     }
@@ -107,10 +112,14 @@ public class ClaimBuilder {
      * @param key
      *            Claim key
      * @param publickey
-     *            {@link Key} to serialize
+     *            {@link PublicKey} to serialize
      * @return {@code this}
      */
-    public ClaimBuilder putKey(String key, Key publickey) {
+    public ClaimBuilder putKey(String key, PublicKey publickey) {
+        if (publickey == null) {
+            throw new NullPointerException("publickey must not be null");
+        }
+
         try {
             final JsonWebKey jwk = JsonWebKey.Factory.newJwk(publickey);
             Map<String, Object> jwkParams = jwk.toParams(JsonWebKey.OutputControlLevel.PUBLIC_ONLY);

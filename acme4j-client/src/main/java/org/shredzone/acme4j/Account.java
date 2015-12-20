@@ -34,7 +34,7 @@ public class Account {
      */
     public Account(KeyPair keyPair) {
         if (keyPair == null) {
-            throw new NullPointerException("keypair must be set");
+            throw new NullPointerException("keypair must not be null");
         }
 
         this.keyPair = keyPair;

@@ -82,6 +82,19 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public void newRegistration(Account account, Registration registration) throws AcmeException {
+        if (account == null) {
+            throw new NullPointerException("account must not be null");
+        }
+        if (registration == null) {
+            throw new NullPointerException("registration must not be null");
+        }
+        if (registration.getLocation() != null) {
+            throw new IllegalArgumentException("registration location must be null");
+        }
+        if (registration.getAgreement() != null) {
+            throw new IllegalArgumentException("registration agreement must be null");
+        }
+
         LOG.debug("newRegistration");
         try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
@@ -113,11 +126,17 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public void updateRegistration(Account account, Registration registration) throws AcmeException {
-        LOG.debug("updateRegistration");
+        if (account == null) {
+            throw new NullPointerException("account must not be null");
+        }
+        if (registration == null) {
+            throw new NullPointerException("registration must not be null");
+        }
         if (registration.getLocation() == null) {
-            throw new IllegalArgumentException("location must be set. Use newRegistration() if not known.");
+            throw new IllegalArgumentException("registration location must not be null. Use newRegistration() if not known.");
         }
 
+        LOG.debug("updateRegistration");
         try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource("reg");
@@ -144,6 +163,16 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public void newAuthorization(Account account, Authorization auth) throws AcmeException {
+        if (account == null) {
+            throw new NullPointerException("account must not be null");
+        }
+        if (auth == null) {
+            throw new NullPointerException("auth must not be null");
+        }
+        if (auth.getDomain() == null || auth.getDomain().isEmpty()) {
+            throw new IllegalArgumentException("auth domain must not be empty or null");
+        }
+
         LOG.debug("newAuthorization");
         try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
@@ -197,6 +226,16 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public void triggerChallenge(Account account, Challenge challenge) throws AcmeException {
+        if (account == null) {
+            throw new NullPointerException("account must not be null");
+        }
+        if (challenge == null) {
+            throw new NullPointerException("challenge must not be null");
+        }
+        if (challenge.getLocation() == null) {
+            throw new IllegalArgumentException("challenge location is not set");
+        }
+
         LOG.debug("triggerChallenge");
         try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
@@ -214,6 +253,13 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public void updateChallenge(Challenge challenge) throws AcmeException {
+        if (challenge == null) {
+            throw new NullPointerException("challenge must not be null");
+        }
+        if (challenge.getLocation() == null) {
+            throw new IllegalArgumentException("challenge location is not set");
+        }
+
         LOG.debug("updateChallenge");
         try (Connection conn = createConnection()) {
             int rc = conn.sendRequest(challenge.getLocation());
@@ -228,6 +274,10 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     @Override
     @SuppressWarnings("unchecked")
     public <T extends Challenge> T restoreChallenge(URI challengeUri) throws AcmeException {
+        if (challengeUri == null) {
+            throw new NullPointerException("challengeUri must not be null");
+        }
+
         LOG.debug("restoreChallenge");
         try (Connection conn = createConnection()) {
             int rc = conn.sendRequest(challengeUri);
@@ -248,6 +298,13 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public URI requestCertificate(Account account, byte[] csr) throws AcmeException {
+        if (account == null) {
+            throw new NullPointerException("account must not be null");
+        }
+        if (csr == null) {
+            throw new NullPointerException("csr must not be null");
+        }
+
         LOG.debug("requestCertificate");
         try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
@@ -270,6 +327,10 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public X509Certificate downloadCertificate(URI certUri) throws AcmeException {
+        if (certUri == null) {
+            throw new NullPointerException("certUri must not be null");
+        }
+
         LOG.debug("downloadCertificate");
         try (Connection conn = createConnection()) {
             int rc = conn.sendRequest(certUri);
@@ -283,6 +344,13 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
     @Override
     public void revokeCertificate(Account account, X509Certificate certificate) throws AcmeException {
+        if (account == null) {
+            throw new NullPointerException("account must not be null");
+        }
+        if (certificate == null) {
+            throw new NullPointerException("certificate must not be null");
+        }
+
         LOG.debug("revokeCertificate");
         URI resUri = resourceUri(Resource.REVOKE_CERT);
         if (resUri == null) {

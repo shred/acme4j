@@ -43,4 +43,9 @@ public class TlsSniChallenge extends GenericChallenge {
         put("n", n);
     }
 
+    @Override
+    protected boolean acceptable(String type) {
+        return TYPE.equals(type);
+    }
+
 }

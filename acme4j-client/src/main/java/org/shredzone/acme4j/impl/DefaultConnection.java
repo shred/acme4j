@@ -63,11 +63,22 @@ public class DefaultConnection implements Connection {
     protected HttpURLConnection conn;
 
     public DefaultConnection(HttpConnector httpConnector) {
+        if (httpConnector == null) {
+            throw new NullPointerException("httpConnector must not be null");
+        }
+
         this.httpConnector = httpConnector;
     }
 
     @Override
     public int sendRequest(URI uri) throws AcmeException {
+        if (uri == null) {
+            throw new NullPointerException("uri must not be null");
+        }
+        if (conn != null) {
+            throw new IllegalStateException("Connection was not closed. Race condition?");
+        }
+
         try {
             LOG.debug("GET {}", uri);
 
@@ -88,6 +99,22 @@ public class DefaultConnection implements Connection {
 
     @Override
     public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException {
+        if (uri == null) {
+            throw new NullPointerException("uri must not be null");
+        }
+        if (claims == null) {
+            throw new NullPointerException("claims must not be null");
+        }
+        if (session == null) {
+            throw new NullPointerException("session must not be null");
+        }
+        if (account == null) {
+            throw new NullPointerException("account must not be null");
+        }
+        if (conn != null) {
+            throw new IllegalStateException("Connection was not closed. Race condition?");
+        }
+
         try {
             KeyPair keypair = account.getKeyPair();
 

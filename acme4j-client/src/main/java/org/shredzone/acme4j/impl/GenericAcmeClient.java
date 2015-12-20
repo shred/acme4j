@@ -46,12 +46,20 @@ public class GenericAcmeClient extends AbstractAcmeClient {
      *            {@link URI} of the ACME server's directory service
      */
     public GenericAcmeClient(AcmeClientProvider provider, URI directoryUri) {
+        if (provider == null) {
+            throw new NullPointerException("provider must not be null");
+        }
+
         this.provider = provider;
         this.directoryUri = directoryUri;
     }
 
     @Override
     protected Challenge createChallenge(String type) {
+        if (type == null || type.isEmpty()) {
+            throw new IllegalArgumentException("type must not be empty or null");
+        }
+
         return provider.createChallenge(type);
     }
 
@@ -62,7 +70,15 @@ public class GenericAcmeClient extends AbstractAcmeClient {
 
     @Override
     protected URI resourceUri(Resource resource) throws AcmeException {
+        if (resource == null) {
+            throw new NullPointerException("resource must not be null");
+        }
+
         if (directoryMap.isEmpty()) {
+            if (directoryUri == null) {
+                throw new IllegalStateException("directoryUri was null on construction time");
+            }
+
             try (Connection conn = createConnection()) {
                 int rc = conn.sendRequest(directoryUri);
                 if (rc != HttpURLConnection.HTTP_OK) {

@@ -64,6 +64,10 @@ public final class AcmeClientFactory {
      * @return {@link AcmeClient} for communication with the server
      */
     public static AcmeClient connect(URI serverUri) throws AcmeException {
+        if (serverUri == null) {
+            throw new NullPointerException("serverUri must not be null");
+        }
+
         List<AcmeClientProvider> candidates = new ArrayList<>();
         for (AcmeClientProvider acp : ServiceLoader.load(AcmeClientProvider.class)) {
             if (acp.accepts(serverUri)) {

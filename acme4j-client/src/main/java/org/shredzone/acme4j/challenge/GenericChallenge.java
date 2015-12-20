@@ -16,9 +16,9 @@ package org.shredzone.acme4j.challenge;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.Key;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,11 +78,21 @@ public class GenericChallenge implements Challenge {
 
     @Override
     public void authorize(Account account) {
-        // Standard implementation does nothing...
+        if (account == null) {
+            throw new NullPointerException("account must not be null");
+        }
     }
 
     @Override
     public void unmarshall(Map<String, Object> map) {
+        String type = map.get(KEY_TYPE).toString();
+        if (type == null) {
+            throw new IllegalArgumentException("map does not contain a type");
+        }
+        if (!acceptable(type)) {
+            throw new IllegalArgumentException("wrong type: " + type);
+        }
+
         data.clear();
         data.putAll(map);
     }
@@ -90,6 +100,17 @@ public class GenericChallenge implements Challenge {
     @Override
     public void marshall(ClaimBuilder cb) {
         cb.putAll(data);
+    }
+
+    /**
+     * Checks if the type is acceptable to this challenge.
+     *
+     * @param type
+     *            Type to check
+     * @return {@code true} if acceptable, {@code false} if not
+     */
+    protected boolean acceptable(String type) {
+        return true;
     }
 
     /**
@@ -120,11 +141,15 @@ public class GenericChallenge implements Challenge {
      * Computes a JWK Thumbprint. It is frequently used in responses.
      *
      * @param key
-     *            {@link Key} to create a thumbprint of
+     *            {@link PublicKey} to create a thumbprint of
      * @return Thumbprint, SHA-256 hashed
      * @see <a href="https://tools.ietf.org/html/rfc7638">RFC 7638</a>
      */
-    public static byte[] jwkThumbprint(Key key) {
+    public static byte[] jwkThumbprint(PublicKey key) {
+        if (key == null) {
+            throw new NullPointerException("key must not be null");
+        }
+
         try {
             final JsonWebKey jwk = JsonWebKey.Factory.newJwk(key);
 

@@ -98,6 +98,15 @@ public class GenericChallengeTest {
     }
 
     /**
+     * Test that an exception is thrown on challenge type mismatch.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testNotAcceptable() throws URISyntaxException {
+        HttpChallenge challenge = new HttpChallenge();
+        challenge.unmarshall(TestUtils.getJsonAsMap("dnsChallenge"));
+    }
+
+    /**
      * Test that the test keypair's thumbprint is correct.
      */
     @Test

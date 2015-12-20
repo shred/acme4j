@@ -54,7 +54,7 @@ public class DnsChallenge extends GenericChallenge {
      */
     public String getAuthorization() {
         if (authorization == null) {
-            throw new IllegalStateException("not yet authorized");
+            throw new IllegalStateException("Challenge is not authorized yet");
         }
         return authorization;
     }
@@ -83,12 +83,14 @@ public class DnsChallenge extends GenericChallenge {
 
     @Override
     public void marshall(ClaimBuilder cb) {
-        if (authorization == null) {
-            throw new IllegalStateException("Challenge has not been authorized yet.");
-        }
+        cb.put(KEY_KEY_AUTHORIZSATION, getAuthorization());
         cb.put(KEY_TYPE, getType());
         cb.put(KEY_TOKEN, getToken());
-        cb.put(KEY_KEY_AUTHORIZSATION, authorization);
+    }
+
+    @Override
+    protected boolean acceptable(String type) {
+        return TYPE.equals(type);
     }
 
 }
