@@ -97,6 +97,7 @@ public class DefaultConnection implements Connection {
                 conn.setRequestMethod("HEAD");
                 conn.connect();
                 updateSession(session);
+                conn = null;
             }
 
             if (session.getNonce() == null) {
@@ -195,6 +196,10 @@ public class DefaultConnection implements Connection {
 
     @Override
     public Map<Resource, URI> readDirectory() throws AcmeException {
+        if (conn == null) {
+            throw new IllegalStateException("Not connected");
+        }
+
         String contentType = conn.getHeaderField("Content-Type");
         if (!("application/json".equals(contentType))) {
             throw new AcmeException("Unexpected content type: " + contentType);
@@ -229,6 +234,10 @@ public class DefaultConnection implements Connection {
 
     @Override
     public void updateSession(Session session) throws AcmeException {
+        if (conn == null) {
+            throw new IllegalStateException("Not connected");
+        }
+
         String nonceHeader = conn.getHeaderField("Replay-Nonce");
         if (nonceHeader == null || nonceHeader.trim().isEmpty()) {
             return;
@@ -245,6 +254,10 @@ public class DefaultConnection implements Connection {
 
     @Override
     public URI getLocation() throws AcmeException {
+        if (conn == null) {
+            throw new IllegalStateException("Not connected");
+        }
+
         String location = conn.getHeaderField("Location");
         if (location == null) {
             return null;
@@ -260,6 +273,10 @@ public class DefaultConnection implements Connection {
 
     @Override
     public URI getLink(String relation) throws AcmeException {
+        if (conn == null) {
+            throw new IllegalStateException("Not connected");
+        }
+
         List<String> links = conn.getHeaderFields().get("Link");
         if (links != null) {
             Pattern p = Pattern.compile("<(.*?)>\\s*;\\s*rel=\"?"+ Pattern.quote(relation) + "\"?");
@@ -281,6 +298,10 @@ public class DefaultConnection implements Connection {
 
     @Override
     public void throwAcmeException() throws AcmeException {
+        if (conn == null) {
+            throw new IllegalStateException("Not connected");
+        }
+
         if ("application/problem+json".equals(conn.getHeaderField("Content-Type"))) {
             Map<String, Object> map = readJsonResponse();
             String type = (String) map.get("type");
