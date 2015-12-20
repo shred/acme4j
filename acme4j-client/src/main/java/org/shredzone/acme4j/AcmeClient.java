@@ -39,7 +39,7 @@ public interface AcmeClient {
     void newRegistration(Account account, Registration registration) throws AcmeException;
 
     /**
-     * Updates an existing account.
+     * Modifies an existing account.
      *
      * @param account
      *            {@link Account} that is registered
@@ -47,7 +47,7 @@ public interface AcmeClient {
      *            {@link Registration} containing updated registration data. Set the
      *            account location via {@link Registration#setLocation(URI)}!
      */
-    void updateRegistration(Account account, Registration registration) throws AcmeException;
+    void modifyRegistration(Account account, Registration registration) throws AcmeException;
 
     /**
      * Creates a new {@link Authorization} for a domain.
@@ -79,7 +79,7 @@ public interface AcmeClient {
     void updateChallenge(Challenge challenge) throws AcmeException;
 
     /**
-     * Restore a {@link Challenge} instance if only the challenge URI is known. It
+     * Restores a {@link Challenge} instance if only the challenge URI is known. It
      * contains the current state.
      *
      * @param challengeUri
@@ -90,7 +90,7 @@ public interface AcmeClient {
     <T extends Challenge> T restoreChallenge(URI challengeUri) throws AcmeException;
 
     /**
-     * Request a certificate.
+     * Requests a certificate.
      *
      * @param account
      *            {@link Account} to be used for conversation

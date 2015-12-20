@@ -105,10 +105,10 @@ public class AbstractAcmeClientTest {
     }
 
     /**
-     * Test that a {@link Registration} can be updated.
+     * Test that a {@link Registration} can be modified.
      */
     @Test
-    public void testUpdateRegistration() throws AcmeException {
+    public void testModifyRegistration() throws AcmeException {
         Registration registration = new Registration();
         registration.setAgreement(agreementUri);
         registration.addContact("mailto:foo2@example.com");
@@ -118,7 +118,7 @@ public class AbstractAcmeClientTest {
             @Override
             public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException {
                 assertThat(uri, is(locationUri));
-                assertThat(claims.toString(), sameJSONAs(getJson("updateRegistration")));
+                assertThat(claims.toString(), sameJSONAs(getJson("modifyRegistration")));
                 assertThat(session, is(notNullValue()));
                 assertThat(account, is(sameInstance(testAccount)));
                 return HttpURLConnection.HTTP_ACCEPTED;
@@ -140,7 +140,7 @@ public class AbstractAcmeClientTest {
 
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
 
-        client.updateRegistration(testAccount, registration);
+        client.modifyRegistration(testAccount, registration);
 
         assertThat(registration.getLocation(), is(locationUri));
         assertThat(registration.getAgreement(), is(agreementUri));

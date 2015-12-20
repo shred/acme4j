@@ -35,5 +35,5 @@ Registration reg = new Registration();
 reg.setLocation(accountLocationUri);
 reg.setAgreement(agreementUri);
 
-client.updateRegistration(account, reg);
+client.modifyRegistration(account, reg);
 ```

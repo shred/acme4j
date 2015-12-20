@@ -234,7 +234,7 @@ public class ClientTest {
             return false;
         }
 
-        client.updateRegistration(account, reg);
+        client.modifyRegistration(account, reg);
         LOG.info("Updated user's T&C");
 
         return true;

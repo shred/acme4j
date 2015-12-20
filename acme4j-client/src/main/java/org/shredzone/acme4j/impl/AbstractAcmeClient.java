@@ -125,7 +125,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     }
 
     @Override
-    public void updateRegistration(Account account, Registration registration) throws AcmeException {
+    public void modifyRegistration(Account account, Registration registration) throws AcmeException {
         if (account == null) {
             throw new NullPointerException("account must not be null");
         }
@@ -136,7 +136,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             throw new IllegalArgumentException("registration location must not be null. Use newRegistration() if not known.");
         }
 
-        LOG.debug("updateRegistration");
+        LOG.debug("modifyRegistration");
         try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource("reg");
