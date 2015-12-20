@@ -30,6 +30,7 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.HttpChallenge;
 import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.util.CSRBuilder;
 import org.shredzone.acme4j.util.CertificateUtils;
 import org.shredzone.acme4j.util.KeyPairUtils;
@@ -44,8 +45,6 @@ import org.slf4j.LoggerFactory;
  * @author Richard "Shred" Körber
  */
 public class ClientTest {
-    private static final String AGREEMENT_URL = "https://letsencrypt.org/documents/LE-SA-v1.0.1-July-27-2015.pdf";
-
     private static final File USER_KEY_FILE = new File("user.key");
     private static final File DOMAIN_KEY_FILE = new File("domain.key");
     private static final File DOMAIN_CERT_FILE = new File("domain.crt");
@@ -61,12 +60,11 @@ public class ClientTest {
      *
      * @param domains
      *            Domains to get a common certificate for
-     * @param agreement
-     *            Agreement URI to be used for creating an account
      */
-    public void fetchCertificate(Collection<String> domains, URI agreement)
-                    throws IOException, AcmeException {
+    public void fetchCertificate(Collection<String> domains) throws IOException, AcmeException {
         // Load or create a key pair for the user's account
+        boolean createdNewKeyPair = false;
+
         KeyPair userKeyPair;
         if (USER_KEY_FILE.exists()) {
             try (FileReader fr = new FileReader(USER_KEY_FILE)) {
@@ -77,6 +75,7 @@ public class ClientTest {
             try (FileWriter fw = new FileWriter(USER_KEY_FILE)) {
                 KeyPairUtils.writeKeyPair(userKeyPair, fw);
             }
+            createdNewKeyPair = true;
         }
 
         // Create an Account instance for the user
@@ -88,21 +87,18 @@ public class ClientTest {
 
         // Register a new user
         Registration reg = new Registration();
-        reg.setAgreement(agreement);
         try {
             client.newRegistration(account, reg);
             LOG.info("Registered a new user, URI: " + reg.getLocation());
         } catch (AcmeConflictException ex) {
             LOG.info("Account does already exist, URI: " + reg.getLocation());
-        } catch (AcmeException ex) {
-            LOG.warn("Registration failed", ex);
+        }
 
-            // Try to update the user's account, maybe there was a new agreement url?
-            try {
-                client.updateRegistration(account, reg);
-                LOG.info("Updated user, URI: " + reg.getLocation());
-            } catch (AcmeException ex2) {
-                LOG.warn("Registration update failed, too. Giving up!", ex2);
+        LOG.info("Terms and Conditions: " + reg.getAgreement());
+
+        if (createdNewKeyPair) {
+            boolean accepted = acceptAgreement(client, account, reg);
+            if (!accepted) {
                 return;
             }
         }
@@ -111,7 +107,17 @@ public class ClientTest {
             // Create a new authorization
             Authorization auth = new Authorization();
             auth.setDomain(domain);
-            client.newAuthorization(account, auth);
+            try {
+                client.newAuthorization(account, auth);
+            } catch (AcmeUnauthorizedException ex) {
+                // Maybe there are new T&C to accept?
+                boolean accepted = acceptAgreement(client, account, reg);
+                if (!accepted) {
+                    return;
+                }
+                // Then try again...
+                client.newAuthorization(account, auth);
+            }
             LOG.info("New authorization for domain " + domain);
 
             // Find a single http-01 challenge
@@ -131,7 +137,20 @@ public class ClientTest {
             LOG.info("Content: " + challenge.getAuthorization());
             LOG.info("The file must not contain any leading or trailing whitespaces or line breaks!");
             LOG.info("If you're ready, dismiss the dialog...");
-            JOptionPane.showMessageDialog(null, "OK?");
+
+            StringBuilder message = new StringBuilder();
+            message.append("Please create a file in your web server's base directory.\n\n");
+            message.append("http://").append(domain).append("/.well-known/acme-challenge/").append(challenge.getToken()).append("\n\n");
+            message.append("Content:\n\n");
+            message.append(challenge.getAuthorization());
+            int option = JOptionPane.showConfirmDialog(null,
+                            message.toString(),
+                            "Prepare Challenge",
+                            JOptionPane.OK_CANCEL_OPTION);
+            if (option == JOptionPane.CANCEL_OPTION) {
+                LOG.error("User cancelled challenge");
+                return;
+            }
 
             // Trigger the challenge
             client.triggerChallenge(account, challenge);
@@ -193,6 +212,34 @@ public class ClientTest {
         // client.revokeCertificate(account, cert);
     }
 
+    /**
+     * Presents the user a link to the Terms and Conditions, and asks for confirmation.
+     *
+     * @param client
+     *            {@link AcmeClient} to send confirmation to
+     * @param account
+     *            {@link Account} User's account
+     * @param reg
+     *            {@link Registration} User's registration, containing the Agreement URI
+     * @return {@code true}: User confirmed, {@code false} user rejected
+     */
+    public boolean acceptAgreement(AcmeClient client, Account account, Registration reg)
+                throws AcmeException {
+        int option = JOptionPane.showConfirmDialog(null,
+                        "Do you accept the Terms and Conditions?\n\n" + reg.getAgreement(),
+                        "Accept T&C",
+                        JOptionPane.YES_NO_OPTION);
+        if (option == JOptionPane.NO_OPTION) {
+            LOG.error("User did not accept Terms and Conditions");
+            return false;
+        }
+
+        client.updateRegistration(account, reg);
+        LOG.info("Updated user's T&C");
+
+        return true;
+    }
+
     public static void main(String... args) {
         if (args.length == 0) {
             System.err.println("Usage: ClientTest <domain>...");
@@ -204,7 +251,7 @@ public class ClientTest {
         Collection<String> domains = Arrays.asList(args);
         try {
             ClientTest ct = new ClientTest();
-            ct.fetchCertificate(domains, new URI(AGREEMENT_URL));
+            ct.fetchCertificate(domains);
         } catch (Exception ex) {
             LOG.error("Failed to get a certificate for domains " + domains, ex);
         }
