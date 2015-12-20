@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -23,7 +24,8 @@ import java.util.List;
  *
  * @author Richard "Shred" Körber
  */
-public class Registration {
+public class Registration implements Serializable {
+    private static final long serialVersionUID = -8177333806740391140L;
 
     private List<URI> contacts = new ArrayList<>();
     private URI agreement;

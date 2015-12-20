@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,7 +26,8 @@ import org.shredzone.acme4j.challenge.Challenge;
  *
  * @author Richard "Shred" Körber
  */
-public class Authorization {
+public class Authorization implements Serializable {
+    private static final long serialVersionUID = -3116928998379417741L;
 
     private String domain;
     private String status;
@@ -138,6 +140,10 @@ public class Authorization {
      *         validation.
      */
     public Collection<Challenge> findCombination(String... types) {
+        if (combinations == null) {
+            return null;
+        }
+
         Collection<String> available = Arrays.asList(types);
         Collection<String> combinationTypes = new ArrayList<>();
 

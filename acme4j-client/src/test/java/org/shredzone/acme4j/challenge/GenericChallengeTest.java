@@ -17,7 +17,11 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyPair;
@@ -130,6 +134,38 @@ public class GenericChallengeTest {
         // Make sure the returned thumbprint is correct
         byte[] thumbprint = GenericChallenge.jwkThumbprint(keypair.getPublic());
         assertThat(thumbprint, is(Base64Url.decode(TestUtils.THUMBPRINT)));
+    }
+
+    /**
+     * Test that challenge serialization works correctly.
+     */
+    @Test
+    public void testSerialization() throws IOException, ClassNotFoundException {
+        HttpChallenge originalChallenge = new HttpChallenge();
+        originalChallenge.unmarshall(TestUtils.getJsonAsMap("httpChallenge"));
+
+        // Serialize
+        byte[] data;
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
+                oos.writeObject(originalChallenge);
+            }
+            data = out.toByteArray();
+        }
+
+        // Deserialize
+        Challenge testChallenge;
+        try (ByteArrayInputStream in = new ByteArrayInputStream(data)) {
+            try (ObjectInputStream ois = new ObjectInputStream(in)) {
+                testChallenge = (Challenge) ois.readObject();
+            }
+        }
+
+        assertThat(testChallenge, not(sameInstance((Challenge) originalChallenge)));
+        assertThat(testChallenge, is(instanceOf(HttpChallenge.class)));
+        assertThat(testChallenge.getType(), is(HttpChallenge.TYPE));
+        assertThat(testChallenge.getStatus(), is(Challenge.Status.PENDING));
+        assertThat(((HttpChallenge )testChallenge).getToken(), is("rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ"));
     }
 
 }

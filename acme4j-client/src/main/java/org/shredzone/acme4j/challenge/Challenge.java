@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.challenge;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Map;
 
@@ -24,7 +25,7 @@ import org.shredzone.acme4j.util.ClaimBuilder;
  *
  * @author Richard "Shred" Körber
  */
-public interface Challenge {
+public interface Challenge extends Serializable {
 
     /**
      * Challenge status enumeration.

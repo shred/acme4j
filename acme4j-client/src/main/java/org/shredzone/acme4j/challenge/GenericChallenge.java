@@ -13,6 +13,9 @@
  */
 package org.shredzone.acme4j.challenge;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -22,6 +25,7 @@ import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.lang.JoseException;
@@ -36,6 +40,7 @@ import org.shredzone.acme4j.util.ClaimBuilder;
  * @author Richard "Shred" Körber
  */
 public class GenericChallenge implements Challenge {
+    private static final long serialVersionUID = 2338794776848388099L;
 
     protected static final String KEY_TYPE = "type";
     protected static final String KEY_STATUS = "status";
@@ -44,7 +49,7 @@ public class GenericChallenge implements Challenge {
     protected static final String KEY_TOKEN = "token";
     protected static final String KEY_KEY_AUTHORIZSATION = "keyAuthorization";
 
-    private final Map<String, Object> data = new HashMap<>();
+    private transient Map<String, Object> data = new HashMap<>();
 
     @Override
     public String getType() {
@@ -162,6 +167,26 @@ public class GenericChallenge implements Challenge {
             return md.digest();
         } catch (JoseException | NoSuchAlgorithmException | UnsupportedEncodingException ex) {
             throw new IllegalArgumentException("Cannot compute key thumbprint", ex);
+        }
+    }
+
+    /**
+     * Serialize the data map in JSON.
+     */
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        out.writeUTF(JsonUtil.toJson(data));
+        out.defaultWriteObject();
+    }
+
+    /**
+     * Deserialize the JSON representation of the data map.
+     */
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        try {
+            data = new HashMap<>(JsonUtil.parseJson(in.readUTF()));
+            in.defaultReadObject();
+        } catch (JoseException ex) {
+            throw new IOException("Cannot deserialize", ex);
         }
     }
 

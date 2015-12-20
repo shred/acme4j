@@ -26,6 +26,7 @@ import org.shredzone.acme4j.util.ClaimBuilder;
  * @author Richard "Shred" Körber
  */
 public class ProofOfPossessionChallenge extends GenericChallenge {
+    private static final long serialVersionUID = 6212440828380185335L;
 
     /**
      * Challenge type name: {@value}

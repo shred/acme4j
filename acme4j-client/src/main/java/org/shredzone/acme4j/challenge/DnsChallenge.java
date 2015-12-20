@@ -27,6 +27,7 @@ import org.shredzone.acme4j.util.ClaimBuilder;
  * @author Richard "Shred" Körber
  */
 public class DnsChallenge extends GenericChallenge {
+    private static final long serialVersionUID = 6964687027713533075L;
 
     /**
      * Challenge type name: {@value}

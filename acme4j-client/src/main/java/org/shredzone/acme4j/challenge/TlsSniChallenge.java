@@ -21,6 +21,7 @@ package org.shredzone.acme4j.challenge;
  * @author Richard "Shred" Körber
  */
 public class TlsSniChallenge extends GenericChallenge {
+    private static final long serialVersionUID = 7370329525205430573L;
 
     /**
      * Challenge type name: {@value}

@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j;
 
+import java.io.Serializable;
 import java.security.KeyPair;
 
 /**
@@ -22,7 +23,8 @@ import java.security.KeyPair;
  *
  * @author Richard "Shred" Körber
  */
-public class Account {
+public class Account implements Serializable {
+    private static final long serialVersionUID = 1064105289226118702L;
 
     private final KeyPair keyPair;
 

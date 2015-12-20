@@ -23,6 +23,7 @@ import org.shredzone.acme4j.util.ClaimBuilder;
  * @author Richard "Shred" Körber
  */
 public class HttpChallenge extends GenericChallenge {
+    private static final long serialVersionUID = 3322211185872544605L;
 
     /**
      * Challenge type name: {@value}
