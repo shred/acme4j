@@ -14,7 +14,12 @@
 package org.shredzone.acme4j.util;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
@@ -30,6 +35,34 @@ public final class CertificateUtils {
 
     private CertificateUtils() {
         // utility class without constructor
+    }
+
+    /**
+     * Reads an {@link X509Certificate} PEM file from an {@link InputStream}.
+     *
+     * @param in
+     *            {@link InputStream} to read the certificate from.
+     * @return {@link X509Certificate} that was read
+     */
+    public static X509Certificate readX509Certificate(InputStream in) throws IOException {
+        try (InputStream uin = in) {
+            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+            return (X509Certificate) certificateFactory.generateCertificate(uin);
+        } catch (CertificateException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    /**
+     * Writes an X.509 certificate PEM file.
+     *
+     * @param cert
+     *            {@link X509Certificate} to write
+     * @param out
+     *            {@link OutputStream} to write the PEM file to
+     */
+    public static void writeX509Certificate(X509Certificate cert, OutputStream out) throws IOException {
+        writeX509Certificate(cert, new OutputStreamWriter(out, "utf-8"));
     }
 
     /**

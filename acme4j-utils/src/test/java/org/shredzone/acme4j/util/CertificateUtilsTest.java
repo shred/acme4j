@@ -17,9 +17,9 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
@@ -44,12 +44,12 @@ public class CertificateUtilsTest {
     }
 
     /**
-     * Test if
+     * Test if {@link CertificateUtils#readX509Certificate(InputStream)} reads and
      * {@link CertificateUtils#writeX509Certificate(X509Certificate, java.io.Writer)}
      * writes a proper X.509 certificate.
      */
     @Test
-    public void testWriteX509Certificate() throws IOException, CertificateException {
+    public void testReadWriteX509Certificate() throws IOException, CertificateException {
         // Read a demonstration certificate
         X509Certificate original;
         try (InputStream cert = getClass().getResourceAsStream("/cert.pem")) {
@@ -58,23 +58,20 @@ public class CertificateUtilsTest {
         assertThat(original, is(notNullValue()));
 
         // Write to StringWriter
-        String pem;
-        try (StringWriter out = new StringWriter()) {
+        byte[] pem;
+        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             CertificateUtils.writeX509Certificate(original, out);
-            pem = out.toString();
+            pem = out.toByteArray();
         }
 
         // Make sure it is a good PEM file
-        assertThat(pem, RegexMatchers.matchesPattern(
+        assertThat(new String(pem, "utf-8"), RegexMatchers.matchesPattern(
                         "-----BEGIN CERTIFICATE-----[\\r\\n]+"
                       + "([a-zA-Z0-9/+=]+[\\r\\n]+)+"
                       + "-----END CERTIFICATE-----[\\r\\n]*"));
 
         // Read it back in
-        X509Certificate written;
-        try (InputStream cert = new ByteArrayInputStream(pem.getBytes("utf-8"))) {
-            written = (X509Certificate) certificateFactory.generateCertificate(cert);
-        }
+        X509Certificate written = CertificateUtils.readX509Certificate(new ByteArrayInputStream(pem));
 
         // Verify that both certificates are the same
         assertThat(original.getEncoded(), is(equalTo(written.getEncoded())));
