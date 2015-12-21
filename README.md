@@ -1,4 +1,4 @@
-# ACME Java Client ![build status](http://jenkins.shredzone.net/buildStatus/icon?job=acme4j)
+# ACME Java Client ![build status](https://jenkins.shredzone.net/project/acme4j/builds/status.png?ref=master)
 
 This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-01) protocol.
 
@@ -39,8 +39,15 @@ The following features are planned to be completed for the first beta release, b
 * Support of MAC-based account recovery.
 * `proofOfPossession-01` and `tls-sni-01` challenge support.
 
+## Contribute
+
+* Fork the [Source code at GitHub](https://github.com/shred/acme4j). Feel free to send pull requests.
+* Found a bug? [File a bug report!](https://github.com/shred/acme4j/issues)
+
 ## License
 
-_acme4j_ is open source software. The source code can be found at [GitHub](https://github.com/shred/acme4j) and is distributed under the terms of [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+_acme4j_ is open source software. The source code is distributed under the terms of [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
-Feel free to send in pull requests!
+## Acknowledgements
+
+* I would like to thank Brian Campbell and all the other [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home) developers. _acme4j_ would not exist without your excellent work.
