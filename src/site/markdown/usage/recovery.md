@@ -8,6 +8,8 @@ Individual CAs may offer further ways of recovery, which are not part of this do
 
 ## Contact-Based Recovery
 
+**NOTE**: Contact-Based Recovery is [currently not supported by _Let's Encrypt_](https://github.com/letsencrypt/boulder/issues/432).
+
 On this recovery method, the CA contacts the account owner via one of the contact addresses given on account creation. The owner is asked to take some action (e.g. clicking on a link in an email). If it was successful, the account data is transferred to the new account.
 
 To initiate contact-based recovery, you first need to create a new key pair and an `Account` object. Then create a `Registration` object by passing the location URI of your _old_ account to the constructor. Finally, start the recovery process by invoking `recoverRegistration()`:
@@ -23,3 +25,11 @@ URI newAccountUri = reg.getLocation();
 ```
 
 `newAccountUri` is the location URI of your _new_ account.
+
+## MAC-Based Recovery
+
+**NOTE**: MAC-Based Recovery is [currently not supported by _Let's Encrypt_](https://github.com/letsencrypt/boulder/issues/433).
+
+On this recovery method, the client proves to the server that it holds a secret value that was established when the initial account was registered.
+
+_acme4j_ does currently not support MAC-based recovery.
