@@ -153,7 +153,10 @@ public abstract class AbstractAcmeClient implements AcmeClient {
                 conn.throwAcmeException();
             }
 
-            registration.setLocation(conn.getLocation());
+            URI location = conn.getLocation();
+            if (location != null) {
+                registration.setLocation(conn.getLocation());
+            }
 
             URI tos = conn.getLink("terms-of-service");
             if (tos != null) {
