@@ -23,7 +23,8 @@ public enum Resource {
     NEW_REG("new-reg"),
     NEW_AUTHZ("new-authz"),
     NEW_CERT("new-cert"),
-    REVOKE_CERT("revoke-cert");
+    REVOKE_CERT("revoke-cert"),
+    RECOVER_REG("recover-reg");
 
     /**
      * Parses the string and returns a matching {@link Resource} instance.

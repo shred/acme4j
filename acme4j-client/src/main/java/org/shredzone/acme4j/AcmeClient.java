@@ -44,10 +44,22 @@ public interface AcmeClient {
      * @param account
      *            {@link Account} that is registered
      * @param registration
-     *            {@link Registration} containing updated registration data. Set the
-     *            account location via {@link Registration#setLocation(URI)}!
+     *            {@link Registration} containing updated registration data and the
+     *            account location URI
      */
     void modifyRegistration(Account account, Registration registration) throws AcmeException;
+
+    /**
+     * Recovers an account by contact-based recovery. The server starts an out-of-band
+     * recovery process by using one of the contact addresses given at account creation.
+     *
+     * @param account
+     *            <em>New</em> {@link Account} to associate the recovered account with
+     * @param registration
+     *            {@link Registration}, with the account location URI set
+     * @throws AcmeException
+     */
+    void recoverRegistration(Account account, Registration registration) throws AcmeException;
 
     /**
      * Creates a new {@link Authorization} for a domain.

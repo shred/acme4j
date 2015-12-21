@@ -53,12 +53,14 @@ public class AbstractAcmeClientTest {
     private Account testAccount;
     private URI resourceUri;
     private URI locationUri;
+    private URI anotherLocationUri;
     private URI agreementUri;
 
     @Before
     public void setup() throws IOException, URISyntaxException {
         resourceUri = new URI("https://example.com/acme/some-resource");
         locationUri = new URI("https://example.com/acme/some-location");
+        anotherLocationUri = new URI("https://example.com/acme/another-location");
         agreementUri = new URI("http://example.com/agreement.pdf");
         testAccount = new Account(TestUtils.createKeyPair());
     }
@@ -143,6 +145,48 @@ public class AbstractAcmeClientTest {
         client.modifyRegistration(testAccount, registration);
 
         assertThat(registration.getLocation(), is(locationUri));
+        assertThat(registration.getAgreement(), is(agreementUri));
+    }
+
+    /**
+     * Test that a {@link Registration} can be recovered by contact-based recovery.
+     */
+    @Test
+    public void testRecoverRegistration() throws AcmeException {
+        Registration registration = new Registration();
+        registration.addContact("mailto:foo@example.com");
+        registration.setLocation(locationUri);
+
+        Connection connection = new DummyConnection() {
+            @Override
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException {
+                assertThat(uri, is(resourceUri));
+                assertThat(claims.toString(), sameJSONAs(getJson("recoverRegistration")));
+                assertThat(session, is(notNullValue()));
+                assertThat(account, is(sameInstance(testAccount)));
+                return HttpURLConnection.HTTP_CREATED;
+            }
+
+            @Override
+            public URI getLocation() throws AcmeException {
+                return anotherLocationUri;
+            }
+
+            @Override
+            public URI getLink(String relation) throws AcmeException {
+                switch(relation) {
+                    case "terms-of-service": return agreementUri;
+                    default: return null;
+                }
+            }
+        };
+
+        TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
+        client.putTestResource(Resource.RECOVER_REG, resourceUri);
+
+        client.recoverRegistration(testAccount, registration);
+
+        assertThat(registration.getLocation(), is(anotherLocationUri));
         assertThat(registration.getAgreement(), is(agreementUri));
     }
 

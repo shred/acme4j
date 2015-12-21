@@ -19,6 +19,8 @@ After invocating `newRegistration()`, the `location` property contains the URI o
 
 `newRegistration()` may fail and throw an `AcmeException` for various reasons. When your public key was already registered with the CA, an `AcmeConflictException` is thrown, but the `location` property will still hold your account URI after the call. This may be helpful if you forgot your account URI and need to recover it.
 
+You should always copy the `location` to a safe place. If you should lose your key pair, you will need it to [recover](./recovery.html) access to your account. Unlike your key pair, the `location` is an information that does not need security precautions.
+
 ## Update an Account
 
 At some point, you may want to update your account. For example your contact address might have changed, or you were asked by the CA to accept the current terms and conditions.
