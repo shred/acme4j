@@ -2,7 +2,7 @@
 
 The ACME server identifies your account by the public key that you provided on registration. If you lose your key pair, you will be unable to access your account.
 
-ACME offers two ways of recovering access to your authorizations and certificates in case you have lost your key pair. However, both ways involve creating a new account, and transfering your data to it. You will not be able to regain access to your old account.
+ACME offers a contact-based way of recovering access to your authorizations and certificates in case you have lost your key pair. However, it involves creating a new account, and transfering your data to it. You will not be able to regain access to your old account.
 
 Individual CAs may offer further ways of recovery, which are not part of this documentation.
 
@@ -25,11 +25,3 @@ URI newAccountUri = reg.getLocation();
 ```
 
 `newAccountUri` is the location URI of your _new_ account.
-
-## MAC-Based Recovery
-
-**NOTE**: MAC-Based Recovery is [currently not supported by _Let's Encrypt_](https://github.com/letsencrypt/boulder/issues/433).
-
-On this recovery method, the client proves to the server that it holds a secret value that was established when the initial account was registered.
-
-_acme4j_ does currently not support MAC-based recovery.
