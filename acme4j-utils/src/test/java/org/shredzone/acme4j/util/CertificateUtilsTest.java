@@ -22,8 +22,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+import org.bouncycastle.asn1.x509.GeneralName;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -75,6 +81,45 @@ public class CertificateUtilsTest {
 
         // Verify that both certificates are the same
         assertThat(original.getEncoded(), is(equalTo(written.getEncoded())));
+    }
+
+    /**
+     * Test if {@link CertificateUtils#createTlsSniCertificate(String)} creates a
+     * good certificate.
+     */
+    @Test
+    public void testCreateTlsSniCertificate() throws IOException, CertificateParsingException {
+        String subject = "30c452b9bd088cdbc2c4094947025d7c.7364ea602ac325a1b55ceaae024fbe29.acme.invalid";
+        Date now = new Date();
+        Date end = new Date(now.getTime() + (8 * 24 * 60 * 60 * 1000L));
+
+        X509Certificate cert = CertificateUtils.createTlsSniCertificate(subject);
+
+        assertThat(cert, not(nullValue()));
+        assertThat(cert.getNotAfter(), is(greaterThan(now)));
+        assertThat(cert.getNotAfter(), is(lessThan(end)));
+        assertThat(cert.getNotBefore(), is(lessThanOrEqualTo(now)));
+        assertThat(cert.getSubjectX500Principal().getName(), is("CN=acme.invalid"));
+        assertThat(getSANs(cert), containsInAnyOrder(subject));
+    }
+
+    /**
+     * Extracts all DNSName SANs from a certificate.
+     *
+     * @param cert
+     *            {@link X509Certificate}
+     * @return Set of DNSName
+     */
+    private Set<String> getSANs(X509Certificate cert) throws CertificateParsingException {
+        Set<String> result = new HashSet<>();
+
+        for (List<?> list : cert.getSubjectAlternativeNames()) {
+            if (((Number) list.get(0)).intValue() == GeneralName.dNSName) {
+                result.add((String) list.get(1));
+            }
+        }
+
+        return result;
     }
 
 }

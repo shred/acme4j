@@ -39,7 +39,7 @@
       <item name="Challenges" href="challenge/index.html">
         <item name="HTTP" href="challenge/http.html"/>
         <item name="DNS" href="challenge/dns.html"/>
-        <item name="tls-sni" href="challenge/tls-sni.html"/>
+        <item name="TLS-SNI" href="challenge/tls-sni.html"/>
         <item name="Proof of Possession" href="challenge/proof-of-possession.html"/>
       </item>
       <item name="CAs" href="ca/index.html">

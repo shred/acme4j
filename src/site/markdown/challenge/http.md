@@ -1,5 +1,7 @@
 # HTTP Challenge
 
+With the HTTP challenge, you prove to the CA that you are able to control the web site content of the domain to be authorized, by making a file with a signed content available at a given path.
+
 After authorizing the challenge, `HttpChallenge` provides two strings:
 
 ```java

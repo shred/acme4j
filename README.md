@@ -34,9 +34,9 @@ See the [online documentation](http://www.shredzone.org/maven/acme4j/) for how t
 
 ## Missing
 
-The following features are planned to be completed for the first beta release, but are still missing:
+The following feature is planned to be completed for the first beta release, but is still missing:
 
-* `proofOfPossession-01` and `tls-sni-01` challenge support.
+* `proofOfPossession-01` challenge support.
 
 ## Contribute
 
