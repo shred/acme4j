@@ -42,7 +42,7 @@ public class DnsChallengeTest {
      * Test that {@link DnsChallenge} generates a correct authorization key.
      */
     @Test
-    public void testHttpChallenge() throws IOException {
+    public void testDnsChallenge() throws IOException {
         KeyPair keypair = TestUtils.createKeyPair();
         Account account = new Account(keypair);
 
