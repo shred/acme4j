@@ -50,8 +50,6 @@ public class GenericChallenge implements Challenge {
     protected static final String KEY_STATUS = "status";
     protected static final String KEY_URI = "uri";
     protected static final String KEY_VALIDATED = "validated";
-    protected static final String KEY_TOKEN = "token";
-    protected static final String KEY_KEY_AUTHORIZATION = "keyAuthorization";
 
     private transient Map<String, Object> data = new HashMap<>();
 

@@ -40,6 +40,9 @@ import org.shredzone.acme4j.util.ValidationBuilder;
 public class ProofOfPossessionChallenge extends GenericChallenge {
     private static final long serialVersionUID = 6212440828380185335L;
 
+    protected static final String KEY_CERTS = "certs";
+    protected static final String KEY_AUTHORIZATION = "authorization";
+
     /**
      * Challenge type name: {@value}
      */
@@ -96,7 +99,7 @@ public class ProofOfPossessionChallenge extends GenericChallenge {
     public void unmarshall(Map<String, Object> map) {
         super.unmarshall(map);
 
-        List<String> certData = get("certs");
+        List<String> certData = get(KEY_CERTS);
         if (certData != null) {
             try {
                 CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
@@ -123,7 +126,7 @@ public class ProofOfPossessionChallenge extends GenericChallenge {
         super.respond(cb);
 
         try {
-            cb.put("authorization", JsonUtil.parseJson(validation));
+            cb.put(KEY_AUTHORIZATION, JsonUtil.parseJson(validation));
         } catch (JoseException ex) {
             // should not happen, as the JSON is prevalidated in the setter
             throw new IllegalStateException("validation: invalid JSON", ex);

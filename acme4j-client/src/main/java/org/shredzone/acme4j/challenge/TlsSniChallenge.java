@@ -17,16 +17,14 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.jose4j.base64url.Base64Url;
 import org.shredzone.acme4j.Account;
-import org.shredzone.acme4j.util.ClaimBuilder;
 
 /**
  * Implements the {@code tls-sni-01} challenge.
  *
  * @author Richard "Shred" Körber
  */
-public class TlsSniChallenge extends GenericChallenge {
+public class TlsSniChallenge extends GenericTokenChallenge {
     private static final long serialVersionUID = 7370329525205430573L;
     private static final char[] HEX = "0123456789abcdef".toCharArray();
 
@@ -35,42 +33,21 @@ public class TlsSniChallenge extends GenericChallenge {
      */
     public static final String TYPE = "tls-sni-01";
 
-    private String authorization = null;
-    private String subject = null;
-
-    /**
-     * Authorizes the {@link Challenge} by signing it with an {@link Account}.
-     *
-     * @param account
-     *            {@link Account} to sign the challenge with
-     */
-    public void authorize(Account account) {
-        if (account == null) {
-            throw new NullPointerException("account must not be null");
-        }
-
-        authorization = getToken() + '.' + Base64Url.encode(jwkThumbprint(account.getKeyPair().getPublic()));
-
-        String hash = computeHash(authorization);
-        subject = hash.substring(0, 32) + '.' + hash.substring(32) + ".acme.invalid";
-    }
+    private String subject;
 
     /**
      * Return the subject to generate a self-signed certificate for.
      */
     public String getSubject() {
-        if (authorization == null) {
-            throw new IllegalStateException("Challenge is not authorized yet");
-        }
+        assertIsAuthorized();
         return subject;
     }
 
-
     @Override
-    public void respond(ClaimBuilder cb) {
-        super.respond(cb);
-        cb.put(KEY_TOKEN, getToken());
-        cb.put(KEY_KEY_AUTHORIZATION, getAuthorization());
+    public void authorize(Account account) {
+        super.authorize(account);
+        String hash = computeHash(getAuthorization());
+        subject = hash.substring(0, 32) + '.' + hash.substring(32) + ".acme.invalid";
     }
 
     @Override
@@ -101,18 +78,6 @@ public class TlsSniChallenge extends GenericChallenge {
             // Algorithm and Encoding are standard on Java
             throw new RuntimeException(ex);
         }
-    }
-
-    private String getToken() {
-        return get(KEY_TOKEN);
-    }
-
-    private String getAuthorization() {
-        if (authorization == null) {
-            throw new IllegalStateException("Challenge is not authorized yet");
-        }
-
-        return authorization;
     }
 
 }
