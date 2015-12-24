@@ -54,7 +54,7 @@ public class ProofOfPossessionChallengeTest {
         assertThat(challenge.getStatus(), is(Status.PENDING));
 
         try {
-            challenge.marshall(new ClaimBuilder());
+            challenge.respond(new ClaimBuilder());
             fail("marshall() without previous authorize()");
         } catch (IllegalStateException ex) {
             // expected
@@ -63,7 +63,7 @@ public class ProofOfPossessionChallengeTest {
         challenge.authorize(account, domainKeyPair, "example.org");
 
         ClaimBuilder cb = new ClaimBuilder();
-        challenge.marshall(cb);
+        challenge.respond(cb);
 
         assertThat(cb.toString(), sameJSONAs("{\"type\"=\""
             + ProofOfPossessionChallenge.TYPE + "\",\"authorization\"="
@@ -90,7 +90,7 @@ public class ProofOfPossessionChallengeTest {
         challenge.importValidation(validation);
 
         ClaimBuilder cb = new ClaimBuilder();
-        challenge.marshall(cb);
+        challenge.respond(cb);
 
         assertThat(cb.toString(), sameJSONAs("{\"type\"=\""
             + ProofOfPossessionChallenge.TYPE + "\",\"authorization\"=" + validation

@@ -67,38 +67,19 @@ public class GenericChallengeTest {
     }
 
     /**
-     * Test get and put methods.
-     */
-    public void testGetPut() {
-        GenericChallenge challenge = new GenericChallenge();
-
-        challenge.put("a-string", "foo");
-        challenge.put("a-number", 1234);
-
-        assertThat((String) challenge.get("a-string"), is("foo"));
-        assertThat((Integer) challenge.get("a-number"), is(1234));
-
-        ClaimBuilder cb = new ClaimBuilder();
-        challenge.marshall(cb);
-        assertThat(cb.toString(), sameJSONAs("{\"a-string\":\"foo\",\"a-number\":1234}")
-                .allowingExtraUnexpectedFields());
-    }
-
-    /**
-     * Test that marshalling results in an identical JSON like the one that was
-     * unmarshalled.
+     * Test that {@link GenericChallenge#respond(ClaimBuilder)} contains the type.
      */
     @Test
-    public void testMarshall() throws JoseException {
+    public void testRespond() throws JoseException {
         String json = TestUtils.getJson("genericChallenge");
 
         GenericChallenge challenge = new GenericChallenge();
         challenge.unmarshall(JsonUtil.parseJson(json));
 
         ClaimBuilder cb = new ClaimBuilder();
-        challenge.marshall(cb);
+        challenge.respond(cb);
 
-        assertThat(cb.toString(), sameJSONAs(json));
+        assertThat(cb.toString(), sameJSONAs("{\"type\"=\"generic-01\"}"));
     }
 
     /**

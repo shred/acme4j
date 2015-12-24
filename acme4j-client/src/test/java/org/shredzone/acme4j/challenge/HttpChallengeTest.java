@@ -65,7 +65,7 @@ public class HttpChallengeTest {
         assertThat(challenge.getAuthorization(), is(KEY_AUTHORIZATION));
 
         ClaimBuilder cb = new ClaimBuilder();
-        challenge.marshall(cb);
+        challenge.respond(cb);
 
         assertThat(cb.toString(), sameJSONAs("{\"keyAuthorization\"=\""
             + KEY_AUTHORIZATION + "\"}").allowingExtraUnexpectedFields());

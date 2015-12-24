@@ -33,8 +33,6 @@ import org.shredzone.acme4j.util.TestUtils;
  */
 public class DnsChallengeTest {
 
-    private static final String TOKEN =
-            "pNvmJivs0WCko2suV7fhe-59oFqyYx_yB7tx6kIMAyE";
     private static final String KEY_AUTHORIZATION =
             "pNvmJivs0WCko2suV7fhe-59oFqyYx_yB7tx6kIMAyE.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0";
 
@@ -53,20 +51,18 @@ public class DnsChallengeTest {
         assertThat(challenge.getStatus(), is(Status.PENDING));
 
         try {
-            challenge.getAuthorization();
-            fail("getAuthorization() without previous authorize()");
+            challenge.getDigest();
+            fail("getDigest() without previous authorize()");
         } catch (IllegalStateException ex) {
             // expected
         }
 
         challenge.authorize(account);
 
-        assertThat(challenge.getToken(), is(TOKEN));
-        assertThat(challenge.getAuthorization(), is(KEY_AUTHORIZATION));
         assertThat(challenge.getDigest(), is("rzMmotrIgsithyBYc0vgiLUEEKYx0WetQRgEF2JIozA"));
 
         ClaimBuilder cb = new ClaimBuilder();
-        challenge.marshall(cb);
+        challenge.respond(cb);
 
         assertThat(cb.toString(), sameJSONAs("{\"keyAuthorization\"=\""
             + KEY_AUTHORIZATION + "\"}").allowingExtraUnexpectedFields());

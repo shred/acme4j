@@ -36,6 +36,10 @@ import org.shredzone.acme4j.util.ClaimBuilder;
  * A generic implementation of {@link Challenge}. It can be used as a base class for
  * actual challenge implemenation, but it is also used if the ACME server offers a
  * proprietary challenge that is unknown to acme4j.
+ * <p>
+ * Subclasses must override {@link GenericChallenge#acceptable(String)} so it only
+ * accepts the own type. {@link GenericChallenge#respond(ClaimBuilder)} should be
+ * overridden to put all required data to the response.
  *
  * @author Richard "Shred" Körber
  */
@@ -47,7 +51,7 @@ public class GenericChallenge implements Challenge {
     protected static final String KEY_URI = "uri";
     protected static final String KEY_VALIDATED = "validated";
     protected static final String KEY_TOKEN = "token";
-    protected static final String KEY_KEY_AUTHORIZSATION = "keyAuthorization";
+    protected static final String KEY_KEY_AUTHORIZATION = "keyAuthorization";
 
     private transient Map<String, Object> data = new HashMap<>();
 
@@ -95,8 +99,8 @@ public class GenericChallenge implements Challenge {
     }
 
     @Override
-    public void marshall(ClaimBuilder cb) {
-        cb.putAll(data);
+    public void respond(ClaimBuilder cb) {
+        cb.put(KEY_TYPE, getType());
     }
 
     /**
@@ -120,18 +124,6 @@ public class GenericChallenge implements Challenge {
     @SuppressWarnings("unchecked")
     protected <T> T get(String key) {
         return (T) data.get(key);
-    }
-
-    /**
-     * Puts a value to the challenge state.
-     *
-     * @param key
-     *            Key
-     * @param value
-     *            Value, may be {@code null}
-     */
-    protected void put(String key, Object value) {
-        data.put(key, value);
     }
 
     /**

@@ -37,27 +37,17 @@ public class DnsChallenge extends GenericChallenge {
     private String authorization = null;
 
     /**
-     * Returns the token to be used for this challenge.
+     * Authorizes the {@link Challenge} by signing it with an {@link Account}.
+     *
+     * @param account
+     *            {@link Account} to sign the challenge with
      */
-    public String getToken() {
-        return get(KEY_TOKEN);
-    }
-
-    /**
-     * Sets the token to be used.
-     */
-    public void setToken(String token) {
-        put(KEY_TOKEN, token);
-    }
-
-    /**
-     * Returns the authorization string to be used for the response.
-     */
-    public String getAuthorization() {
-        if (authorization == null) {
-            throw new IllegalStateException("Challenge is not authorized yet");
+    public void authorize(Account account) {
+        if (account == null) {
+            throw new NullPointerException("account must not be null");
         }
-        return authorization;
+
+        authorization = getToken() + '.' + Base64Url.encode(jwkThumbprint(account.getKeyPair().getPublic()));
     }
 
     /**
@@ -76,30 +66,32 @@ public class DnsChallenge extends GenericChallenge {
         }
     }
 
-    /**
-     * Authorizes the {@link Challenge} by signing it with an {@link Account}.
-     *
-     * @param account
-     *            {@link Account} to sign the challenge with
-     */
-    public void authorize(Account account) {
-        if (account == null) {
-            throw new NullPointerException("account must not be null");
+    @Override
+    public void respond(ClaimBuilder cb) {
+        if (authorization == null) {
+            throw new IllegalStateException("Challenge is not authorized yet");
         }
 
-        authorization = getToken() + '.' + Base64Url.encode(jwkThumbprint(account.getKeyPair().getPublic()));
-    }
-
-    @Override
-    public void marshall(ClaimBuilder cb) {
-        cb.put(KEY_KEY_AUTHORIZSATION, getAuthorization());
-        cb.put(KEY_TYPE, getType());
+        super.respond(cb);
         cb.put(KEY_TOKEN, getToken());
+        cb.put(KEY_KEY_AUTHORIZATION, getAuthorization());
     }
 
     @Override
     protected boolean acceptable(String type) {
         return TYPE.equals(type);
+    }
+
+    private String getToken() {
+        return get(KEY_TOKEN);
+    }
+
+    private String getAuthorization() {
+        if (authorization == null) {
+            throw new IllegalStateException("Challenge is not authorized yet");
+        }
+
+        return authorization;
     }
 
 }

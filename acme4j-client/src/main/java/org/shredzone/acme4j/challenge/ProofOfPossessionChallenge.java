@@ -115,13 +115,14 @@ public class ProofOfPossessionChallenge extends GenericChallenge {
     }
 
     @Override
-    public void marshall(ClaimBuilder cb) {
+    public void respond(ClaimBuilder cb) {
         if (validation == null) {
             throw new IllegalStateException("not validated");
         }
 
+        super.respond(cb);
+
         try {
-            cb.put(KEY_TYPE, getType());
             cb.put("authorization", JsonUtil.parseJson(validation));
         } catch (JoseException ex) {
             // should not happen, as the JSON is prevalidated in the setter

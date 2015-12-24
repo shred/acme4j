@@ -272,7 +272,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
         try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource("challenge");
-            challenge.marshall(claims);
+            challenge.respond(claims);
 
             int rc = conn.sendSignedRequest(challenge.getLocation(), claims, session, account);
             if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {

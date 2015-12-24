@@ -33,8 +33,6 @@ import org.shredzone.acme4j.util.TestUtils;
  */
 public class TlsSniChallengeTest {
 
-    private static final String TOKEN =
-            "VNLBdSiZ3LppU2CRG8bilqlwq4DuApJMg3ZJowU6JhQ";
     private static final String KEY_AUTHORIZATION =
             "VNLBdSiZ3LppU2CRG8bilqlwq4DuApJMg3ZJowU6JhQ.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0";
 
@@ -53,13 +51,6 @@ public class TlsSniChallengeTest {
         assertThat(challenge.getStatus(), is(Status.PENDING));
 
         try {
-            challenge.getAuthorization();
-            fail("getAuthorization() without previous authorize()");
-        } catch (IllegalStateException ex) {
-            // expected
-        }
-
-        try {
             challenge.getSubject();
             fail("getSubject() without previous authorize()");
         } catch (IllegalStateException ex) {
@@ -68,12 +59,10 @@ public class TlsSniChallengeTest {
 
         challenge.authorize(account);
 
-        assertThat(challenge.getToken(), is(TOKEN));
-        assertThat(challenge.getAuthorization(), is(KEY_AUTHORIZATION));
         assertThat(challenge.getSubject(), is("14e2350a04434f93c2e0b6012968d99d.ed459b6a7a019d9695609b8514f9d63d.acme.invalid"));
 
         ClaimBuilder cb = new ClaimBuilder();
-        challenge.marshall(cb);
+        challenge.respond(cb);
 
         assertThat(cb.toString(), sameJSONAs("{\"keyAuthorization\"=\""
             + KEY_AUTHORIZATION + "\"}").allowingExtraUnexpectedFields());

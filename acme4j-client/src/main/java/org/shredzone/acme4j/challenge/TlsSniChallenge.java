@@ -28,50 +28,15 @@ import org.shredzone.acme4j.util.ClaimBuilder;
  */
 public class TlsSniChallenge extends GenericChallenge {
     private static final long serialVersionUID = 7370329525205430573L;
+    private static final char[] HEX = "0123456789abcdef".toCharArray();
 
     /**
      * Challenge type name: {@value}
      */
     public static final String TYPE = "tls-sni-01";
 
-    private static final char[] HEX = "0123456789abcdef".toCharArray();
-
     private String authorization = null;
     private String subject = null;
-
-    /**
-     * Returns the token to be used for this challenge.
-     */
-    public String getToken() {
-        return get(KEY_TOKEN);
-    }
-
-    /**
-     * Sets the token to be used.
-     */
-    public void setToken(String token) {
-        put(KEY_TOKEN, token);
-    }
-
-    /**
-     * Returns the authorization string.
-     */
-    public String getAuthorization() {
-        if (authorization == null) {
-            throw new IllegalStateException("Challenge is not authorized yet");
-        }
-        return authorization;
-    }
-
-    /**
-     * Return the subject to generate a self-signed certificate for.
-     */
-    public String getSubject() {
-        if (authorization == null) {
-            throw new IllegalStateException("Challenge is not authorized yet");
-        }
-        return subject;
-    }
 
     /**
      * Authorizes the {@link Challenge} by signing it with an {@link Account}.
@@ -90,11 +55,22 @@ public class TlsSniChallenge extends GenericChallenge {
         subject = hash.substring(0, 32) + '.' + hash.substring(32) + ".acme.invalid";
     }
 
+    /**
+     * Return the subject to generate a self-signed certificate for.
+     */
+    public String getSubject() {
+        if (authorization == null) {
+            throw new IllegalStateException("Challenge is not authorized yet");
+        }
+        return subject;
+    }
+
+
     @Override
-    public void marshall(ClaimBuilder cb) {
-        cb.put(KEY_KEY_AUTHORIZSATION, getAuthorization());
-        cb.put(KEY_TYPE, getType());
+    public void respond(ClaimBuilder cb) {
+        super.respond(cb);
         cb.put(KEY_TOKEN, getToken());
+        cb.put(KEY_KEY_AUTHORIZATION, getAuthorization());
     }
 
     @Override
@@ -125,6 +101,18 @@ public class TlsSniChallenge extends GenericChallenge {
             // Algorithm and Encoding are standard on Java
             throw new RuntimeException(ex);
         }
+    }
+
+    private String getToken() {
+        return get(KEY_TOKEN);
+    }
+
+    private String getAuthorization() {
+        if (authorization == null) {
+            throw new IllegalStateException("Challenge is not authorized yet");
+        }
+
+        return authorization;
     }
 
 }

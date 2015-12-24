@@ -56,12 +56,11 @@ public interface Challenge extends Serializable {
     void unmarshall(Map<String, Object> map);
 
     /**
-     * Copies the current challenge state to the claim builder, as preparation for
-     * triggering it.
+     * Exports the response state, as preparation for triggering the challenge.
      *
      * @param cb
-     *            {@link ClaimBuilder} to copy the challenge state to
+     *            {@link ClaimBuilder} to copy the response to
      */
-    void marshall(ClaimBuilder cb);
+    void respond(ClaimBuilder cb);
 
 }
