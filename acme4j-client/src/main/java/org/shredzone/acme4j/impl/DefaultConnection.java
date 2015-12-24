@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 
 import org.jose4j.base64url.Base64Url;
 import org.jose4j.json.JsonUtil;
-import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
@@ -140,7 +140,7 @@ public class DefaultConnection implements Connection {
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
 
-            final JsonWebKey jwk = JsonWebKey.Factory.newJwk(keypair.getPublic());
+            final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(keypair.getPublic());
 
             JsonWebSignature jws = new JsonWebSignature();
             jws.setPayload(claims.toString());

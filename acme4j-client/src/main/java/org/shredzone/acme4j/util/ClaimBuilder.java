@@ -22,6 +22,7 @@ import java.util.TreeMap;
 import org.jose4j.base64url.Base64Url;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
+import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.connector.Resource;
 
@@ -122,7 +123,7 @@ public class ClaimBuilder {
         }
 
         try {
-            final JsonWebKey jwk = JsonWebKey.Factory.newJwk(publickey);
+            final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(publickey);
             Map<String, Object> jwkParams = jwk.toParams(JsonWebKey.OutputControlLevel.PUBLIC_ONLY);
             object(key).putAll(jwkParams);
             return this;
