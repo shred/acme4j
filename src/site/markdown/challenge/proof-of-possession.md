@@ -1,6 +1,6 @@
 # Proof of Possession
 
-With the Proof of Possesion challenge, you prove to the CA that you are able to provide a verification document that is signed with a key that is known to the server. The main purpose of this challenge is to transfer the control of a domain to your account.
+With the Proof of Possesion challenge, you prove to the CA that you are able to provide a verification document that is signed with a key that is known to the server. The main purpose of this challenge is to transfer the authorization of a domain to your account.
 
 The challenge object contains a list of `X509Certificate`s that are already known to the CA:
 
@@ -14,7 +14,7 @@ In the next step, the _current owner of the domain_ authorizes the challenge, by
 
 ```java
 Account ownerAccount = ... // Account of the domain owner
-KeyPair domainKeyPair = ... // Key pair matching a certificates
+KeyPair domainKeyPair = ... // Key pair matching a certificate
 String domain = ... // Domain to authorize
 
 challenge.authorize(ownerAccount, domainKeyPair, domain);
