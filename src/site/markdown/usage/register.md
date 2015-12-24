@@ -23,11 +23,11 @@ You should always copy the `location` to a safe place. If you should lose your k
 
 ## Update an Account
 
-At some point, you may want to update your account. For example your contact address might have changed, or you were asked by the CA to accept the current terms and conditions.
+At some point, you may want to update your account. For example your contact address might have changed, or you were asked by the CA to accept the current terms of service.
 
 To do so, create a `Registration` object again, and set the `location` property to the URI that you previously got via `newRegistration()`. Also set whatever you like to change to your account.
 
-The following example accepts the terms and conditions by explicitly setting the URL to the agreement document.
+The following example accepts the terms of service by explicitly setting the URL to the agreement document.
 
 ```java
 URI accountLocationUri = ... // your account's URI

@@ -93,7 +93,7 @@ public class ClientTest {
             LOG.info("Account does already exist, URI: " + reg.getLocation());
         }
 
-        LOG.info("Terms and Conditions: " + reg.getAgreement());
+        LOG.info("Terms of Service: " + reg.getAgreement());
 
         if (createdNewKeyPair) {
             boolean accepted = acceptAgreement(client, account, reg);
@@ -212,7 +212,7 @@ public class ClientTest {
     }
 
     /**
-     * Presents the user a link to the Terms and Conditions, and asks for confirmation.
+     * Presents the user a link to the Terms of Service, and asks for confirmation.
      *
      * @param client
      *            {@link AcmeClient} to send confirmation to
@@ -225,16 +225,16 @@ public class ClientTest {
     public boolean acceptAgreement(AcmeClient client, Account account, Registration reg)
                 throws AcmeException {
         int option = JOptionPane.showConfirmDialog(null,
-                        "Do you accept the Terms and Conditions?\n\n" + reg.getAgreement(),
+                        "Do you accept the Terms of Service?\n\n" + reg.getAgreement(),
                         "Accept T&C",
                         JOptionPane.YES_NO_OPTION);
         if (option == JOptionPane.NO_OPTION) {
-            LOG.error("User did not accept Terms and Conditions");
+            LOG.error("User did not accept Terms of Service");
             return false;
         }
 
         client.modifyRegistration(account, reg);
-        LOG.info("Updated user's T&C");
+        LOG.info("Updated user's ToS");
 
         return true;
     }
