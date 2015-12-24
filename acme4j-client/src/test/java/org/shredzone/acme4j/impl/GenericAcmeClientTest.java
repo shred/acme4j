@@ -30,6 +30,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeClientProvider;
+import org.shredzone.acme4j.util.ClaimBuilder;
 
 /**
  * Unit tests for {@link GenericAcmeClient}.
@@ -56,7 +57,9 @@ public class GenericAcmeClientTest {
         when(mockProvider.createChallenge(HttpChallenge.TYPE)).thenReturn(mockChallenge);
 
         GenericAcmeClient client = new GenericAcmeClient(mockProvider, directoryUri);
-        Challenge challenge = client.createChallenge(HttpChallenge.TYPE);
+        Challenge challenge = client.createChallenge(new ClaimBuilder()
+                .put("type", HttpChallenge.TYPE)
+                .toMap());
 
         assertThat(challenge, is(instanceOf(HttpChallenge.class)));
         assertThat(challenge, is(sameInstance((Challenge) mockChallenge)));

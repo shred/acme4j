@@ -482,7 +482,7 @@ public class AbstractAcmeClientTest {
 
         /**
          * Register a {@link Challenge}. For the sake of simplicity,
-         * {@link #createChallenge(String)} will always return the same {@link Challenge}
+         * {@link #createChallenge(Map)} will always return the same {@link Challenge}
          * instance in this test suite.
          *
          * @param s
@@ -507,12 +507,16 @@ public class AbstractAcmeClientTest {
         }
 
         @Override
-        protected Challenge createChallenge(String type) {
+        protected Challenge createChallenge(Map<String, Object> data) {
             if (challengeMap.isEmpty()) {
                 fail("Unexpected invocation of createChallenge()");
             }
-            Challenge challenge = challengeMap.get(type);
-            return (challenge != null ? challenge : new GenericChallenge());
+            Challenge challenge = challengeMap.get(data.get("type"));
+            if (challenge == null) {
+                challenge = new GenericChallenge();
+            }
+            challenge.unmarshall(data);
+            return challenge;
         }
 
         @Override

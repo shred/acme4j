@@ -20,6 +20,8 @@ import java.util.Map;
 
 import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.challenge.Challenge;
+import org.shredzone.acme4j.challenge.GenericChallenge;
+import org.shredzone.acme4j.challenge.GenericTokenChallenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -55,12 +57,22 @@ public class GenericAcmeClient extends AbstractAcmeClient {
     }
 
     @Override
-    protected Challenge createChallenge(String type) {
+    protected Challenge createChallenge(Map<String, Object> data) {
+        String type = (String) data.get("type");
         if (type == null || type.isEmpty()) {
             throw new IllegalArgumentException("type must not be empty or null");
         }
 
-        return provider.createChallenge(type);
+        Challenge challenge = provider.createChallenge(type);
+        if (challenge == null) {
+            if (data.containsKey("token")) {
+                challenge = new GenericTokenChallenge();
+            } else {
+                challenge = new GenericChallenge();
+            }
+        }
+        challenge.unmarshall(data);
+        return challenge;
     }
 
     @Override

@@ -18,7 +18,6 @@ import java.net.URI;
 import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.DnsChallenge;
-import org.shredzone.acme4j.challenge.GenericChallenge;
 import org.shredzone.acme4j.challenge.HttpChallenge;
 import org.shredzone.acme4j.challenge.ProofOfPossessionChallenge;
 import org.shredzone.acme4j.challenge.TlsSniChallenge;
@@ -63,18 +62,17 @@ public abstract class AbstractAcmeClientProvider implements AcmeClientProvider {
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public <T extends Challenge> T createChallenge(String type) {
+    public Challenge createChallenge(String type) {
         if (type == null || type.isEmpty()) {
             throw new IllegalArgumentException("no type given");
         }
 
         switch (type) {
-            case DnsChallenge.TYPE: return (T) new DnsChallenge();
-            case TlsSniChallenge.TYPE: return (T) new TlsSniChallenge();
-            case ProofOfPossessionChallenge.TYPE: return (T) new ProofOfPossessionChallenge();
-            case HttpChallenge.TYPE: return (T) new HttpChallenge();
-            default: return (T) new GenericChallenge();
+            case DnsChallenge.TYPE: return new DnsChallenge();
+            case TlsSniChallenge.TYPE: return new TlsSniChallenge();
+            case ProofOfPossessionChallenge.TYPE: return new ProofOfPossessionChallenge();
+            case HttpChallenge.TYPE: return new HttpChallenge();
+            default: return null;
         }
     }
 

@@ -56,12 +56,10 @@ public interface AcmeClientProvider {
      *
      * @param type
      *            Challenge type name
-     * @return Matching {@link Challenge} instance
-     * @throws ClassCastException
-     *             if the expected {@link Challenge} type does not match the given type
-     *             name.
+     * @return Matching {@link Challenge} instance, or {@code null} if the type is not
+     *         known
      */
-    <T extends Challenge> T createChallenge(String type);
+    Challenge createChallenge(String type);
 
     /**
      * Creates a {@link Connection} for communication with the ACME server.

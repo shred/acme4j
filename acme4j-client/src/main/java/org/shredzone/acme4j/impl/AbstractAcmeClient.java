@@ -61,11 +61,11 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     /**
      * Creates a {@link Challenge} instance for the given challenge type.
      *
-     * @param type
-     *            Challenge type
+     * @param data
+     *            Challenge JSON data
      * @return {@link Challenge} instance
      */
-    protected abstract Challenge createChallenge(String type);
+    protected abstract Challenge createChallenge(Map<String, Object> data);
 
     /**
      * Connects to the server's API.
@@ -322,9 +322,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
                 throw new AcmeException("Provided URI is not a challenge URI");
             }
 
-            T challenge = (T) createChallenge(json.get("type").toString());
-            challenge.unmarshall(json);
-            return challenge;
+            return (T) createChallenge(json);
         }
     }
 
@@ -425,9 +423,8 @@ public abstract class AbstractAcmeClient implements AcmeClient {
                         (Collection<Map<String, Object>>) json.get("challenges");
         List<Challenge> cr = new ArrayList<>();
         for (Map<String, Object> c : challenges) {
-            Challenge ch = createChallenge((String) c.get("type"));
+            Challenge ch = createChallenge(c);
             if (ch != null) {
-                ch.unmarshall(c);
                 cr.add(ch);
             }
         }

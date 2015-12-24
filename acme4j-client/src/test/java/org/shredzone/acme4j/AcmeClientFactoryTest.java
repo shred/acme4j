@@ -81,7 +81,7 @@ public class AcmeClientFactoryTest {
         }
 
         @Override
-        public <T extends Challenge> T createChallenge(String type) {
+        public Challenge createChallenge(String type) {
             fail("not supposed to be invoked");
             return null;
         }
@@ -107,7 +107,7 @@ public class AcmeClientFactoryTest {
         }
 
         @Override
-        public <T extends Challenge> T createChallenge(String type) {
+        public Challenge createChallenge(String type) {
             fail("not supposed to be invoked");
             return null;
         }

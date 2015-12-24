@@ -23,7 +23,6 @@ import org.junit.Test;
 import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.DnsChallenge;
-import org.shredzone.acme4j.challenge.GenericChallenge;
 import org.shredzone.acme4j.challenge.HttpChallenge;
 import org.shredzone.acme4j.challenge.ProofOfPossessionChallenge;
 import org.shredzone.acme4j.challenge.TlsSniChallenge;
@@ -110,8 +109,7 @@ public class AbstractAcmeClientProviderTest {
         assertThat(c5, instanceOf(TlsSniChallenge.class));
 
         Challenge c6 = provider.createChallenge("foobar-01");
-        assertThat(c6, not(nullValue()));
-        assertThat(c6, instanceOf(GenericChallenge.class));
+        assertThat(c6, is(nullValue()));
 
         try {
             provider.createChallenge(null);
