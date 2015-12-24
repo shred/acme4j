@@ -62,6 +62,13 @@ public class ClaimBuilderTest {
         assertThat(res, is(sameInstance(cb)));
 
         assertThat(cb.toString(), is("{\"fooInt\":456,\"fooStr\":\"String\"}"));
+
+        Map<String, Object> map = cb.toMap();
+        assertThat(map.keySet(), hasSize(2));
+        assertThat(map, allOf(
+                hasEntry("fooInt", (Object) 456),
+                hasEntry("fooStr", (Object) "String")
+        ));
     }
 
     /**

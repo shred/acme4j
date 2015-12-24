@@ -15,6 +15,7 @@ package org.shredzone.acme4j.util;
 
 import java.security.Key;
 import java.security.PublicKey;
+import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -155,6 +156,13 @@ public class ClaimBuilder {
     public ClaimBuilder array(String key, Object... values) {
         data.put(key, values);
         return this;
+    }
+
+    /**
+     * Returns a {@link Map} representation of the claims.
+     */
+    public Map<String, Object> toMap() {
+        return Collections.unmodifiableMap(data);
     }
 
     /**
