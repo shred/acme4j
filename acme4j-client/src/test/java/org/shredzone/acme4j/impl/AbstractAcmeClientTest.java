@@ -311,7 +311,7 @@ public class AbstractAcmeClientTest {
 
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
 
-        Challenge challenge = new HttpChallenge();
+        HttpChallenge challenge = new HttpChallenge();
         challenge.unmarshall(getJsonAsMap("triggerHttpChallenge"));
         challenge.authorize(testAccount);
 

@@ -17,7 +17,6 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.Map;
 
-import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.util.ClaimBuilder;
 
@@ -47,15 +46,6 @@ public interface Challenge extends Serializable {
      * Returns the validation date, if returned by the server.
      */
     String getValidated();
-
-    /**
-     * Authorizes a {@link Challenge} by signing it with an {@link Account}. This is
-     * required before triggering the challenge.
-     *
-     * @param account
-     *            {@link Account} to sign the challenge with
-     */
-    void authorize(Account account);
 
     /**
      * Sets the challenge state by reading the given JSON map.

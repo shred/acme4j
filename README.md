@@ -32,11 +32,8 @@ The ACME specifications are in draft status and subject to change.
 
 See the [online documentation](http://www.shredzone.org/maven/acme4j/) for how to use _acme4j_. Or just have a look at [the source code of an example](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/ClientTest.java).
 
-## Missing
 
-The following feature is planned to be completed for the first beta release, but is still missing:
 
-* `proofOfPossession-01` challenge support.
 
 ## Contribute
 

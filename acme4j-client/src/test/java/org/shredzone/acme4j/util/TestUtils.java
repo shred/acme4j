@@ -51,6 +51,11 @@ public final class TestUtils {
     public static final String KTY = "RSA";
     public static final String THUMBPRINT = "HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0";
 
+    public static final String D_N = "tP7p9wOe0NWocwLu7h233i1JqUPW1MeLeilyHY7oMKnXZFyf1l0saqLcrBtOj3EyaG6qVfpiLEWEIiuWclPYSR_QSt9lCi9xAoWbYq9-mqseehXPaejynlIMsP2UiCAenSHjJEer6Ug6nFelGVgav3mypwYFUdvc18wI00clKYhRAc4dZodilRzDTLy95V1S3RCxGf-lE0XYg7ieO_ovSMERtH_7NsjZnBiaE7mwm0YZzreCr8oSuHwhC63kgY27FnCgH0h63LICSPVVDJZPLcWAmSXv1k0qoVTsRzFutRN6RB_96wqTTBi8Qm98lyCpXcsxa3BH-4TCvLEaa2KkeQ";
+    public static final String D_E = "AQAB";
+    public static final String D_KTY = "RSA";
+    public static final String D_THUMBPRINT = "0VPbh7-I6swlkBu0TrNKSQp6d69bukzeQA0ksuX3FFs";
+
     private static final ResourceBundle JSON_RESOURCE = ResourceBundle.getBundle("json");
 
     private TestUtils() {
@@ -103,8 +108,8 @@ public final class TestUtils {
     }
 
     /**
-     * Creates a standard key pair for testing. This keypair is read from a test resource
-     * and is guaranteed not to change between test runs.
+     * Creates a standard account {@link KeyPair} for testing. The key pair is read from a
+     * test resource and is guaranteed not to change between test runs.
      * <p>
      * The constants {@link #N}, {@link #E}, {@link #KTY} and {@link #THUMBPRINT} are
      * related to the returned key pair and can be used for asserting results.
@@ -121,6 +126,33 @@ public final class TestUtils {
 
             PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(
                     getResourceAsByteArray("/private.key"));
+            PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
+
+            return new KeyPair(publicKey, privateKey);
+        } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    /**
+     * Creates a standard domain key pair for testing. This keypair is read from a test
+     * resource and is guaranteed not to change between test runs.
+     * <p>
+     * The constants {@link #D_N}, {@link #D_E}, {@link #D_KTY} and {@link #D_THUMBPRINT}
+     * are related to the returned key pair and can be used for asserting results.
+     *
+     * @return {@link KeyPair} for testing
+     */
+    public static KeyPair createDomainKeyPair() throws IOException {
+        try {
+            KeyFactory keyFactory = KeyFactory.getInstance(KTY);
+
+            X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(
+                    getResourceAsByteArray("/domain-public.key"));
+            PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
+
+            PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(
+                    getResourceAsByteArray("/domain-private.key"));
             PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
 
             return new KeyPair(publicKey, privateKey);

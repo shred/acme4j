@@ -13,15 +13,27 @@
  */
 package org.shredzone.acme4j.challenge;
 
-import java.security.PublicKey;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.security.KeyPair;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
+import org.jose4j.base64url.Base64Url;
+import org.jose4j.json.JsonUtil;
+import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.ValidationBuilder;
 
 /**
  * Implements the {@code proofOfPossession-01} challenge.
- * <p>
- * <em>TODO: Currently this challenge is not implemented.</em>
  *
  * @author Richard "Shred" Körber
  */
@@ -33,18 +45,88 @@ public class ProofOfPossessionChallenge extends GenericChallenge {
      */
     public static final String TYPE = "proofOfPossession-01";
 
-    private PublicKey accountKey;
+    private Collection<X509Certificate> certs;
+    private String validation;
+
+    /**
+     * Gets the collection of {@link X509Certificate} known by the server.
+     */
+    public Collection<X509Certificate> getCertificates() {
+        return certs;
+    }
+
+    /**
+     * Authorizes the challenge by signing it with the {@link Account} of the current
+     * domain owner.
+     *
+     * @param ownerAccount
+     *            {@link Account} of the certificate holder
+     * @param domainKeypair
+     *            {@link KeyPair} matching one of the requested certificates
+     * @param domains
+     *            Domains to validate
+     */
+    public void authorize(Account ownerAccount, KeyPair domainKeypair, String... domains) {
+        importValidation(new ValidationBuilder()
+                .domains(domains)
+                .sign(ownerAccount, domainKeypair));
+    }
+
+    /**
+     * Imports a validation JWS.
+     *
+     * @param validation
+     *            JWS of the validation
+     * @see ValidationBuilder
+     */
+   public void importValidation(String validation) {
+        try {
+            Map<String, Object> json = JsonUtil.parseJson(validation);
+            if (!json.keySet().containsAll(Arrays.asList("header", "payload", "signature"))) {
+                throw new IllegalArgumentException("not a JWS");
+            }
+        } catch (JoseException ex) {
+            throw new IllegalArgumentException("invalid JSON", ex);
+        }
+
+        this.validation = validation;
+    }
 
     @Override
-    public void authorize(Account account) {
-        super.authorize(account);
-        accountKey = account.getKeyPair().getPublic();
+    public void unmarshall(Map<String, Object> map) {
+        super.unmarshall(map);
+
+        List<String> certData = get("certs");
+        if (certData != null) {
+            try {
+                CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+
+                certs = new ArrayList<>(certData.size());
+                for (String c : certData) {
+                    byte[] certDer = Base64Url.decode(c);
+                    try (ByteArrayInputStream in = new ByteArrayInputStream(certDer)) {
+                        certs.add((X509Certificate) certificateFactory.generateCertificate(in));
+                    }
+                }
+            } catch (CertificateException | IOException ex) {
+                throw new IllegalArgumentException("Invalid certs", ex);
+            }
+        }
     }
 
     @Override
     public void marshall(ClaimBuilder cb) {
-        super.marshall(cb);
-        cb.putKey("accountKey", accountKey);
+        if (validation == null) {
+            throw new IllegalStateException("not validated");
+        }
+
+        try {
+            cb.put(KEY_TYPE, getType());
+            cb.put("authorization", JsonUtil.parseJson(validation));
+        } catch (JoseException ex) {
+            // should not happen, as the JSON is prevalidated in the setter
+            throw new IllegalStateException("validation: invalid JSON", ex);
+        }
     }
 
     @Override

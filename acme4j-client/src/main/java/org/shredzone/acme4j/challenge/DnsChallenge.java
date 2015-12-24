@@ -76,9 +76,17 @@ public class DnsChallenge extends GenericChallenge {
         }
     }
 
-    @Override
+    /**
+     * Authorizes the {@link Challenge} by signing it with an {@link Account}.
+     *
+     * @param account
+     *            {@link Account} to sign the challenge with
+     */
     public void authorize(Account account) {
-        super.authorize(account);
+        if (account == null) {
+            throw new NullPointerException("account must not be null");
+        }
+
         authorization = getToken() + '.' + Base64Url.encode(jwkThumbprint(account.getKeyPair().getPublic()));
     }
 

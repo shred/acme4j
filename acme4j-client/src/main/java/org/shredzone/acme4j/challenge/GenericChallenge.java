@@ -29,7 +29,6 @@ import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.lang.JoseException;
-import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.util.ClaimBuilder;
 
@@ -79,13 +78,6 @@ public class GenericChallenge implements Challenge {
     @Override
     public String getValidated() {
         return get(KEY_VALIDATED);
-    }
-
-    @Override
-    public void authorize(Account account) {
-        if (account == null) {
-            throw new NullPointerException("account must not be null");
-        }
     }
 
     @Override
