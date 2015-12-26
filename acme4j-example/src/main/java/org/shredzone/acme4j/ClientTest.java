@@ -26,7 +26,10 @@ import java.util.Collection;
 
 import javax.swing.JOptionPane;
 
+import org.shredzone.acme4j.challenge.Challenge;
+import org.shredzone.acme4j.challenge.DnsChallenge;
 import org.shredzone.acme4j.challenge.HttpChallenge;
+import org.shredzone.acme4j.challenge.TlsSniChallenge;
 import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
@@ -119,35 +122,12 @@ public class ClientTest {
             }
             LOG.info("New authorization for domain " + domain);
 
-            // Find a single http-01 challenge
-            HttpChallenge challenge = auth.findChallenge(HttpChallenge.TYPE);
+            // Uncomment a challenge...
+            Challenge challenge = httpChallenge(auth, account, domain);
+//            Challenge challenge = dnsChallenge(auth, account, domain);
+//            Challenge challenge = tlsSniChallenge(auth, account, domain);
+
             if (challenge == null) {
-                LOG.error("Found no " + HttpChallenge.TYPE + " challenge, don't know what to do...");
-                return;
-            }
-
-            // Authorize the challenge
-            challenge.authorize(account);
-
-            // Output the challenge, wait for acknowledge...
-            LOG.info("Please create a file in your web server's base directory.");
-            LOG.info("It must be reachable at: http://" + domain + "/.well-known/acme-challenge/" + challenge.getToken());
-            LOG.info("File name: " + challenge.getToken());
-            LOG.info("Content: " + challenge.getAuthorization());
-            LOG.info("The file must not contain any leading or trailing whitespaces or line breaks!");
-            LOG.info("If you're ready, dismiss the dialog...");
-
-            StringBuilder message = new StringBuilder();
-            message.append("Please create a file in your web server's base directory.\n\n");
-            message.append("http://").append(domain).append("/.well-known/acme-challenge/").append(challenge.getToken()).append("\n\n");
-            message.append("Content:\n\n");
-            message.append(challenge.getAuthorization());
-            int option = JOptionPane.showConfirmDialog(null,
-                            message.toString(),
-                            "Prepare Challenge",
-                            JOptionPane.OK_CANCEL_OPTION);
-            if (option == JOptionPane.CANCEL_OPTION) {
-                LOG.error("User cancelled challenge");
                 return;
             }
 
@@ -209,6 +189,137 @@ public class ClientTest {
 
         // Revoke the certificate (uncomment if needed...)
         // client.revokeCertificate(account, cert);
+    }
+
+    /**
+     * Prepares HTTP challenge.
+     */
+    public Challenge httpChallenge(Authorization auth, Account account, String domain) throws AcmeException {
+        // Find a single http-01 challenge
+        HttpChallenge challenge = auth.findChallenge(HttpChallenge.TYPE);
+        if (challenge == null) {
+            LOG.error("Found no " + HttpChallenge.TYPE + " challenge, don't know what to do...");
+            return null;
+        }
+
+        // Authorize the challenge
+        challenge.authorize(account);
+
+        // Output the challenge, wait for acknowledge...
+        LOG.info("Please create a file in your web server's base directory.");
+        LOG.info("It must be reachable at: http://" + domain + "/.well-known/acme-challenge/" + challenge.getToken());
+        LOG.info("File name: " + challenge.getToken());
+        LOG.info("Content: " + challenge.getAuthorization());
+        LOG.info("The file must not contain any leading or trailing whitespaces or line breaks!");
+        LOG.info("If you're ready, dismiss the dialog...");
+
+        StringBuilder message = new StringBuilder();
+        message.append("Please create a file in your web server's base directory.\n\n");
+        message.append("http://").append(domain).append("/.well-known/acme-challenge/").append(challenge.getToken()).append("\n\n");
+        message.append("Content:\n\n");
+        message.append(challenge.getAuthorization());
+        int option = JOptionPane.showConfirmDialog(null,
+                        message.toString(),
+                        "Prepare Challenge",
+                        JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.CANCEL_OPTION) {
+            LOG.error("User cancelled challenge");
+            return null;
+        }
+
+        return challenge;
+    }
+
+    /**
+     * Prepares DNS challenge.
+     */
+    public Challenge dnsChallenge(Authorization auth, Account account, String domain) throws AcmeException {
+        // Find a single dns-01 challenge
+        DnsChallenge challenge = auth.findChallenge(DnsChallenge.TYPE);
+        if (challenge == null) {
+            LOG.error("Found no " + DnsChallenge.TYPE + " challenge, don't know what to do...");
+            return null;
+        }
+
+        // Authorize the challenge
+        challenge.authorize(account);
+
+        // Output the challenge, wait for acknowledge...
+        LOG.info("Please create a TXT record:");
+        LOG.info("_acme-challenge." + domain + ". IN TXT " + challenge.getDigest());
+        LOG.info("If you're ready, dismiss the dialog...");
+
+        StringBuilder message = new StringBuilder();
+        message.append("Please create a TXT record:\n\n");
+        message.append("_acme-challenge." + domain + ". IN TXT " + challenge.getDigest());
+        int option = JOptionPane.showConfirmDialog(null,
+                        message.toString(),
+                        "Prepare Challenge",
+                        JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.CANCEL_OPTION) {
+            LOG.error("User cancelled challenge");
+            return null;
+        }
+
+        return challenge;
+    }
+
+    /**
+     * Prepares TLS-SNI challenge.
+     */
+    public Challenge tlsSniChallenge(Authorization auth, Account account, String domain) throws AcmeException {
+        // Find a single tls-sni-01 challenge
+        TlsSniChallenge challenge = auth.findChallenge(TlsSniChallenge.TYPE);
+        if (challenge == null) {
+            LOG.error("Found no " + TlsSniChallenge.TYPE + " challenge, don't know what to do...");
+            return null;
+        }
+
+        // Authorize the challenge
+        challenge.authorize(account);
+
+        // Get the Subject
+        String subject = challenge.getSubject();
+
+        // Create a keypair
+        KeyPair domainKeyPair;
+        try (FileWriter fw = new FileWriter("tlssni.key")) {
+            domainKeyPair = KeyPairUtils.createKeyPair(2048);
+            KeyPairUtils.writeKeyPair(domainKeyPair, fw);
+        } catch (IOException ex) {
+            LOG.error("Could not create keypair", ex);
+            return null;
+        }
+
+        // Create a certificate
+        try (FileWriter fw = new FileWriter("tlssni.crt")) {
+            X509Certificate cert = CertificateUtils.createTlsSniCertificate(domainKeyPair, subject);
+            CertificateUtils.writeX509Certificate(cert, fw);
+        } catch (IOException ex) {
+            LOG.error("Could not create certificate", ex);
+            return null;
+        }
+
+        // Output the challenge, wait for acknowledge...
+        LOG.info("Please configure your web server.");
+        LOG.info("It must return the certificate 'tlssni.crt' on a SNI request to:");
+        LOG.info(subject);
+        LOG.info("The matching keypair is available at 'tlssni.key'.");
+        LOG.info("If you're ready, dismiss the dialog...");
+
+        StringBuilder message = new StringBuilder();
+        message.append("Please use 'tlssni.key' and 'tlssni.crt' cert for SNI requests to:\n\n");
+        message.append("https://").append(subject).append("\n\n");
+        int option = JOptionPane.showConfirmDialog(null,
+                        message.toString(),
+                        "Prepare Challenge",
+                        JOptionPane.OK_CANCEL_OPTION);
+        if (option == JOptionPane.CANCEL_OPTION) {
+            LOG.error("User cancelled challenge");
+            return null;
+        }
+
+        return challenge;
     }
 
     /**
