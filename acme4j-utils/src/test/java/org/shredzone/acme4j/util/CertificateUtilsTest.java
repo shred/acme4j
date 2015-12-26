@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.KeyPair;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateParsingException;
@@ -84,16 +85,19 @@ public class CertificateUtilsTest {
     }
 
     /**
-     * Test if {@link CertificateUtils#createTlsSniCertificate(String)} creates a
+     * Test if {@link CertificateUtils#createTlsSniCertificate(KeyPair, String)} creates a
      * good certificate.
      */
     @Test
     public void testCreateTlsSniCertificate() throws IOException, CertificateParsingException {
         String subject = "30c452b9bd088cdbc2c4094947025d7c.7364ea602ac325a1b55ceaae024fbe29.acme.invalid";
+
+        KeyPair keypair = KeyPairUtils.createKeyPair(2048);
+
+        X509Certificate cert = CertificateUtils.createTlsSniCertificate(keypair, subject);
+
         Date now = new Date();
         Date end = new Date(now.getTime() + (8 * 24 * 60 * 60 * 1000L));
-
-        X509Certificate cert = CertificateUtils.createTlsSniCertificate(subject);
 
         assertThat(cert, not(nullValue()));
         assertThat(cert.getNotAfter(), is(greaterThan(now)));

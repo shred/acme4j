@@ -1,6 +1,6 @@
 # TLS-SNI
 
-With the TLS-SNI challenge, you prove to the CA that you are able to control the web server of the domain to be authorized, by letting it respond to a SNI request with a self-signed cert.
+With the TLS-SNI challenge, you prove to the CA that you are able to control the web server of the domain to be authorized, by letting it respond to a SNI request with a specific self-signed cert.
 
 After authorizing the challenge, `TlsSniChallenge` provides a subject:
 
@@ -22,7 +22,20 @@ You need to create a self-signed certificate with the subject set as _Subject Al
 The `TlsSniChallenge` class does not generate a self-signed certificate, as it would require _Bouncy Castle_. However, there is a utility method in the _acme4j-utils_ module for this use case:
 
 ```java
-X509Certificate cert = CertificateUtils.createTlsSniCertificate(String subject);
+KeyPair sniKeyPair = KeyPairUtils.createKeyPair(2048);
+X509Certificate cert = CertificateUtils.createTlsSniCertificate(sniKeyPair, subject);
 ```
 
+Now use `cert` and `sniKeyPair` to let your web server respond to a SNI request to `domain`.
+
 The challenge is completed when the CA was able to send the SNI request and get the correct certificate in return.
+
+This shell command line may be helpful to test your web server configuration:
+
+```shell
+echo QUIT | \
+  openssl s_client -servername $domain -connect $server_ip:443 | \
+  openssl x509 -text -noout
+```
+
+It should return a certificate with `domain` set as `X509v3 Subject Alternative Name`.

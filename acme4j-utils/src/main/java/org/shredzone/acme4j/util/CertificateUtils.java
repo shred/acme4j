@@ -95,19 +95,18 @@ public final class CertificateUtils {
      * Creates a self-signed {@link X509Certificate} that can be used for
      * {@link TlsSniChallenge}. The certificate is valid for 7 days.
      *
+     * @param keypair
+     *            A domain {@link KeyPair} to be used for the challenge
      * @param subject
      *            Subject to create a certificate for
      * @return Created certificate
      */
-    public static X509Certificate createTlsSniCertificate(String subject) throws IOException {
-        final int certSize = 2048;
+    public static X509Certificate createTlsSniCertificate(KeyPair keypair, String subject) throws IOException {
         final long now = System.currentTimeMillis();
         final long validSpanMs = 7 * 24 * 60 * 60 * 1000L;
         final String signatureAlg = "SHA256withRSA";
 
         try {
-            KeyPair keypair = KeyPairUtils.createKeyPair(certSize);
-
             X500Name issuer = new X500Name("CN=acme.invalid");
             BigInteger serial = BigInteger.valueOf(now);
             Date notBefore = new Date(now);
