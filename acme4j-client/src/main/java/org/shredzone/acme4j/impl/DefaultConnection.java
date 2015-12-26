@@ -43,6 +43,7 @@ import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.Session;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.util.ClaimBuilder;
@@ -333,6 +334,9 @@ public class DefaultConnection implements Connection {
             switch (type) {
                 case "urn:acme:error:unauthorized":
                     throw new AcmeUnauthorizedException(type, detail);
+
+                case "urn:acme:error:rateLimited":
+                    throw new AcmeRateLimitExceededException(type, detail);
 
                 default:
                     throw new AcmeServerException(type, detail);
