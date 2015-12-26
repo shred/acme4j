@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +72,8 @@ public class AuthorizationTest {
      */
     @Test
     public void testGetterAndSetter() {
+        Date expiry = new Date();
+
         Authorization auth = new Authorization();
 
         assertThat(auth.getDomain(), is(nullValue()));
@@ -81,13 +84,13 @@ public class AuthorizationTest {
 
         auth.setDomain("example.com");
         auth.setStatus(Status.INVALID);
-        auth.setExpires("2015-12-12T17:19:36.336785823Z");
+        auth.setExpires(expiry);
         auth.setChallenges(authorization.getChallenges());
         auth.setCombinations(authorization.getCombinations());
 
         assertThat(auth.getDomain(), is("example.com"));
         assertThat(auth.getStatus(), is(Status.INVALID));
-        assertThat(auth.getExpires(), is("2015-12-12T17:19:36.336785823Z"));
+        assertThat(auth.getExpires(), is(expiry));
         assertThat(auth.getChallenges(), is(sameInstance(authorization.getChallenges())));
         assertThat(auth.getCombinations(), is(sameInstance(authorization.getCombinations())));
     }

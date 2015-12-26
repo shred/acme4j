@@ -15,6 +15,7 @@ package org.shredzone.acme4j.challenge;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Date;
 import java.util.Map;
 
 import org.shredzone.acme4j.Status;
@@ -45,7 +46,7 @@ public interface Challenge extends Serializable {
     /**
      * Returns the validation date, if returned by the server.
      */
-    String getValidated();
+    Date getValidated();
 
     /**
      * Sets the challenge state by reading the given JSON map.

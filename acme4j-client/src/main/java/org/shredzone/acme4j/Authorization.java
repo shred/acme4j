@@ -18,6 +18,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.shredzone.acme4j.challenge.Challenge;
@@ -33,7 +34,7 @@ public class Authorization implements Serializable {
     private URI location;
     private String domain;
     private Status status;
-    private String expires;
+    private Date expires;
     private List<Challenge> challenges;
     private List<List<Challenge>> combinations;
 
@@ -96,14 +97,14 @@ public class Authorization implements Serializable {
     /**
      * Gets the expiry date of the authorization, if set by the server.
      */
-    public String getExpires() {
+    public Date getExpires() {
         return expires;
     }
 
     /**
      * Sets the expiry date of the authorization.
      */
-    public void setExpires(String expires) {
+    public void setExpires(Date expires) {
         this.expires = expires;
     }
 

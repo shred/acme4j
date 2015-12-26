@@ -34,6 +34,7 @@ import org.shredzone.acme4j.connector.Session;
 import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.TimestampParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -412,7 +413,11 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     @SuppressWarnings("unchecked")
     private void unmarshalAuthorization(Map<String, Object> json, Authorization auth) {
         auth.setStatus(Status.parse((String) json.get("status"), Status.PENDING));
-        auth.setExpires((String) json.get("expires"));
+
+        String expires = (String) json.get("expires");
+        if (expires != null) {
+            auth.setExpires(TimestampParser.parse(expires));
+        }
 
         Map<String, Object> identifier = (Map<String, Object>) json.get("identifier");
         if (identifier != null) {

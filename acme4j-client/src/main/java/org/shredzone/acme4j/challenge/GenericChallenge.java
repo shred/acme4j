@@ -22,6 +22,7 @@ import java.net.URISyntaxException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.TimestampParser;
 
 /**
  * A generic implementation of {@link Challenge}. It can be used as a base class for
@@ -78,8 +80,13 @@ public class GenericChallenge implements Challenge {
     }
 
     @Override
-    public String getValidated() {
-        return get(KEY_VALIDATED);
+    public Date getValidated() {
+        String valStr = get(KEY_VALIDATED);
+        if (valStr != null) {
+            return TimestampParser.parse(valStr);
+        } else {
+            return null;
+        }
     }
 
     @Override

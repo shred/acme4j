@@ -42,6 +42,7 @@ import org.shredzone.acme4j.connector.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
+import org.shredzone.acme4j.util.TimestampParser;
 
 /**
  * Unit tests for {@link AbstractAcmeClient}.
@@ -275,7 +276,7 @@ public class AbstractAcmeClientTest {
 
         assertThat(auth.getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));
-        assertThat(auth.getExpires(), is("2015-03-01"));
+        assertThat(auth.getExpires(), is(TimestampParser.parse("2016-01-02T17:12:40Z")));
         assertThat(auth.getLocation(), is(locationUri));
 
         assertThat(auth.getChallenges(), containsInAnyOrder(

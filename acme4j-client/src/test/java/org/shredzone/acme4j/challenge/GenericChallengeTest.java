@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
+import org.shredzone.acme4j.util.TimestampParser;
 
 /**
  * Unit tests for {@link GenericChallenge}.
@@ -63,7 +64,7 @@ public class GenericChallengeTest {
         assertThat(challenge.getType(), is("generic-01"));
         assertThat(challenge.getStatus(), is(Status.VALID));
         assertThat(challenge.getLocation(), is(new URI("http://example.com/challenge/123")));
-        assertThat(challenge.getValidated(), is("2015-12-12T17:19:36.336785823Z"));
+        assertThat(challenge.getValidated(), is(TimestampParser.parse("2015-12-12T17:19:36.336785823Z")));
     }
 
     /**
