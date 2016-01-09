@@ -15,6 +15,7 @@ package org.shredzone.acme4j.impl;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -38,6 +39,7 @@ public class GenericAcmeClient extends AbstractAcmeClient {
     private final AcmeClientProvider provider;
     private final URI directoryUri;
     private final Map<Resource, URI> directoryMap = new EnumMap<>(Resource.class);
+    /* package protected */ Date directoryCacheExpiry;
 
     /**
      * Creates a new {@link GenericAcmeClient}.
@@ -86,7 +88,9 @@ public class GenericAcmeClient extends AbstractAcmeClient {
             throw new NullPointerException("resource must not be null");
         }
 
-        if (directoryMap.isEmpty()) {
+        Date now = new Date();
+
+        if (directoryMap.isEmpty() || !directoryCacheExpiry.after(now)) {
             if (directoryUri == null) {
                 throw new IllegalStateException("directoryUri was null on construction time");
             }
@@ -100,7 +104,12 @@ public class GenericAcmeClient extends AbstractAcmeClient {
                 // use nonce header if there is one, saves a HEAD request...
                 conn.updateSession(getSession());
 
-                directoryMap.putAll(conn.readDirectory());
+                Map<Resource, URI> newMap = conn.readDirectory();
+
+                // only reached when readDirectory did not throw an exception
+                directoryMap.clear();
+                directoryMap.putAll(newMap);
+                directoryCacheExpiry = new Date(now.getTime() + 60 * 60 * 1000L);
             }
         }
         return directoryMap.get(resource);

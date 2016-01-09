@@ -19,6 +19,7 @@ import static org.mockito.Mockito.*;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -107,6 +108,16 @@ public class GenericAcmeClientTest {
         verify(mockConnection, times(1)).readDirectory();
 
         verify(mockProvider).createConnection();
+
+        // Simulate a cache expiry
+        client.directoryCacheExpiry = new Date();
+
+        // Make sure directory is read once again
+        assertThat(client.resourceUri(Resource.NEW_AUTHZ), is(new URI("http://example.com/acme/new-authz")));
+        assertThat(client.resourceUri(Resource.NEW_CERT), is(new URI("http://example.com/acme/new-cert")));
+        assertThat(client.resourceUri(Resource.NEW_REG), is(nullValue()));
+        verify(mockConnection, times(2)).sendRequest(directoryUri);
+        verify(mockConnection, times(2)).readDirectory();
     }
 
 }
