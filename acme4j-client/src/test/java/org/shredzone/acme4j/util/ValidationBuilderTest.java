@@ -68,7 +68,7 @@ public class ValidationBuilderTest {
 
         StringBuilder expectedPayload = new StringBuilder();
         expectedPayload.append('{');
-        expectedPayload.append("\"type\":\"proofOfPossession-01\",");
+        expectedPayload.append("\"type\":\"proof-of-possession-01\",");
         expectedPayload.append("\"identifiers\":[");
         for (String d : Arrays.asList("abc.de", "ef.gh", "ijk.lm", "no.pq", "rst.uv", "w.x", "y.z")) {
             expectedPayload.append("{\"type\":\"dns\",\"value\":\"").append(d).append("\"}");

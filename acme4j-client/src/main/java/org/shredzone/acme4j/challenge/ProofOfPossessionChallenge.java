@@ -33,7 +33,7 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.ValidationBuilder;
 
 /**
- * Implements the {@code proofOfPossession-01} challenge.
+ * Implements the {@code proof-of-possession-01} challenge.
  *
  * @author Richard "Shred" Körber
  */
@@ -46,7 +46,7 @@ public class ProofOfPossessionChallenge extends GenericChallenge {
     /**
      * Challenge type name: {@value}
      */
-    public static final String TYPE = "proofOfPossession-01";
+    public static final String TYPE = "proof-of-possession-01";
 
     private Collection<X509Certificate> certs;
     private String validation;
