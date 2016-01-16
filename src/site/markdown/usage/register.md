@@ -39,3 +39,20 @@ reg.setAgreement(agreementUri);
 
 client.modifyRegistration(account, reg);
 ```
+
+## Account Key Roll-Over
+
+It is also possible to change the key pair that is associated with your account, for example if you suspect that your key has been compromised.
+
+The following example changes the key pair:
+
+```java
+Registration reg = new Registration();
+reg.setLocation(accountLocationUri);
+
+KeyPair newKeyPair = ... // new KeyPair to be used
+
+client.changeRegistrationKey(account, reg, newKeyPair);
+```
+
+All subsequent calls must now use an `Account` instance with the new key. The old key can be disposed.

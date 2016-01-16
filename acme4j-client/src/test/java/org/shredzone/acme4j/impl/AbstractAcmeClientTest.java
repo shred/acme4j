@@ -22,10 +22,13 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.lang.JoseException;
 import org.junit.Before;
 import org.junit.Test;
 import org.shredzone.acme4j.Account;
@@ -147,6 +150,72 @@ public class AbstractAcmeClientTest {
 
         assertThat(registration.getLocation(), is(locationUri));
         assertThat(registration.getAgreement(), is(agreementUri));
+    }
+
+    /**
+     * Test that the account key can be changed.
+     */
+    @Test
+    public void testChangeRegistrationKey() throws AcmeException, IOException {
+        Registration registration = new Registration();
+        registration.setLocation(locationUri);
+
+        final KeyPair newKeyPair = TestUtils.createDomainKeyPair();
+
+        Connection connection = new DummyConnection() {
+            @Override
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException {
+                Map<String, Object> claimMap = claims.toMap();
+                assertThat(claimMap.get("resource"), is((Object) "reg"));
+                assertThat(claimMap.get("newKey"), not(nullValue()));
+
+                try {
+                    StringBuilder expectedPayload = new StringBuilder();
+                    expectedPayload.append('{');
+                    expectedPayload.append("\"resource\":\"reg\",");
+                    expectedPayload.append("\"oldKey\":{");
+                    expectedPayload.append("\"kty\":\"").append(TestUtils.KTY).append("\",");
+                    expectedPayload.append("\"e\":\"").append(TestUtils.E).append("\",");
+                    expectedPayload.append("\"n\":\"").append(TestUtils.N).append("\"");
+                    expectedPayload.append("}}");
+
+                    String newKey = (String) claimMap.get("newKey");
+                    JsonWebSignature jws = (JsonWebSignature) JsonWebSignature.fromCompactSerialization(newKey);
+                    jws.setKey(newKeyPair.getPublic());
+                    assertThat(jws.getPayload(), sameJSONAs(expectedPayload.toString()));
+                } catch (JoseException ex) {
+                    throw new AcmeException("Bad newKey", ex);
+                }
+
+                assertThat(uri, is(locationUri));
+                assertThat(session, is(notNullValue()));
+                assertThat(account, is(sameInstance(testAccount)));
+                return HttpURLConnection.HTTP_ACCEPTED;
+            }
+
+            @Override
+            public URI getLocation() throws AcmeException {
+                return locationUri;
+            }
+        };
+
+        TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
+
+        client.changeRegistrationKey(testAccount, registration, newKeyPair);
+    }
+
+    /**
+     * Test that the same account key is not accepted for change
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testChangeRegistrationSameKey() throws AcmeException, IOException {
+        Registration registration = new Registration();
+        registration.setLocation(locationUri);
+
+        Connection connection = new DummyConnection();
+        TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
+
+        client.changeRegistrationKey(testAccount, registration, testAccount.getKeyPair());
     }
 
     /**

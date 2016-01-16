@@ -14,6 +14,7 @@
 package org.shredzone.acme4j;
 
 import java.net.URI;
+import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
 import org.shredzone.acme4j.challenge.Challenge;
@@ -48,6 +49,23 @@ public interface AcmeClient {
      *            account location URI
      */
     void modifyRegistration(Account account, Registration registration) throws AcmeException;
+
+    /**
+     * Modifies the account so it is identified with the new {@link KeyPair}.
+     * <p>
+     * Starting from the next call, {@link Account} must use the new {@link KeyPair} for
+     * identification.
+     *
+     * @param account
+     *            {@link Account} to change the identification key pair of
+     * @param registration
+     *            {@link Registration} containing the account location URI. Other
+     *            properties are ignored.
+     * @param newKeyPair
+     *            new {@link KeyPair} to be used for identifying this account
+     */
+    void changeRegistrationKey(Account account, Registration registration, KeyPair newKeyPair)
+                throws AcmeException;
 
     /**
      * Recovers an account by contact-based recovery. The server starts an out-of-band

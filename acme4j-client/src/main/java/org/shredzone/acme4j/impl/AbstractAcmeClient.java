@@ -15,13 +15,18 @@ package org.shredzone.acme4j.impl;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.Authorization;
@@ -162,6 +167,56 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             URI tos = conn.getLink("terms-of-service");
             if (tos != null) {
                 registration.setAgreement(tos);
+            }
+        }
+    }
+
+    @Override
+    public void changeRegistrationKey(Account account, Registration registration, KeyPair newKeyPair)
+                throws AcmeException {
+        if (account == null) {
+            throw new NullPointerException("account must not be null");
+        }
+        if (registration == null) {
+            throw new NullPointerException("registration must not be null");
+        }
+        if (registration.getLocation() == null) {
+            throw new IllegalArgumentException("registration location must not be null. Use newRegistration() if not known.");
+        }
+        if (newKeyPair == null) {
+            throw new NullPointerException("newKeyPair must not be null");
+        }
+        if (Arrays.equals(account.getKeyPair().getPrivate().getEncoded(),
+                        newKeyPair.getPrivate().getEncoded())) {
+            throw new IllegalArgumentException("newKeyPair must actually be a new key pair");
+        }
+
+        String newKey;
+        try {
+            ClaimBuilder oldKeyClaim = new ClaimBuilder();
+            oldKeyClaim.putResource("reg");
+            oldKeyClaim.putKey("oldKey", account.getKeyPair().getPublic());
+
+            JsonWebSignature jws = new JsonWebSignature();
+            jws.setPayload(oldKeyClaim.toString());
+            jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+            jws.setKey(newKeyPair.getPrivate());
+            jws.sign();
+
+            newKey = jws.getCompactSerialization();
+        } catch (JoseException ex) {
+            throw new IllegalArgumentException("Bad newKeyPair", ex);
+        }
+
+        LOG.debug("changeRegistrationKey");
+        try (Connection conn = createConnection()) {
+            ClaimBuilder claims = new ClaimBuilder();
+            claims.putResource("reg");
+            claims.put("newKey", newKey);
+
+            int rc = conn.sendSignedRequest(registration.getLocation(), claims, session, account);
+            if (rc != HttpURLConnection.HTTP_ACCEPTED) {
+                conn.throwAcmeException();
             }
         }
     }
