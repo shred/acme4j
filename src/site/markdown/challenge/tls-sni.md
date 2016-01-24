@@ -26,7 +26,7 @@ KeyPair sniKeyPair = KeyPairUtils.createKeyPair(2048);
 X509Certificate cert = CertificateUtils.createTlsSniCertificate(sniKeyPair, subject);
 ```
 
-Now use `cert` and `sniKeyPair` to let your web server respond to a SNI request to `domain`.
+Now use `cert` and `sniKeyPair` to let your web server respond to a SNI request to `subject`.
 
 The challenge is completed when the CA was able to send the SNI request and get the correct certificate in return.
 
@@ -34,8 +34,8 @@ This shell command line may be helpful to test your web server configuration:
 
 ```shell
 echo QUIT | \
-  openssl s_client -servername $domain -connect $server_ip:443 | \
+  openssl s_client -servername $subject -connect $server_ip:443 | \
   openssl x509 -text -noout
 ```
 
-It should return a certificate with `domain` set as `X509v3 Subject Alternative Name`.
+It should return a certificate with `subject` set as `X509v3 Subject Alternative Name`.
