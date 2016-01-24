@@ -34,7 +34,7 @@
         </license>
     </licenses>
     <scm>
-        <url>scm:git:git@github.com:shred/acme4j.git</url>
+        <url>https://github.com/shred/acme4j/</url>
         <connection>scm:git:git@github.com:shred/acme4j.git</connection>
         <developerConnection>scm:git:git@github.com:shred/acme4j.git</developerConnection>
       <tag>HEAD</tag>
