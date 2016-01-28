@@ -42,6 +42,8 @@ client.modifyRegistration(reg);
 
 ## Account Key Roll-Over
 
+> **CAUTION**: Account Key Roll-Over is currently not supported by _Let's Encrypt_. It silently ignores your new key, and gives you the fatal impression that you can safely dispose your old key after that.
+
 It is also possible to change the key pair that is associated with your account, for example if you suspect that your key has been compromised.
 
 The following example changes the key pair:
