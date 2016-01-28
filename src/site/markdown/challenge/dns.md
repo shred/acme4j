@@ -6,7 +6,7 @@ After authorizing the challenge, `DnsChallenge` provides a digest string:
 
 ```java
 DnsChallenge challenge = auth.findChallenge(DnsChallenge.TYPE);
-challenge.authorize(account);
+challenge.authorize(registration);
 
 String digest = challenge.getDigest();
 ```

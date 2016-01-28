@@ -22,7 +22,7 @@ import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
 import org.junit.Test;
-import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
@@ -42,7 +42,7 @@ public class ProofOfPossessionChallengeTest {
     public void testProofOfPossessionChallenge() throws IOException {
         X509Certificate cert = TestUtils.createCertificate();
         KeyPair keypair = TestUtils.createKeyPair();
-        Account account = new Account(keypair);
+        Registration reg = new Registration(keypair);
         KeyPair domainKeyPair = TestUtils.createDomainKeyPair();
 
         ProofOfPossessionChallenge challenge = new ProofOfPossessionChallenge();
@@ -60,14 +60,14 @@ public class ProofOfPossessionChallengeTest {
             // expected
         }
 
-        challenge.authorize(account, domainKeyPair, "example.org");
+        challenge.authorize(reg, domainKeyPair, "example.org");
 
         ClaimBuilder cb = new ClaimBuilder();
         challenge.respond(cb);
 
         assertThat(cb.toString(), sameJSONAs("{\"type\"=\""
             + ProofOfPossessionChallenge.TYPE + "\",\"authorization\"="
-            + new ValidationBuilder().domain("example.org").sign(account, domainKeyPair)
+            + new ValidationBuilder().domain("example.org").sign(reg, domainKeyPair)
             + "}"));
     }
 
@@ -78,12 +78,12 @@ public class ProofOfPossessionChallengeTest {
     @Test
     public void testImportValidation() throws IOException {
         KeyPair keypair = TestUtils.createKeyPair();
-        Account account = new Account(keypair);
+        Registration reg = new Registration(keypair);
         KeyPair domainKeyPair = TestUtils.createDomainKeyPair();
 
         String validation = new ValidationBuilder()
                 .domain("example.org")
-                .sign(account, domainKeyPair);
+                .sign(reg, domainKeyPair);
 
         ProofOfPossessionChallenge challenge = new ProofOfPossessionChallenge();
         challenge.unmarshall(TestUtils.getJsonAsMap("proofOfPossessionChallenge"));

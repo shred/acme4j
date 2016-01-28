@@ -16,6 +16,7 @@ package org.shredzone.acme4j;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,22 +28,45 @@ import java.util.List;
 public class Registration implements Serializable {
     private static final long serialVersionUID = -8177333806740391140L;
 
+    private final KeyPair keyPair;
     private List<URI> contacts = new ArrayList<>();
     private URI agreement;
     private URI location;
 
     /**
-     * Create an empty {@link Registration}.
+     * Creates a {@link Registration} with no location URI set. This is only useful for
+     * new registrations.
+     *
+     * @param keyPair
+     *            Account key pair
      */
-    public Registration() {
-        // default constructor
+    public Registration(KeyPair keyPair) {
+        if (keyPair == null) {
+            throw new NullPointerException("keypair must not be null");
+        }
+
+        this.keyPair = keyPair;
     }
 
     /**
-     * Create a {@link Registration} for the given location URI.
+     * Creates a {@link Registration} with a location URI set. This is useful for
+     * modifications to the registration.
+     *
+     * @param keyPair
+     *            Account key pair
+     * @param location
+     *            Registration location URI
      */
-    public Registration(URI location) {
+    public Registration(KeyPair keyPair, URI location) {
+        this(keyPair);
         this.location = location;
+    }
+
+    /**
+     * The {@link KeyPair} that belongs to this account.
+     */
+    public KeyPair getKeyPair() {
+        return keyPair;
     }
 
     /**

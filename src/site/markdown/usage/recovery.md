@@ -12,16 +12,18 @@ Individual CAs may offer further ways of recovery, which are not part of this do
 
 On this recovery method, the CA contacts the account owner via one of the contact addresses given on account creation. The owner is asked to take some action (e.g. clicking on a link in an email). If it was successful, the account data is transferred to the new account.
 
-To initiate contact-based recovery, you first need to create a new key pair and an `Account` object. Then create a `Registration` object by passing the location URI of your _old_ account to the constructor. Finally, start the recovery process by invoking `recoverRegistration()`:
+To initiate contact-based recovery, you first need to create a new account key pair. Then create a `Registration` object by passing the _new_ key pair and location URI of your _old_ account to the constructor. Finally, start the recovery process by invoking `recoverRegistration()`:
 
 ```java
-Account account = ... // your new account
+KeyPair newKeyPair = ... // your new account KeyPair
 URI oldAccountUri = ... // location of your old account
 
-Registration reg = new Registration(oldAccountUri);
-client.recoverRegistration(account, reg);
+Registration reg = new Registration(newKeyPair, oldAccountUri);
+client.recoverRegistration(reg);
 
 URI newAccountUri = reg.getLocation();
 ```
 
-`newAccountUri` is the location URI of your _new_ account.
+`newAccountUri` is the location URI of your _new_ account. Store it and use it in connection with your new key pair.
+
+The old location URI is now invalid and can be deleted.

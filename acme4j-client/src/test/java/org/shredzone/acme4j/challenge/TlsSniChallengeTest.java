@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.security.KeyPair;
 
 import org.junit.Test;
-import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
@@ -42,7 +42,7 @@ public class TlsSniChallengeTest {
     @Test
     public void testTlsSniChallenge() throws IOException {
         KeyPair keypair = TestUtils.createKeyPair();
-        Account account = new Account(keypair);
+        Registration reg = new Registration(keypair);
 
         TlsSniChallenge challenge = new TlsSniChallenge();
         challenge.unmarshall(TestUtils.getJsonAsMap("tlsSniChallenge"));
@@ -57,7 +57,7 @@ public class TlsSniChallengeTest {
             // expected
         }
 
-        challenge.authorize(account);
+        challenge.authorize(reg);
 
         assertThat(challenge.getSubject(), is("14e2350a04434f93c2e0b6012968d99d.ed459b6a7a019d9695609b8514f9d63d.acme.invalid"));
 

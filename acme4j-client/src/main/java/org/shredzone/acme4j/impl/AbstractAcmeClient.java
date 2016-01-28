@@ -27,7 +27,6 @@ import java.util.Map;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
-import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Registration;
@@ -88,10 +87,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     }
 
     @Override
-    public void newRegistration(Account account, Registration registration) throws AcmeException {
-        if (account == null) {
-            throw new NullPointerException("account must not be null");
-        }
+    public void newRegistration(Registration registration) throws AcmeException {
         if (registration == null) {
             throw new NullPointerException("registration must not be null");
         }
@@ -110,7 +106,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
                 claims.put("contact", registration.getContacts());
             }
 
-            int rc = conn.sendSignedRequest(resourceUri(Resource.NEW_REG), claims, session, account);
+            int rc = conn.sendSignedRequest(resourceUri(Resource.NEW_REG), claims, session, registration);
             if (rc != HttpURLConnection.HTTP_CREATED && rc != HttpURLConnection.HTTP_CONFLICT) {
                 conn.throwAcmeException();
             }
@@ -132,10 +128,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     }
 
     @Override
-    public void modifyRegistration(Account account, Registration registration) throws AcmeException {
-        if (account == null) {
-            throw new NullPointerException("account must not be null");
-        }
+    public void modifyRegistration(Registration registration) throws AcmeException {
         if (registration == null) {
             throw new NullPointerException("registration must not be null");
         }
@@ -154,7 +147,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
                 claims.put("agreement", registration.getAgreement());
             }
 
-            int rc = conn.sendSignedRequest(registration.getLocation(), claims, session, account);
+            int rc = conn.sendSignedRequest(registration.getLocation(), claims, session, registration);
             if (rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }
@@ -172,11 +165,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     }
 
     @Override
-    public void changeRegistrationKey(Account account, Registration registration, KeyPair newKeyPair)
-                throws AcmeException {
-        if (account == null) {
-            throw new NullPointerException("account must not be null");
-        }
+    public void changeRegistrationKey(Registration registration, KeyPair newKeyPair) throws AcmeException {
         if (registration == null) {
             throw new NullPointerException("registration must not be null");
         }
@@ -186,7 +175,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
         if (newKeyPair == null) {
             throw new NullPointerException("newKeyPair must not be null");
         }
-        if (Arrays.equals(account.getKeyPair().getPrivate().getEncoded(),
+        if (Arrays.equals(registration.getKeyPair().getPrivate().getEncoded(),
                         newKeyPair.getPrivate().getEncoded())) {
             throw new IllegalArgumentException("newKeyPair must actually be a new key pair");
         }
@@ -195,7 +184,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
         try {
             ClaimBuilder oldKeyClaim = new ClaimBuilder();
             oldKeyClaim.putResource("reg");
-            oldKeyClaim.putKey("oldKey", account.getKeyPair().getPublic());
+            oldKeyClaim.putKey("oldKey", registration.getKeyPair().getPublic());
 
             JsonWebSignature jws = new JsonWebSignature();
             jws.setPayload(oldKeyClaim.toString());
@@ -214,7 +203,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             claims.putResource("reg");
             claims.put("newKey", newKey);
 
-            int rc = conn.sendSignedRequest(registration.getLocation(), claims, session, account);
+            int rc = conn.sendSignedRequest(registration.getLocation(), claims, session, registration);
             if (rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }
@@ -222,10 +211,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     }
 
     @Override
-    public void recoverRegistration(Account account, Registration registration) throws AcmeException {
-        if (account == null) {
-            throw new NullPointerException("account must not be null");
-        }
+    public void recoverRegistration(Registration registration) throws AcmeException {
         if (registration == null) {
             throw new NullPointerException("registration must not be null");
         }
@@ -243,7 +229,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
                 claims.put("contact", registration.getContacts());
             }
 
-            int rc = conn.sendSignedRequest(resourceUri(Resource.RECOVER_REG), claims, session, account);
+            int rc = conn.sendSignedRequest(resourceUri(Resource.RECOVER_REG), claims, session, registration);
             if (rc != HttpURLConnection.HTTP_CREATED) {
                 conn.throwAcmeException();
             }
@@ -258,9 +244,9 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     }
 
     @Override
-    public void newAuthorization(Account account, Authorization auth) throws AcmeException {
-        if (account == null) {
-            throw new NullPointerException("account must not be null");
+    public void newAuthorization(Registration registration, Authorization auth) throws AcmeException {
+        if (registration == null) {
+            throw new NullPointerException("registration must not be null");
         }
         if (auth == null) {
             throw new NullPointerException("auth must not be null");
@@ -277,7 +263,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
                     .put("type", "dns")
                     .put("value", auth.getDomain());
 
-            int rc = conn.sendSignedRequest(resourceUri(Resource.NEW_AUTHZ), claims, session, account);
+            int rc = conn.sendSignedRequest(resourceUri(Resource.NEW_AUTHZ), claims, session, registration);
             if (rc != HttpURLConnection.HTTP_CREATED) {
                 conn.throwAcmeException();
             }
@@ -313,9 +299,9 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     }
 
     @Override
-    public void triggerChallenge(Account account, Challenge challenge) throws AcmeException {
-        if (account == null) {
-            throw new NullPointerException("account must not be null");
+    public void triggerChallenge(Registration registration, Challenge challenge) throws AcmeException {
+        if (registration == null) {
+            throw new NullPointerException("registration must not be null");
         }
         if (challenge == null) {
             throw new NullPointerException("challenge must not be null");
@@ -330,7 +316,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             claims.putResource("challenge");
             challenge.respond(claims);
 
-            int rc = conn.sendSignedRequest(challenge.getLocation(), claims, session, account);
+            int rc = conn.sendSignedRequest(challenge.getLocation(), claims, session, registration);
             if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }
@@ -383,9 +369,9 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     }
 
     @Override
-    public URI requestCertificate(Account account, byte[] csr) throws AcmeException {
-        if (account == null) {
-            throw new NullPointerException("account must not be null");
+    public URI requestCertificate(Registration registration, byte[] csr) throws AcmeException {
+        if (registration == null) {
+            throw new NullPointerException("registration must not be null");
         }
         if (csr == null) {
             throw new NullPointerException("csr must not be null");
@@ -397,7 +383,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             claims.putResource(Resource.NEW_CERT);
             claims.putBase64("csr", csr);
 
-            int rc = conn.sendSignedRequest(resourceUri(Resource.NEW_CERT), claims, session, account);
+            int rc = conn.sendSignedRequest(resourceUri(Resource.NEW_CERT), claims, session, registration);
             if (rc != HttpURLConnection.HTTP_CREATED && rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }
@@ -429,9 +415,9 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     }
 
     @Override
-    public void revokeCertificate(Account account, X509Certificate certificate) throws AcmeException {
-        if (account == null) {
-            throw new NullPointerException("account must not be null");
+    public void revokeCertificate(Registration registration, X509Certificate certificate) throws AcmeException {
+        if (registration == null) {
+            throw new NullPointerException("registration must not be null");
         }
         if (certificate == null) {
             throw new NullPointerException("certificate must not be null");
@@ -448,7 +434,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             claims.putResource(Resource.REVOKE_CERT);
             claims.putBase64("certificate", certificate.getEncoded());
 
-            int rc = conn.sendSignedRequest(resUri, claims, session, account);
+            int rc = conn.sendSignedRequest(resUri, claims, session, registration);
             if (rc != HttpURLConnection.HTTP_OK) {
                 conn.throwAcmeException();
             }

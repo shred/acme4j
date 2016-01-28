@@ -26,7 +26,7 @@ import org.jose4j.base64url.Base64Url;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
 import org.junit.Test;
-import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.Registration;
 
 /**
  * Unit test for {@link ValidationBuilder}.
@@ -40,16 +40,16 @@ public class ValidationBuilderTest {
      */
     @Test
     public void testValidationBuilder() throws IOException, JoseException {
-        Account account = new Account(TestUtils.createKeyPair());
+        Registration reg = new Registration(TestUtils.createKeyPair());
         KeyPair domainKeyPair = TestUtils.createDomainKeyPair();
 
-        assertThat(account.getKeyPair(), not(domainKeyPair));
+        assertThat(reg.getKeyPair(), not(domainKeyPair));
 
         ValidationBuilder vb = new ValidationBuilder();
         vb.domain("abc.de").domain("ef.gh");
         vb.domains("ijk.lm", "no.pq", "rst.uv");
         vb.domains(Arrays.asList("w.x", "y.z"));
-        String json = vb.sign(account, domainKeyPair);
+        String json = vb.sign(reg, domainKeyPair);
 
         Map<String, Object> data = JsonUtil.parseJson(json);
 

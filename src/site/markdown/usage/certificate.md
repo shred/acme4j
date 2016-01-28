@@ -45,7 +45,7 @@ To revoke a certificate, just pass the it to the respective method:
 
 ```java
 X509Certificate cert = ... // certificate to be revoked
-client.revokeCertificate(account, cert);
+client.revokeCertificate(registration, cert);
 ```
 
 As an exception, ACME servers also accept the domain's key pair for revoking a certificate. _acme4j_ does not directly support this way of revocation. However, you can do so with this tiny hack:
@@ -53,7 +53,7 @@ As an exception, ACME servers also accept the domain's key pair for revoking a c
 ```java
 KeyPair domainKeyPair = ... // KeyPair to be used for HTTPS encryption
 X509Certificate cert = ... // certificate to be revoked
-client.revokeCertificate(new Account(domainKeyPair), cert);
+client.revokeCertificate(new Registration(domainKeyPair), cert);
 ```
 
 If you have the choice, you should always prefer to use your account key.

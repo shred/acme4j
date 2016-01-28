@@ -80,17 +80,14 @@ public class ClientTest {
             createdNewKeyPair = true;
         }
 
-        // Create an Account instance for the user
-        Account account = new Account(userKeyPair);
-
         // Create an AcmeClient for Let's Encrypt
         // Use "acme://letsencrypt.org" for production server
         AcmeClient client = AcmeClientFactory.connect("acme://letsencrypt.org/staging");
 
         // Register a new user
-        Registration reg = new Registration();
+        Registration reg = new Registration(userKeyPair);
         try {
-            client.newRegistration(account, reg);
+            client.newRegistration(reg);
             LOG.info("Registered a new user, URI: " + reg.getLocation());
         } catch (AcmeConflictException ex) {
             LOG.info("Account does already exist, URI: " + reg.getLocation());
@@ -99,40 +96,41 @@ public class ClientTest {
         LOG.info("Terms of Service: " + reg.getAgreement());
 
         if (createdNewKeyPair) {
-            boolean accepted = acceptAgreement(client, account, reg);
+            boolean accepted = acceptAgreement(client, reg);
             if (!accepted) {
                 return;
             }
         }
+
 
         for (String domain : domains) {
             // Create a new authorization
             Authorization auth = new Authorization();
             auth.setDomain(domain);
             try {
-                client.newAuthorization(account, auth);
+                client.newAuthorization(reg, auth);
             } catch (AcmeUnauthorizedException ex) {
                 // Maybe there are new T&C to accept?
-                boolean accepted = acceptAgreement(client, account, reg);
+                boolean accepted = acceptAgreement(client, reg);
                 if (!accepted) {
                     return;
                 }
                 // Then try again...
-                client.newAuthorization(account, auth);
+                client.newAuthorization(reg, auth);
             }
             LOG.info("New authorization for domain " + domain);
 
             // Uncomment a challenge...
-            Challenge challenge = httpChallenge(auth, account, domain);
-//            Challenge challenge = dnsChallenge(auth, account, domain);
-//            Challenge challenge = tlsSniChallenge(auth, account, domain);
+            Challenge challenge = httpChallenge(auth, reg, domain);
+//            Challenge challenge = dnsChallenge(auth, reg, domain);
+//            Challenge challenge = tlsSniChallenge(auth, reg, domain);
 
             if (challenge == null) {
                 return;
             }
 
             // Trigger the challenge
-            client.triggerChallenge(account, challenge);
+            client.triggerChallenge(reg, challenge);
 
             // Poll for the challenge to complete
             int attempts = 10;
@@ -177,7 +175,7 @@ public class ClientTest {
         }
 
         // Request a signed certificate
-        URI certificateUri = client.requestCertificate(account, csrb.getEncoded());
+        URI certificateUri = client.requestCertificate(reg, csrb.getEncoded());
         LOG.info("Success! The certificate for domains " + domains + " has been generated!");
         LOG.info("Certificate URI: " + certificateUri);
 
@@ -188,13 +186,13 @@ public class ClientTest {
         }
 
         // Revoke the certificate (uncomment if needed...)
-        // client.revokeCertificate(account, cert);
+        // client.revokeCertificate(reg, cert);
     }
 
     /**
      * Prepares HTTP challenge.
      */
-    public Challenge httpChallenge(Authorization auth, Account account, String domain) throws AcmeException {
+    public Challenge httpChallenge(Authorization auth, Registration reg, String domain) throws AcmeException {
         // Find a single http-01 challenge
         HttpChallenge challenge = auth.findChallenge(HttpChallenge.TYPE);
         if (challenge == null) {
@@ -203,7 +201,7 @@ public class ClientTest {
         }
 
         // Authorize the challenge
-        challenge.authorize(account);
+        challenge.authorize(reg);
 
         // Output the challenge, wait for acknowledge...
         LOG.info("Please create a file in your web server's base directory.");
@@ -233,7 +231,7 @@ public class ClientTest {
     /**
      * Prepares DNS challenge.
      */
-    public Challenge dnsChallenge(Authorization auth, Account account, String domain) throws AcmeException {
+    public Challenge dnsChallenge(Authorization auth, Registration reg, String domain) throws AcmeException {
         // Find a single dns-01 challenge
         DnsChallenge challenge = auth.findChallenge(DnsChallenge.TYPE);
         if (challenge == null) {
@@ -242,7 +240,7 @@ public class ClientTest {
         }
 
         // Authorize the challenge
-        challenge.authorize(account);
+        challenge.authorize(reg);
 
         // Output the challenge, wait for acknowledge...
         LOG.info("Please create a TXT record:");
@@ -267,7 +265,7 @@ public class ClientTest {
     /**
      * Prepares TLS-SNI challenge.
      */
-    public Challenge tlsSniChallenge(Authorization auth, Account account, String domain) throws AcmeException {
+    public Challenge tlsSniChallenge(Authorization auth, Registration reg, String domain) throws AcmeException {
         // Find a single tls-sni-01 challenge
         TlsSniChallenge challenge = auth.findChallenge(TlsSniChallenge.TYPE);
         if (challenge == null) {
@@ -276,7 +274,7 @@ public class ClientTest {
         }
 
         // Authorize the challenge
-        challenge.authorize(account);
+        challenge.authorize(reg);
 
         // Get the Subject
         String subject = challenge.getSubject();
@@ -327,13 +325,11 @@ public class ClientTest {
      *
      * @param client
      *            {@link AcmeClient} to send confirmation to
-     * @param account
-     *            {@link Account} User's account
      * @param reg
      *            {@link Registration} User's registration, containing the Agreement URI
      * @return {@code true}: User confirmed, {@code false} user rejected
      */
-    public boolean acceptAgreement(AcmeClient client, Account account, Registration reg)
+    public boolean acceptAgreement(AcmeClient client, Registration reg)
                 throws AcmeException {
         int option = JOptionPane.showConfirmDialog(null,
                         "Do you accept the Terms of Service?\n\n" + reg.getAgreement(),
@@ -344,7 +340,7 @@ public class ClientTest {
             return false;
         }
 
-        client.modifyRegistration(account, reg);
+        client.modifyRegistration(reg);
         LOG.info("Updated user's ToS");
 
         return true;

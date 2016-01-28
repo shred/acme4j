@@ -37,7 +37,7 @@ import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
-import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.connector.Resource;
@@ -99,7 +99,8 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException {
+    public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration)
+                throws AcmeException {
         if (uri == null) {
             throw new NullPointerException("uri must not be null");
         }
@@ -109,15 +110,15 @@ public class DefaultConnection implements Connection {
         if (session == null) {
             throw new NullPointerException("session must not be null");
         }
-        if (account == null) {
-            throw new NullPointerException("account must not be null");
+        if (registration == null) {
+            throw new NullPointerException("registration must not be null");
         }
         if (conn != null) {
             throw new IllegalStateException("Connection was not closed. Race condition?");
         }
 
         try {
-            KeyPair keypair = account.getKeyPair();
+            KeyPair keypair = registration.getKeyPair();
 
             if (session.getNonce() == null) {
                 LOG.debug("Getting initial nonce, HEAD {}", uri);

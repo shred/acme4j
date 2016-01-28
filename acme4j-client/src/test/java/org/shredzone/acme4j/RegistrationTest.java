@@ -16,10 +16,13 @@ package org.shredzone.acme4j;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.security.KeyPair;
 
 import org.junit.Test;
+import org.shredzone.acme4j.util.TestUtils;
 
 /**
  * Unit tests for {@link Registration}.
@@ -32,12 +35,14 @@ public class RegistrationTest {
      * Test getters and setters.
      */
     @Test
-    public void testGetterAndSetter() throws URISyntaxException {
-        Registration registration = new Registration();
+    public void testGetterAndSetter() throws IOException, URISyntaxException {
+        KeyPair keypair = TestUtils.createKeyPair();
+        Registration registration = new Registration(keypair);
 
         assertThat(registration.getAgreement(), is(nullValue()));
         assertThat(registration.getLocation(), is(nullValue()));
         assertThat(registration.getContacts(), is(empty()));
+        assertThat(registration.getKeyPair(), is(sameInstance(keypair)));
 
         registration.setAgreement(new URI("http://example.com/agreement.pdf"));
         registration.setLocation(new URI("http://example.com/acme/12345"));
@@ -56,12 +61,16 @@ public class RegistrationTest {
      * Test constructors.
      */
     @Test
-    public void testConstructor() throws URISyntaxException {
-        Registration registration1 = new Registration();
-        assertThat(registration1.getLocation(), is(nullValue()));
+    public void testConstructor() throws IOException, URISyntaxException {
+        KeyPair keypair = TestUtils.createKeyPair();
 
-        Registration registration2 = new Registration(new URI("http://example.com/acme/12345"));
+        Registration registration1 = new Registration(keypair);
+        assertThat(registration1.getLocation(), is(nullValue()));
+        assertThat(registration1.getKeyPair(), is(sameInstance(keypair)));
+
+        Registration registration2 = new Registration(keypair, new URI("http://example.com/acme/12345"));
         assertThat(registration2.getLocation(), is(new URI("http://example.com/acme/12345")));
+        assertThat(registration2.getKeyPair(), is(sameInstance(keypair)));
     }
 
 }

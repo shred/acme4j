@@ -21,7 +21,7 @@ import java.io.IOException;
 import java.security.KeyPair;
 
 import org.junit.Test;
-import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
@@ -44,7 +44,7 @@ public class HttpChallengeTest {
     @Test
     public void testHttpChallenge() throws IOException {
         KeyPair keypair = TestUtils.createKeyPair();
-        Account account = new Account(keypair);
+        Registration reg = new Registration(keypair);
 
         HttpChallenge challenge = new HttpChallenge();
         challenge.unmarshall(TestUtils.getJsonAsMap("httpChallenge"));
@@ -59,7 +59,7 @@ public class HttpChallengeTest {
             // expected
         }
 
-        challenge.authorize(account);
+        challenge.authorize(reg);
 
         assertThat(challenge.getToken(), is(TOKEN));
         assertThat(challenge.getAuthorization(), is(KEY_AUTHORIZATION));

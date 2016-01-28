@@ -24,7 +24,7 @@ import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
-import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.challenge.ProofOfPossessionChallenge;
 
 /**
@@ -87,15 +87,15 @@ public class ValidationBuilder {
      * Signs with the given {@link KeyPair} and returns a signed JSON Web Signature
      * structure that can be used for validation.
      *
-     * @param account
-     *            {@link Account} of the current domain owner
+     * @param registration
+     *            {@link Registration} of the current domain owner
      * @param keypair
      *            One of the {@link KeyPair} requested by the challenge
      * @return JWS validation object
      */
-    public String sign(Account account, KeyPair keypair) {
-        if (account == null) {
-            throw new NullPointerException("account must not be null");
+    public String sign(Registration registration, KeyPair keypair) {
+        if (registration == null) {
+            throw new NullPointerException("registration must not be null");
         }
         if (keypair == null) {
             throw new NullPointerException("keypair must not be null");
@@ -105,7 +105,7 @@ public class ValidationBuilder {
             ClaimBuilder claims = new ClaimBuilder();
             claims.put("type", ProofOfPossessionChallenge.TYPE);
             claims.array("identifiers", identifiers.toArray());
-            claims.putKey("accountKey", account.getKeyPair().getPublic());
+            claims.putKey("accountKey", registration.getKeyPair().getPublic());
 
             final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(keypair.getPublic());
 

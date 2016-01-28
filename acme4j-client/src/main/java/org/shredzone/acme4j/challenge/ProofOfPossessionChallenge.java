@@ -28,7 +28,7 @@ import java.util.Map;
 import org.jose4j.base64url.Base64Url;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
-import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.ValidationBuilder;
 
@@ -59,20 +59,20 @@ public class ProofOfPossessionChallenge extends GenericChallenge {
     }
 
     /**
-     * Authorizes the challenge by signing it with the {@link Account} of the current
+     * Authorizes the challenge by signing it with the {@link Registration} of the current
      * domain owner.
      *
-     * @param ownerAccount
-     *            {@link Account} of the certificate holder
+     * @param ownerRegistration
+     *            {@link Registration} of the certificate holder
      * @param domainKeypair
      *            {@link KeyPair} matching one of the requested certificates
      * @param domains
      *            Domains to validate
      */
-    public void authorize(Account ownerAccount, KeyPair domainKeypair, String... domains) {
+    public void authorize(Registration ownerRegistration, KeyPair domainKeypair, String... domains) {
         importValidation(new ValidationBuilder()
                 .domains(domains)
-                .sign(ownerAccount, domainKeypair));
+                .sign(ownerRegistration, domainKeypair));
     }
 
     /**

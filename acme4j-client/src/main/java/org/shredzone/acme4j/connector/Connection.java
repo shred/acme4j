@@ -17,7 +17,7 @@ import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 
-import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.util.ClaimBuilder;
@@ -47,11 +47,12 @@ public interface Connection extends AutoCloseable {
      *            {@link ClaimBuilder} containing claims. Must not be {@code null}.
      * @param session
      *            {@link Session} instance to be used for tracking
-     * @param account
-     *            {@link Account} to be used for signing the request
+     * @param registration
+     *            {@link Registration} to be used for signing the request
      * @return HTTP response code
      */
-    int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException;
+    int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration)
+                throws AcmeException;
 
     /**
      * Reads a server response as JSON data.

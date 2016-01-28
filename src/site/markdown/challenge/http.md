@@ -6,7 +6,7 @@ After authorizing the challenge, `HttpChallenge` provides two strings:
 
 ```java
 HttpChallenge challenge = auth.findChallenge(HttpChallenge.TYPE);
-challenge.authorize(account);
+challenge.authorize(registration);
 
 String token = challenge.getToken();
 String content = challenge.getAuthorization();

@@ -17,7 +17,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.Registration;
 
 /**
  * Implements the {@code tls-sni-01} challenge.
@@ -44,8 +44,8 @@ public class TlsSniChallenge extends GenericTokenChallenge {
     }
 
     @Override
-    public void authorize(Account account) {
-        super.authorize(account);
+    public void authorize(Registration registration) {
+        super.authorize(registration);
         String hash = computeHash(getAuthorization());
         subject = hash.substring(0, 32) + '.' + hash.substring(32) + ".acme.invalid";
     }

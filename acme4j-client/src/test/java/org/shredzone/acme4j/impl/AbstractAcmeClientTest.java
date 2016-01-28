@@ -31,7 +31,6 @@ import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
 import org.junit.Before;
 import org.junit.Test;
-import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.Status;
@@ -54,11 +53,12 @@ import org.shredzone.acme4j.util.TimestampParser;
  */
 public class AbstractAcmeClientTest {
 
-    private Account testAccount;
     private URI resourceUri;
     private URI locationUri;
     private URI anotherLocationUri;
     private URI agreementUri;
+    private KeyPair accountKeyPair;
+    private Registration testRegistration;
 
     @Before
     public void setup() throws IOException, URISyntaxException {
@@ -66,7 +66,8 @@ public class AbstractAcmeClientTest {
         locationUri = new URI("https://example.com/acme/some-location");
         anotherLocationUri = new URI("https://example.com/acme/another-location");
         agreementUri = new URI("http://example.com/agreement.pdf");
-        testAccount = new Account(TestUtils.createKeyPair());
+        accountKeyPair = TestUtils.createKeyPair();
+        testRegistration = new Registration(accountKeyPair);
     }
 
     /**
@@ -74,16 +75,16 @@ public class AbstractAcmeClientTest {
      */
     @Test
     public void testNewRegistration() throws AcmeException {
-        Registration registration = new Registration();
+        Registration registration = new Registration(accountKeyPair);
         registration.addContact("mailto:foo@example.com");
 
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException {
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("newRegistration")));
                 assertThat(session, is(notNullValue()));
-                assertThat(account, is(sameInstance(testAccount)));
+                assertThat(registration.getKeyPair(), is(sameInstance(accountKeyPair)));
                 return HttpURLConnection.HTTP_CREATED;
             }
 
@@ -104,7 +105,7 @@ public class AbstractAcmeClientTest {
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
         client.putTestResource(Resource.NEW_REG, resourceUri);
 
-        client.newRegistration(testAccount, registration);
+        client.newRegistration(registration);
 
         assertThat(registration.getLocation(), is(locationUri));
         assertThat(registration.getAgreement(), is(agreementUri));
@@ -115,18 +116,18 @@ public class AbstractAcmeClientTest {
      */
     @Test
     public void testModifyRegistration() throws AcmeException {
-        Registration registration = new Registration();
+        Registration registration = new Registration(accountKeyPair);
         registration.setAgreement(agreementUri);
         registration.addContact("mailto:foo2@example.com");
         registration.setLocation(locationUri);
 
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException {
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
                 assertThat(uri, is(locationUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("modifyRegistration")));
                 assertThat(session, is(notNullValue()));
-                assertThat(account, is(sameInstance(testAccount)));
+                assertThat(registration.getKeyPair(), is(sameInstance(accountKeyPair)));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
 
@@ -146,7 +147,7 @@ public class AbstractAcmeClientTest {
 
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
 
-        client.modifyRegistration(testAccount, registration);
+        client.modifyRegistration(registration);
 
         assertThat(registration.getLocation(), is(locationUri));
         assertThat(registration.getAgreement(), is(agreementUri));
@@ -157,14 +158,14 @@ public class AbstractAcmeClientTest {
      */
     @Test
     public void testChangeRegistrationKey() throws AcmeException, IOException {
-        Registration registration = new Registration();
+        Registration registration = new Registration(accountKeyPair);
         registration.setLocation(locationUri);
 
         final KeyPair newKeyPair = TestUtils.createDomainKeyPair();
 
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException {
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
                 Map<String, Object> claimMap = claims.toMap();
                 assertThat(claimMap.get("resource"), is((Object) "reg"));
                 assertThat(claimMap.get("newKey"), not(nullValue()));
@@ -189,7 +190,7 @@ public class AbstractAcmeClientTest {
 
                 assertThat(uri, is(locationUri));
                 assertThat(session, is(notNullValue()));
-                assertThat(account, is(sameInstance(testAccount)));
+                assertThat(registration.getKeyPair(), is(sameInstance(accountKeyPair)));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
 
@@ -201,7 +202,7 @@ public class AbstractAcmeClientTest {
 
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
 
-        client.changeRegistrationKey(testAccount, registration, newKeyPair);
+        client.changeRegistrationKey(registration, newKeyPair);
     }
 
     /**
@@ -209,13 +210,13 @@ public class AbstractAcmeClientTest {
      */
     @Test(expected = IllegalArgumentException.class)
     public void testChangeRegistrationSameKey() throws AcmeException, IOException {
-        Registration registration = new Registration();
+        Registration registration = new Registration(accountKeyPair);
         registration.setLocation(locationUri);
 
         Connection connection = new DummyConnection();
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
 
-        client.changeRegistrationKey(testAccount, registration, testAccount.getKeyPair());
+        client.changeRegistrationKey(registration, registration.getKeyPair());
     }
 
     /**
@@ -223,17 +224,17 @@ public class AbstractAcmeClientTest {
      */
     @Test
     public void testRecoverRegistration() throws AcmeException {
-        Registration registration = new Registration();
+        Registration registration = new Registration(accountKeyPair);
         registration.addContact("mailto:foo@example.com");
         registration.setLocation(locationUri);
 
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException {
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("recoverRegistration")));
                 assertThat(session, is(notNullValue()));
-                assertThat(account, is(sameInstance(testAccount)));
+                assertThat(registration.getKeyPair(), is(sameInstance(accountKeyPair)));
                 return HttpURLConnection.HTTP_CREATED;
             }
 
@@ -254,7 +255,7 @@ public class AbstractAcmeClientTest {
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
         client.putTestResource(Resource.RECOVER_REG, resourceUri);
 
-        client.recoverRegistration(testAccount, registration);
+        client.recoverRegistration(registration);
 
         assertThat(registration.getLocation(), is(anotherLocationUri));
         assertThat(registration.getAgreement(), is(agreementUri));
@@ -270,11 +271,11 @@ public class AbstractAcmeClientTest {
 
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException {
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("newAuthorizationRequest")));
                 assertThat(session, is(notNullValue()));
-                assertThat(account, is(sameInstance(testAccount)));
+                assertThat(registration.getKeyPair(), is(sameInstance(accountKeyPair)));
                 return HttpURLConnection.HTTP_CREATED;
             }
 
@@ -297,7 +298,7 @@ public class AbstractAcmeClientTest {
         client.putTestChallenge("http-01", httpChallenge);
         client.putTestChallenge("dns-01", dnsChallenge);
 
-        client.newAuthorization(testAccount, auth);
+        client.newAuthorization(testRegistration, auth);
 
         assertThat(auth.getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.PENDING));
@@ -365,11 +366,11 @@ public class AbstractAcmeClientTest {
     public void testTriggerChallenge() throws AcmeException {
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException {
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("triggerHttpChallengeRequest")));
                 assertThat(session, is(notNullValue()));
-                assertThat(account, is(sameInstance(testAccount)));
+                assertThat(registration.getKeyPair(), is(sameInstance(accountKeyPair)));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
 
@@ -383,9 +384,9 @@ public class AbstractAcmeClientTest {
 
         HttpChallenge challenge = new HttpChallenge();
         challenge.unmarshall(getJsonAsMap("triggerHttpChallenge"));
-        challenge.authorize(testAccount);
+        challenge.authorize(testRegistration);
 
-        client.triggerChallenge(testAccount, challenge);
+        client.triggerChallenge(testRegistration, challenge);
 
         assertThat(challenge.getStatus(), is(Status.PENDING));
         assertThat(challenge.getLocation(), is(locationUri));
@@ -451,11 +452,11 @@ public class AbstractAcmeClientTest {
     public void testRequestCertificate() throws AcmeException, IOException {
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException {
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequest")));
                 assertThat(session, is(notNullValue()));
-                assertThat(account, is(sameInstance(testAccount)));
+                assertThat(registration.getKeyPair(), is(sameInstance(accountKeyPair)));
                 return HttpURLConnection.HTTP_CREATED;
             }
 
@@ -469,7 +470,7 @@ public class AbstractAcmeClientTest {
         client.putTestResource(Resource.NEW_CERT, resourceUri);
 
         byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
-        URI certUri = client.requestCertificate(testAccount, csr);
+        URI certUri = client.requestCertificate(testRegistration, csr);
 
         assertThat(certUri, is(locationUri));
     }
@@ -509,11 +510,11 @@ public class AbstractAcmeClientTest {
 
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException {
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("revokeCertificateRequest")));
                 assertThat(session, is(notNullValue()));
-                assertThat(account, is(sameInstance(testAccount)));
+                assertThat(registration, is(sameInstance(testRegistration)));
                 return HttpURLConnection.HTTP_OK;
             }
         };
@@ -521,7 +522,7 @@ public class AbstractAcmeClientTest {
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
         client.putTestResource(Resource.REVOKE_CERT, resourceUri);
 
-        client.revokeCertificate(testAccount, cert);
+        client.revokeCertificate(testRegistration, cert);
     }
 
     /**

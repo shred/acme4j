@@ -14,7 +14,7 @@
 package org.shredzone.acme4j.challenge;
 
 import org.jose4j.base64url.Base64Url;
-import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.util.ClaimBuilder;
 
 /**
@@ -32,17 +32,17 @@ public class GenericTokenChallenge extends GenericChallenge {
     private String authorization;
 
     /**
-     * Authorizes the {@link Challenge} by signing it with an {@link Account}.
+     * Authorizes the {@link Challenge} by signing it with a {@link Registration}.
      *
-     * @param account
-     *            {@link Account} to sign the challenge with
+     * @param registration
+     *            {@link Registration} to sign the challenge with
      */
-    public void authorize(Account account) {
-        if (account == null) {
-            throw new NullPointerException("account must not be null");
+    public void authorize(Registration registration) {
+        if (registration == null) {
+            throw new NullPointerException("registration must not be null");
         }
 
-        authorization = computeAuthorization(account);
+        authorization = computeAuthorization(registration);
     }
 
     @Override
@@ -58,7 +58,7 @@ public class GenericTokenChallenge extends GenericChallenge {
      * Asserts that the challenge was authorized.
      *
      * @throws IllegalStateException
-     *             if {@link #authorize(Account)} was not invoked.
+     *             if {@link #authorize(Registration)} was not invoked.
      */
     protected void assertIsAuthorized() {
         if (authorization == null) {
@@ -74,7 +74,7 @@ public class GenericTokenChallenge extends GenericChallenge {
     }
 
     /**
-     * Gets the authorization after {@link #authorize(Account)} was invoked.
+     * Gets the authorization after {@link #authorize(Registration)} was invoked.
      */
     protected String getAuthorization() {
         assertIsAuthorized();
@@ -87,14 +87,14 @@ public class GenericTokenChallenge extends GenericChallenge {
      * The default is {@code token + '.' + base64url(jwkThumbprint)}. Subclasses may
      * override this method if a different algorithm is used.
      *
-     * @param account
-     *            {@link Account} to authorize with
+     * @param registration
+     *            {@link Registration} to authorize with
      * @return Authorization string
      */
-    protected String computeAuthorization(Account account) {
+    protected String computeAuthorization(Registration registration) {
         return getToken()
             + '.'
-            + Base64Url.encode(jwkThumbprint(account.getKeyPair().getPublic()));
+            + Base64Url.encode(jwkThumbprint(registration.getKeyPair().getPublic()));
     }
 
 }

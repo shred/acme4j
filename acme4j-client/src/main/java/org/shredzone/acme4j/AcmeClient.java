@@ -32,62 +32,55 @@ public interface AcmeClient {
     /**
      * Registers a new account.
      *
-     * @param account
-     *            {@link Account} to register
      * @param registration
      *            {@link Registration} containing registration data
      */
-    void newRegistration(Account account, Registration registration) throws AcmeException;
+    void newRegistration(Registration registration) throws AcmeException;
 
     /**
      * Modifies an existing account.
      *
-     * @param account
-     *            {@link Account} that is registered
      * @param registration
      *            {@link Registration} containing updated registration data and the
      *            account location URI
      */
-    void modifyRegistration(Account account, Registration registration) throws AcmeException;
+    void modifyRegistration(Registration registration) throws AcmeException;
 
     /**
      * Modifies the account so it is identified with the new {@link KeyPair}.
      * <p>
-     * Starting from the next call, {@link Account} must use the new {@link KeyPair} for
-     * identification.
+     * Starting from the next call, {@link Registration} must use the new {@link KeyPair}
+     * for identification.
      *
-     * @param account
-     *            {@link Account} to change the identification key pair of
      * @param registration
      *            {@link Registration} containing the account location URI. Other
      *            properties are ignored.
      * @param newKeyPair
      *            new {@link KeyPair} to be used for identifying this account
      */
-    void changeRegistrationKey(Account account, Registration registration, KeyPair newKeyPair)
+    void changeRegistrationKey(Registration registration, KeyPair newKeyPair)
                 throws AcmeException;
 
     /**
      * Recovers an account by contact-based recovery. The server starts an out-of-band
      * recovery process by using one of the contact addresses given at account creation.
      *
-     * @param account
-     *            <em>New</em> {@link Account} to associate the recovered account with
      * @param registration
-     *            {@link Registration}, with the account location URI set
+     *            {@link Registration}, with the new key pair and the account location URI
+     *            set
      * @throws AcmeException
      */
-    void recoverRegistration(Account account, Registration registration) throws AcmeException;
+    void recoverRegistration(Registration registration) throws AcmeException;
 
     /**
      * Creates a new {@link Authorization} for a domain.
      *
-     * @param account
-     *            {@link Account} the authorization is related to
+     * @param registration
+     *            {@link Registration} the authorization is related to
      * @param auth
      *            {@link Authorization} containing the domain name
      */
-    void newAuthorization(Account account, Authorization auth) throws AcmeException;
+    void newAuthorization(Registration registration, Authorization auth) throws AcmeException;
 
     /**
      * Updates an {@link Authorization} to the current server state.
@@ -101,12 +94,12 @@ public interface AcmeClient {
      * Triggers a {@link Challenge}. The ACME server is requested to validate the
      * response. Note that the validation is performed asynchronously.
      *
-     * @param account
-     *            {@link Account} to be used for conversation
+     * @param registration
+     *            {@link Registration} to be used for conversation
      * @param challenge
      *            {@link Challenge} to trigger
      */
-    void triggerChallenge(Account account, Challenge challenge) throws AcmeException;
+    void triggerChallenge(Registration registration, Challenge challenge) throws AcmeException;
 
     /**
      * Updates the {@link Challenge} instance. It contains the current state.
@@ -130,13 +123,13 @@ public interface AcmeClient {
     /**
      * Requests a certificate.
      *
-     * @param account
-     *            {@link Account} to be used for conversation
+     * @param registration
+     *            {@link Registration} to be used for conversation
      * @param csr
      *            PKCS#10 Certificate Signing Request to be sent to the server
      * @return {@link URI} the certificate can be downloaded from
      */
-    URI requestCertificate(Account account, byte[] csr) throws AcmeException;
+    URI requestCertificate(Registration registration, byte[] csr) throws AcmeException;
 
     /**
      * Downloads a certificate.
@@ -150,11 +143,12 @@ public interface AcmeClient {
     /**
      * Revokes a certificate.
      *
-     * @param account
-     *            {@link Account} to be used for conversation
+     * @param registration
+     *            {@link Registration} to be used for conversation
      * @param certificate
      *            Certificate to revoke
      */
-    void revokeCertificate(Account account, X509Certificate certificate) throws AcmeException;
+    void revokeCertificate(Registration registration, X509Certificate certificate)
+                throws AcmeException;
 
 }

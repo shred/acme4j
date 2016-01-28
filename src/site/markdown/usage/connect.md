@@ -17,4 +17,4 @@ For this reason, special ACME URIs should be preferred:
 AcmeClient client = AcmeClientFactory.connect("acme://letsencrypt.org/staging");
 ```
 
- Instead of a generic provider, this call uses a special _Let's Encrypt_ provider that also accepts the _Let's Encrypt_ certificate.
+Instead of a generic provider, this call uses a special _Let's Encrypt_ provider that also accepts the _Let's Encrypt_ certificate.

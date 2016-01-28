@@ -31,7 +31,7 @@
       <item name="Introduction" href="index.html"/>
       <item name="How to Use" href="usage/index.html">
         <item name="Connection" href="usage/connect.html"/>
-        <item name="Account" href="usage/register.html"/>
+        <item name="Registration" href="usage/register.html"/>
         <item name="Authorization" href="usage/authorization.html"/>
         <item name="Certificate" href="usage/certificate.html"/>
         <item name="Recovery" href="usage/recovery.html"/>

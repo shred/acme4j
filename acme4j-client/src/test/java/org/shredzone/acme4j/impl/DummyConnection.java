@@ -17,7 +17,7 @@ import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 
-import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.Session;
@@ -38,7 +38,7 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Account account) throws AcmeException {
+    public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
         throw new UnsupportedOperationException();
     }
 

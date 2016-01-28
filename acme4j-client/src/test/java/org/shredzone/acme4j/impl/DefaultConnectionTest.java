@@ -35,7 +35,7 @@ import org.jose4j.base64url.Base64Url;
 import org.jose4j.jwx.CompactSerializer;
 import org.junit.Before;
 import org.junit.Test;
-import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.connector.Resource;
@@ -295,9 +295,9 @@ public class DefaultConnectionTest {
             cb.put("foo", 123).put("bar", "a-string");
 
             KeyPair keypair = TestUtils.createKeyPair();
-            Account account = new Account(keypair);
+            Registration reg = new Registration(keypair);
 
-            conn.sendSignedRequest(requestUri, cb, testSession, account);
+            conn.sendSignedRequest(requestUri, cb, testSession, reg);
         }
 
         verify(mockUrlConnection).setRequestMethod("HEAD");
