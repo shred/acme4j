@@ -16,6 +16,8 @@ package org.shredzone.acme4j.util;
 import java.io.IOException;
 import java.io.Writer;
 import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.interfaces.ECKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -46,6 +48,7 @@ import org.bouncycastle.util.io.pem.PemWriter;
  */
 public class CSRBuilder {
     private static final String SIGNATURE_ALG = "SHA256withRSA";
+    private static final String EC_SIGNATURE_ALG = "SHA256withECDSA";
 
     private final X500NameBuilder namebuilder = new X500NameBuilder(X500Name.getDefaultStyle());
     private final List<String> namelist = new ArrayList<>();
@@ -156,8 +159,10 @@ public class CSRBuilder {
             extensionsGenerator.addExtension(Extension.subjectAlternativeName, false, subjectAltName);
             p10Builder.addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, extensionsGenerator.generate());
 
-            JcaContentSignerBuilder csBuilder = new JcaContentSignerBuilder(SIGNATURE_ALG);
-            ContentSigner signer = csBuilder.build(keypair.getPrivate());
+            PrivateKey pk = keypair.getPrivate();
+            JcaContentSignerBuilder csBuilder = new JcaContentSignerBuilder(
+                            pk instanceof ECKey ? EC_SIGNATURE_ALG : SIGNATURE_ALG);
+            ContentSigner signer = csBuilder.build(pk);
 
             csr = p10Builder.build(signer);
         } catch (OperatorCreationException ex) {

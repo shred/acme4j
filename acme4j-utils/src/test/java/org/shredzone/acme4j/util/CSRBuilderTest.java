@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.security.KeyPair;
+import java.security.Security;
 import java.util.Arrays;
 
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -33,6 +34,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMException;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -51,10 +53,14 @@ import com.jcabi.matchers.RegexMatchers;
 public class CSRBuilderTest {
 
     private static KeyPair testKey;
+    private static KeyPair testEcKey;
 
     @BeforeClass
     public static void setup() {
+        Security.addProvider(new BouncyCastleProvider());
+
         testKey = KeyPairUtils.createKeyPair(512);
+        testEcKey = KeyPairUtils.createECKeyPair("secp256r1");
     }
 
     /**
@@ -79,6 +85,37 @@ public class CSRBuilderTest {
                         + "DNS=abc.de,DNS=fg.hi,DNS=jklm.no,DNS=pqr.st,DNS=uv.wx,DNS=y.z"));
 
         builder.sign(testKey);
+
+        PKCS10CertificationRequest csr = builder.getCSR();
+        assertThat(csr, is(notNullValue()));
+        assertThat(csr.getEncoded(), is(equalTo(builder.getEncoded())));
+
+        csrTest(csr);
+        writerTest(builder);
+    }
+
+    /**
+     * Test if the generated CSR is plausible using a ECDSA key.
+     */
+    @Test
+    public void testECCGenerate() throws IOException {
+        CSRBuilder builder = new CSRBuilder();
+        builder.addDomain("abc.de");
+        builder.addDomain("fg.hi");
+        builder.addDomains("jklm.no", "pqr.st");
+        builder.addDomains(Arrays.asList("uv.wx", "y.z"));
+
+        builder.setCountry("XX");
+        builder.setLocality("Testville");
+        builder.setOrganization("Testing Co");
+        builder.setOrganizationalUnit("Testunit");
+        builder.setState("ABC");
+
+        assertThat(builder.toString(), is("CN=abc.de,C=XX,L=Testville,O=Testing Co,"
+                        + "OU=Testunit,ST=ABC,"
+                        + "DNS=abc.de,DNS=fg.hi,DNS=jklm.no,DNS=pqr.st,DNS=uv.wx,DNS=y.z"));
+
+        builder.sign(testEcKey);
 
         PKCS10CertificationRequest csr = builder.getCSR();
         assertThat(csr, is(notNullValue()));
