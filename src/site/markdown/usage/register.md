@@ -60,3 +60,35 @@ client.changeRegistrationKey(reg, newKeyPair);
 ```
 
 All subsequent calls must now use the new key pair. The old key pair can be disposed.
+
+## Key Pair Utilities
+
+The `KeyPairUtils` class in the `acme4j-utils` module provides a few methods to make key pair handling more convenient.
+
+This call will generate a RSA key pair with a 2048 bit key:
+
+```java
+KeyPair keyPair = KeyPairUtils.createKeyPair(2048);
+```
+
+You can also create an elliptic curve key pair:
+
+```java
+KeyPair keyPair = KeyPairUtils.createECKeyPair("secp256r1");
+```
+
+To save a `KeyPair` (actually, the private key of the key pair) to a pem file, use this snippet:
+
+```java
+try (FileWriter fw = new FileWriter("keypair.pem")) {
+  KeyPairUtils.writeKeyPair(keyPair, fw);
+}
+```
+
+The following snippet reads the private key from a pem file, and returns a `KeyPair`.
+
+```java
+try (FileReader fr = New FileReader("keypair.pem")) {
+  return KeyPairUtils.readKeyPair(fr);
+}
+```
