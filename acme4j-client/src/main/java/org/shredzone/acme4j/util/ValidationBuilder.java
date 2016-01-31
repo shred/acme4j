@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.jose4j.jwk.PublicJsonWebKey;
-import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Registration;
@@ -112,7 +111,7 @@ public class ValidationBuilder {
             JsonWebSignature jws = new JsonWebSignature();
             jws.setPayload(claims.toString());
             jws.getHeaders().setJwkHeaderValue("jwk", jwk);
-            jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+            jws.setAlgorithmHeaderValue(SignatureUtils.keyAlgorithm(jwk));
             jws.setKey(keypair.getPrivate());
             jws.sign();
 

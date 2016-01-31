@@ -34,7 +34,6 @@ import java.util.regex.Pattern;
 import org.jose4j.base64url.Base64Url;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.PublicJsonWebKey;
-import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Registration;
@@ -47,6 +46,7 @@ import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.SignatureUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,7 +148,7 @@ public class DefaultConnection implements Connection {
             jws.setPayload(claims.toString());
             jws.getHeaders().setObjectHeaderValue("nonce", Base64Url.encode(session.getNonce()));
             jws.getHeaders().setJwkHeaderValue("jwk", jwk);
-            jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+            jws.setAlgorithmHeaderValue(SignatureUtils.keyAlgorithm(jwk));
             jws.setKey(keypair.getPrivate());
             byte[] outputData = jws.getCompactSerialization().getBytes("utf-8");
 
