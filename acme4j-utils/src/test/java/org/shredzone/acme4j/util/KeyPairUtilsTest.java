@@ -20,8 +20,12 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.security.KeyPair;
+import java.security.Security;
+import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.jcabi.matchers.RegexMatchers;
@@ -33,6 +37,12 @@ import com.jcabi.matchers.RegexMatchers;
  */
 public class KeyPairUtilsTest {
     private static final int KEY_SIZE = 2048;
+    private static final String EC_CURVE = "secp256r1";
+
+    @BeforeClass
+    public static void setup() {
+        Security.addProvider(new BouncyCastleProvider());
+    }
 
     /**
      * Test that RSA keypairs of the correct size are generated.
@@ -76,6 +86,50 @@ public class KeyPairUtilsTest {
 
         // Verify that both keypairs are the same
         assertThat(pair, not(sameInstance(readPair)));
+        assertThat(pair.getPublic().getEncoded(), is(equalTo(readPair.getPublic().getEncoded())));
+        assertThat(pair.getPrivate().getEncoded(), is(equalTo(readPair.getPrivate().getEncoded())));
+    }
+
+    /**
+     * Test that ECDSA keypairs are generated.
+     */
+    @Test
+    public void testCreateECCKeyPair() {
+        KeyPair pair = KeyPairUtils.createECKeyPair(EC_CURVE);
+        assertThat(pair, is(notNullValue()));
+        assertThat(pair.getPublic(), is(instanceOf(ECPublicKey.class)));
+    }
+
+    /**
+     * Test that reading and writing ECDSA keypairs work correctly.
+     */
+    @Test
+    public void testWriteAndReadEC() throws IOException {
+        // Generate a test keypair
+        KeyPair pair = KeyPairUtils.createECKeyPair(EC_CURVE);
+
+        // Write keypair to PEM
+        String pem;
+        try (StringWriter out = new StringWriter()) {
+            KeyPairUtils.writeKeyPair(pair, out);
+            pem = out.toString();
+        }
+
+        // Make sure PEM file is properly formatted
+        assertThat(pem, RegexMatchers.matchesPattern(
+                  "-----BEGIN EC PRIVATE KEY-----[\\r\\n]+"
+                + "([a-zA-Z0-9/+=]+[\\r\\n]+)+"
+                + "-----END EC PRIVATE KEY-----[\\r\\n]*"));
+
+        // Read keypair from PEM
+        KeyPair readPair;
+        try (StringReader in = new StringReader(pem)) {
+            readPair = KeyPairUtils.readKeyPair(in);
+        }
+
+        // Verify that both keypairs are the same
+        assertThat(pair, not(sameInstance(readPair)));
+        assertThat(pair.getPublic().getEncoded(), is(equalTo(readPair.getPublic().getEncoded())));
         assertThat(pair.getPrivate().getEncoded(), is(equalTo(readPair.getPrivate().getEncoded())));
     }
 

@@ -16,10 +16,15 @@ package org.shredzone.acme4j.util;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SecureRandom;
 
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.openssl.PEMException;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
@@ -52,6 +57,26 @@ public class KeyPairUtils {
             keyGen.initialize(keysize);
             return keyGen.generateKeyPair();
         } catch (NoSuchAlgorithmException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
+    /**
+     * Creates a new elliptic curve {@link KeyPair}.
+     *
+     * @param name
+     *            ECDSA curve name (e.g. "secp256r1")
+     * @return Generated {@link KeyPair}
+     */
+    public static KeyPair createECKeyPair(String name) {
+        try {
+            ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec(name);
+            KeyPairGenerator g = KeyPairGenerator.getInstance("ECDSA", "BC");
+            g.initialize(ecSpec, new SecureRandom());
+            return g.generateKeyPair();
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException ex) {
+            throw new IllegalArgumentException("Invalid curve name " + name, ex);
+        } catch (NoSuchProviderException ex) {
             throw new IllegalStateException(ex);
         }
     }
