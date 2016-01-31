@@ -26,7 +26,7 @@ import java.util.Map;
 import org.junit.Before;
 import org.junit.Test;
 import org.shredzone.acme4j.challenge.Challenge;
-import org.shredzone.acme4j.challenge.HttpChallenge;
+import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -54,18 +54,18 @@ public class GenericAcmeClientTest {
      */
     @Test
     public void testCreateChallenge() {
-        HttpChallenge mockChallenge = mock(HttpChallenge.class);
-        when(mockProvider.createChallenge(HttpChallenge.TYPE)).thenReturn(mockChallenge);
+        Http01Challenge mockChallenge = mock(Http01Challenge.class);
+        when(mockProvider.createChallenge(Http01Challenge.TYPE)).thenReturn(mockChallenge);
 
         GenericAcmeClient client = new GenericAcmeClient(mockProvider, directoryUri);
         Challenge challenge = client.createChallenge(new ClaimBuilder()
-                .put("type", HttpChallenge.TYPE)
+                .put("type", Http01Challenge.TYPE)
                 .toMap());
 
-        assertThat(challenge, is(instanceOf(HttpChallenge.class)));
+        assertThat(challenge, is(instanceOf(Http01Challenge.class)));
         assertThat(challenge, is(sameInstance((Challenge) mockChallenge)));
 
-        verify(mockProvider).createChallenge(HttpChallenge.TYPE);
+        verify(mockProvider).createChallenge(Http01Challenge.TYPE);
     }
 
     /**

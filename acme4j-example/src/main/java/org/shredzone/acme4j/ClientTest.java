@@ -27,9 +27,9 @@ import java.util.Collection;
 import javax.swing.JOptionPane;
 
 import org.shredzone.acme4j.challenge.Challenge;
-import org.shredzone.acme4j.challenge.DnsChallenge;
-import org.shredzone.acme4j.challenge.HttpChallenge;
-import org.shredzone.acme4j.challenge.TlsSniChallenge;
+import org.shredzone.acme4j.challenge.Dns01Challenge;
+import org.shredzone.acme4j.challenge.Http01Challenge;
+import org.shredzone.acme4j.challenge.TlsSni01Challenge;
 import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
@@ -194,9 +194,9 @@ public class ClientTest {
      */
     public Challenge httpChallenge(Authorization auth, Registration reg, String domain) throws AcmeException {
         // Find a single http-01 challenge
-        HttpChallenge challenge = auth.findChallenge(HttpChallenge.TYPE);
+        Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
         if (challenge == null) {
-            LOG.error("Found no " + HttpChallenge.TYPE + " challenge, don't know what to do...");
+            LOG.error("Found no " + Http01Challenge.TYPE + " challenge, don't know what to do...");
             return null;
         }
 
@@ -233,9 +233,9 @@ public class ClientTest {
      */
     public Challenge dnsChallenge(Authorization auth, Registration reg, String domain) throws AcmeException {
         // Find a single dns-01 challenge
-        DnsChallenge challenge = auth.findChallenge(DnsChallenge.TYPE);
+        Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
         if (challenge == null) {
-            LOG.error("Found no " + DnsChallenge.TYPE + " challenge, don't know what to do...");
+            LOG.error("Found no " + Dns01Challenge.TYPE + " challenge, don't know what to do...");
             return null;
         }
 
@@ -267,9 +267,9 @@ public class ClientTest {
      */
     public Challenge tlsSniChallenge(Authorization auth, Registration reg, String domain) throws AcmeException {
         // Find a single tls-sni-01 challenge
-        TlsSniChallenge challenge = auth.findChallenge(TlsSniChallenge.TYPE);
+        TlsSni01Challenge challenge = auth.findChallenge(TlsSni01Challenge.TYPE);
         if (challenge == null) {
-            LOG.error("Found no " + TlsSniChallenge.TYPE + " challenge, don't know what to do...");
+            LOG.error("Found no " + TlsSni01Challenge.TYPE + " challenge, don't know what to do...");
             return null;
         }
 

@@ -20,11 +20,11 @@ import java.security.NoSuchAlgorithmException;
 import org.shredzone.acme4j.Registration;
 
 /**
- * Implements the {@code tls-sni-01} challenge.
+ * Implements the {@value TYPE} challenge.
  *
  * @author Richard "Shred" Körber
  */
-public class TlsSniChallenge extends GenericTokenChallenge {
+public class TlsSni01Challenge extends GenericTokenChallenge {
     private static final long serialVersionUID = 7370329525205430573L;
     private static final char[] HEX = "0123456789abcdef".toCharArray();
 

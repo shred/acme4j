@@ -29,14 +29,14 @@ import org.shredzone.acme4j.util.TestUtils;
 import org.shredzone.acme4j.util.ValidationBuilder;
 
 /**
- * Unit tests for {@link ProofOfPossessionChallenge}.
+ * Unit tests for {@link ProofOfPossession01Challenge}.
  *
  * @author Richard "Shred" Körber
  */
 public class ProofOfPossessionChallengeTest {
 
     /**
-     * Test that {@link ProofOfPossessionChallenge} generates a correct authorization key.
+     * Test that {@link ProofOfPossession01Challenge} generates a correct authorization key.
      */
     @Test
     public void testProofOfPossessionChallenge() throws IOException {
@@ -45,12 +45,12 @@ public class ProofOfPossessionChallengeTest {
         Registration reg = new Registration(keypair);
         KeyPair domainKeyPair = TestUtils.createDomainKeyPair();
 
-        ProofOfPossessionChallenge challenge = new ProofOfPossessionChallenge();
+        ProofOfPossession01Challenge challenge = new ProofOfPossession01Challenge();
         challenge.unmarshall(TestUtils.getJsonAsMap("proofOfPossessionChallenge"));
 
         assertThat(challenge.getCertificates(), contains(cert));
 
-        assertThat(challenge.getType(), is(ProofOfPossessionChallenge.TYPE));
+        assertThat(challenge.getType(), is(ProofOfPossession01Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));
 
         try {
@@ -66,13 +66,13 @@ public class ProofOfPossessionChallengeTest {
         challenge.respond(cb);
 
         assertThat(cb.toString(), sameJSONAs("{\"type\"=\""
-            + ProofOfPossessionChallenge.TYPE + "\",\"authorization\"="
+            + ProofOfPossession01Challenge.TYPE + "\",\"authorization\"="
             + new ValidationBuilder().domain("example.org").sign(reg, domainKeyPair)
             + "}"));
     }
 
     /**
-     * Test that {@link ProofOfPossessionChallenge#importValidation(String)} works
+     * Test that {@link ProofOfPossession01Challenge#importValidation(String)} works
      * correctly.
      */
     @Test
@@ -85,7 +85,7 @@ public class ProofOfPossessionChallengeTest {
                 .domain("example.org")
                 .sign(reg, domainKeyPair);
 
-        ProofOfPossessionChallenge challenge = new ProofOfPossessionChallenge();
+        ProofOfPossession01Challenge challenge = new ProofOfPossession01Challenge();
         challenge.unmarshall(TestUtils.getJsonAsMap("proofOfPossessionChallenge"));
         challenge.importValidation(validation);
 
@@ -93,7 +93,7 @@ public class ProofOfPossessionChallengeTest {
         challenge.respond(cb);
 
         assertThat(cb.toString(), sameJSONAs("{\"type\"=\""
-            + ProofOfPossessionChallenge.TYPE + "\",\"authorization\"=" + validation
+            + ProofOfPossession01Challenge.TYPE + "\",\"authorization\"=" + validation
             + "}"));
     }
 

@@ -27,7 +27,7 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
- * Unit tests for {@link TlsSniChallenge}.
+ * Unit tests for {@link TlsSni01Challenge}.
  *
  * @author Richard "Shred" Körber
  */
@@ -37,17 +37,17 @@ public class TlsSniChallengeTest {
             "VNLBdSiZ3LppU2CRG8bilqlwq4DuApJMg3ZJowU6JhQ.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0";
 
     /**
-     * Test that {@link TlsSniChallenge} generates a correct authorization key.
+     * Test that {@link TlsSni01Challenge} generates a correct authorization key.
      */
     @Test
     public void testTlsSniChallenge() throws IOException {
         KeyPair keypair = TestUtils.createKeyPair();
         Registration reg = new Registration(keypair);
 
-        TlsSniChallenge challenge = new TlsSniChallenge();
+        TlsSni01Challenge challenge = new TlsSni01Challenge();
         challenge.unmarshall(TestUtils.getJsonAsMap("tlsSniChallenge"));
 
-        assertThat(challenge.getType(), is(TlsSniChallenge.TYPE));
+        assertThat(challenge.getType(), is(TlsSni01Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));
 
         try {

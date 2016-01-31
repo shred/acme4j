@@ -1,11 +1,11 @@
-# HTTP Challenge
+# http-01 Challenge
 
-With the HTTP challenge, you prove to the CA that you are able to control the web site content of the domain to be authorized, by making a file with a signed content available at a given path.
+With the `http-01` challenge, you prove to the CA that you are able to control the web site content of the domain to be authorized, by making a file with a signed content available at a given path.
 
-After authorizing the challenge, `HttpChallenge` provides two strings:
+After authorizing the challenge, `Http01Challenge` provides two strings:
 
 ```java
-HttpChallenge challenge = auth.findChallenge(HttpChallenge.TYPE);
+Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
 challenge.authorize(registration);
 
 String token = challenge.getToken();

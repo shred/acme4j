@@ -1,12 +1,12 @@
-# Proof of Possession
+# proof-of-possession-01 Challenge
 
-With the Proof of Possesion challenge, you prove to the CA that you are able to provide a verification document that is signed with a key that is known to the server. The main purpose of this challenge is to transfer the authorization of a domain to your account.
+With the `proof-of-possession-01` challenge, you prove to the CA that you are able to provide a verification document that is signed with a key that is known to the server. The main purpose of this challenge is to transfer the authorization of a domain to your account.
 
 The challenge object contains a list of `X509Certificate`s that are already known to the CA:
 
 ```java
-ProofOfPossessionChallenge challenge =
-        auth.findChallenge(ProofOfPossessionChallenge.TYPE);
+ProofOfPossession01Challenge challenge =
+        auth.findChallenge(ProofOfPossession01Challenge.TYPE);
 Collection<X509Certificate> certificates = challenge.getCertificates();
 ```
 
@@ -44,8 +44,8 @@ This `json` string can be transported (e.g. via email) and then imported into th
 ```java
 String json = ... // validation document
 
-ProofOfPossessionChallenge challenge =
-        auth.findChallenge(ProofOfPossessionChallenge.TYPE);
+ProofOfPossession01Challenge challenge =
+        auth.findChallenge(ProofOfPossession01Challenge.TYPE);
 challenge.importValidation(json);
 ```
 

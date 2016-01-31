@@ -35,9 +35,9 @@ import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Challenge;
-import org.shredzone.acme4j.challenge.DnsChallenge;
+import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.GenericChallenge;
-import org.shredzone.acme4j.challenge.HttpChallenge;
+import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.Session;
@@ -290,8 +290,8 @@ public class AbstractAcmeClientTest {
             }
         };
 
-        HttpChallenge httpChallenge = new HttpChallenge();
-        DnsChallenge dnsChallenge = new DnsChallenge();
+        Http01Challenge httpChallenge = new Http01Challenge();
+        Dns01Challenge dnsChallenge = new Dns01Challenge();
 
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
         client.putTestResource(Resource.NEW_AUTHZ, resourceUri);
@@ -335,8 +335,8 @@ public class AbstractAcmeClientTest {
             }
         };
 
-        HttpChallenge httpChallenge = new HttpChallenge();
-        DnsChallenge dnsChallenge = new DnsChallenge();
+        Http01Challenge httpChallenge = new Http01Challenge();
+        Dns01Challenge dnsChallenge = new Dns01Challenge();
 
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
         client.putTestChallenge("http-01", httpChallenge);
@@ -382,7 +382,7 @@ public class AbstractAcmeClientTest {
 
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
 
-        HttpChallenge challenge = new HttpChallenge();
+        Http01Challenge challenge = new Http01Challenge();
         challenge.unmarshall(getJsonAsMap("triggerHttpChallenge"));
         challenge.authorize(testRegistration);
 
@@ -412,7 +412,7 @@ public class AbstractAcmeClientTest {
 
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
 
-        Challenge challenge = new HttpChallenge();
+        Challenge challenge = new Http01Challenge();
         challenge.unmarshall(getJsonAsMap("triggerHttpChallengeResponse"));
 
         client.updateChallenge(challenge);
@@ -437,7 +437,7 @@ public class AbstractAcmeClientTest {
         };
 
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
-        client.putTestChallenge(HttpChallenge.TYPE, new HttpChallenge());
+        client.putTestChallenge(Http01Challenge.TYPE, new Http01Challenge());
 
         Challenge challenge = client.restoreChallenge(locationUri);
 

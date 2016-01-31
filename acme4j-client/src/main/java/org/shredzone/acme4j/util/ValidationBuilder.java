@@ -24,10 +24,10 @@ import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Registration;
-import org.shredzone.acme4j.challenge.ProofOfPossessionChallenge;
+import org.shredzone.acme4j.challenge.ProofOfPossession01Challenge;
 
 /**
- * Generates a validation string for {@link ProofOfPossessionChallenge}.
+ * Generates a validation string for {@link ProofOfPossession01Challenge}.
  *
  * @author Richard "Shred" Körber
  */
@@ -102,7 +102,7 @@ public class ValidationBuilder {
 
         try {
             ClaimBuilder claims = new ClaimBuilder();
-            claims.put("type", ProofOfPossessionChallenge.TYPE);
+            claims.put("type", ProofOfPossession01Challenge.TYPE);
             claims.array("identifiers", identifiers.toArray());
             claims.putKey("accountKey", registration.getKeyPair().getPublic());
 

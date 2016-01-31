@@ -8,7 +8,7 @@ The CA offers one or more sets of challenges. At least one set has to be complet
 
 The ACME specifications define four standard challenges:
 
-* [HTTP](./http.html)
-* [DNS](./dns.html)
-* [TLS-SNI](./tls-sni.html)
-* [Proof of Possession](./proof-of-possession.html)
+* [http-01](./http-01.html)
+* [dns-01](./dns-01.html)
+* [tls-sni-01](./tls-sni-01.html)
+* [proof-of-possession-01](./proof-of-possession-01.html)

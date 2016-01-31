@@ -88,7 +88,7 @@ public class GenericChallengeTest {
      */
     @Test(expected = IllegalArgumentException.class)
     public void testNotAcceptable() throws URISyntaxException {
-        HttpChallenge challenge = new HttpChallenge();
+        Http01Challenge challenge = new Http01Challenge();
         challenge.unmarshall(TestUtils.getJsonAsMap("dnsChallenge"));
     }
 
@@ -123,7 +123,7 @@ public class GenericChallengeTest {
      */
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
-        HttpChallenge originalChallenge = new HttpChallenge();
+        Http01Challenge originalChallenge = new Http01Challenge();
         originalChallenge.unmarshall(TestUtils.getJsonAsMap("httpChallenge"));
 
         // Serialize
@@ -144,10 +144,10 @@ public class GenericChallengeTest {
         }
 
         assertThat(testChallenge, not(sameInstance((Challenge) originalChallenge)));
-        assertThat(testChallenge, is(instanceOf(HttpChallenge.class)));
-        assertThat(testChallenge.getType(), is(HttpChallenge.TYPE));
+        assertThat(testChallenge, is(instanceOf(Http01Challenge.class)));
+        assertThat(testChallenge.getType(), is(Http01Challenge.TYPE));
         assertThat(testChallenge.getStatus(), is(Status.PENDING));
-        assertThat(((HttpChallenge )testChallenge).getToken(), is("rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ"));
+        assertThat(((Http01Challenge )testChallenge).getToken(), is("rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ"));
     }
 
 }

@@ -17,10 +17,10 @@ import java.net.URI;
 
 import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.challenge.Challenge;
-import org.shredzone.acme4j.challenge.DnsChallenge;
-import org.shredzone.acme4j.challenge.HttpChallenge;
-import org.shredzone.acme4j.challenge.ProofOfPossessionChallenge;
-import org.shredzone.acme4j.challenge.TlsSniChallenge;
+import org.shredzone.acme4j.challenge.Dns01Challenge;
+import org.shredzone.acme4j.challenge.Http01Challenge;
+import org.shredzone.acme4j.challenge.ProofOfPossession01Challenge;
+import org.shredzone.acme4j.challenge.TlsSni01Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.impl.DefaultConnection;
@@ -68,10 +68,10 @@ public abstract class AbstractAcmeClientProvider implements AcmeClientProvider {
         }
 
         switch (type) {
-            case DnsChallenge.TYPE: return new DnsChallenge();
-            case TlsSniChallenge.TYPE: return new TlsSniChallenge();
-            case ProofOfPossessionChallenge.TYPE: return new ProofOfPossessionChallenge();
-            case HttpChallenge.TYPE: return new HttpChallenge();
+            case Dns01Challenge.TYPE: return new Dns01Challenge();
+            case TlsSni01Challenge.TYPE: return new TlsSni01Challenge();
+            case ProofOfPossession01Challenge.TYPE: return new ProofOfPossession01Challenge();
+            case Http01Challenge.TYPE: return new Http01Challenge();
             default: return null;
         }
     }

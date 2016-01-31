@@ -27,7 +27,7 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
- * Unit tests for {@link DnsChallenge}.
+ * Unit tests for {@link Dns01Challenge}.
  *
  * @author Richard "Shred" Körber
  */
@@ -37,17 +37,17 @@ public class DnsChallengeTest {
             "pNvmJivs0WCko2suV7fhe-59oFqyYx_yB7tx6kIMAyE.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0";
 
     /**
-     * Test that {@link DnsChallenge} generates a correct authorization key.
+     * Test that {@link Dns01Challenge} generates a correct authorization key.
      */
     @Test
     public void testDnsChallenge() throws IOException {
         KeyPair keypair = TestUtils.createKeyPair();
         Registration reg = new Registration(keypair);
 
-        DnsChallenge challenge = new DnsChallenge();
+        Dns01Challenge challenge = new Dns01Challenge();
         challenge.unmarshall(TestUtils.getJsonAsMap("dnsChallenge"));
 
-        assertThat(challenge.getType(), is(DnsChallenge.TYPE));
+        assertThat(challenge.getType(), is(Dns01Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));
 
         try {

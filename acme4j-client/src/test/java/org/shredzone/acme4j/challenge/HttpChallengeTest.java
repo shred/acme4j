@@ -27,7 +27,7 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
- * Unit tests for {@link HttpChallenge}.
+ * Unit tests for {@link Http01Challenge}.
  *
  * @author Richard "Shred" Körber
  */
@@ -39,17 +39,17 @@ public class HttpChallengeTest {
             "rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0";
 
     /**
-     * Test that {@link HttpChallenge} generates a correct authorization key.
+     * Test that {@link Http01Challenge} generates a correct authorization key.
      */
     @Test
     public void testHttpChallenge() throws IOException {
         KeyPair keypair = TestUtils.createKeyPair();
         Registration reg = new Registration(keypair);
 
-        HttpChallenge challenge = new HttpChallenge();
+        Http01Challenge challenge = new Http01Challenge();
         challenge.unmarshall(TestUtils.getJsonAsMap("httpChallenge"));
 
-        assertThat(challenge.getType(), is(HttpChallenge.TYPE));
+        assertThat(challenge.getType(), is(Http01Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));
 
         try {

@@ -20,11 +20,11 @@ import java.security.NoSuchAlgorithmException;
 import org.jose4j.base64url.Base64Url;
 
 /**
- * Implements the {@code dns-01} challenge.
+ * Implements the {@value TYPE} challenge.
  *
  * @author Richard "Shred" Körber
  */
-public class DnsChallenge extends GenericTokenChallenge {
+public class Dns01Challenge extends GenericTokenChallenge {
     private static final long serialVersionUID = 6964687027713533075L;
 
     /**

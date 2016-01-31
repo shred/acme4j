@@ -34,7 +34,7 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.shredzone.acme4j.challenge.TlsSniChallenge;
+import org.shredzone.acme4j.challenge.TlsSni01Challenge;
 
 /**
  * Utility class offering convenience methods for certificates.
@@ -93,7 +93,7 @@ public final class CertificateUtils {
 
     /**
      * Creates a self-signed {@link X509Certificate} that can be used for
-     * {@link TlsSniChallenge}. The certificate is valid for 7 days.
+     * {@link TlsSni01Challenge}. The certificate is valid for 7 days.
      *
      * @param keypair
      *            A domain {@link KeyPair} to be used for the challenge

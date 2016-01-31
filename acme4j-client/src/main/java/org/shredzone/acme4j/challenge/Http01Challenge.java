@@ -15,11 +15,11 @@ package org.shredzone.acme4j.challenge;
 
 
 /**
- * Implements the {@code http-01} challenge.
+ * Implements the {@value TYPE} challenge.
  *
  * @author Richard "Shred" Körber
  */
-public class HttpChallenge extends GenericTokenChallenge {
+public class Http01Challenge extends GenericTokenChallenge {
     private static final long serialVersionUID = 3322211185872544605L;
 
     /**

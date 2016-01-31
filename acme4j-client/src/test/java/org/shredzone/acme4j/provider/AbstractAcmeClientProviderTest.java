@@ -22,10 +22,10 @@ import java.net.URISyntaxException;
 import org.junit.Test;
 import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.challenge.Challenge;
-import org.shredzone.acme4j.challenge.DnsChallenge;
-import org.shredzone.acme4j.challenge.HttpChallenge;
-import org.shredzone.acme4j.challenge.ProofOfPossessionChallenge;
-import org.shredzone.acme4j.challenge.TlsSniChallenge;
+import org.shredzone.acme4j.challenge.Dns01Challenge;
+import org.shredzone.acme4j.challenge.Http01Challenge;
+import org.shredzone.acme4j.challenge.ProofOfPossession01Challenge;
+import org.shredzone.acme4j.challenge.TlsSni01Challenge;
 
 /**
  * Unit tests for {@link AbstractAcmeClientProvider}.
@@ -89,24 +89,24 @@ public class AbstractAcmeClientProviderTest {
             }
         };
 
-        Challenge c1 = provider.createChallenge(HttpChallenge.TYPE);
+        Challenge c1 = provider.createChallenge(Http01Challenge.TYPE);
         assertThat(c1, not(nullValue()));
-        assertThat(c1, instanceOf(HttpChallenge.class));
+        assertThat(c1, instanceOf(Http01Challenge.class));
 
-        Challenge c2 = provider.createChallenge(HttpChallenge.TYPE);
+        Challenge c2 = provider.createChallenge(Http01Challenge.TYPE);
         assertThat(c2, not(sameInstance(c1)));
 
-        Challenge c3 = provider.createChallenge(DnsChallenge.TYPE);
+        Challenge c3 = provider.createChallenge(Dns01Challenge.TYPE);
         assertThat(c3, not(nullValue()));
-        assertThat(c3, instanceOf(DnsChallenge.class));
+        assertThat(c3, instanceOf(Dns01Challenge.class));
 
-        Challenge c4 = provider.createChallenge(ProofOfPossessionChallenge.TYPE);
+        Challenge c4 = provider.createChallenge(ProofOfPossession01Challenge.TYPE);
         assertThat(c4, not(nullValue()));
-        assertThat(c4, instanceOf(ProofOfPossessionChallenge.class));
+        assertThat(c4, instanceOf(ProofOfPossession01Challenge.class));
 
-        Challenge c5 = provider.createChallenge(TlsSniChallenge.TYPE);
+        Challenge c5 = provider.createChallenge(TlsSni01Challenge.TYPE);
         assertThat(c5, not(nullValue()));
-        assertThat(c5, instanceOf(TlsSniChallenge.class));
+        assertThat(c5, instanceOf(TlsSni01Challenge.class));
 
         Challenge c6 = provider.createChallenge("foobar-01");
         assertThat(c6, is(nullValue()));
