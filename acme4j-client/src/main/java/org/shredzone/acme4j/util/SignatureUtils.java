@@ -51,7 +51,7 @@ public final class SignatureUtils {
                 case "P-384":
                     return AlgorithmIdentifiers.ECDSA_USING_P384_CURVE_AND_SHA384;
 
-                case "P-512":
+                case "P-521":
                     return AlgorithmIdentifiers.ECDSA_USING_P521_CURVE_AND_SHA512;
 
                 default:

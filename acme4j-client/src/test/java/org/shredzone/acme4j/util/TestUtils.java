@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -24,9 +25,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
@@ -157,6 +160,24 @@ public final class TestUtils {
 
             return new KeyPair(publicKey, privateKey);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    /**
+     * Creates a random ECC key pair with the given curve name.
+     *
+     * @param name
+     *            Curve name
+     * @return {@link KeyPair} for testing
+     */
+    public static KeyPair createECKeyPair(String name) throws IOException {
+        try {
+            ECGenParameterSpec ecSpec = new ECGenParameterSpec(name);
+            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC");
+            keyGen.initialize(ecSpec, new SecureRandom());
+            return keyGen.generateKeyPair();
+        } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException ex) {
             throw new IOException(ex);
         }
     }
