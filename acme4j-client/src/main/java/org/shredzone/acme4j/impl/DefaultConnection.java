@@ -332,6 +332,14 @@ public class DefaultConnection implements Connection {
             String type = (String) map.get("type");
             String detail = (String) map.get("detail");
 
+            if (detail == null) {
+                detail = "general problem";
+            }
+
+            if (type == null) {
+                throw new AcmeException(detail);
+            }
+
             switch (type) {
                 case "urn:acme:error:unauthorized":
                     throw new AcmeUnauthorizedException(type, detail);

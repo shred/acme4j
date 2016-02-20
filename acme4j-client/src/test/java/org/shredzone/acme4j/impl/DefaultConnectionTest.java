@@ -250,6 +250,31 @@ public class DefaultConnectionTest {
     }
 
     /**
+     * Test if an {@link AcmeException} is thrown if there is no error type.
+     */
+    @Test
+    public void testNoTypeThrowException() {
+        when(mockUrlConnection.getHeaderField("Content-Type"))
+                .thenReturn("application/problem+json");
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
+            @Override
+            public Map<String,Object> readJsonResponse() throws AcmeException {
+                return new HashMap<String, Object>();
+            };
+        }) {
+            conn.conn = mockUrlConnection;
+            conn.throwAcmeException();
+            fail("Expected to fail");
+        } catch (AcmeException ex) {
+            assertThat(ex.getMessage(), not(isEmptyOrNullString()));
+        }
+
+        verify(mockUrlConnection).getHeaderField("Content-Type");
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    /**
      * Test GET requests.
      */
     @Test
