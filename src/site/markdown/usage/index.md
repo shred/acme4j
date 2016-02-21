@@ -7,8 +7,8 @@ Central part of the communication is a [`Registration`](../apidocs/org/shredzone
 The first step is to create a Java `KeyPair`, save it somewhere, and then pass it to the constructor of `Registration`:
 
 ```java
-KeyPair keypair = ... // your key pair
-Registration registration = new Registration(keypair);
+KeyPair keyPair = ... // your key pair
+Registration registration = new Registration(keyPair);
 ```
 
 You need this `Registration` instance as identifier for almost all API calls.
@@ -16,12 +16,12 @@ You need this `Registration` instance as identifier for almost all API calls.
 Some calls additionally need the registration location URI to be set. You can either set it after construction, or use the constructor that also accepts the location URI:
 
 ```java
-KeyPair keypair = ... // your key pair
+KeyPair keyPair = ... // your key pair
 URI accountLocationUri = ... // your account's URI, as returned by newRegistration()
 
-Registration registration1 = new Registration(keypair, accountLocationUri);
+Registration registration1 = new Registration(keyPair, accountLocationUri);
 
-Registration registration2 = new Registration(keypair);
+Registration registration2 = new Registration(keyPair);
 registration2.setLocation(accountLocationUri);
 ```
 

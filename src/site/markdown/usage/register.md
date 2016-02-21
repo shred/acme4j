@@ -8,7 +8,7 @@ This code fragment registers your account with the CA. Optionally you can add co
 
 ```java
 KeyPair keyPair = ... // your account KeyPair
-Registration reg = new Registration(keypair);
+Registration reg = new Registration(keyPair);
 reg.addContact("mailto:acme@example.com"); // optional
 
 client.newRegistration(reg);
