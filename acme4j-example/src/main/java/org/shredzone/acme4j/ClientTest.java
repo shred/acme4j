@@ -52,7 +52,7 @@ public class ClientTest {
     private static final File USER_KEY_FILE = new File("user.key");
     private static final File DOMAIN_KEY_FILE = new File("domain.key");
     private static final File DOMAIN_CERT_FILE = new File("domain.crt");
-    private static final File DOMAIN_CSR_FILE = new File("domain.crt");
+    private static final File DOMAIN_CSR_FILE = new File("domain.csr");
 
     private static final int KEY_SIZE = 2048;
 
