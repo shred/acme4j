@@ -16,6 +16,7 @@ package org.shredzone.acme4j.util;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -31,9 +32,11 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.shredzone.acme4j.challenge.TlsSni01Challenge;
 
 /**
@@ -88,6 +91,23 @@ public final class CertificateUtils {
     public static void writeX509Certificate(X509Certificate cert, Writer w) throws IOException {
         try (JcaPEMWriter jw = new JcaPEMWriter(w)) {
             jw.writeObject(cert);
+        }
+    }
+
+    /**
+     * Reads a CSR PEM file.
+     *
+     * @param in
+     *            {@link InputStream} to read the CSR from.
+     * @return CSR that was read
+     */
+    public static PKCS10CertificationRequest readCSR(InputStream in) throws IOException {
+        try (PEMParser pemParser = new PEMParser(new InputStreamReader(in))) {
+            Object parsedObj = pemParser.readObject();
+            if (!(parsedObj instanceof PKCS10CertificationRequest)) {
+                throw new IOException("Not a PKCS10 CSR");
+            }
+            return (PKCS10CertificationRequest) parsedObj;
         }
     }
 

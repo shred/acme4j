@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -105,6 +106,30 @@ public class CertificateUtilsTest {
         assertThat(cert.getNotBefore(), is(lessThanOrEqualTo(now)));
         assertThat(cert.getSubjectX500Principal().getName(), is("CN=acme.invalid"));
         assertThat(getSANs(cert), containsInAnyOrder(subject));
+    }
+
+    /**
+     * Test if {@link CertificateUtils#readCSR(InputStream)} reads an identical CSR.
+     */
+    @Test
+    public void testReadCSR() throws IOException {
+        KeyPair keypair = KeyPairUtils.createKeyPair(2048);
+
+        CSRBuilder builder = new CSRBuilder();
+        builder.addDomains("example.com", "example.org");
+        builder.sign(keypair);
+
+        PKCS10CertificationRequest original = builder.getCSR();
+        byte[] pemFile;
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            builder.write(baos);
+            pemFile = baos.toByteArray();
+        }
+
+        try (ByteArrayInputStream bais = new ByteArrayInputStream(pemFile)) {
+            PKCS10CertificationRequest read = CertificateUtils.readCSR(bais);
+            assertThat(original.getEncoded(), is(equalTo(read.getEncoded())));
+        }
     }
 
     /**
