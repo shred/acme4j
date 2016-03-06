@@ -16,6 +16,7 @@ package org.shredzone.acme4j.util;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -180,6 +181,14 @@ public class CSRBuilderTest {
         // Verify that both keypairs are the same
         assertThat(builder.getCSR(), not(sameInstance(readCsr)));
         assertThat(builder.getEncoded(), is(equalTo(readCsr.getEncoded())));
+
+        // OutputStream is identical?
+        byte[] pemBytes;
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+            builder.write(baos);
+            pemBytes = baos.toByteArray();
+        }
+        assertThat(new String(pemBytes, "utf-8"), is(equalTo(pem)));
     }
 
     /**

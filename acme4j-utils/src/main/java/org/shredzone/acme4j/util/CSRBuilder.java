@@ -14,6 +14,8 @@
 package org.shredzone.acme4j.util;
 
 import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -189,7 +191,7 @@ public class CSRBuilder {
     }
 
     /**
-     * Writes the signed certificate request to a file.
+     * Writes the signed certificate request to a {@link Writer}.
      *
      * @param w
      *            {@link Writer} to write the PEM file to
@@ -202,6 +204,16 @@ public class CSRBuilder {
         try (PemWriter pw = new PemWriter(w)) {
             pw.writeObject(new PemObject("CERTIFICATE REQUEST", getEncoded()));
         }
+    }
+
+    /**
+     * Writes the signed certificate request to an {@link OutputStream}.
+     *
+     * @param out
+     *            {@link OutputStream} to write the PEM file to
+     */
+    public void write(OutputStream out) throws IOException {
+        write(new OutputStreamWriter(out, "utf-8"));
     }
 
     @Override
