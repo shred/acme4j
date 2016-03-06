@@ -20,12 +20,14 @@ import java.io.IOException;
 import java.io.Writer;
 import java.net.URI;
 import java.security.KeyPair;
+import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 
 import javax.swing.JOptionPane;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
@@ -353,6 +355,8 @@ public class ClientTest {
         }
 
         LOG.info("Starting up...");
+
+        Security.addProvider(new BouncyCastleProvider());
 
         Collection<String> domains = Arrays.asList(args);
         try {
