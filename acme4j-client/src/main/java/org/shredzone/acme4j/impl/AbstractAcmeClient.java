@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.jose4j.jws.AlgorithmIdentifiers;
+import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.AcmeClient;
@@ -38,6 +38,7 @@ import org.shredzone.acme4j.connector.Session;
 import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.SignatureUtils;
 import org.shredzone.acme4j.util.TimestampParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -186,9 +187,12 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             oldKeyClaim.putResource("reg");
             oldKeyClaim.putKey("oldKey", registration.getKeyPair().getPublic());
 
+            final PublicJsonWebKey newKeyJwk = PublicJsonWebKey.Factory.newPublicJwk(newKeyPair.getPublic());
+
             JsonWebSignature jws = new JsonWebSignature();
             jws.setPayload(oldKeyClaim.toString());
-            jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+            jws.getHeaders().setJwkHeaderValue("jwk", newKeyJwk);
+            jws.setAlgorithmHeaderValue(SignatureUtils.keyAlgorithm(newKeyJwk));
             jws.setKey(newKeyPair.getPrivate());
             jws.sign();
 
