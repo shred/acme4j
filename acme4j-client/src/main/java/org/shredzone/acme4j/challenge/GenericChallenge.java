@@ -31,6 +31,7 @@ import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Status;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TimestampParser;
 
@@ -75,7 +76,7 @@ public class GenericChallenge implements Challenge {
         try {
             return new URI(uri);
         } catch (URISyntaxException ex) {
-            throw new IllegalStateException("Invalid URI", ex);
+            throw new AcmeProtocolException("Invalid URI", ex);
         }
     }
 
@@ -96,7 +97,7 @@ public class GenericChallenge implements Challenge {
             throw new IllegalArgumentException("map does not contain a type");
         }
         if (!acceptable(type)) {
-            throw new IllegalArgumentException("wrong type: " + type);
+            throw new AcmeProtocolException("wrong type: " + type);
         }
 
         data.clear();
@@ -155,7 +156,7 @@ public class GenericChallenge implements Challenge {
             md.update(cb.toString().getBytes("UTF-8"));
             return md.digest();
         } catch (JoseException | NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-            throw new IllegalArgumentException("Cannot compute key thumbprint", ex);
+            throw new AcmeProtocolException("Cannot compute key thumbprint", ex);
         }
     }
 
@@ -175,7 +176,7 @@ public class GenericChallenge implements Challenge {
             data = new HashMap<>(JsonUtil.parseJson(in.readUTF()));
             in.defaultReadObject();
         } catch (JoseException ex) {
-            throw new IOException("Cannot deserialize", ex);
+            throw new AcmeProtocolException("Cannot deserialize", ex);
         }
     }
 

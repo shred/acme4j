@@ -68,7 +68,6 @@ public interface AcmeClient {
      * @param registration
      *            {@link Registration}, with the new key pair and the account location URI
      *            set
-     * @throws AcmeException
      */
     void recoverRegistration(Registration registration) throws AcmeException;
 

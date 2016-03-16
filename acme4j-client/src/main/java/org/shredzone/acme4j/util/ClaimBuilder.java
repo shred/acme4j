@@ -25,6 +25,7 @@ import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.connector.Resource;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
  * Builder for claim structures.
@@ -128,7 +129,7 @@ public class ClaimBuilder {
             object(key).putAll(jwkParams);
             return this;
         } catch (JoseException ex) {
-            throw new IllegalArgumentException("Invalid key", ex);
+            throw new AcmeProtocolException("Invalid key", ex);
         }
     }
 

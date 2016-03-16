@@ -18,6 +18,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import org.jose4j.base64url.Base64Url;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
  * Implements the {@value TYPE} challenge.
@@ -45,8 +46,7 @@ public class Dns01Challenge extends GenericTokenChallenge {
             byte[] digest = md.digest();
             return Base64Url.encode(digest);
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-            // both should be standard in JDK...
-            throw new RuntimeException(ex);
+            throw new AcmeProtocolException("Failed to compute digest", ex);
         }
     }
 

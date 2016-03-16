@@ -18,6 +18,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import org.shredzone.acme4j.Registration;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
  * Implements the {@value TYPE} challenge.
@@ -75,8 +76,7 @@ public class TlsSni01Challenge extends GenericTokenChallenge {
             }
             return new String(result);
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-            // Algorithm and Encoding are standard on Java
-            throw new RuntimeException(ex);
+            throw new AcmeProtocolException("Could not compute hash", ex);
         }
     }
 

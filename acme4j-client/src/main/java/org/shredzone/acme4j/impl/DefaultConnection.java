@@ -43,6 +43,7 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.util.ClaimBuilder;
@@ -72,35 +73,29 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public int sendRequest(URI uri) throws AcmeException {
+    public int sendRequest(URI uri) throws IOException {
         if (uri == null) {
             throw new NullPointerException("uri must not be null");
         }
-        if (conn != null) {
-            throw new IllegalStateException("Connection was not closed. Race condition?");
-        }
+        assertConnectionIsClosed();
 
-        try {
-            LOG.debug("GET {}", uri);
+        LOG.debug("GET {}", uri);
 
-            conn = httpConnector.openConnection(uri);
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Accept-Charset", "utf-8");
-            conn.setDoOutput(false);
+        conn = httpConnector.openConnection(uri);
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Accept-Charset", "utf-8");
+        conn.setDoOutput(false);
 
-            conn.connect();
+        conn.connect();
 
-            logHeaders();
+        logHeaders();
 
-            return conn.getResponseCode();
-        } catch (IOException ex) {
-            throw new AcmeException("Request failed: " + uri, ex);
-        }
+        return conn.getResponseCode();
     }
 
     @Override
     public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration)
-                throws AcmeException {
+                throws IOException {
         if (uri == null) {
             throw new NullPointerException("uri must not be null");
         }
@@ -113,9 +108,7 @@ public class DefaultConnection implements Connection {
         if (registration == null) {
             throw new NullPointerException("registration must not be null");
         }
-        if (conn != null) {
-            throw new IllegalStateException("Connection was not closed. Race condition?");
-        }
+        assertConnectionIsClosed();
 
         try {
             KeyPair keypair = registration.getKeyPair();
@@ -130,7 +123,7 @@ public class DefaultConnection implements Connection {
             }
 
             if (session.getNonce() == null) {
-                throw new AcmeException("No nonce available");
+                throw new AcmeProtocolException("Server did not provide a nonce");
             }
 
             LOG.debug("POST {} with claims: {}", uri, claims);
@@ -164,21 +157,19 @@ public class DefaultConnection implements Connection {
             updateSession(session);
 
             return conn.getResponseCode();
-        } catch (JoseException | IOException ex) {
-            throw new AcmeException("Request failed: " + uri, ex);
+        } catch (JoseException ex) {
+            throw new AcmeProtocolException("Failed to generate a JSON request", ex);
         }
     }
 
     @Override
-    public Map<String, Object> readJsonResponse() throws AcmeException {
-        if (conn == null) {
-            throw new IllegalStateException("Not connected");
-        }
+    public Map<String, Object> readJsonResponse() throws IOException {
+        assertConnectionIsOpen();
 
         String contentType = conn.getHeaderField("Content-Type");
         if (!("application/json".equals(contentType)
                     || "application/problem+json".equals(contentType))) {
-            throw new AcmeException("Unexpected content type: " + contentType);
+            throw new AcmeProtocolException("Unexpected content type: " + contentType);
         }
 
         StringBuilder sb = new StringBuilder();
@@ -195,41 +186,37 @@ public class DefaultConnection implements Connection {
                 LOG.debug("Result JSON: {}", sb);
             }
 
-        } catch (JoseException | IOException ex) {
-            throw new AcmeException("Failed to parse response: " + sb, ex);
+        } catch (JoseException ex) {
+            throw new AcmeProtocolException("Failed to parse response: " + sb, ex);
         }
 
         return result;
     }
 
     @Override
-    public X509Certificate readCertificate() throws AcmeException {
-        if (conn == null) {
-            throw new IllegalStateException("Not connected");
-        }
+    public X509Certificate readCertificate() throws IOException {
+        assertConnectionIsOpen();
 
         String contentType = conn.getHeaderField("Content-Type");
         if (!("application/pkix-cert".equals(contentType))) {
-            throw new AcmeException("Unexpected content type: " + contentType);
+            throw new AcmeProtocolException("Unexpected content type: " + contentType);
         }
 
         try (InputStream in = conn.getInputStream()) {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             return (X509Certificate) cf.generateCertificate(in);
-        } catch (CertificateException | IOException ex) {
-            throw new AcmeException("Failed to read certificate", ex);
+        } catch (CertificateException ex) {
+            throw new AcmeProtocolException("Failed to read certificate", ex);
         }
     }
 
     @Override
-    public Map<Resource, URI> readDirectory() throws AcmeException {
-        if (conn == null) {
-            throw new IllegalStateException("Not connected");
-        }
+    public Map<Resource, URI> readDirectory() throws IOException {
+        assertConnectionIsOpen();
 
         String contentType = conn.getHeaderField("Content-Type");
         if (!("application/json".equals(contentType))) {
-            throw new AcmeException("Unexpected content type: " + contentType);
+            throw new AcmeProtocolException("Unexpected content type: " + contentType);
         }
 
         EnumMap<Resource, URI> resourceMap = new EnumMap<>(Resource.class);
@@ -250,18 +237,16 @@ public class DefaultConnection implements Connection {
             }
 
             LOG.debug("Resource directory: {}", resourceMap);
-        } catch (JoseException | URISyntaxException | IOException ex) {
-            throw new AcmeException("Failed to read directory: " + sb, ex);
+        } catch (JoseException | URISyntaxException ex) {
+            throw new AcmeProtocolException("Failed to read directory: " + sb, ex);
         }
 
         return resourceMap;
     }
 
     @Override
-    public void updateSession(Session session) throws AcmeException {
-        if (conn == null) {
-            throw new IllegalStateException("Not connected");
-        }
+    public void updateSession(Session session) {
+        assertConnectionIsOpen();
 
         String nonceHeader = conn.getHeaderField("Replay-Nonce");
         if (nonceHeader == null || nonceHeader.trim().isEmpty()) {
@@ -269,7 +254,7 @@ public class DefaultConnection implements Connection {
         }
 
         if (!BASE64URL_PATTERN.matcher(nonceHeader).matches()) {
-            throw new AcmeException("Invalid replay nonce: " + nonceHeader);
+            throw new AcmeProtocolException("Invalid replay nonce: " + nonceHeader);
         }
 
         LOG.debug("Replay Nonce: {}", nonceHeader);
@@ -278,10 +263,8 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public URI getLocation() throws AcmeException {
-        if (conn == null) {
-            throw new IllegalStateException("Not connected");
-        }
+    public URI getLocation() {
+        assertConnectionIsOpen();
 
         String location = conn.getHeaderField("Location");
         if (location == null) {
@@ -292,15 +275,13 @@ public class DefaultConnection implements Connection {
             LOG.debug("Location: {}", location);
             return new URI(location);
         } catch (URISyntaxException ex) {
-            throw new AcmeException("Bad Location header: " + location);
+            throw new AcmeProtocolException("Bad Location header: " + location);
         }
     }
 
     @Override
-    public URI getLink(String relation) throws AcmeException {
-        if (conn == null) {
-            throw new IllegalStateException("Not connected");
-        }
+    public URI getLink(String relation) {
+        assertConnectionIsOpen();
 
         List<String> links = conn.getHeaderFields().get("Link");
         if (links != null) {
@@ -313,19 +294,18 @@ public class DefaultConnection implements Connection {
                         LOG.debug("Link: {} -> {}", relation, location);
                         return new URI(location);
                     } catch (URISyntaxException ex) {
-                        throw new AcmeException("Bad '" + relation + "' Link header: " + link);
+                        throw new AcmeProtocolException("Bad '" + relation + "' Link header: " + link);
                     }
                 }
             }
         }
+
         return null;
     }
 
     @Override
-    public void throwAcmeException() throws AcmeException {
-        if (conn == null) {
-            throw new IllegalStateException("Not connected");
-        }
+    public void throwAcmeException() throws AcmeException, IOException {
+        assertConnectionIsOpen();
 
         if ("application/problem+json".equals(conn.getHeaderField("Content-Type"))) {
             Map<String, Object> map = readJsonResponse();
@@ -351,18 +331,32 @@ public class DefaultConnection implements Connection {
                     throw new AcmeServerException(type, detail);
             }
         } else {
-            try {
-                throw new AcmeException("HTTP " + conn.getResponseCode() + ": "
-                    + conn.getResponseMessage());
-            } catch (IOException ex) {
-                throw new AcmeException("Network error");
-            }
+            throw new AcmeException("HTTP " + conn.getResponseCode() + ": "
+                + conn.getResponseMessage());
         }
     }
 
     @Override
     public void close() {
         conn = null;
+    }
+
+    /**
+     * Asserts that the connection is currently open. Throws an exception if not.
+     */
+    private void assertConnectionIsOpen() {
+        if (conn == null) {
+            throw new IllegalStateException("Not connected.");
+        }
+    }
+
+    /**
+     * Asserts that the connection is currently closed. Throws an exception if not.
+     */
+    private void assertConnectionIsClosed() {
+        if (conn != null) {
+            throw new IllegalStateException("Previous connection is not closed.");
+        }
     }
 
     /**

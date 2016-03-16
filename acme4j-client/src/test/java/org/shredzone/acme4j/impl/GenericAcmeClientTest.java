@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
@@ -88,7 +89,7 @@ public class GenericAcmeClientTest {
      * Test that the directory is properly read and cached.
      */
     @Test
-    public void testResourceUri() throws AcmeException, URISyntaxException {
+    public void testResourceUri() throws AcmeException, IOException, URISyntaxException {
         Map<Resource, URI> directoryMap = new HashMap<Resource, URI>();
         directoryMap.put(Resource.NEW_AUTHZ, new URI("http://example.com/acme/new-authz"));
         directoryMap.put(Resource.NEW_CERT, new URI("http://example.com/acme/new-cert"));

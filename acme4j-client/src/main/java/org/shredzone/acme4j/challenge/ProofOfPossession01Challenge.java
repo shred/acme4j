@@ -29,6 +29,7 @@ import org.jose4j.base64url.Base64Url;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Registration;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.ValidationBuilder;
 
@@ -112,7 +113,7 @@ public class ProofOfPossession01Challenge extends GenericChallenge {
                     }
                 }
             } catch (CertificateException | IOException ex) {
-                throw new IllegalArgumentException("Invalid certs", ex);
+                throw new AcmeProtocolException("Invalid certificates", ex);
             }
         }
     }
@@ -129,7 +130,7 @@ public class ProofOfPossession01Challenge extends GenericChallenge {
             cb.put(KEY_AUTHORIZATION, JsonUtil.parseJson(validation));
         } catch (JoseException ex) {
             // should not happen, as the JSON is prevalidated in the setter
-            throw new IllegalStateException("validation: invalid JSON", ex);
+            throw new AcmeProtocolException("validation: invalid JSON", ex);
         }
     }
 

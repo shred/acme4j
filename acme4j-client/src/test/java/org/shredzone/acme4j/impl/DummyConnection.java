@@ -33,42 +33,42 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 public class DummyConnection implements Connection {
 
     @Override
-    public int sendRequest(URI uri) throws AcmeException {
+    public int sendRequest(URI uri) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
+    public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Map<String, Object> readJsonResponse() throws AcmeException {
+    public Map<String, Object> readJsonResponse() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public X509Certificate readCertificate() throws AcmeException {
+    public X509Certificate readCertificate() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Map<Resource, URI> readDirectory() throws AcmeException {
+    public Map<Resource, URI> readDirectory() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void updateSession(Session session) throws AcmeException {
+    public void updateSession(Session session) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public URI getLocation() throws AcmeException {
+    public URI getLocation() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public URI getLink(String relation) throws AcmeException {
+    public URI getLink(String relation) {
         throw new UnsupportedOperationException();
     }
 

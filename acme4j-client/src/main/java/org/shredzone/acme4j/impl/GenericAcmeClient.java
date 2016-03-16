@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.impl;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.Date;
@@ -26,6 +27,8 @@ import org.shredzone.acme4j.challenge.GenericTokenChallenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeNetworkException;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AcmeClientProvider;
 
 /**
@@ -92,7 +95,7 @@ public class GenericAcmeClient extends AbstractAcmeClient {
 
         if (directoryMap.isEmpty() || !directoryCacheExpiry.after(now)) {
             if (directoryUri == null) {
-                throw new IllegalStateException("directoryUri was null on construction time");
+                throw new AcmeProtocolException("directoryUri was null on construction time");
             }
 
             try (Connection conn = createConnection()) {
@@ -110,6 +113,8 @@ public class GenericAcmeClient extends AbstractAcmeClient {
                 directoryMap.clear();
                 directoryMap.putAll(newMap);
                 directoryCacheExpiry = new Date(now.getTime() + 60 * 60 * 1000L);
+            } catch (IOException ex) {
+                throw new AcmeNetworkException(ex);
             }
         }
         return directoryMap.get(resource);

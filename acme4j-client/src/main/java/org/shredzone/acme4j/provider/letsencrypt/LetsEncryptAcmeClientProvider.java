@@ -17,6 +17,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.shredzone.acme4j.connector.HttpConnector;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AbstractAcmeClientProvider;
 import org.shredzone.acme4j.provider.AcmeClientProvider;
 
@@ -58,7 +59,7 @@ public class LetsEncryptAcmeClientProvider extends AbstractAcmeClientProvider {
         try {
             return new URI(directoryUri);
         } catch (URISyntaxException ex) {
-            throw new IllegalArgumentException(directoryUri, ex);
+            throw new AcmeProtocolException(directoryUri, ex);
         }
     }
 

@@ -33,6 +33,7 @@ import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.lang.JoseException;
 import org.junit.Test;
 import org.shredzone.acme4j.Status;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 import org.shredzone.acme4j.util.TimestampParser;
@@ -86,7 +87,7 @@ public class GenericChallengeTest {
     /**
      * Test that an exception is thrown on challenge type mismatch.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = AcmeProtocolException.class)
     public void testNotAcceptable() throws URISyntaxException {
         Http01Challenge challenge = new Http01Challenge();
         challenge.unmarshall(TestUtils.getJsonAsMap("dnsChallenge"));

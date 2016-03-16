@@ -24,7 +24,6 @@ import java.util.ServiceLoader;
 import org.junit.Test;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
-import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeClientProvider;
 
 /**
@@ -43,26 +42,26 @@ public class AcmeClientFactoryTest {
      * the correct {@link AcmeClientProvider}.
      */
     @Test
-    public void testConnectURI() throws URISyntaxException, AcmeException {
+    public void testConnectURI() throws URISyntaxException {
         AcmeClient client = AcmeClientFactory.connect(new URI("acme://example.com"));
         assertThat(client, is(sameInstance(DUMMY_CLIENT)));
     }
 
     /**
      * There are no testing providers accepting {@code acme://example.org}. Test that
-     * connecting to this URI will result in an {@link AcmeException}.
+     * connecting to this URI will result in an {@link IllegalArgumentException}.
      */
-    @Test(expected = AcmeException.class)
-    public void testNone() throws URISyntaxException, AcmeException {
+    @Test(expected = IllegalArgumentException.class)
+    public void testNone() throws URISyntaxException {
         AcmeClientFactory.connect(new URI("acme://example.org"));
     }
 
     /**
      * There are two testing providers accepting {@code acme://example.net}. Test that
-     * connecting to this URI will result in an {@link AcmeException}.
+     * connecting to this URI will result in an {@link IllegalStateException}.
      */
-    @Test(expected = AcmeException.class)
-    public void testDuplicate() throws URISyntaxException, AcmeException {
+    @Test(expected = IllegalStateException.class)
+    public void testDuplicate() throws URISyntaxException {
         AcmeClientFactory.connect(new URI("acme://example.net"));
     }
 

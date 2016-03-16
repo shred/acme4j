@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.impl;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.security.KeyPair;
@@ -37,6 +38,8 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.Session;
 import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeNetworkException;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.SignatureUtils;
 import org.shredzone.acme4j.util.TimestampParser;
@@ -125,6 +128,8 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             if (rc == HttpURLConnection.HTTP_CONFLICT) {
                 throw new AcmeConflictException("Account is already registered", location);
             }
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -162,6 +167,8 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             if (tos != null) {
                 registration.setAgreement(tos);
             }
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -198,7 +205,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
             newKey = jws.getCompactSerialization();
         } catch (JoseException ex) {
-            throw new IllegalArgumentException("Bad newKeyPair", ex);
+            throw new AcmeProtocolException("Bad newKeyPair", ex);
         }
 
         LOG.debug("changeRegistrationKey");
@@ -211,6 +218,8 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             if (rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -244,6 +253,8 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             if (tos != null) {
                 registration.setAgreement(tos);
             }
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -276,6 +287,8 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
             Map<String, Object> result = conn.readJsonResponse();
             unmarshalAuthorization(result, auth);
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -299,6 +312,8 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
             Map<String, Object> result = conn.readJsonResponse();
             unmarshalAuthorization(result, auth);
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -326,6 +341,8 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             }
 
             challenge.unmarshall(conn.readJsonResponse());
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -346,6 +363,8 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             }
 
             challenge.unmarshall(conn.readJsonResponse());
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -365,10 +384,12 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
             Map<String, Object> json = conn.readJsonResponse();
             if (!(json.containsKey("type"))) {
-                throw new AcmeException("Provided URI is not a challenge URI");
+                throw new IllegalArgumentException("Provided URI is not a challenge URI");
             }
 
             return (T) createChallenge(json);
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -398,6 +419,8 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             // X509Certificate cert = conn.readCertificate();
 
             return conn.getLocation();
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -415,6 +438,8 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             }
 
             return conn.readCertificate();
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -430,7 +455,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
         LOG.debug("revokeCertificate");
         URI resUri = resourceUri(Resource.REVOKE_CERT);
         if (resUri == null) {
-            throw new AcmeException("CA does not support certificate revocation");
+            throw new AcmeProtocolException("CA does not support certificate revocation");
         }
 
         try (Connection conn = createConnection()) {
@@ -443,7 +468,9 @@ public abstract class AbstractAcmeClient implements AcmeClient {
                 conn.throwAcmeException();
             }
         } catch (CertificateEncodingException ex) {
-            throw new IllegalArgumentException("Invalid certificate", ex);
+            throw new AcmeProtocolException("Invalid certificate", ex);
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         }
     }
 

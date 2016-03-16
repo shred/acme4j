@@ -41,6 +41,7 @@ import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.Session;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
@@ -91,7 +92,7 @@ public class DefaultConnectionTest {
      * {@code Replay-Nonce} header correctly.
      */
     @Test
-    public void testGetNonceFromHeader() throws AcmeException {
+    public void testGetNonceFromHeader() {
         byte[] nonce = "foo-nonce-foo".getBytes();
 
         when(mockUrlConnection.getHeaderField("Replay-Nonce"))
@@ -113,7 +114,7 @@ public class DefaultConnectionTest {
      * {@code Replay-Nonce} header.
      */
     @Test
-    public void testInvalidNonceFromHeader() throws AcmeException {
+    public void testInvalidNonceFromHeader() {
         String badNonce = "#$%&/*+*#'";
 
         when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(badNonce);
@@ -123,7 +124,7 @@ public class DefaultConnectionTest {
             conn.conn = mockUrlConnection;
             conn.updateSession(session);
             fail("Expected to fail");
-        } catch (AcmeException ex) {
+        } catch (AcmeProtocolException ex) {
             assertThat(ex.getMessage(), org.hamcrest.Matchers.startsWith("Invalid replay nonce"));
         }
 
@@ -227,7 +228,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
-            public Map<String,Object> readJsonResponse() throws AcmeException {
+            public Map<String,Object> readJsonResponse() {
                 Map<String, Object> result = new HashMap<String, Object>();
                 result.put("type", "urn:zombie:error:apocalypse");
                 result.put("detail", "Zombie apocalypse in progress");
@@ -241,7 +242,7 @@ public class DefaultConnectionTest {
             assertThat(ex.getType(), is("urn:zombie:error:apocalypse"));
             assertThat(ex.getMessage(), is("Zombie apocalypse in progress"));
             assertThat(ex.getAcmeErrorType(), is(nullValue()));
-        } catch (AcmeException ex) {
+        } catch (AcmeException | IOException ex) {
             fail("Expected an AcmeServerException");
         }
 
@@ -259,7 +260,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
-            public Map<String,Object> readJsonResponse() throws AcmeException {
+            public Map<String,Object> readJsonResponse() {
                 return new HashMap<String, Object>();
             };
         }) {
@@ -268,6 +269,8 @@ public class DefaultConnectionTest {
             fail("Expected to fail");
         } catch (AcmeException ex) {
             assertThat(ex.getMessage(), not(isEmptyOrNullString()));
+        } catch (IOException ex) {
+            fail("Expected an AcmeException");
         }
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
@@ -305,7 +308,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
-            public void updateSession(Session session) throws AcmeException {
+            public void updateSession(Session session) {
                 assertThat(session, is(sameInstance(testSession)));
                 if (session.getNonce() == null) {
                     session.setNonce(nonce1);

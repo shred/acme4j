@@ -25,6 +25,7 @@ import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.challenge.ProofOfPossession01Challenge;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
  * Generates a validation string for {@link ProofOfPossession01Challenge}.
@@ -121,7 +122,7 @@ public class ValidationBuilder {
             auth.put("signature", jws.getEncodedSignature());
             return auth.toString();
         } catch (JoseException ex) {
-            throw new IllegalArgumentException("Failed to sign", ex);
+            throw new AcmeProtocolException("Failed to sign", ex);
         }
     }
 

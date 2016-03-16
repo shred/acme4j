@@ -42,6 +42,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.Session;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 import org.shredzone.acme4j.util.TimestampParser;
@@ -80,7 +81,7 @@ public class AbstractAcmeClientTest {
 
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("newRegistration")));
                 assertThat(session, is(notNullValue()));
@@ -89,12 +90,12 @@ public class AbstractAcmeClientTest {
             }
 
             @Override
-            public URI getLocation() throws AcmeException {
+            public URI getLocation() {
                 return locationUri;
             }
 
             @Override
-            public URI getLink(String relation) throws AcmeException {
+            public URI getLink(String relation) {
                 switch(relation) {
                     case "terms-of-service": return agreementUri;
                     default: return null;
@@ -123,7 +124,7 @@ public class AbstractAcmeClientTest {
 
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
                 assertThat(uri, is(locationUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("modifyRegistration")));
                 assertThat(session, is(notNullValue()));
@@ -132,12 +133,12 @@ public class AbstractAcmeClientTest {
             }
 
             @Override
-            public URI getLocation() throws AcmeException {
+            public URI getLocation() {
                 return locationUri;
             }
 
             @Override
-            public URI getLink(String relation) throws AcmeException {
+            public URI getLink(String relation) {
                 switch(relation) {
                     case "terms-of-service": return agreementUri;
                     default: return null;
@@ -165,7 +166,7 @@ public class AbstractAcmeClientTest {
 
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
                 Map<String, Object> claimMap = claims.toMap();
                 assertThat(claimMap.get("resource"), is((Object) "reg"));
                 assertThat(claimMap.get("newKey"), not(nullValue()));
@@ -185,7 +186,7 @@ public class AbstractAcmeClientTest {
                     jws.setKey(newKeyPair.getPublic());
                     assertThat(jws.getPayload(), sameJSONAs(expectedPayload.toString()));
                 } catch (JoseException ex) {
-                    throw new AcmeException("Bad newKey", ex);
+                    throw new AcmeProtocolException("Bad newKey", ex);
                 }
 
                 assertThat(uri, is(locationUri));
@@ -195,7 +196,7 @@ public class AbstractAcmeClientTest {
             }
 
             @Override
-            public URI getLocation() throws AcmeException {
+            public URI getLocation() {
                 return locationUri;
             }
         };
@@ -209,7 +210,7 @@ public class AbstractAcmeClientTest {
      * Test that the same account key is not accepted for change
      */
     @Test(expected = IllegalArgumentException.class)
-    public void testChangeRegistrationSameKey() throws AcmeException, IOException {
+    public void testChangeRegistrationSameKey() throws AcmeException {
         Registration registration = new Registration(accountKeyPair);
         registration.setLocation(locationUri);
 
@@ -230,21 +231,19 @@ public class AbstractAcmeClientTest {
 
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
-                assertThat(uri, is(resourceUri));
-                assertThat(claims.toString(), sameJSONAs(getJson("recoverRegistration")));
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
                 assertThat(session, is(notNullValue()));
                 assertThat(registration.getKeyPair(), is(sameInstance(accountKeyPair)));
                 return HttpURLConnection.HTTP_CREATED;
             }
 
             @Override
-            public URI getLocation() throws AcmeException {
+            public URI getLocation() {
                 return anotherLocationUri;
             }
 
             @Override
-            public URI getLink(String relation) throws AcmeException {
+            public URI getLink(String relation) {
                 switch(relation) {
                     case "terms-of-service": return agreementUri;
                     default: return null;
@@ -271,7 +270,7 @@ public class AbstractAcmeClientTest {
 
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("newAuthorizationRequest")));
                 assertThat(session, is(notNullValue()));
@@ -280,12 +279,12 @@ public class AbstractAcmeClientTest {
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() throws AcmeException {
+            public Map<String, Object> readJsonResponse() {
                 return getJsonAsMap("newAuthorizationResponse");
             }
 
             @Override
-            public URI getLocation() throws AcmeException {
+            public URI getLocation() {
                 return locationUri;
             }
         };
@@ -324,13 +323,13 @@ public class AbstractAcmeClientTest {
 
         Connection connection = new DummyConnection() {
             @Override
-            public int sendRequest(URI uri) throws AcmeException {
+            public int sendRequest(URI uri) {
                 assertThat(uri, is(locationUri));
                 return HttpURLConnection.HTTP_OK;
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() throws AcmeException {
+            public Map<String, Object> readJsonResponse() {
                 return getJsonAsMap("updateAuthorizationResponse");
             }
         };
@@ -366,7 +365,7 @@ public class AbstractAcmeClientTest {
     public void testTriggerChallenge() throws AcmeException {
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("triggerHttpChallengeRequest")));
                 assertThat(session, is(notNullValue()));
@@ -375,7 +374,7 @@ public class AbstractAcmeClientTest {
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() throws AcmeException {
+            public Map<String, Object> readJsonResponse() {
                 return getJsonAsMap("triggerHttpChallengeResponse");
             }
         };
@@ -399,13 +398,13 @@ public class AbstractAcmeClientTest {
     public void testUpdateChallenge() throws AcmeException {
         Connection connection = new DummyConnection() {
             @Override
-            public int sendRequest(URI uri) throws AcmeException {
+            public int sendRequest(URI uri) {
                 assertThat(uri, is(locationUri));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() throws AcmeException {
+            public Map<String, Object> readJsonResponse() {
                 return getJsonAsMap("updateHttpChallengeResponse");
             }
         };
@@ -425,13 +424,13 @@ public class AbstractAcmeClientTest {
     public void testRestoreChallenge() throws AcmeException {
         Connection connection = new DummyConnection() {
             @Override
-            public int sendRequest(URI uri) throws AcmeException {
+            public int sendRequest(URI uri) {
                 assertThat(uri, is(locationUri));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() throws AcmeException {
+            public Map<String, Object> readJsonResponse() {
                 return getJsonAsMap("updateHttpChallengeResponse");
             }
         };
@@ -452,7 +451,7 @@ public class AbstractAcmeClientTest {
     public void testRequestCertificate() throws AcmeException, IOException {
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequest")));
                 assertThat(session, is(notNullValue()));
@@ -461,7 +460,7 @@ public class AbstractAcmeClientTest {
             }
 
             @Override
-            public URI getLocation() throws AcmeException {
+            public URI getLocation() {
                 return locationUri;
             }
         };
@@ -484,13 +483,13 @@ public class AbstractAcmeClientTest {
 
         Connection connection = new DummyConnection() {
             @Override
-            public int sendRequest(URI uri) throws AcmeException {
+            public int sendRequest(URI uri) {
                 assertThat(uri, is(locationUri));
                 return HttpURLConnection.HTTP_OK;
             }
 
             @Override
-            public X509Certificate readCertificate() throws AcmeException {
+            public X509Certificate readCertificate() {
                 return originalCert;
             }
         };
@@ -510,7 +509,7 @@ public class AbstractAcmeClientTest {
 
         Connection connection = new DummyConnection() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) throws AcmeException {
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("revokeCertificateRequest")));
                 assertThat(session, is(notNullValue()));
@@ -566,7 +565,7 @@ public class AbstractAcmeClientTest {
         }
 
         @Override
-        protected URI resourceUri(Resource resource) throws AcmeException {
+        protected URI resourceUri(Resource resource) {
             if (resourceMap.isEmpty()) {
                 fail("Unexpected invocation of resourceUri()");
             }

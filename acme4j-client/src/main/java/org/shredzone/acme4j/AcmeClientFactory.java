@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 
-import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeClientProvider;
 
 /**
@@ -44,13 +43,12 @@ public final class AcmeClientFactory {
      *            URI of the ACME server. This can either be a http/https URI to the
      *            server's directory service, or a special acme URI for specific
      *            implementations.
-     * @return {@link AcmeClient} for communication with the server
      */
-    public static AcmeClient connect(String serverUri) throws AcmeException {
+    public static AcmeClient connect(String serverUri) {
         try {
             return connect(new URI(serverUri));
         } catch (URISyntaxException ex) {
-            throw new IllegalArgumentException(ex);
+            throw new IllegalArgumentException("Invalid server URI", ex);
         }
     }
 
@@ -63,7 +61,7 @@ public final class AcmeClientFactory {
      *            implementations.
      * @return {@link AcmeClient} for communication with the server
      */
-    public static AcmeClient connect(URI serverUri) throws AcmeException {
+    public static AcmeClient connect(URI serverUri) {
         if (serverUri == null) {
             throw new NullPointerException("serverUri must not be null");
         }
@@ -76,9 +74,9 @@ public final class AcmeClientFactory {
         }
 
         if (candidates.isEmpty()) {
-            throw new AcmeException("No ACME provider found for " + serverUri);
+            throw new IllegalArgumentException("No ACME provider found for " + serverUri);
         } else if (candidates.size() > 1) {
-            throw new AcmeException("There are " + candidates.size() + " "
+            throw new IllegalStateException("There are " + candidates.size() + " "
                 + AcmeClientProvider.class.getSimpleName() + " accepting " + serverUri
                 + ". Please check your classpath.");
         } else {
