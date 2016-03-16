@@ -156,7 +156,6 @@
                         <link>http://docs.oracle.com/javaee/7/api/</link>
                         <link>https://www.bouncycastle.org/docs/docs1.5on/</link>
                         <link>https://www.bouncycastle.org/docs/pkixdocs1.5on/</link>
-                        <link>http://www.javadoc.io/doc/org.bitbucket.b_c/jose4j/${jose4j.version}/</link>
                     </links>
                     <charset>UTF-8</charset>
                     <linksource>true</linksource>
