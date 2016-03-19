@@ -61,6 +61,21 @@ client.changeRegistrationKey(reg, newKeyPair);
 
 All subsequent calls must now use the new key pair. The old key pair can be disposed.
 
+## Delete an Account
+
+You can delete your account if you don't need it any more:
+
+```java
+KeyPair keyPair = ... // your account KeyPair
+URI accountLocationUri = ... // your account's URI
+
+Registration reg = new Registration(keyPair, accountLocationUri);
+
+client.deleteRegistration(reg);
+```
+
+Depending on the CA, the related authorizations may be automatically deleted as well. The certificates may still be valid until expiration or explicit revocation. If you want to make sure the certificates are invalidated as well, revoke them prior to deleting your account.
+
 ## Key Pair Utilities
 
 The `KeyPairUtils` class in the `acme4j-utils` module provides a few methods to make key pair handling more convenient.

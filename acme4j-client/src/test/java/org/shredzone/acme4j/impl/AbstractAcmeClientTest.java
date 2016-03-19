@@ -261,6 +261,30 @@ public class AbstractAcmeClientTest {
     }
 
     /**
+     * Test that a {@link Registration} can be deleted.
+     */
+    @Test
+    public void testDeleteRegistration() throws AcmeException {
+        Registration registration = new Registration(accountKeyPair);
+        registration.setLocation(locationUri);
+
+        Connection connection = new DummyConnection() {
+            @Override
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
+                Map<String, Object> claimMap = claims.toMap();
+                assertThat(claimMap.get("resource"), is((Object) "reg"));
+                assertThat(claimMap.get("delete"), is((Object) Boolean.TRUE));
+                assertThat(uri, is(locationUri));
+                assertThat(session, is(notNullValue()));
+                return HttpURLConnection.HTTP_OK;
+            }
+        };
+
+        TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
+        client.deleteRegistration(registration);
+    }
+
+    /**
      * Test that a new {@link Authorization} can be created.
      */
     @Test

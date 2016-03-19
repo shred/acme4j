@@ -72,6 +72,15 @@ public interface AcmeClient {
     void recoverRegistration(Registration registration) throws AcmeException;
 
     /**
+     * Deletes an account. Related certificates may still be valid after account deletion,
+     * and need to be revoked separately if neccessary.
+     *
+     * @param registration
+     *            {@link Registration} to delete
+     */
+    void deleteRegistration(Registration registration) throws AcmeException;
+
+    /**
      * Creates a new {@link Authorization} for a domain.
      *
      * @param registration
