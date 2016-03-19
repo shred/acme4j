@@ -18,6 +18,7 @@ import static org.junit.Assert.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.security.KeyPair;
 
 import org.junit.Test;
@@ -69,6 +70,29 @@ public class HttpChallengeTest {
 
         assertThat(cb.toString(), sameJSONAs("{\"keyAuthorization\"=\""
             + KEY_AUTHORIZATION + "\"}").allowingExtraUnexpectedFields());
+    }
+
+    /**
+     * Test that {@link Http01Challenge} uses the given address.
+     */
+    @Test
+    public void testAddress() throws IOException {
+        KeyPair keypair = TestUtils.createKeyPair();
+        Registration reg = new Registration(keypair);
+
+        Http01Challenge challenge = new Http01Challenge();
+        challenge.unmarshall(TestUtils.getJsonAsMap("httpChallenge"));
+
+        challenge.setAddress(InetAddress.getByName("198.051.100.012"));
+
+        challenge.authorize(reg);
+
+        ClaimBuilder cb = new ClaimBuilder();
+        challenge.respond(cb);
+
+        assertThat(cb.toString(), sameJSONAs("{\"keyAuthorization\"=\""
+            + KEY_AUTHORIZATION + "\", \"address\"=\"198.51.100.12\"}")
+                        .allowingExtraUnexpectedFields());
     }
 
 }

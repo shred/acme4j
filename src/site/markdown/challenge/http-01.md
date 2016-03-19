@@ -21,3 +21,15 @@ http://${domain}/.well-known/acme-challenge/${token}
 ```
 
 The challenge is completed when the CA was able to download that file and found `content` in it.
+
+## Preferred Address
+
+If your domain name resolves to multiple IP adresses, you can set an explicit address that the CA server should prefer to send the request to. This address must be included in the set of IP addresses.
+
+```java
+Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
+challenge.setAddress(InetAddress.getByName("198.51.100.12"))
+challenge.authorize(registration);
+```
+
+The server _should_ connect to this address, but is not required to do so.
