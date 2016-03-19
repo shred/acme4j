@@ -99,6 +99,16 @@ public interface AcmeClient {
     void updateAuthorization(Authorization auth) throws AcmeException;
 
     /**
+     * Deletes an {@link Authorization}.
+     *
+     * @param registration
+     *            {@link Registration} the authorization is related to
+     * @param auth
+     *            {@link Authorization} to delete
+     */
+    void deleteAuthorization(Registration registration, Authorization auth) throws AcmeException;
+
+    /**
      * Triggers a {@link Challenge}. The ACME server is requested to validate the
      * response. Note that the validation is performed asynchronously.
      *

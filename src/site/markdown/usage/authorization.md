@@ -75,6 +75,16 @@ client.updateAuthorization(auth);
 
 After that call, the `Authorization` object contains the current server state about your authorization, including the domain name, the overall status, and an expiry date.
 
+## Delete an Authorization
+
+It is possible to delete an Authorization, for example if you sell the associated domain.
+
+```java
+URI authUri = ... // Authorization URI
+Authorization auth = new Authorization(authUri);
+client.deleteAuthorization(registration, auth);
+```
+
 ## Restore a Challenge
 
 Validating a challenge can take a considerable amount of time and is a candidate for asynchronous execution. This can be a problem if you need to keep the `Challenge` object for a later time or a different Java environment.

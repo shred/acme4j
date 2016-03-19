@@ -342,6 +342,33 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     }
 
     @Override
+    public void deleteAuthorization(Registration registration, Authorization auth) throws AcmeException {
+        if (registration == null) {
+            throw new NullPointerException("registration must not be null");
+        }
+        if (auth == null) {
+            throw new NullPointerException("auth must not be null");
+        }
+        if (auth.getLocation() == null) {
+            throw new IllegalArgumentException("auth location must not be null. Use newAuthorization() if not known.");
+        }
+
+        LOG.debug("deleteAuthorization");
+        try (Connection conn = createConnection()) {
+            ClaimBuilder claims = new ClaimBuilder();
+            claims.putResource("authz");
+            claims.put("delete", true);
+
+            int rc = conn.sendSignedRequest(auth.getLocation(), claims, session, registration);
+            if (rc != HttpURLConnection.HTTP_OK) {
+                conn.throwAcmeException();
+            }
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
+        }
+    }
+
+    @Override
     public void triggerChallenge(Registration registration, Challenge challenge) throws AcmeException {
         if (registration == null) {
             throw new NullPointerException("registration must not be null");

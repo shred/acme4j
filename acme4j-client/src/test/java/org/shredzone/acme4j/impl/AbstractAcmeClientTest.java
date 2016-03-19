@@ -383,6 +383,30 @@ public class AbstractAcmeClientTest {
     }
 
     /**
+     * Test that an {@link Authorization} can be deleted.
+     */
+    @Test
+    public void testDeleteAuthorization() throws AcmeException {
+        Authorization auth = new Authorization(locationUri);
+
+        Connection connection = new DummyConnection() {
+            @Override
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
+                Map<String, Object> claimMap = claims.toMap();
+                assertThat(claimMap.get("resource"), is((Object) "authz"));
+                assertThat(claimMap.get("delete"), is((Object) Boolean.TRUE));
+                assertThat(uri, is(locationUri));
+                assertThat(session, is(notNullValue()));
+                assertThat(registration.getKeyPair(), is(sameInstance(accountKeyPair)));
+                return HttpURLConnection.HTTP_OK;
+            }
+        };
+
+        TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
+        client.deleteAuthorization(testRegistration, auth);
+    }
+
+    /**
      * Test that a {@link Challenge} can be triggered.
      */
     @Test
