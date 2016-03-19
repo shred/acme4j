@@ -1,7 +1,7 @@
 /*
  * acme4j - Java ACME client
  *
- * Copyright (C) 2015 Richard "Shred" Körber
+ * Copyright (C) 2016 Richard "Shred" Körber
  *   http://acme4j.shredzone.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,36 +23,47 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 /**
  * Implements the {@value TYPE} challenge.
  *
- * @deprecated Use {@link TlsSni02Challenge} if supported by the CA. This challenge will
- *             be removed as soon as Let's Encrypt removes support for
- *             {@link TlsSni01Challenge}.
  * @author Richard "Shred" Körber
  */
-@Deprecated
-public class TlsSni01Challenge extends GenericTokenChallenge {
-    private static final long serialVersionUID = 7370329525205430573L;
+public class TlsSni02Challenge extends GenericTokenChallenge {
+    private static final long serialVersionUID = 8921833167878544518L;
     private static final char[] HEX = "0123456789abcdef".toCharArray();
 
     /**
      * Challenge type name: {@value}
      */
-    public static final String TYPE = "tls-sni-01";
+    public static final String TYPE = "tls-sni-02";
 
     private String subject;
+    private String sanB;
 
     /**
-     * Return the subject to generate a self-signed certificate for.
+     * Returns the subject, which is to be used as "SAN-A" in a self-signed certificate.
+     * The CA will send the SNI request against this domain.
      */
     public String getSubject() {
         assertIsAuthorized();
         return subject;
     }
 
+    /**
+     * Returns the key authorization, which is to be used as "SAN-B" in a self-signed
+     * certificate.
+     */
+    public String getSanB() {
+        assertIsAuthorized();
+        return sanB;
+    }
+
     @Override
     public void authorize(Registration registration) {
         super.authorize(registration);
-        String hash = computeHash(getAuthorization());
-        subject = hash.substring(0, 32) + '.' + hash.substring(32) + ".acme.invalid";
+
+        String tokenHash = computeHash(getToken());
+        subject = tokenHash.substring(0, 32) + '.' + tokenHash.substring(32) + ".token.acme.invalid";
+
+        String kaHash = computeHash(getAuthorization());
+        sanB = kaHash.substring(0, 32) + '.' + kaHash.substring(32) + ".ka.acme.invalid";
     }
 
     @Override

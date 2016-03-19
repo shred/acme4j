@@ -90,6 +90,7 @@ public class CertificateUtilsTest {
      * good certificate.
      */
     @Test
+    @SuppressWarnings("deprecation") // test deprecated method
     public void testCreateTlsSniCertificate() throws IOException, CertificateParsingException {
         String subject = "30c452b9bd088cdbc2c4094947025d7c.7364ea602ac325a1b55ceaae024fbe29.acme.invalid";
 
@@ -106,6 +107,30 @@ public class CertificateUtilsTest {
         assertThat(cert.getNotBefore(), is(lessThanOrEqualTo(now)));
         assertThat(cert.getSubjectX500Principal().getName(), is("CN=acme.invalid"));
         assertThat(getSANs(cert), containsInAnyOrder(subject));
+    }
+
+    /**
+     * Test if {@link CertificateUtils#createTlsSni02Certificate(KeyPair, String)} creates
+     * a good certificate.
+     */
+    @Test
+    public void testCreateTlsSni02Certificate() throws IOException, CertificateParsingException {
+        String sanA = "1082909237a535173c8415a44539f84e.248317530d8d1a0c71de8fd23f1beae4.token.acme.invalid";
+        String sanB = "edc3a1d40199c1723358d57853bc23ff.4d4473417a6d76e80df17bbcfbe53d2c.ka.acme.invalid";
+
+        KeyPair keypair = KeyPairUtils.createKeyPair(2048);
+
+        X509Certificate cert = CertificateUtils.createTlsSni02Certificate(keypair, sanA, sanB);
+
+        Date now = new Date();
+        Date end = new Date(now.getTime() + (8 * 24 * 60 * 60 * 1000L));
+
+        assertThat(cert, not(nullValue()));
+        assertThat(cert.getNotAfter(), is(greaterThan(now)));
+        assertThat(cert.getNotAfter(), is(lessThan(end)));
+        assertThat(cert.getNotBefore(), is(lessThanOrEqualTo(now)));
+        assertThat(cert.getSubjectX500Principal().getName(), is("CN=acme.invalid"));
+        assertThat(getSANs(cert), containsInAnyOrder(sanA, sanB));
     }
 
     /**

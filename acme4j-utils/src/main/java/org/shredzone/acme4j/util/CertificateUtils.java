@@ -37,7 +37,7 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.shredzone.acme4j.challenge.TlsSni01Challenge;
+import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 
 /**
  * Utility class offering convenience methods for certificates.
@@ -113,14 +113,18 @@ public final class CertificateUtils {
 
     /**
      * Creates a self-signed {@link X509Certificate} that can be used for
-     * {@link TlsSni01Challenge}. The certificate is valid for 7 days.
+     * {@link org.shredzone.acme4j.challenge.TlsSni01Challenge}. The certificate is valid
+     * for 7 days.
      *
      * @param keypair
      *            A domain {@link KeyPair} to be used for the challenge
      * @param subject
      *            Subject to create a certificate for
      * @return Created certificate
+     * @deprecated Will be removed when
+     *             {@link org.shredzone.acme4j.challenge.TlsSni01Challenge} is removed
      */
+    @Deprecated
     public static X509Certificate createTlsSniCertificate(KeyPair keypair, String subject) throws IOException {
         final long now = System.currentTimeMillis();
         final long validSpanMs = 7 * 24 * 60 * 60 * 1000L;
@@ -137,6 +141,50 @@ public final class CertificateUtils {
 
             GeneralName[] gns = new GeneralName[1];
             gns[0] = new GeneralName(GeneralName.dNSName, subject);
+
+            certBuilder.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(gns));
+
+            JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlg);
+
+            byte[] cert = certBuilder.build(signerBuilder.build(keypair.getPrivate())).getEncoded();
+
+            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+            return (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(cert));
+        } catch (CertificateException | OperatorCreationException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    /**
+     * Creates a self-signed {@link X509Certificate} that can be used for
+     * {@link TlsSni02Challenge}. The certificate is valid for 7 days.
+     *
+     * @param keypair
+     *            A domain {@link KeyPair} to be used for the challenge
+     * @param sanA
+     *            SAN-A to be used in the certificate
+     * @param sanB
+     *            SAN-B to be used in the certificate
+     * @return Created certificate
+     */
+    public static X509Certificate createTlsSni02Certificate(KeyPair keypair, String sanA, String sanB)
+                throws IOException {
+        final long now = System.currentTimeMillis();
+        final long validSpanMs = 7 * 24 * 60 * 60 * 1000L;
+        final String signatureAlg = "SHA256withRSA";
+
+        try {
+            X500Name issuer = new X500Name("CN=acme.invalid");
+            BigInteger serial = BigInteger.valueOf(now);
+            Date notBefore = new Date(now);
+            Date notAfter = new Date(now + validSpanMs);
+
+            JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+                        issuer, serial, notBefore, notAfter, issuer, keypair.getPublic());
+
+            GeneralName[] gns = new GeneralName[2];
+            gns[0] = new GeneralName(GeneralName.dNSName, sanA);
+            gns[1] = new GeneralName(GeneralName.dNSName, sanB);
 
             certBuilder.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(gns));
 

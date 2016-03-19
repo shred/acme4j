@@ -31,7 +31,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
-import org.shredzone.acme4j.challenge.TlsSni01Challenge;
 import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
@@ -267,11 +266,12 @@ public class ClientTest {
     /**
      * Prepares TLS-SNI challenge.
      */
+    @SuppressWarnings("deprecation") // until tls-sni-02 is supported
     public Challenge tlsSniChallenge(Authorization auth, Registration reg, String domain) throws AcmeException {
         // Find a single tls-sni-01 challenge
-        TlsSni01Challenge challenge = auth.findChallenge(TlsSni01Challenge.TYPE);
+        org.shredzone.acme4j.challenge.TlsSni01Challenge challenge = auth.findChallenge(org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE);
         if (challenge == null) {
-            LOG.error("Found no " + TlsSni01Challenge.TYPE + " challenge, don't know what to do...");
+            LOG.error("Found no " + org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE + " challenge, don't know what to do...");
             return null;
         }
 

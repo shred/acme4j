@@ -31,7 +31,8 @@ import org.shredzone.acme4j.util.TestUtils;
  *
  * @author Richard "Shred" Körber
  */
-public class TlsSniChallengeTest {
+@SuppressWarnings("deprecation") // must test a deprecated challenge
+public class TlsSni01ChallengeTest {
 
     private static final String KEY_AUTHORIZATION =
             "VNLBdSiZ3LppU2CRG8bilqlwq4DuApJMg3ZJowU6JhQ.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0";

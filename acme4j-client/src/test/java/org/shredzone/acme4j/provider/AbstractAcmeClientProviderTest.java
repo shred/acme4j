@@ -25,7 +25,7 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.ProofOfPossession01Challenge;
-import org.shredzone.acme4j.challenge.TlsSni01Challenge;
+import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 
 /**
  * Unit tests for {@link AbstractAcmeClientProvider}.
@@ -76,6 +76,7 @@ public class AbstractAcmeClientProviderTest {
      * Test that challenges are generated properly.
      */
     @Test
+    @SuppressWarnings("deprecation") // must test deprecated challenges
     public void testCreateChallenge() {
         AbstractAcmeClientProvider provider = new AbstractAcmeClientProvider() {
             @Override
@@ -104,12 +105,16 @@ public class AbstractAcmeClientProviderTest {
         assertThat(c4, not(nullValue()));
         assertThat(c4, instanceOf(ProofOfPossession01Challenge.class));
 
-        Challenge c5 = provider.createChallenge(TlsSni01Challenge.TYPE);
+        Challenge c5 = provider.createChallenge(org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE);
         assertThat(c5, not(nullValue()));
-        assertThat(c5, instanceOf(TlsSni01Challenge.class));
+        assertThat(c5, instanceOf(org.shredzone.acme4j.challenge.TlsSni01Challenge.class));
 
-        Challenge c6 = provider.createChallenge("foobar-01");
-        assertThat(c6, is(nullValue()));
+        Challenge c6 = provider.createChallenge(TlsSni02Challenge.TYPE);
+        assertThat(c6, not(nullValue()));
+        assertThat(c6, instanceOf(TlsSni02Challenge.class));
+
+        Challenge c7 = provider.createChallenge("foobar-01");
+        assertThat(c7, is(nullValue()));
 
         try {
             provider.createChallenge(null);

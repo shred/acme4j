@@ -33,7 +33,7 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.ProofOfPossession01Challenge;
-import org.shredzone.acme4j.challenge.TlsSni01Challenge;
+import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 
 /**
  * Unit tests for {@link Authorization}.
@@ -51,7 +51,7 @@ public class AuthorizationTest {
     public void setup() {
         Challenge challenge1 = setupChallenge(Http01Challenge.TYPE, new Http01Challenge());
         Challenge challenge2 = setupChallenge(Dns01Challenge.TYPE, new Dns01Challenge());
-        Challenge challenge3 = setupChallenge(TlsSni01Challenge.TYPE, new TlsSni01Challenge());
+        Challenge challenge3 = setupChallenge(TlsSni02Challenge.TYPE, new TlsSni02Challenge());
 
         List<Challenge> challenges = new ArrayList<>();
         challenges.add(challenge1);
@@ -111,7 +111,7 @@ public class AuthorizationTest {
         assertThat(c2, is(instanceOf(Http01Challenge.class)));
 
         // TlsSniChallenge is available, but not as standalone challenge
-        Challenge c3 = authorization.findChallenge(TlsSni01Challenge.TYPE);
+        Challenge c3 = authorization.findChallenge(TlsSni02Challenge.TYPE);
         assertThat(c3, is(nullValue()));
     }
 
@@ -128,25 +128,25 @@ public class AuthorizationTest {
         assertThat(c1, contains(instanceOf(Http01Challenge.class)));
 
         // Available combined challenge
-        Collection<Challenge> c2 = authorization.findCombination(Dns01Challenge.TYPE, TlsSni01Challenge.TYPE);
+        Collection<Challenge> c2 = authorization.findCombination(Dns01Challenge.TYPE, TlsSni02Challenge.TYPE);
         assertThat(c2, hasSize(2));
         assertThat(c2, contains(instanceOf(Dns01Challenge.class),
-                        instanceOf(TlsSni01Challenge.class)));
+                        instanceOf(TlsSni02Challenge.class)));
 
         // Order does not matter
-        Collection<Challenge> c3 = authorization.findCombination(TlsSni01Challenge.TYPE, Dns01Challenge.TYPE);
+        Collection<Challenge> c3 = authorization.findCombination(TlsSni02Challenge.TYPE, Dns01Challenge.TYPE);
         assertThat(c3, hasSize(2));
         assertThat(c3, contains(instanceOf(Dns01Challenge.class),
-                        instanceOf(TlsSni01Challenge.class)));
+                        instanceOf(TlsSni02Challenge.class)));
 
         // Finds smaller combinations as well
-        Collection<Challenge> c4 = authorization.findCombination(Dns01Challenge.TYPE, TlsSni01Challenge.TYPE, ProofOfPossession01Challenge.TYPE);
+        Collection<Challenge> c4 = authorization.findCombination(Dns01Challenge.TYPE, TlsSni02Challenge.TYPE, ProofOfPossession01Challenge.TYPE);
         assertThat(c4, hasSize(2));
         assertThat(c4, contains(instanceOf(Dns01Challenge.class),
-                        instanceOf(TlsSni01Challenge.class)));
+                        instanceOf(TlsSni02Challenge.class)));
 
         // Finds the smallest possible combination
-        Collection<Challenge> c5 = authorization.findCombination(Dns01Challenge.TYPE, TlsSni01Challenge.TYPE, Http01Challenge.TYPE);
+        Collection<Challenge> c5 = authorization.findCombination(Dns01Challenge.TYPE, TlsSni02Challenge.TYPE, Http01Challenge.TYPE);
         assertThat(c5, hasSize(1));
         assertThat(c5, contains(instanceOf(Http01Challenge.class)));
 

@@ -40,6 +40,7 @@
         <item name="http-01" href="challenge/http-01.html"/>
         <item name="dns-01" href="challenge/dns-01.html"/>
         <item name="tls-sni-01" href="challenge/tls-sni-01.html"/>
+        <item name="tls-sni-02" href="challenge/tls-sni-02.html"/>
         <item name="proof-of-possession-01" href="challenge/proof-of-possession-01.html"/>
       </item>
       <item name="CAs" href="ca/index.html">
