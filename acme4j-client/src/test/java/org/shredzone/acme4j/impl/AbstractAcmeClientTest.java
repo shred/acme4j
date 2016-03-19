@@ -192,7 +192,7 @@ public class AbstractAcmeClientTest {
                 assertThat(uri, is(locationUri));
                 assertThat(session, is(notNullValue()));
                 assertThat(registration.getKeyPair(), is(sameInstance(accountKeyPair)));
-                return HttpURLConnection.HTTP_ACCEPTED;
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override

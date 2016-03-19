@@ -215,7 +215,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             claims.put("newKey", newKey);
 
             int rc = conn.sendSignedRequest(registration.getLocation(), claims, session, registration);
-            if (rc != HttpURLConnection.HTTP_ACCEPTED) {
+            if (rc != HttpURLConnection.HTTP_OK) {
                 conn.throwAcmeException();
             }
         } catch (IOException ex) {
