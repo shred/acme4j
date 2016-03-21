@@ -34,7 +34,6 @@
         <item name="Registration" href="usage/register.html"/>
         <item name="Authorization" href="usage/authorization.html"/>
         <item name="Certificate" href="usage/certificate.html"/>
-        <item name="Recovery" href="usage/recovery.html"/>
       </item>
       <item name="Challenges" href="challenge/index.html">
         <item name="http-01" href="challenge/http-01.html"/>

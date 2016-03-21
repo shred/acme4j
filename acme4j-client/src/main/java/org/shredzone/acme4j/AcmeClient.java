@@ -62,16 +62,6 @@ public interface AcmeClient {
                 throws AcmeException;
 
     /**
-     * Recovers an account by contact-based recovery. The server starts an out-of-band
-     * recovery process by using one of the contact addresses given at account creation.
-     *
-     * @param registration
-     *            {@link Registration}, with the new key pair and the account location URI
-     *            set
-     */
-    void recoverRegistration(Registration registration) throws AcmeException;
-
-    /**
      * Deletes an account. Related certificates may still be valid after account deletion,
      * and need to be revoked separately if neccessary.
      *

@@ -224,41 +224,6 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     }
 
     @Override
-    public void recoverRegistration(Registration registration) throws AcmeException {
-        if (registration == null) {
-            throw new NullPointerException("registration must not be null");
-        }
-        if (registration.getLocation() == null) {
-            throw new IllegalArgumentException("registration location must not be null");
-        }
-
-        LOG.debug("recoverRegistration");
-        try (Connection conn = createConnection()) {
-            ClaimBuilder claims = new ClaimBuilder();
-            claims.putResource(Resource.RECOVER_REG);
-            claims.put("method", "contact");
-            claims.put("base", registration.getLocation());
-            if (!registration.getContacts().isEmpty()) {
-                claims.put("contact", registration.getContacts());
-            }
-
-            int rc = conn.sendSignedRequest(resourceUri(Resource.RECOVER_REG), claims, session, registration);
-            if (rc != HttpURLConnection.HTTP_CREATED) {
-                conn.throwAcmeException();
-            }
-
-            registration.setLocation(conn.getLocation());
-
-            URI tos = conn.getLink("terms-of-service");
-            if (tos != null) {
-                registration.setAgreement(tos);
-            }
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
-        }
-    }
-
-    @Override
     public void deleteRegistration(Registration registration) throws AcmeException {
         if (registration == null) {
             throw new NullPointerException("registration must not be null");

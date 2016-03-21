@@ -56,7 +56,6 @@ public class AbstractAcmeClientTest {
 
     private URI resourceUri;
     private URI locationUri;
-    private URI anotherLocationUri;
     private URI agreementUri;
     private KeyPair accountKeyPair;
     private Registration testRegistration;
@@ -65,7 +64,6 @@ public class AbstractAcmeClientTest {
     public void setup() throws IOException, URISyntaxException {
         resourceUri = new URI("https://example.com/acme/some-resource");
         locationUri = new URI("https://example.com/acme/some-location");
-        anotherLocationUri = new URI("https://example.com/acme/another-location");
         agreementUri = new URI("http://example.com/agreement.pdf");
         accountKeyPair = TestUtils.createKeyPair();
         testRegistration = new Registration(accountKeyPair);
@@ -218,46 +216,6 @@ public class AbstractAcmeClientTest {
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
 
         client.changeRegistrationKey(registration, registration.getKeyPair());
-    }
-
-    /**
-     * Test that a {@link Registration} can be recovered by contact-based recovery.
-     */
-    @Test
-    public void testRecoverRegistration() throws AcmeException {
-        Registration registration = new Registration(accountKeyPair);
-        registration.addContact("mailto:foo@example.com");
-        registration.setLocation(locationUri);
-
-        Connection connection = new DummyConnection() {
-            @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
-                assertThat(session, is(notNullValue()));
-                assertThat(registration.getKeyPair(), is(sameInstance(accountKeyPair)));
-                return HttpURLConnection.HTTP_CREATED;
-            }
-
-            @Override
-            public URI getLocation() {
-                return anotherLocationUri;
-            }
-
-            @Override
-            public URI getLink(String relation) {
-                switch(relation) {
-                    case "terms-of-service": return agreementUri;
-                    default: return null;
-                }
-            }
-        };
-
-        TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
-        client.putTestResource(Resource.RECOVER_REG, resourceUri);
-
-        client.recoverRegistration(registration);
-
-        assertThat(registration.getLocation(), is(anotherLocationUri));
-        assertThat(registration.getAgreement(), is(agreementUri));
     }
 
     /**
