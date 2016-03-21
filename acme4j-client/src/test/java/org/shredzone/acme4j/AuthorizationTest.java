@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
-import org.shredzone.acme4j.challenge.ProofOfPossession01Challenge;
 import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 
 /**
@@ -41,6 +40,8 @@ import org.shredzone.acme4j.challenge.TlsSni02Challenge;
  * @author Richard "Shred" Körber
  */
 public class AuthorizationTest {
+
+    private static final String SNAILMAIL_TYPE = "snail-01"; // a non-existent challenge
 
     private Authorization authorization;
 
@@ -101,8 +102,8 @@ public class AuthorizationTest {
      */
     @Test
     public void testFindChallenge() {
-        // ProofOfPossesionChallenge is not available at all
-        Challenge c1 = authorization.findChallenge(ProofOfPossession01Challenge.TYPE);
+        // A snail mail challenge is not available at all
+        Challenge c1 = authorization.findChallenge(SNAILMAIL_TYPE);
         assertThat(c1, is(nullValue()));
 
         // HttpChallenge is available as standalone challenge
@@ -140,7 +141,7 @@ public class AuthorizationTest {
                         instanceOf(TlsSni02Challenge.class)));
 
         // Finds smaller combinations as well
-        Collection<Challenge> c4 = authorization.findCombination(Dns01Challenge.TYPE, TlsSni02Challenge.TYPE, ProofOfPossession01Challenge.TYPE);
+        Collection<Challenge> c4 = authorization.findCombination(Dns01Challenge.TYPE, TlsSni02Challenge.TYPE, SNAILMAIL_TYPE);
         assertThat(c4, hasSize(2));
         assertThat(c4, contains(instanceOf(Dns01Challenge.class),
                         instanceOf(TlsSni02Challenge.class)));
@@ -155,7 +156,7 @@ public class AuthorizationTest {
         assertThat(c6, is(nullValue()));
 
         // Does not find challenges that have not been provided
-        Collection<Challenge> c7 = authorization.findCombination(ProofOfPossession01Challenge.TYPE);
+        Collection<Challenge> c7 = authorization.findCombination(SNAILMAIL_TYPE);
         assertThat(c7, is(nullValue()));
     }
 

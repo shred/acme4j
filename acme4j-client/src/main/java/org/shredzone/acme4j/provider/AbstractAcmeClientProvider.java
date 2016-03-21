@@ -19,7 +19,6 @@ import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
-import org.shredzone.acme4j.challenge.ProofOfPossession01Challenge;
 import org.shredzone.acme4j.challenge.TlsSni01Challenge;
 import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.connector.Connection;
@@ -73,7 +72,6 @@ public abstract class AbstractAcmeClientProvider implements AcmeClientProvider {
             case Dns01Challenge.TYPE: return new Dns01Challenge();
             case TlsSni01Challenge.TYPE: return new TlsSni01Challenge();
             case TlsSni02Challenge.TYPE: return new TlsSni02Challenge();
-            case ProofOfPossession01Challenge.TYPE: return new ProofOfPossession01Challenge();
             case Http01Challenge.TYPE: return new Http01Challenge();
             default: return null;
         }

@@ -8,7 +8,7 @@ Individual CAs may offer further ways of recovery, which are not part of this do
 
 ## Contact-Based Recovery
 
-> **CAUTION**: Contact-Based Recovery is [currently not supported by _Let's Encrypt_](https://github.com/letsencrypt/boulder/issues/432). If you should lose your key pair, you are stuck. All you can do at the moment is to register a new account and then recover your domains by using the [Proof of Possession](../challenge/proof-of-possession.html) challenge in combination with the domain key pairs.
+> **CAUTION**: Contact-Based Recovery is [currently not supported by _Let's Encrypt_](https://github.com/letsencrypt/boulder/issues/432). If you should lose your key pair, you are stuck.
 
 On this recovery method, the CA contacts the account owner via one of the contact addresses given on account creation. The owner is asked to take some action (e.g. clicking on a link in an email). If it was successful, the account data is transferred to the new account.
 
