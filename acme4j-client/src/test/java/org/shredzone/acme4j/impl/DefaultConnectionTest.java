@@ -194,7 +194,7 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testThrowException() throws Exception {
-        String jsonData = "{\"type\":\"urn:acme:error:unauthorized\",\"detail\":\"Invalid response: 404\"}";
+        String jsonData = "{\"type\":\"urn:ietf:params:acme:error:unauthorized\",\"detail\":\"Invalid response: 404\"}";
 
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/problem+json");
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
@@ -205,7 +205,7 @@ public class DefaultConnectionTest {
             conn.throwAcmeException();
             fail("Expected to fail");
         } catch (AcmeServerException ex) {
-            assertThat(ex.getType(), is("urn:acme:error:unauthorized"));
+            assertThat(ex.getType(), is("urn:ietf:params:acme:error:unauthorized"));
             assertThat(ex.getMessage(), is("Invalid response: 404"));
             assertThat(ex.getAcmeErrorType(), is("unauthorized"));
         } catch (AcmeException ex) {

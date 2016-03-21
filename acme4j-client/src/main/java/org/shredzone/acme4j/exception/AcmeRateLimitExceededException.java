@@ -25,7 +25,8 @@ public class AcmeRateLimitExceededException extends AcmeServerException {
      * Creates a new {@link AcmeRateLimitExceededException}.
      *
      * @param type
-     *            System readable error type (here {@code "urn:acme:error:rateLimited"})
+     *            System readable error type (here
+     *            {@code "urn:ietf:params:acme:error:rateLimited"})
      * @param detail
      *            Human readable error message
      */

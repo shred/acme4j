@@ -22,7 +22,8 @@ package org.shredzone.acme4j.exception;
 public class AcmeServerException extends AcmeException {
     private static final long serialVersionUID = 5971622508467042792L;
 
-    private static final String ACME_ERROR_PREFIX = "urn:acme:error:";
+    private static final String ACME_ERROR_PREFIX = "urn:ietf:params:acme:error:";
+    private static final String ACME_ERROR_PREFIX_DEPRECATED = "urn:acme:error:";
 
     private final String type;
 
@@ -30,7 +31,8 @@ public class AcmeServerException extends AcmeException {
      * Creates a new {@link AcmeServerException}.
      *
      * @param type
-     *            System readable error type (e.g. {@code "urn:acme:error:malformed"})
+     *            System readable error type (e.g.
+     *            {@code "urn:ietf:params:acme:error:malformed"})
      * @param detail
      *            Human readable error message
      */
@@ -51,13 +53,16 @@ public class AcmeServerException extends AcmeException {
 
     /**
      * Returns the ACME error type. This is the last part of the type URN, e.g.
-     * {@code "malformed"} on {@code "urn:acme:error:malformed"}.
+     * {@code "malformed"} on {@code "urn:ietf:params:acme:error:malformed"}.
      *
-     * @return ACME error type, or {@code null} if this is not an {@code "urn:acme:error"}
+     * @return ACME error type, or {@code null} if this is not an
+     *         {@code "urn:ietf:params:acme:error"}
      */
     public String getAcmeErrorType() {
         if (type.startsWith(ACME_ERROR_PREFIX)) {
             return type.substring(ACME_ERROR_PREFIX.length());
+        } else if (type.startsWith(ACME_ERROR_PREFIX_DEPRECATED)) {
+            return type.substring(ACME_ERROR_PREFIX_DEPRECATED.length());
         } else {
             return null;
         }

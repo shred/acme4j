@@ -26,7 +26,8 @@ public class AcmeUnauthorizedException extends AcmeServerException {
      * Creates a new {@link AcmeUnauthorizedException}.
      *
      * @param type
-     *            System readable error type (here {@code "urn:acme:error:unauthorized"})
+     *            System readable error type (here
+     *            {@code "urn:ietf:params:acme:error:unauthorized"})
      * @param detail
      *            Human readable error message
      */
