@@ -25,9 +25,7 @@ It is an independent open source implementation that is not affiliated with or e
 
 Please note that _acme4j_ is currently in beta state. The API may still change without prior notice, but I try to keep the changes minimal.
 
-As _Let's Encrypt_ is currently in public beta, some of the ACME services may be restricted or [not implemented](https://github.com/letsencrypt/boulder/wiki/TODO). Also see the [_acme4j_ bug tracker](https://github.com/shred/acme4j/issues) for missing or untested features.
-
-The [ACME specifications](https://github.com/ietf-wg-acme/acme) are not finalized yet. The _acme4j_ API may change as features are added to, and other features removed from the specifications.
+The [ACME specifications](https://github.com/ietf-wg-acme/acme) are not finalized yet. The _acme4j_ API may change as features are added to, and other features removed from the specifications. Some of the _Let's Encrypt_ services may be restricted or [not yet implemented](https://github.com/letsencrypt/boulder/wiki/TODO). Also see the [_acme4j_ bug tracker](https://github.com/shred/acme4j/issues) for missing or untested features.
 
 ## Contribute
 
