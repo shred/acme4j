@@ -23,7 +23,3 @@ See [here](https://community.letsencrypt.org/t/public-beta-rate-limits/4772) for
 ## Intermediate Certificates
 
 The _Let's Encrypt_ intermediate certificates are available [here](https://letsencrypt.org/certificates/).
-
-## Renewal
-
-Just download the renewed certificate from the certificate URL that was provided by `requestCertificate()`.
