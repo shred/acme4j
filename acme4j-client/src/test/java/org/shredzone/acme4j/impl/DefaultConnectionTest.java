@@ -366,7 +366,7 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testReadJsonResponse() throws Exception {
-        String jsonData = "{\"foo\":123,\"bar\":\"a-string\"}";
+        String jsonData = "{\n\"foo\":123,\n\"bar\":\"a-string\"\n}\n";
 
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/json");
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
@@ -417,11 +417,11 @@ public class DefaultConnectionTest {
     @Test
     public void testReadDirectory() throws Exception {
         StringBuilder jsonData = new StringBuilder();
-        jsonData.append('{');
-        jsonData.append("\"new-reg\":\"http://example.com/acme/newreg\",");
-        jsonData.append("\"new-authz\":\"http://example.com/acme/newauthz\",");
-        jsonData.append("\"old-foo\":\"http://example.com/acme/oldfoo\"");
-        jsonData.append('}');
+        jsonData.append("{\n");
+        jsonData.append("\"new-reg\":\"http://example.com/acme/newreg\",\n");
+        jsonData.append("\"new-authz\":\"http://example.com/acme/newauthz\",\n");
+        jsonData.append("\"old-foo\":\"http://example.com/acme/oldfoo\"\n");
+        jsonData.append("}\n");
 
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/json");
         when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(jsonData.toString().getBytes("utf-8")));
