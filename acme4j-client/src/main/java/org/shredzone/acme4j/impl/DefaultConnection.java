@@ -198,7 +198,7 @@ public class DefaultConnection implements Connection {
             String line = reader.readLine();
 
             while (line != null) {
-            sb.append(line);
+                sb.append(line);
                 line = reader.readLine();
             }
         }
