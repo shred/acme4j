@@ -32,6 +32,7 @@ import org.jose4j.lang.JoseException;
 import org.junit.Before;
 import org.junit.Test;
 import org.shredzone.acme4j.Authorization;
+import org.shredzone.acme4j.CertificateURIs;
 import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -56,6 +57,7 @@ public class AbstractAcmeClientTest {
 
     private URI resourceUri;
     private URI locationUri;
+    private URI certChainUri;
     private URI agreementUri;
     private KeyPair accountKeyPair;
     private Registration testRegistration;
@@ -64,6 +66,7 @@ public class AbstractAcmeClientTest {
     public void setup() throws IOException, URISyntaxException {
         resourceUri = new URI("https://example.com/acme/some-resource");
         locationUri = new URI("https://example.com/acme/some-location");
+        certChainUri = new URI("https://example.com/acme/some-url");
         agreementUri = new URI("http://example.com/agreement.pdf");
         accountKeyPair = TestUtils.createKeyPair();
         testRegistration = new Registration(accountKeyPair);
@@ -456,7 +459,8 @@ public class AbstractAcmeClientTest {
     @Test
     public void testRequestCertificate() throws AcmeException, IOException {
         Connection connection = new DummyConnection() {
-            @Override
+
+	    @Override
             public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequest")));
@@ -469,15 +473,21 @@ public class AbstractAcmeClientTest {
             public URI getLocation() {
                 return locationUri;
             }
+            
+            @Override
+            public URI getLink(String relation) {
+                return certChainUri;
+            }
         };
 
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
         client.putTestResource(Resource.NEW_CERT, resourceUri);
 
         byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
-        URI certUri = client.requestCertificate(testRegistration, csr);
+        CertificateURIs certUris = client.requestCertificate(testRegistration, csr);
 
-        assertThat(certUri, is(locationUri));
+        assertThat(certUris.getCertUri(), is(locationUri));
+        assertThat(certUris.getChainCertUri(), is(certChainUri));
     }
 
     /**
