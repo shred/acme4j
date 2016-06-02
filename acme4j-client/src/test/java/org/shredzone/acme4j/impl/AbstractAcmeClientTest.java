@@ -459,8 +459,7 @@ public class AbstractAcmeClientTest {
     @Test
     public void testRequestCertificate() throws AcmeException, IOException {
         Connection connection = new DummyConnection() {
-
-	    @Override
+            @Override
             public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequest")));
@@ -473,7 +472,7 @@ public class AbstractAcmeClientTest {
             public URI getLocation() {
                 return locationUri;
             }
-            
+
             @Override
             public URI getLink(String relation) {
                 return certChainUri;

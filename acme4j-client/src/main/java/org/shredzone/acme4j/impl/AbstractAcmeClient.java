@@ -28,7 +28,11 @@ import java.util.Map;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
-import org.shredzone.acme4j.*;
+import org.shredzone.acme4j.AcmeClient;
+import org.shredzone.acme4j.Authorization;
+import org.shredzone.acme4j.CertificateURIs;
+import org.shredzone.acme4j.Registration;
+import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
@@ -431,41 +435,40 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
             // Optionally returns the certificate. Currently it is just ignored.
             // X509Certificate cert = conn.readCertificate();
-            
+
             return new CertificateURIs(conn.getLocation(), conn.getLink("up"));
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         }
     }
-    
+
     @Override
     public X509Certificate[] downloadCertificateChain(URI chainCertUri) throws AcmeException {
-    	if (chainCertUri == null) {
-    		throw new NullPointerException("certChainUri must not be null"); 
-    	}
+        if (chainCertUri == null) {
+            throw new NullPointerException("certChainUri must not be null");
+       }
 
-    	LOG.debug("getCertificateChain");
+        LOG.debug("getCertificateChain");
 
-    	List<X509Certificate> certChain = new ArrayList<>();
-    	URI link = chainCertUri;
-    	while (link != null && certChain.size() < MAX_CHAIN_LENGTH) {    		
-    		try (Connection conn = createConnection()) {
-    			int rc = conn.sendRequest(chainCertUri);
-    			if (rc != HttpURLConnection.HTTP_OK) {
-    				conn.throwAcmeException();
-    			}
+        List<X509Certificate> certChain = new ArrayList<>();
+        URI link = chainCertUri;
+        while (link != null && certChain.size() < MAX_CHAIN_LENGTH) {
+            try (Connection conn = createConnection()) {
+                int rc = conn.sendRequest(chainCertUri);
+                if (rc != HttpURLConnection.HTTP_OK) {
+                    conn.throwAcmeException();
+                }
 
-    			certChain.add(conn.readCertificate());
-    			link = conn.getLink("up");
-    		} catch (IOException ex) {
-    			throw new AcmeNetworkException(ex);
-    		}
-    	}
-    	
-    	if (link != null)
-    		throw new AcmeException("Recursion limit reached (" + MAX_CHAIN_LENGTH + "). Didn't get " + link);
+                certChain.add(conn.readCertificate());
+                link = conn.getLink("up");
+                } catch (IOException ex) {
+                    throw new AcmeNetworkException(ex);
+                }
+            }
+        if (link != null)
+            throw new AcmeException("Recursion limit reached (" + MAX_CHAIN_LENGTH + "). Didn't get " + link);
 
-    	return certChain.toArray(new X509Certificate[certChain.size()]);
+        return certChain.toArray(new X509Certificate[certChain.size()]);
     }
 
     @Override

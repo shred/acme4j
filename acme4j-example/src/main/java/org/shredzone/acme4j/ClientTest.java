@@ -18,7 +18,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
-import java.net.URI;
 import java.security.KeyPair;
 import java.security.Security;
 import java.security.cert.X509Certificate;
@@ -51,6 +50,7 @@ public class ClientTest {
     private static final File USER_KEY_FILE = new File("user.key");
     private static final File DOMAIN_KEY_FILE = new File("domain.key");
     private static final File DOMAIN_CERT_FILE = new File("domain.crt");
+    private static final File CERT_CHAIN_FILE = new File("chain.crt");
     private static final File DOMAIN_CSR_FILE = new File("domain.csr");
 
     private static final int KEY_SIZE = 2048;
@@ -176,14 +176,21 @@ public class ClientTest {
         }
 
         // Request a signed certificate
-        URI certificateUri = client.requestCertificate(reg, csrb.getEncoded());
+        CertificateURIs certificateUris = client.requestCertificate(reg, csrb.getEncoded());
         LOG.info("Success! The certificate for domains " + domains + " has been generated!");
-        LOG.info("Certificate URI: " + certificateUri);
+        LOG.info("Certificate URI: " + certificateUris.getCertUri());
+        LOG.info("Certificate Chain URI: " + certificateUris.getChainCertUri());
 
         // Download the certificate
-        X509Certificate cert = client.downloadCertificate(certificateUri);
+        X509Certificate cert = client.downloadCertificate(certificateUris.getCertUri());
         try (FileWriter fw = new FileWriter(DOMAIN_CERT_FILE)) {
             CertificateUtils.writeX509Certificate(cert, fw);
+        }
+
+        // Download the certificate chain
+        X509Certificate[] chain = client.downloadCertificateChain(certificateUris.getChainCertUri());
+        try (FileWriter fw = new FileWriter(CERT_CHAIN_FILE)) {
+            CertificateUtils.writeX509CertificateChain(chain, fw);
         }
 
         // Revoke the certificate (uncomment if needed...)
