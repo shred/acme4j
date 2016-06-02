@@ -178,7 +178,7 @@ public class DefaultConnection implements Connection {
         try {
             InputStream in = (conn.getResponseCode() < 400 ? conn.getInputStream() : conn.getErrorStream());
             if (in != null) {
-                final String response = readStream(in);
+                String response = readStream(in);
 
                 result = JsonUtil.parseJson(response);
                 LOG.debug("Result JSON: {}", sb);
@@ -191,8 +191,8 @@ public class DefaultConnection implements Connection {
         return result;
     }
 
-    private String readStream(final InputStream in) throws IOException {
-        final StringBuilder sb = new StringBuilder();
+    private String readStream(InputStream in) throws IOException {
+        StringBuilder sb = new StringBuilder();
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, "utf-8"))) {
             String line = reader.readLine();
