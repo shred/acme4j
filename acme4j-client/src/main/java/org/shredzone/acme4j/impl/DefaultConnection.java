@@ -178,11 +178,9 @@ public class DefaultConnection implements Connection {
         try {
             InputStream in = (conn.getResponseCode() < 400 ? conn.getInputStream() : conn.getErrorStream());
             if (in != null) {
-                try (BufferedReader r = new BufferedReader(new InputStreamReader(in, "utf-8"))) {
-                    sb.append(r.readLine());
-                }
+                String response = readStream(in);
 
-                result = JsonUtil.parseJson(sb.toString());
+                result = JsonUtil.parseJson(response);
                 LOG.debug("Result JSON: {}", sb);
             }
 
@@ -191,6 +189,21 @@ public class DefaultConnection implements Connection {
         }
 
         return result;
+    }
+
+    private String readStream(InputStream in) throws IOException {
+        StringBuilder sb = new StringBuilder();
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, "utf-8"))) {
+            String line = reader.readLine();
+
+            while (line != null) {
+                sb.append(line);
+                line = reader.readLine();
+            }
+        }
+
+        return sb.toString();
     }
 
     @Override
@@ -220,14 +233,12 @@ public class DefaultConnection implements Connection {
         }
 
         EnumMap<Resource, URI> resourceMap = new EnumMap<>(Resource.class);
-        StringBuilder sb = new StringBuilder();
+        String response = "";
 
         try {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream(), "utf-8"))) {
-                sb.append(reader.readLine());
-            }
+            response = readStream(conn.getInputStream());
 
-            Map<String, Object> result = JsonUtil.parseJson(sb.toString());
+            Map<String, Object> result = JsonUtil.parseJson(response);
             for (Map.Entry<String, Object> entry : result.entrySet()) {
                 Resource res = Resource.parse(entry.getKey());
                 if (res != null) {
@@ -238,7 +249,7 @@ public class DefaultConnection implements Connection {
 
             LOG.debug("Resource directory: {}", resourceMap);
         } catch (JoseException | URISyntaxException ex) {
-            throw new AcmeProtocolException("Failed to read directory: " + sb, ex);
+            throw new AcmeProtocolException("Failed to read directory: " + response, ex);
         }
 
         return resourceMap;
