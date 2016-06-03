@@ -20,7 +20,7 @@
     <parent>
         <groupId>org.shredzone.acme4j</groupId>
         <artifactId>acme4j</artifactId>
-        <version>0.5-SNAPSHOT</version>
+        <version>0.5</version>
     </parent>
 
     <artifactId>acme4j-utils</artifactId>
