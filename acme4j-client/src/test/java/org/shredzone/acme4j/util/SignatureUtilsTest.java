@@ -17,8 +17,11 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.security.KeyPair;
+import java.security.Security;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.jose4j.jwk.PublicJsonWebKey;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -27,6 +30,11 @@ import org.junit.Test;
  * @author Richard "Shred" Körber
  */
 public class SignatureUtilsTest {
+
+    @BeforeClass
+    public static void setup() {
+        Security.addProvider(new BouncyCastleProvider());
+    }
 
     /**
      * Test if RSA using SHA-256 keys are properly detected.
