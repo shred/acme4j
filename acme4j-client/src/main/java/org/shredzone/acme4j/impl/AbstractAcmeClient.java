@@ -446,7 +446,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     public X509Certificate[] downloadCertificateChain(URI chainCertUri) throws AcmeException {
         if (chainCertUri == null) {
             throw new NullPointerException("certChainUri must not be null");
-       }
+        }
 
         LOG.debug("getCertificateChain");
 
@@ -461,9 +461,8 @@ public abstract class AbstractAcmeClient implements AcmeClient {
 
                 certChain.add(conn.readCertificate());
                 link = conn.getLink("up");
-                } catch (IOException ex) {
-                    throw new AcmeNetworkException(ex);
-                }
+            } catch (IOException ex) {
+                throw new AcmeNetworkException(ex);
             }
         }
         if (link != null) {

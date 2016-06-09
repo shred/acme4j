@@ -135,7 +135,8 @@ public interface AcmeClient {
      *            {@link Registration} to be used for conversation
      * @param csr
      *            PKCS#10 Certificate Signing Request to be sent to the server
-     * @return {@link CertificateURIs} the certificate and certificate chain can be downloaded from
+     * @return {@link CertificateURIs} the certificate and certificate chain can be
+     *         downloaded from
      */
     CertificateURIs requestCertificate(Registration registration, byte[] csr) throws AcmeException;
 
@@ -145,10 +146,6 @@ public interface AcmeClient {
      * @param chainCertUri
      *            Certificate {@link URI}
      * @return Downloaded {@link X509Certificate[]}
-     * 
-     * @throws AcmeException 
-     * 			  if an {@link IOException} is thrown during certificate retrieval
-     * 			  or the max recursion limit is exceeded
      */
     X509Certificate[] downloadCertificateChain(URI chainCertUri) throws AcmeException;
 

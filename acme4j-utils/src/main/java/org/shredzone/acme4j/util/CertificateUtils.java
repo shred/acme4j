@@ -104,8 +104,9 @@ public final class CertificateUtils {
      */
     public static void writeX509CertificateChain(X509Certificate[] chain, Writer w) throws IOException {
         try (JcaPEMWriter jw = new JcaPEMWriter(w)) {
-            for (X509Certificate cert : chain)
+            for (X509Certificate cert : chain) {
                 jw.writeObject(cert);
+            }
         }
     }
 

@@ -19,7 +19,6 @@ import java.net.URI;
  * Represents the URIs returned by a certificate request
  *
  * @author cargy
- *
  */
 public class CertificateURIs {
 
@@ -34,8 +33,7 @@ public class CertificateURIs {
     /**
      * The URI from which the client may fetch the certificate
      *
-     * @return
-     * 		{@link URI} the certificate can be downloaded from
+     * @return {@link URI} the certificate can be downloaded from
      */
     public URI getCertUri() {
         return certUri;
@@ -44,8 +42,7 @@ public class CertificateURIs {
     /**
      * The URI from which the client may fetch a chain of CA certificates
      *
-     * @return
-     * 		{@link URI} the certificate chain can be downloaded from
+     * @return {@link URI} the certificate chain can be downloaded from
      */
     public URI getChainCertUri() {
         return chainCertUri;
