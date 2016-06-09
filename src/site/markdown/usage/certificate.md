@@ -33,13 +33,17 @@ Now all you need to do is to pass in a binary representation of the CSR and requ
 ```java
 byte[] csr = ... // your CSR
 
-URI certUri = client.requestCertificate(account, csr);
+CertificateURIs certUris = client.requestCertificate(account, csr);
 ```
 
-`certUri` contains an URI where the signed certificate can be downloaded from. You can either download it from there yourself (e.g. with `curl`), or just use the `AcmeClient`:
+`certUris` contains an URI where the signed certificate can be downloaded from. Optionally (if delivered by the ACME server) it also contains the URI of the first part of the CA chain. You can either download the certificate yourself (e.g. with `curl`), or just use the `AcmeClient`:
 
 ```java
-X509Certificate cert = client.downloadCertificate(certUri);
+X509Certificate cert = client.downloadCertificate(certUris.getCertUri());
+
+if (certUris.getChainCertUri() != null) {
+    X509Certificate[] chain = client.downloadCertificateChain(certUris.getChainCertUri());
+}
 ```
 
 Congratulations! You have just created your first certificate via _acme4j_.
@@ -81,8 +85,8 @@ For renewal, just request a new certificate using the original CSR:
 PKCS10CertificationRequest csr = CertificateUtils.readCSR(
     new FileInputStream("example.csr"));
 
-URI certUri = client.requestCertificate(account, csr.getEncoded());
-X509Certificate cert = client.downloadCertificate(certUri);
+CertificateURIs certUris = client.requestCertificate(account, csr.getEncoded());
+X509Certificate cert = client.downloadCertificate(certUris.getCertUri());
 ```
 
 Instead of loading the original CSR, you can also generate a new one. So renewing a certificate is basically the same as requesting a new certificate.
