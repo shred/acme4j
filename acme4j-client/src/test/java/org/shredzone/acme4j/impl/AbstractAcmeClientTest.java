@@ -475,6 +475,7 @@ public class AbstractAcmeClientTest {
 
             @Override
             public URI getLink(String relation) {
+                assertThat(relation, is("up"));
                 return certChainUri;
             }
         };
