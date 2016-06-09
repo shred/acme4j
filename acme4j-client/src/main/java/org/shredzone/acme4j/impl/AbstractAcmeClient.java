@@ -465,8 +465,11 @@ public abstract class AbstractAcmeClient implements AcmeClient {
                     throw new AcmeNetworkException(ex);
                 }
             }
-        if (link != null)
-            throw new AcmeException("Recursion limit reached (" + MAX_CHAIN_LENGTH + "). Didn't get " + link);
+        }
+        if (link != null) {
+            throw new AcmeProtocolException("Recursion limit reached (" + MAX_CHAIN_LENGTH
+                + "). Didn't get " + link);
+        }
 
         return certChain.toArray(new X509Certificate[certChain.size()]);
     }
