@@ -95,6 +95,21 @@ public final class CertificateUtils {
     }
 
     /**
+     * Writes an X.509 certificate chain PEM file.
+     *
+     * @param chain
+     *            {@link X509Certificate[]} to write
+     * @param w
+     *            {@link Writer} to write the PEM file to
+     */
+    public static void writeX509CertificateChain(X509Certificate[] chain, Writer w) throws IOException {
+        try (JcaPEMWriter jw = new JcaPEMWriter(w)) {
+            for (X509Certificate cert : chain)
+                jw.writeObject(cert);
+        }
+    }
+
+    /**
      * Reads a CSR PEM file.
      *
      * @param in
