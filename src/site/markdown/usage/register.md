@@ -61,9 +61,9 @@ client.changeRegistrationKey(reg, newKeyPair);
 
 All subsequent calls must now use the new key pair. The old key pair can be disposed.
 
-## Delete an Account
+## Deactivate an Account
 
-You can delete your account if you don't need it any more:
+You can deactivate your account if you don't need it any more:
 
 ```java
 KeyPair keyPair = ... // your account KeyPair
@@ -71,10 +71,12 @@ URI accountLocationUri = ... // your account's URI
 
 Registration reg = new Registration(keyPair, accountLocationUri);
 
-client.deleteRegistration(reg);
+client.deactivateRegistration(reg);
 ```
 
-Depending on the CA, the related authorizations may be automatically deleted as well. The certificates may still be valid until expiration or explicit revocation. If you want to make sure the certificates are invalidated as well, revoke them prior to deleting your account.
+Depending on the CA, the related authorizations may be automatically deactivated as well. The certificates may still be valid until expiration or explicit revocation. If you want to make sure the certificates are invalidated as well, revoke them prior to deactivation of your account.
+
+There is no way to reactivate the account once it is deactivated!
 
 ## Key Pair Utilities
 

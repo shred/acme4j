@@ -75,14 +75,14 @@ client.updateAuthorization(auth);
 
 After that call, the `Authorization` object contains the current server state about your authorization, including the domain name, the overall status, and an expiry date.
 
-## Delete an Authorization
+## Deactivate an Authorization
 
-It is possible to delete an Authorization, for example if you sell the associated domain.
+It is possible to deactivate an Authorization, for example if you sell the associated domain.
 
 ```java
 URI authUri = ... // Authorization URI
 Authorization auth = new Authorization(authUri);
-client.deleteAuthorization(registration, auth);
+client.deactivateAuthorization(registration, auth);
 ```
 
 ## Restore a Challenge

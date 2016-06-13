@@ -226,7 +226,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     }
 
     @Override
-    public void deleteRegistration(Registration registration) throws AcmeException {
+    public void deactivateRegistration(Registration registration) throws AcmeException {
         if (registration == null) {
             throw new NullPointerException("registration must not be null");
         }
@@ -234,11 +234,11 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             throw new IllegalArgumentException("registration location must not be null");
         }
 
-        LOG.debug("deleteRegistration");
+        LOG.debug("deactivateRegistration");
         try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource("reg");
-            claims.put("delete", true);
+            claims.put("status", "deactivated");
 
             int rc = conn.sendSignedRequest(registration.getLocation(), claims, session, registration);
             if (rc != HttpURLConnection.HTTP_OK) {
@@ -309,7 +309,7 @@ public abstract class AbstractAcmeClient implements AcmeClient {
     }
 
     @Override
-    public void deleteAuthorization(Registration registration, Authorization auth) throws AcmeException {
+    public void deactivateAuthorization(Registration registration, Authorization auth) throws AcmeException {
         if (registration == null) {
             throw new NullPointerException("registration must not be null");
         }
@@ -320,11 +320,11 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             throw new IllegalArgumentException("auth location must not be null. Use newAuthorization() if not known.");
         }
 
-        LOG.debug("deleteAuthorization");
+        LOG.debug("deactivateAuthorization");
         try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource("authz");
-            claims.put("delete", true);
+            claims.put("status", "deactivated");
 
             int rc = conn.sendSignedRequest(auth.getLocation(), claims, session, registration);
             if (rc != HttpURLConnection.HTTP_OK) {

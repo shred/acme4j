@@ -225,7 +225,7 @@ public class AbstractAcmeClientTest {
      * Test that a {@link Registration} can be deleted.
      */
     @Test
-    public void testDeleteRegistration() throws AcmeException {
+    public void testDeactivateRegistration() throws AcmeException {
         Registration registration = new Registration(accountKeyPair);
         registration.setLocation(locationUri);
 
@@ -234,7 +234,7 @@ public class AbstractAcmeClientTest {
             public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
                 Map<String, Object> claimMap = claims.toMap();
                 assertThat(claimMap.get("resource"), is((Object) "reg"));
-                assertThat(claimMap.get("delete"), is((Object) Boolean.TRUE));
+                assertThat(claimMap.get("status"), is((Object) "deactivated"));
                 assertThat(uri, is(locationUri));
                 assertThat(session, is(notNullValue()));
                 return HttpURLConnection.HTTP_OK;
@@ -242,7 +242,7 @@ public class AbstractAcmeClientTest {
         };
 
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
-        client.deleteRegistration(registration);
+        client.deactivateRegistration(registration);
     }
 
     /**
@@ -355,7 +355,7 @@ public class AbstractAcmeClientTest {
             public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
                 Map<String, Object> claimMap = claims.toMap();
                 assertThat(claimMap.get("resource"), is((Object) "authz"));
-                assertThat(claimMap.get("delete"), is((Object) Boolean.TRUE));
+                assertThat(claimMap.get("status"), is((Object) "deactivated"));
                 assertThat(uri, is(locationUri));
                 assertThat(session, is(notNullValue()));
                 assertThat(registration.getKeyPair(), is(sameInstance(accountKeyPair)));
@@ -364,7 +364,7 @@ public class AbstractAcmeClientTest {
         };
 
         TestableAbstractAcmeClient client = new TestableAbstractAcmeClient(connection);
-        client.deleteAuthorization(testRegistration, auth);
+        client.deactivateAuthorization(testRegistration, auth);
     }
 
     /**

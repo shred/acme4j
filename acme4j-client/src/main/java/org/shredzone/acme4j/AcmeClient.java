@@ -62,13 +62,13 @@ public interface AcmeClient {
                 throws AcmeException;
 
     /**
-     * Deletes an account. Related certificates may still be valid after account deletion,
-     * and need to be revoked separately if neccessary.
+     * Deactivates an account. Related certificates may still be valid after account
+     * deactivation, and need to be revoked separately if neccessary.
      *
      * @param registration
-     *            {@link Registration} to delete
+     *            {@link Registration} to deactivate
      */
-    void deleteRegistration(Registration registration) throws AcmeException;
+    void deactivateRegistration(Registration registration) throws AcmeException;
 
     /**
      * Creates a new {@link Authorization} for a domain.
@@ -89,14 +89,14 @@ public interface AcmeClient {
     void updateAuthorization(Authorization auth) throws AcmeException;
 
     /**
-     * Deletes an {@link Authorization}.
+     * Deactivates an {@link Authorization}.
      *
      * @param registration
      *            {@link Registration} the authorization is related to
      * @param auth
-     *            {@link Authorization} to delete
+     *            {@link Authorization} to deactivate
      */
-    void deleteAuthorization(Registration registration, Authorization auth) throws AcmeException;
+    void deactivateAuthorization(Registration registration, Authorization auth) throws AcmeException;
 
     /**
      * Triggers a {@link Challenge}. The ACME server is requested to validate the

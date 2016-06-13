@@ -20,7 +20,7 @@ package org.shredzone.acme4j;
  */
 public enum Status {
 
-    PENDING, PROCESSING, VALID, INVALID, REVOKED, UNKNOWN;
+    PENDING, PROCESSING, VALID, INVALID, REVOKED, DEACTIVATED, UNKNOWN;
 
     /**
      * Parses the string and returns a corresponding Status object.
