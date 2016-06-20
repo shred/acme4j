@@ -25,6 +25,7 @@ import java.security.KeyPair;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -315,6 +316,29 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
+    public Date getRetryAfterHeader() {
+        assertConnectionIsOpen();
+
+        // See RFC 2616 section 14.37
+        String header = conn.getHeaderField("Retry-After");
+
+        try {
+            // delta-seconds
+            if (header.matches("^\\d+$")) {
+                int delta = Integer.parseInt(header);
+                long date = conn.getHeaderFieldDate("Date", System.currentTimeMillis());
+                return new Date(date + delta * 1000L);
+            }
+
+            // HTTP-date
+            long date = conn.getHeaderFieldDate("Retry-After", 0L);
+            return (date != 0 ? new Date(date) : null);
+        } catch (Exception ex) {
+            throw new AcmeProtocolException("Bad retry-after header value: " + header, ex);
+        }
+    }
+
+    @Override
     public void throwAcmeException() throws AcmeException, IOException {
         assertConnectionIsOpen();
 
@@ -338,7 +362,7 @@ public class DefaultConnection implements Connection {
 
                 case "urn:acme:error:rateLimited":
                 case "urn:ietf:params:acme:error:rateLimited":
-                    throw new AcmeRateLimitExceededException(type, detail);
+                    throw new AcmeRateLimitExceededException(type, detail, getRetryAfterHeader());
 
                 default:
                     throw new AcmeServerException(type, detail);

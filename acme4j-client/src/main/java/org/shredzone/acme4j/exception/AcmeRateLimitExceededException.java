@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j.exception;
 
+import java.util.Date;
+
 /**
  * An exception that is thrown when a rate limit was exceeded.
  *
@@ -20,6 +22,8 @@ package org.shredzone.acme4j.exception;
  */
 public class AcmeRateLimitExceededException extends AcmeServerException {
     private static final long serialVersionUID = 4150484059796413069L;
+
+    private final Date retryAfter;
 
     /**
      * Creates a new {@link AcmeRateLimitExceededException}.
@@ -29,9 +33,21 @@ public class AcmeRateLimitExceededException extends AcmeServerException {
      *            {@code "urn:ietf:params:acme:error:rateLimited"})
      * @param detail
      *            Human readable error message
+     * @param retryAfter
+     *            The moment the request is expected to succeed again, may be {@code null}
+     *            if not known
      */
-    public AcmeRateLimitExceededException(String type, String detail) {
+    public AcmeRateLimitExceededException(String type, String detail, Date retryAfter) {
         super(type, detail);
+        this.retryAfter = retryAfter;
+    }
+
+    /**
+     * Returns the moment the request is expected to succeed again. {@code null} if this
+     * moment is not known.
+     */
+    public Date getRetryAfter() {
+        return (retryAfter != null ? new Date(retryAfter.getTime()) : null);
     }
 
 }

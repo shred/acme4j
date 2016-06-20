@@ -15,6 +15,7 @@ package org.shredzone.acme4j.impl;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -27,6 +28,7 @@ import java.net.URISyntaxException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -187,6 +189,43 @@ public class DefaultConnectionTest {
 
         verify(mockUrlConnection).getHeaderField("Location");
         verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    /**
+     * Test if Retry-After header with absolute date is correctly parsed.
+     */
+    @Test
+    public void testGetRetryAfterHeaderDate() {
+        Date retryDate = new Date(System.currentTimeMillis() + 10 * 60 * 60 * 1000L);
+
+        when(mockUrlConnection.getHeaderField("Retry-After")).thenReturn(retryDate.toString());
+        when(mockUrlConnection.getHeaderFieldDate("Retry-After", 0L)).thenReturn(retryDate.getTime());
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            assertThat(conn.getRetryAfterHeader(), is(retryDate));
+        }
+
+        verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
+    }
+
+    /**
+     * Test if Retry-After header with relative timespan is correctly parsed.
+     */
+    @Test
+    public void testGetRetryAfterHeaderDelta() {
+        int delta = 10 * 60 * 60;
+        long now = System.currentTimeMillis();
+
+        when(mockUrlConnection.getHeaderField("Retry-After")).thenReturn(String.valueOf(delta));
+        when(mockUrlConnection.getHeaderFieldDate(eq("Date"), anyLong())).thenReturn(now);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            assertThat(conn.getRetryAfterHeader(), is(new Date(now + delta * 1000L)));
+        }
+
+        verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
     }
 
     /**

@@ -16,6 +16,7 @@ package org.shredzone.acme4j.connector;
 import java.io.IOException;
 import java.net.URI;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 import java.util.Map;
 
 import org.shredzone.acme4j.Registration;
@@ -99,6 +100,13 @@ public interface Connection extends AutoCloseable {
      * @return Link, or {@code null} if there was no such link relation
      */
     URI getLink(String relation);
+
+    /**
+     * Returns the moment returned in a "Retry-After" header.
+     *
+     * @return Moment, or {@code null} if no "Retry-After" header was set.
+     */
+    Date getRetryAfterHeader();
 
     /**
      * Handles a problem by throwing an exception. If a JSON problem was returned, an
