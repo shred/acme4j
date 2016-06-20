@@ -24,6 +24,7 @@ import org.shredzone.acme4j.AcmeClient;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
+import org.shredzone.acme4j.challenge.OutOfBand01Challenge;
 import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 
 /**
@@ -110,6 +111,10 @@ public class AbstractAcmeClientProviderTest {
 
         Challenge c6 = provider.createChallenge("foobar-01");
         assertThat(c6, is(nullValue()));
+
+        Challenge c7 = provider.createChallenge(OutOfBand01Challenge.TYPE);
+        assertThat(c7, not(nullValue()));
+        assertThat(c7, instanceOf(OutOfBand01Challenge.class));
 
         try {
             provider.createChallenge(null);
