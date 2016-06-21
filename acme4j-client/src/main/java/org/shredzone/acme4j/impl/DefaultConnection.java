@@ -173,20 +173,18 @@ public class DefaultConnection implements Connection {
             throw new AcmeProtocolException("Unexpected content type: " + contentType);
         }
 
-        StringBuilder sb = new StringBuilder();
         Map<String, Object> result = null;
 
+        String response = "";
         try {
             InputStream in = (conn.getResponseCode() < 400 ? conn.getInputStream() : conn.getErrorStream());
             if (in != null) {
-                String response = readStream(in);
-
+                response = readStream(in);
                 result = JsonUtil.parseJson(response);
-                LOG.debug("Result JSON: {}", sb);
+                LOG.debug("Result JSON: {}", response);
             }
-
         } catch (JoseException ex) {
-            throw new AcmeProtocolException("Failed to parse response: " + sb, ex);
+            throw new AcmeProtocolException("Failed to parse response: " + response, ex);
         }
 
         return result;
@@ -199,7 +197,7 @@ public class DefaultConnection implements Connection {
             String line = reader.readLine();
 
             while (line != null) {
-                sb.append(line);
+                sb.append(line.trim());
                 line = reader.readLine();
             }
         }
