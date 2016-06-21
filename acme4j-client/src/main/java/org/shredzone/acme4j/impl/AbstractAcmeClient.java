@@ -190,33 +190,35 @@ public abstract class AbstractAcmeClient implements AcmeClient {
             throw new IllegalArgumentException("newKeyPair must actually be a new key pair");
         }
 
-        String newKey;
-        try {
-            ClaimBuilder oldKeyClaim = new ClaimBuilder();
-            oldKeyClaim.putResource("reg");
-            oldKeyClaim.putKey("oldKey", registration.getKeyPair().getPublic());
+        LOG.debug("changeRegistrationKey");
 
-            final PublicJsonWebKey newKeyJwk = PublicJsonWebKey.Factory.newPublicJwk(newKeyPair.getPublic());
+        String rollover;
+        try {
+            ClaimBuilder newKeyClaim = new ClaimBuilder();
+            newKeyClaim.putResource("reg");
+            newKeyClaim.putBase64("newKey", SignatureUtils.jwkThumbprint(newKeyPair.getPublic()));
+
+            final PublicJsonWebKey oldKeyJwk = PublicJsonWebKey.Factory.newPublicJwk(registration.getKeyPair().getPublic());
 
             JsonWebSignature jws = new JsonWebSignature();
-            jws.setPayload(oldKeyClaim.toString());
-            jws.getHeaders().setJwkHeaderValue("jwk", newKeyJwk);
-            jws.setAlgorithmHeaderValue(SignatureUtils.keyAlgorithm(newKeyJwk));
-            jws.setKey(newKeyPair.getPrivate());
+            jws.setPayload(newKeyClaim.toString());
+            jws.getHeaders().setJwkHeaderValue("jwk", oldKeyJwk);
+            jws.setAlgorithmHeaderValue(SignatureUtils.keyAlgorithm(oldKeyJwk));
+            jws.setKey(registration.getKeyPair().getPrivate());
             jws.sign();
 
-            newKey = jws.getCompactSerialization();
+            rollover = jws.getCompactSerialization();
         } catch (JoseException ex) {
-            throw new AcmeProtocolException("Bad newKeyPair", ex);
+            throw new AcmeProtocolException("Cannot sign newKey", ex);
         }
 
-        LOG.debug("changeRegistrationKey");
         try (Connection conn = createConnection()) {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource("reg");
-            claims.put("newKey", newKey);
+            claims.put("rollover", rollover);
 
-            int rc = conn.sendSignedRequest(registration.getLocation(), claims, session, registration);
+            Registration newReg = new Registration(newKeyPair, registration.getLocation());
+            int rc = conn.sendSignedRequest(registration.getLocation(), claims, session, newReg);
             if (rc != HttpURLConnection.HTTP_OK) {
                 conn.throwAcmeException();
             }

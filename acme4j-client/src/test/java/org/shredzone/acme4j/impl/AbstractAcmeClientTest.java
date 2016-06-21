@@ -168,31 +168,29 @@ public class AbstractAcmeClientTest {
         Connection connection = new DummyConnection() {
             @Override
             public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
+                assertThat(uri, is(locationUri));
+                assertThat(session, is(notNullValue()));
+                assertThat(registration.getKeyPair(), is(sameInstance(newKeyPair))); // registration has new KeyPair!
+
                 Map<String, Object> claimMap = claims.toMap();
                 assertThat(claimMap.get("resource"), is((Object) "reg"));
-                assertThat(claimMap.get("newKey"), not(nullValue()));
+                assertThat(claimMap.get("rollover"), not(nullValue()));
 
                 try {
                     StringBuilder expectedPayload = new StringBuilder();
                     expectedPayload.append('{');
                     expectedPayload.append("\"resource\":\"reg\",");
-                    expectedPayload.append("\"oldKey\":{");
-                    expectedPayload.append("\"kty\":\"").append(TestUtils.KTY).append("\",");
-                    expectedPayload.append("\"e\":\"").append(TestUtils.E).append("\",");
-                    expectedPayload.append("\"n\":\"").append(TestUtils.N).append("\"");
-                    expectedPayload.append("}}");
+                    expectedPayload.append("\"newKey\":\"").append(TestUtils.D_THUMBPRINT).append("\"");
+                    expectedPayload.append("}");
 
-                    String newKey = (String) claimMap.get("newKey");
-                    JsonWebSignature jws = (JsonWebSignature) JsonWebSignature.fromCompactSerialization(newKey);
-                    jws.setKey(newKeyPair.getPublic());
+                    String rollover = (String) claimMap.get("rollover");
+                    JsonWebSignature jws = (JsonWebSignature) JsonWebSignature.fromCompactSerialization(rollover);
+                    jws.setKey(accountKeyPair.getPublic()); // signed with the old KeyPair!
                     assertThat(jws.getPayload(), sameJSONAs(expectedPayload.toString()));
                 } catch (JoseException ex) {
-                    throw new AcmeProtocolException("Bad newKey", ex);
+                    throw new AcmeProtocolException("Bad rollover", ex);
                 }
 
-                assertThat(uri, is(locationUri));
-                assertThat(session, is(notNullValue()));
-                assertThat(registration.getKeyPair(), is(sameInstance(accountKeyPair)));
                 return HttpURLConnection.HTTP_OK;
             }
 
