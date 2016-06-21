@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.SignatureUtils;
 import org.shredzone.acme4j.util.TestUtils;
 import org.shredzone.acme4j.util.TimestampParser;
 
@@ -115,7 +116,7 @@ public class GenericChallengeTest {
         assertThat(cb.toString(), is(json.toString()));
 
         // Make sure the returned thumbprint is correct
-        byte[] thumbprint = GenericChallenge.jwkThumbprint(keypair.getPublic());
+        byte[] thumbprint = SignatureUtils.jwkThumbprint(keypair.getPublic());
         assertThat(thumbprint, is(Base64Url.decode(TestUtils.THUMBPRINT)));
     }
 

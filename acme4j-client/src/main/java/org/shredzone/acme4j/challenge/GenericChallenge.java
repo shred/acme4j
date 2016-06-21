@@ -16,19 +16,13 @@ package org.shredzone.acme4j.challenge;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.jose4j.json.JsonUtil;
-import org.jose4j.jwk.JsonWebKey;
-import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -130,34 +124,6 @@ public class GenericChallenge implements Challenge {
     @SuppressWarnings("unchecked")
     protected <T> T get(String key) {
         return (T) data.get(key);
-    }
-
-    /**
-     * Computes a JWK Thumbprint. It is frequently used in responses.
-     *
-     * @param key
-     *            {@link PublicKey} to create a thumbprint of
-     * @return Thumbprint, SHA-256 hashed
-     * @see <a href="https://tools.ietf.org/html/rfc7638">RFC 7638</a>
-     */
-    public static byte[] jwkThumbprint(PublicKey key) {
-        if (key == null) {
-            throw new NullPointerException("key must not be null");
-        }
-
-        try {
-            final JsonWebKey jwk = JsonWebKey.Factory.newJwk(key);
-
-            // We need to use ClaimBuilder to bring the keys in lexicographical order.
-            ClaimBuilder cb = new ClaimBuilder();
-            cb.putAll(jwk.toParams(OutputControlLevel.PUBLIC_ONLY));
-
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            md.update(cb.toString().getBytes("UTF-8"));
-            return md.digest();
-        } catch (JoseException | NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-            throw new AcmeProtocolException("Cannot compute key thumbprint", ex);
-        }
     }
 
     /**

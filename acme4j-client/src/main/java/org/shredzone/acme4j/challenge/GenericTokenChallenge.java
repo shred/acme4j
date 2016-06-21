@@ -16,6 +16,7 @@ package org.shredzone.acme4j.challenge;
 import org.jose4j.base64url.Base64Url;
 import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.SignatureUtils;
 
 /**
  * An extension of {@link GenericChallenge} that handles challenges with a {@code token}
@@ -94,7 +95,7 @@ public class GenericTokenChallenge extends GenericChallenge {
     protected String computeAuthorization(Registration registration) {
         return getToken()
             + '.'
-            + Base64Url.encode(jwkThumbprint(registration.getKeyPair().getPublic()));
+            + Base64Url.encode(SignatureUtils.jwkThumbprint(registration.getKeyPair().getPublic()));
     }
 
 }
