@@ -33,7 +33,7 @@ Now all you need to do is to pass in a binary representation of the CSR and requ
 ```java
 byte[] csr = ... // your CSR
 
-CertificateURIs certUris = client.requestCertificate(account, csr);
+CertificateURIs certUris = client.requestCertificate(registration, csr);
 ```
 
 `certUris` contains an URI where the signed certificate can be downloaded from. Optionally (if delivered by the ACME server) it also contains the URI of the first part of the CA chain. You can either download the certificate yourself (e.g. with `curl`), or just use the `AcmeClient`:
@@ -85,7 +85,7 @@ For renewal, just request a new certificate using the original CSR:
 PKCS10CertificationRequest csr = CertificateUtils.readCSR(
     new FileInputStream("example.csr"));
 
-CertificateURIs certUris = client.requestCertificate(account, csr.getEncoded());
+CertificateURIs certUris = client.requestCertificate(registration, csr.getEncoded());
 X509Certificate cert = client.downloadCertificate(certUris.getCertUri());
 ```
 
