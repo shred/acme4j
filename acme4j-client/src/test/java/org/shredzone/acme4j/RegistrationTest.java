@@ -46,8 +46,9 @@ import org.shredzone.acme4j.util.TestUtils;
  */
 public class RegistrationTest {
 
-    private URI resourceUri = URI.create("http://example.com/acme/resource");
-    private URI locationUri = URI.create("http://example.com/acme/registration");
+    private URI resourceUri  = URI.create("http://example.com/acme/resource");
+    private URI locationUri  = URI.create("http://example.com/acme/registration");
+    private URI agreementUri = URI.create("http://example.com/agreement.pdf");
 
     /**
      * Test getters. Make sure object cannot be modified.
@@ -66,6 +67,50 @@ public class RegistrationTest {
         } catch (UnsupportedOperationException ex) {
             // expected
         }
+    }
+
+    /**
+     * Test that a registration can be updated.
+     */
+    @Test
+    public void testUpdateRegistration() throws AcmeException, IOException {
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+                assertThat(uri, is(locationUri));
+                assertThat(claims.toString(), sameJSONAs(getJson("updateRegistration")));
+                assertThat(session, is(notNullValue()));
+                return HttpURLConnection.HTTP_ACCEPTED;
+            }
+
+            @Override
+            public Map<String, Object> readJsonResponse() {
+                return getJsonAsMap("updateRegistrationResponse");
+            }
+
+            @Override
+            public URI getLocation() {
+                return locationUri;
+            }
+
+            @Override
+            public URI getLink(String relation) {
+                switch(relation) {
+                    case "terms-of-service": return agreementUri;
+                    default: return null;
+                }
+            }
+        };
+
+        Registration registration = new Registration(provider.createSession(), locationUri);
+        registration.update();
+
+        assertThat(registration.getLocation(), is(locationUri));
+        assertThat(registration.getAgreement(), is(agreementUri));
+        assertThat(registration.getContacts(), hasSize(1));
+        assertThat(registration.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
+
+        provider.close();
     }
 
     /**

@@ -16,9 +16,11 @@ package org.shredzone.acme4j;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -83,6 +85,37 @@ public class Registration extends AcmeResource {
      */
     public List<URI> getContacts() {
         return Collections.unmodifiableList(contacts);
+    }
+
+    /**
+     * Updates the registration to the current account status.
+     */
+    public void update() throws AcmeException {
+        LOG.debug("update");
+        try (Connection conn = getSession().provider().connect()) {
+            ClaimBuilder claims = new ClaimBuilder();
+            claims.putResource("reg");
+
+            int rc = conn.sendSignedRequest(getLocation(), claims, getSession());
+            if (rc != HttpURLConnection.HTTP_CREATED && rc != HttpURLConnection.HTTP_ACCEPTED) {
+                conn.throwAcmeException();
+            }
+
+            Map<String, Object> json = conn.readJsonResponse();
+            unmarshal(json);
+
+            URI location = conn.getLocation();
+            if (location != null) {
+                setLocation(conn.getLocation());
+            }
+
+            URI tos = conn.getLink("terms-of-service");
+            if (tos != null) {
+                this.agreement = tos;
+             }
+         } catch (IOException ex) {
+             throw new AcmeNetworkException(ex);
+         }
     }
 
     /**
@@ -228,6 +261,34 @@ public class Registration extends AcmeResource {
             }
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
+        }
+    }
+
+    /**
+     * Sets registration properties according to the given JSON data.
+     *
+     * @param json
+     *            JSON data
+     */
+    @SuppressWarnings("unchecked")
+    private void unmarshal(Map<String, Object> json) {
+        if (json.containsKey("agreement")) {
+            try {
+                this.agreement = new URI((String) json.get("agreement"));
+            } catch (ClassCastException | URISyntaxException ex) {
+                throw new AcmeProtocolException("Illegal agreement URI", ex);
+            }
+        }
+
+        if (json.containsKey("contact")) {
+            contacts.clear();
+            for (Object c : (Collection<Object>) json.get("contact")) {
+                try {
+                    contacts.add(new URI((String) c));
+                } catch (ClassCastException | URISyntaxException ex) {
+                    throw new AcmeProtocolException("Illegal contact URI", ex);
+                }
+            }
         }
     }
 
