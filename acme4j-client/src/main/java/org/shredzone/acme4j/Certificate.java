@@ -148,6 +148,18 @@ public class Certificate extends AcmeResource {
      * Revokes this certificate.
      */
     public void revoke() throws AcmeException {
+        revoke(null);
+    }
+
+    /**
+     * Revokes this certificate.
+     *
+     * @param reason
+     *            {@link RevocationReason} stating the reason of the revocation that is
+     *            used when generating OCSP responses and CRLs. {@code null} to give no
+     *            reason.
+     */
+    public void revoke(RevocationReason reason) throws AcmeException {
         LOG.debug("revoke");
         URI resUri = getSession().resourceUri(Resource.REVOKE_CERT);
         if (resUri == null) {
@@ -162,6 +174,9 @@ public class Certificate extends AcmeResource {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource(Resource.REVOKE_CERT);
             claims.putBase64("certificate", cert.getEncoded());
+            if (reason != null) {
+                claims.put("reason", reason.getReasonCode());
+            }
 
             int rc = conn.sendSignedRequest(resUri, claims, getSession());
             if (rc != HttpURLConnection.HTTP_OK) {

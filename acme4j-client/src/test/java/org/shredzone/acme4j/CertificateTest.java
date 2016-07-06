@@ -109,4 +109,29 @@ public class CertificateTest {
         provider.close();
     }
 
+    /**
+     * Test that a certificate can be revoked with reason.
+     */
+    @Test
+    public void testRevokeCertificateWithReason() throws AcmeException, IOException {
+        final X509Certificate originalCert = TestUtils.createCertificate();
+
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+                assertThat(uri, is(resourceUri));
+                assertThat(claims.toString(), sameJSONAs(getJson("revokeCertificateWithReasonRequest")));
+                assertThat(session, is(notNullValue()));
+                return HttpURLConnection.HTTP_OK;
+            }
+        };
+
+        provider.putTestResource(Resource.REVOKE_CERT, resourceUri);
+
+        Certificate cert = new Certificate(provider.createSession(), locationUri, null, originalCert);
+        cert.revoke(RevocationReason.KEY_COMPROMISE);
+
+        provider.close();
+    }
+
 }

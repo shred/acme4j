@@ -102,3 +102,9 @@ To revoke a certificate, just invoke the respective method:
 ```java
 cert.revoke();
 ```
+
+Optionally, you can provide a revocation reason that the ACME server may use when generating OCSP responses and CRLs.
+
+```java
+cert.revoke(RevocationReason.KEY_COMPROMISE);
+```

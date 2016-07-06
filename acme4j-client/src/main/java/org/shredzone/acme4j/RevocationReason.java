@@ -1,0 +1,65 @@
+/*
+ * acme4j - Java ACME client
+ *
+ * Copyright (C) 2016 Richard "Shred" Körber
+ *   http://acme4j.shredzone.org
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ */
+package org.shredzone.acme4j;
+
+/**
+ * Enumeration of revocation reasons.
+ *
+ * @see <a href="https://tools.ietf.org/html/rfc5280#section-5.3.1">RFC 5280 Section
+ *      5.3.1</a>
+ * @author Richard "Shred" Körber
+ */
+public enum RevocationReason {
+
+    UNSPECIFIED(0),
+    KEY_COMPROMISE(1),
+    CA_COMPROMISE(2),
+    AFFILIATION_CHANGED(3),
+    SUPERSEDED(4),
+    CESSATION_OF_OPERATION(5),
+    CERTIFICATE_HOLD(6),
+    REMOVE_FROM_CRL(8),
+    PRIVILEGE_WITHDRAWN(9),
+    AA_COMPROMISE(10);
+
+    /**
+     * Returns the {@link RevocationReason} that matches the reason code.
+     *
+     * @param reasonCode
+     *            Reason code as defined in RFC 5280
+     * @return Matching {@link RevocationReason}, or {@code null} if not known
+     */
+    public static RevocationReason code(int reasonCode) {
+        for (RevocationReason rr : values()) {
+            if (rr.reasonCode == reasonCode) {
+                return rr;
+            }
+        }
+        return null;
+    }
+
+    private final int reasonCode;
+
+    private RevocationReason(int reasonCode) {
+        this.reasonCode = reasonCode;
+    }
+
+    /**
+     * Returns the reason code as defined in RFC 5280.
+     */
+    public int getReasonCode() {
+        return reasonCode;
+    }
+
+}
