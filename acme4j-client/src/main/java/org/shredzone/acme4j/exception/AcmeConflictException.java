@@ -15,13 +15,9 @@ package org.shredzone.acme4j.exception;
 
 import java.net.URI;
 
-import org.shredzone.acme4j.AcmeClient;
-import org.shredzone.acme4j.Registration;
-
 /**
  * An exception that is thrown when there is a conflict with the request. For example,
- * this exception is thrown when {@link AcmeClient#newRegistration(Registration)}
- * is invoked, but the registration already exists.
+ * this exception is thrown when a registration already exists.
  *
  * @author Richard "Shred" Körber
  */

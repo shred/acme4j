@@ -2,12 +2,10 @@
 
 With the `dns-01` challenge, you prove to the CA that you are able to control the DNS records of the domain to be authorized, by creating a TXT record with a signed content.
 
-After authorizing the challenge, `Dns01Challenge` provides a digest string:
+`Dns01Challenge` provides a digest string:
 
 ```java
 Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
-challenge.authorize(registration);
-
 String digest = challenge.getDigest();
 ```
 

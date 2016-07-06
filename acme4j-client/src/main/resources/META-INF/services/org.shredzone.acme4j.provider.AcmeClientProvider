@@ -1,5 +1,0 @@
-# Generic
-org.shredzone.acme4j.provider.GenericAcmeClientProvider
-
-# Let's Encrypt: https://letsencrypt.org
-org.shredzone.acme4j.provider.letsencrypt.LetsEncryptAcmeClientProvider

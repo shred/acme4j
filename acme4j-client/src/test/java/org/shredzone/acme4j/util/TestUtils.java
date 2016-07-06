@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -42,6 +43,8 @@ import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.lang.JoseException;
+import org.shredzone.acme4j.Session;
+import org.shredzone.acme4j.provider.AcmeProvider;
 
 /**
  * Some utility methods for unit tests.
@@ -58,6 +61,8 @@ public final class TestUtils {
     public static final String D_E = "AQAB";
     public static final String D_KTY = "RSA";
     public static final String D_THUMBPRINT = "0VPbh7-I6swlkBu0TrNKSQp6d69bukzeQA0ksuX3FFs";
+
+    public static final String ACME_SERVER_URI = "https://example.com/acme";
 
     private static final ResourceBundle JSON_RESOURCE = ResourceBundle.getBundle("json");
 
@@ -108,6 +113,30 @@ public final class TestUtils {
         } catch (JoseException ex) {
             throw new RuntimeException("JSON error", ex);
         }
+    }
+
+    /**
+     * Creates a {@link Session} instance. It uses {@link #ACME_SERVER_URI} as server URI.
+     */
+    public static Session session() throws IOException {
+        KeyPair keyPair = createKeyPair();
+        return new Session(URI.create(ACME_SERVER_URI), keyPair);
+    }
+
+    /**
+     * Creates a {@link Session} instance. It uses {@link #ACME_SERVER_URI} as server URI.
+     *
+     * @param provider
+     *            {@link AcmeProvider} to be used in this session
+     */
+    public static Session session(final AcmeProvider provider) throws IOException {
+        KeyPair keyPair = createKeyPair();
+        return new Session(URI.create(ACME_SERVER_URI), keyPair) {
+            @Override
+            public AcmeProvider provider() {
+                return provider;
+            };
+        };
     }
 
     /**

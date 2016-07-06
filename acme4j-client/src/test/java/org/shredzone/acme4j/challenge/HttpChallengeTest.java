@@ -14,15 +14,15 @@
 package org.shredzone.acme4j.challenge;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.security.KeyPair;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.shredzone.acme4j.Registration;
+import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
@@ -33,35 +33,28 @@ import org.shredzone.acme4j.util.TestUtils;
  * @author Richard "Shred" Körber
  */
 public class HttpChallengeTest {
-
     private static final String TOKEN =
             "rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ";
     private static final String KEY_AUTHORIZATION =
             "rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0";
+
+    private static Session session;
+
+    @BeforeClass
+    public static void setup() throws IOException {
+        session = TestUtils.session();
+    }
 
     /**
      * Test that {@link Http01Challenge} generates a correct authorization key.
      */
     @Test
     public void testHttpChallenge() throws IOException {
-        KeyPair keypair = TestUtils.createKeyPair();
-        Registration reg = new Registration(keypair);
-
-        Http01Challenge challenge = new Http01Challenge();
+        Http01Challenge challenge = new Http01Challenge(session);
         challenge.unmarshall(TestUtils.getJsonAsMap("httpChallenge"));
 
         assertThat(challenge.getType(), is(Http01Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));
-
-        try {
-            challenge.getAuthorization();
-            fail("getAuthorization() without previous authorize()");
-        } catch (IllegalStateException ex) {
-            // expected
-        }
-
-        challenge.authorize(reg);
-
         assertThat(challenge.getToken(), is(TOKEN));
         assertThat(challenge.getAuthorization(), is(KEY_AUTHORIZATION));
 
@@ -77,15 +70,10 @@ public class HttpChallengeTest {
      */
     @Test
     public void testAddress() throws IOException {
-        KeyPair keypair = TestUtils.createKeyPair();
-        Registration reg = new Registration(keypair);
-
-        Http01Challenge challenge = new Http01Challenge();
+        Http01Challenge challenge = new Http01Challenge(session);
         challenge.unmarshall(TestUtils.getJsonAsMap("httpChallenge"));
 
         challenge.setAddress(InetAddress.getByName("198.051.100.012"));
-
-        challenge.authorize(reg);
 
         ClaimBuilder cb = new ClaimBuilder();
         challenge.respond(cb);

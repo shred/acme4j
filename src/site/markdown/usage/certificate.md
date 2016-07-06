@@ -8,7 +8,7 @@ To do so, prepare a PKCS#10 CSR file. A single domain may be set as _Common Name
 
 CSR files can be generated with command line tools like `openssl`. Unfortunately the standard Java does not offer classes for that, so you'd have to resort to [Bouncy Castle](http://www.bouncycastle.org/java.html) if you want to create a CSR programmatically. In the `acme4j-utils` module, there is a [`CSRBuilder`](../apidocs/org/shredzone/acme4j/util/CSRBuilder.html) for your convenience. You can also use [`KeyPairUtils`](../apidocs/org/shredzone/acme4j/util/KeyPairUtils.html) for generating the domain key pair.
 
-Do not just use your account key pair as domain key pair, but generate a separate pair of keys!
+Do not just use your account key pair as domain key pair, but always generate a separate pair of keys!
 
 ```java
 KeyPair domainKeyPair = ... // KeyPair to be used for HTTPS encryption
@@ -31,22 +31,26 @@ try (FileWriter fw = new FileWriter("example.csr")) {
 Now all you need to do is to pass in a binary representation of the CSR and request the certificate:
 
 ```java
-byte[] csr = ... // your CSR
-
-CertificateURIs certUris = client.requestCertificate(registration, csr);
+Certificate cert = registration.requestCertificate(csr);
 ```
 
-`certUris` contains an URI where the signed certificate can be downloaded from. Optionally (if delivered by the ACME server) it also contains the URI of the first part of the CA chain. You can either download the certificate yourself (e.g. with `curl`), or just use the `AcmeClient`:
+`cert.getLocation()` returns an URI where the signed certificate can be downloaded from. Optionally (if delivered by the ACME server) `cert.getChainLocation()` returns the URI of the first part of the CA chain.
+
+The `Certificate` object offers methods to download the certificate and the certificate chain.
 
 ```java
-X509Certificate cert = client.downloadCertificate(certUris.getCertUri());
-
-if (certUris.getChainCertUri() != null) {
-    X509Certificate[] chain = client.downloadCertificateChain(certUris.getChainCertUri());
-}
+X509Certificate cert = cert.download();
+X509Certificate[] chain = cert.downloadChain();
 ```
 
 Congratulations! You have just created your first certificate via _acme4j_.
+
+To recreate a `Certificate` object from the location, just bind it:
+
+```java
+URI locationUri = ... // location URI from cert.getLocation()
+Certificate cert = Certificate.bind(session, locationUri);
+```
 
 ### Multiple Domains
 
@@ -63,7 +67,7 @@ CSRBuilder csrb = new CSRBuilder();
 csrb.addDomain("example.org");
 csrb.addDomain("www.example.org");
 csrb.addDomain("m.example.org");
-// add more domains if required...
+// add more domains if necessary...
 
 csrb.sign(domainKeyPair);
 byte[] csr = csrb.getEncoded();
@@ -73,7 +77,7 @@ The generated certificate will be valid for all of the domains.
 
 Note that wildcard certificates are currently not supported by the ACME protocol.
 
-The number of domains per certificate may also be limited (_Let's Encrypt_ currently has a limit of 100 SANs per certificate).
+The number of domains per certificate may also be limited. See your CA's documentation for the limits.
 
 ## Renewal
 
@@ -85,27 +89,16 @@ For renewal, just request a new certificate using the original CSR:
 PKCS10CertificationRequest csr = CertificateUtils.readCSR(
     new FileInputStream("example.csr"));
 
-CertificateURIs certUris = client.requestCertificate(registration, csr.getEncoded());
-X509Certificate cert = client.downloadCertificate(certUris.getCertUri());
+Certificate cert = registration.requestCertificate(csr);
+X509Certificate cert = cert.download();
 ```
 
 Instead of loading the original CSR, you can also generate a new one. So renewing a certificate is basically the same as requesting a new certificate.
 
 ## Revocation
 
-To revoke a certificate, just pass the it to the respective method:
+To revoke a certificate, just invoke the respective method:
 
 ```java
-X509Certificate cert = ... // certificate to be revoked
-client.revokeCertificate(registration, cert);
+cert.revoke();
 ```
-
-As an exception, ACME servers also accept the domain's key pair for revoking a certificate. _acme4j_ does not directly support this way of revocation. However, you can do so with this tiny hack:
-
-```java
-KeyPair domainKeyPair = ... // KeyPair to be used for HTTPS encryption
-X509Certificate cert = ... // certificate to be revoked
-client.revokeCertificate(new Registration(domainKeyPair), cert);
-```
-
-If you have the choice, you should always prefer to use your account key. In a future version of _acme4j_, this hack might stop working.

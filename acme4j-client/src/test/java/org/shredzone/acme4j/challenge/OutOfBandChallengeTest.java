@@ -20,7 +20,9 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 import java.io.IOException;
 import java.net.URL;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
@@ -31,13 +33,19 @@ import org.shredzone.acme4j.util.TestUtils;
  * @author Richard "Shred" Körber
  */
 public class OutOfBandChallengeTest {
+    private static Session session;
+
+    @BeforeClass
+    public static void setup() throws IOException {
+        session = TestUtils.session();
+    }
 
     /**
      * Test that {@link OutOfBand01Challenge} is returning the validation URL.
      */
     @Test
     public void testHttpChallenge() throws IOException {
-        OutOfBand01Challenge challenge = new OutOfBand01Challenge();
+        OutOfBand01Challenge challenge = new OutOfBand01Challenge(session);
         challenge.unmarshall(TestUtils.getJsonAsMap("oobChallenge"));
 
         assertThat(challenge.getType(), is(OutOfBand01Challenge.TYPE));

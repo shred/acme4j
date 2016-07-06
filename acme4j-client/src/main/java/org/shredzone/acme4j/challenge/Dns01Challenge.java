@@ -18,6 +18,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 import org.jose4j.base64url.Base64Url;
+import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
@@ -25,7 +26,7 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
  *
  * @author Richard "Shred" Körber
  */
-public class Dns01Challenge extends GenericTokenChallenge {
+public class Dns01Challenge extends TokenChallenge {
     private static final long serialVersionUID = 6964687027713533075L;
 
     /**
@@ -34,12 +35,20 @@ public class Dns01Challenge extends GenericTokenChallenge {
     public static final String TYPE = "dns-01";
 
     /**
+     * Creates a new generic {@link Dns01Challenge} object.
+     *
+     * @param session
+     *            {@link Session} to bind to.
+     */
+    public Dns01Challenge(Session session) {
+        super(session);
+    }
+
+    /**
      * Returns the digest string to be set in the domain's {@code _acme-challenge} TXT
      * record.
      */
     public String getDigest() {
-        assertIsAuthorized();
-
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             md.update(getAuthorization().getBytes("UTF-8"));

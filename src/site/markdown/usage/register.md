@@ -1,43 +1,43 @@
 # Register an Account
 
-The first thing to do is to register your account key with the CA.
+If it is the first time you connect to the ACME server, you need to register your account key.
 
-You need a `Registration` instance that serves as a data transfer object, and fill the object with details of your account. The `AcmeClient.newRegistration()` call then completes the data transfer object with server side account data.
-
-This code fragment registers your account with the CA. Optionally you can add contact URIs (like email addresses or phone numbers) to the registration, which will help the CA getting in contact with you.
+To do so, bind a `RegistrationBuilder`, optionally add some contact information, then invoke `create()`. If the account was successfully created, you will get a `Registration` object in return. Invoking its `getLocation()` method will return the location URI of your account. You should store it somewhere, because you will need it later. Unlike your key pair, the location is a public information that does not need security precautions.
 
 ```java
-KeyPair keyPair = ... // your account KeyPair
-Registration reg = new Registration(keyPair);
-reg.addContact("mailto:acme@example.com"); // optional
+RegistrationBuilder builder = RegistrationBuilder.bind(session);
+builder.addContact("mailto:acme@example.com");
 
-client.newRegistration(reg);
+Registration registration = builder.create();
 
-URI accountLocationUri = reg.getLocation(); // your account's server URI
+URI accountLocationUri = registration.getLocation();
 ```
 
-After invocating `newRegistration()`, the `location` property contains the URI of your newly created account on server side. You should copy the `location` to a safe place. You will need it again if you need to [update your registration](#Update_your_Registration), or if you need to [recover](./recovery.html) access to your account after you have lost your account key. Unlike your key pair, the `location` is a public information that does not need security precautions.
+`create()` will fail and throw an `AcmeConflictException` if your key was already registered with the CA. The `AcmeConflictException` contains the location of the registration. This may be helpful if you forgot your account URI and need to recover it.
 
-`newRegistration()` may fail and throw an `AcmeException` for various reasons. When your public key was already registered with the CA, an `AcmeConflictException` is thrown, but the `location` property will still hold your account URI after the call. This may be helpful if you forgot your account URI and need to recover it.
+The following example will create a new `Registration` and restore an existing `Registration`.
+
+```java
+Registration registration;
+try {
+  registration = RegistrationBuilder.bind(session).create();
+} catch (AcmeConflictException ex) {
+  registration = Registration.bind(session, ex.getLocation());
+}
+```
 
 ## Update your Registration
 
-At some point, you may want to update your registration. For example your contact address might have changed, or you were asked by the CA to accept the latest terms of service.
-
-To do so, create a `Registration` object again, this time by passing in the account key pair and the `location` property that you previously got via `newRegistration()`. Also set whatever you like to change to your account.
+At some point, you may want to update your registration. For example your contact address might have changed, or you were asked by the CA to accept the latest terms of service. To do so, invoke `Registration.modify()`, perform the changes, and invoke `commit()` to make them permanent.
 
 The following example accepts the terms of service by explicitly setting the URL to the agreement document.
 
 ```java
-KeyPair keyPair = ... // your account KeyPair
-URI accountLocationUri = ... // your account's URI
-
 URI agreementUri = ... // TAC link provided by the CA
 
-Registration reg = new Registration(keyPair, accountLocationUri);
-reg.setAgreement(agreementUri);
-
-client.modifyRegistration(reg);
+registration.modify()
+      .setAgreement(agreementUri)
+      .commit();
 ```
 
 ## Account Key Roll-Over
@@ -49,63 +49,21 @@ It is also possible to change the key pair that is associated with your account,
 The following example changes the key pair:
 
 ```java
-KeyPair oldKeyPair = ... // your old KeyPair that is to be replaced
-URI accountLocationUri = ... // your account's URI
-
-Registration reg = new Registration(oldKeyPair, accountLocationUri);
-
 KeyPair newKeyPair = ... // new KeyPair to be used
 
-client.changeRegistrationKey(reg, newKeyPair);
+registration.changeKey(newKeyPair);
 ```
 
-All subsequent calls must now use the new key pair. The old key pair can be disposed.
+All subsequent calls must now use the new key pair. The old key pair can be disposed. The key is automatically updated on the `Session` that was bound to the `Registration`.
 
 ## Deactivate an Account
 
 You can deactivate your account if you don't need it any more:
 
 ```java
-KeyPair keyPair = ... // your account KeyPair
-URI accountLocationUri = ... // your account's URI
-
-Registration reg = new Registration(keyPair, accountLocationUri);
-
-client.deactivateRegistration(reg);
+registration.deactivate();
 ```
 
 Depending on the CA, the related authorizations may be automatically deactivated as well. The certificates may still be valid until expiration or explicit revocation. If you want to make sure the certificates are invalidated as well, revoke them prior to deactivation of your account.
 
 There is no way to reactivate the account once it is deactivated!
-
-## Key Pair Utilities
-
-The `KeyPairUtils` class in the `acme4j-utils` module provides a few methods to make key pair handling more convenient.
-
-This call will generate a RSA key pair with a 2048 bit key:
-
-```java
-KeyPair keyPair = KeyPairUtils.createKeyPair(2048);
-```
-
-You can also create an elliptic curve key pair:
-
-```java
-KeyPair keyPair = KeyPairUtils.createECKeyPair("secp256r1");
-```
-
-To save a `KeyPair` (actually, the private key of the key pair) to a pem file, use this snippet:
-
-```java
-try (FileWriter fw = new FileWriter("keypair.pem")) {
-  KeyPairUtils.writeKeyPair(keyPair, fw);
-}
-```
-
-The following snippet reads the private key from a pem file, and returns a `KeyPair`.
-
-```java
-try (FileReader fr = New FileReader("keypair.pem")) {
-  return KeyPairUtils.readKeyPair(fr);
-}
-```

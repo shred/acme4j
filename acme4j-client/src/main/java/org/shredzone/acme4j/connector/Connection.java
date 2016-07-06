@@ -19,7 +19,7 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Map;
 
-import org.shredzone.acme4j.Registration;
+import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.util.ClaimBuilder;
@@ -48,13 +48,10 @@ public interface Connection extends AutoCloseable {
      * @param claims
      *            {@link ClaimBuilder} containing claims. Must not be {@code null}.
      * @param session
-     *            {@link Session} instance to be used for tracking
-     * @param registration
-     *            {@link Registration} to be used for signing the request
+     *            {@link Session} instance to be used for signing and tracking
      * @return HTTP response code
      */
-    int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration)
-                throws IOException;
+    int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) throws IOException;
 
     /**
      * Reads a server response as JSON data.
@@ -87,17 +84,21 @@ public interface Connection extends AutoCloseable {
 
     /**
      * Gets a location from the {@code Location} header.
+     * <p>
+     * Relative links are resolved against the last request's URL.
      *
      * @return Location {@link URI}, or {@code null} if no Location header was set
      */
     URI getLocation();
 
     /**
-     * Gets a link relation from the header.
+     * Gets a relation link from the header.
+     * <p>
+     * Relative links are resolved against the last request's URL.
      *
      * @param relation
      *            Link relation
-     * @return Link, or {@code null} if there was no such link relation
+     * @return Link, or {@code null} if there was no such relation link
      */
     URI getLink(String relation);
 

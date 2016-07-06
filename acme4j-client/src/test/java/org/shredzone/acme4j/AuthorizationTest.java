@@ -15,24 +15,22 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.shredzone.acme4j.util.TestUtils.getJsonAsMap;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsSni02Challenge;
+import org.shredzone.acme4j.provider.TestableConnectionProvider;
+import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.TimestampParser;
 
 /**
  * Unit tests for {@link Authorization}.
@@ -43,65 +41,16 @@ public class AuthorizationTest {
 
     private static final String SNAILMAIL_TYPE = "snail-01"; // a non-existent challenge
 
-    private Authorization authorization;
-
-    /**
-     * Sets up an {@link Authorization} to be tested.
-     */
-    @Before
-    public void setup() {
-        Challenge challenge1 = setupChallenge(Http01Challenge.TYPE, new Http01Challenge());
-        Challenge challenge2 = setupChallenge(Dns01Challenge.TYPE, new Dns01Challenge());
-        Challenge challenge3 = setupChallenge(TlsSni02Challenge.TYPE, new TlsSni02Challenge());
-
-        List<Challenge> challenges = new ArrayList<>();
-        challenges.add(challenge1);
-        challenges.add(challenge2);
-        challenges.add(challenge3);
-
-        List<List<Challenge>> combinations = new ArrayList<>();
-        combinations.add(Collections.unmodifiableList(Arrays.asList(challenge1)));
-        combinations.add(Collections.unmodifiableList(Arrays.asList(challenge2, challenge3)));
-
-        authorization = new Authorization();
-        authorization.setChallenges(Collections.unmodifiableList(challenges));
-        authorization.setCombinations(Collections.unmodifiableList(combinations));
-    }
-
-    /**
-     * Test getters and setters.
-     */
-    @Test
-    public void testGetterAndSetter() {
-        Date expiry = new Date();
-
-        Authorization auth = new Authorization();
-
-        assertThat(auth.getDomain(), is(nullValue()));
-        assertThat(auth.getStatus(), is(nullValue()));
-        assertThat(auth.getExpires(), is(nullValue()));
-        assertThat(auth.getChallenges(), is(nullValue()));
-        assertThat(auth.getCombinations(), is(nullValue()));
-
-        auth.setDomain("example.com");
-        auth.setStatus(Status.INVALID);
-        auth.setExpires(expiry);
-        auth.setChallenges(authorization.getChallenges());
-        auth.setCombinations(authorization.getCombinations());
-
-        assertThat(auth.getDomain(), is("example.com"));
-        assertThat(auth.getStatus(), is(Status.INVALID));
-        assertThat(auth.getExpires(), is(expiry));
-        assertThat(auth.getChallenges(), is(sameInstance(authorization.getChallenges())));
-        assertThat(auth.getCombinations(), is(sameInstance(authorization.getCombinations())));
-    }
+    private URI locationUri = URI.create("http://example.com/acme/registration");;
 
     /**
      * Test that {@link Authorization#findChallenge(String)} does only find standalone
      * challenges, and nothing else.
      */
     @Test
-    public void testFindChallenge() {
+    public void testFindChallenge() throws IOException {
+        Authorization authorization = createChallengeAuthorization();
+
         // A snail mail challenge is not available at all
         Challenge c1 = authorization.findChallenge(SNAILMAIL_TYPE);
         assertThat(c1, is(nullValue()));
@@ -122,7 +71,9 @@ public class AuthorizationTest {
      */
     @Test
     @SuppressWarnings("unchecked")
-    public void testFindCombination() {
+    public void testFindCombination() throws IOException {
+        Authorization authorization = createChallengeAuthorization();
+
         // Standalone challenge
         Collection<Challenge> c1 = authorization.findCombination(Http01Challenge.TYPE);
         assertThat(c1, hasSize(1));
@@ -161,31 +112,88 @@ public class AuthorizationTest {
     }
 
     /**
-     * Test constructors.
+     * Test that authorization is properly updated.
      */
     @Test
-    public void testConstructor() throws URISyntaxException {
-        Authorization auth1 = new Authorization();
-        assertThat(auth1.getLocation(), is(nullValue()));
+    public void testUpdate() throws Exception {
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public int sendRequest(URI uri) {
+                assertThat(uri, is(locationUri));
+                return HttpURLConnection.HTTP_OK;
+            }
 
-        Authorization auth2 = new Authorization(new URI("http://example.com/acme/12345"));
-        assertThat(auth2.getLocation(), is(new URI("http://example.com/acme/12345")));
+            @Override
+            public Map<String, Object> readJsonResponse() {
+                return getJsonAsMap("updateAuthorizationResponse");
+            }
+        };
+
+        Session session = provider.createSession();
+
+        Http01Challenge httpChallenge = new Http01Challenge(session);
+        Dns01Challenge dnsChallenge = new Dns01Challenge(session);
+        provider.putTestChallenge("http-01", httpChallenge);
+        provider.putTestChallenge("dns-01", dnsChallenge);
+
+        Authorization auth = new Authorization(session, locationUri);
+        auth.update();
+
+        assertThat(auth.getDomain(), is("example.org"));
+        assertThat(auth.getStatus(), is(Status.VALID));
+        assertThat(auth.getExpires(), is(TimestampParser.parse("2016-01-02T17:12:40Z")));
+        assertThat(auth.getLocation(), is(locationUri));
+
+        assertThat(auth.getChallenges(), containsInAnyOrder(
+                        (Challenge) httpChallenge, (Challenge) dnsChallenge));
+
+        assertThat(auth.getCombinations(), hasSize(2));
+        assertThat(auth.getCombinations().get(0), containsInAnyOrder(
+                        (Challenge) httpChallenge));
+        assertThat(auth.getCombinations().get(1), containsInAnyOrder(
+                        (Challenge) httpChallenge, (Challenge) dnsChallenge));
+
+        provider.close();
     }
 
     /**
-     * Sets up a {@link Challenge}.
-     *
-     * @param typeName
-     *            Type name to be set in the {@link Challenge}
-     * @param instance
-     *            Newly created {@link Challenge}
-     * @return Initialized {@link Challenge}
+     * Test that an authorization can be deactivated.
      */
-    private Challenge setupChallenge(String typeName, Challenge instance) {
-        Map<String, Object> data = new HashMap<>();
-        data.put("type", typeName);
-        instance.unmarshall(data);
-        return instance;
+    @Test
+    public void testDeactivate() throws Exception {
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+                Map<String, Object> claimMap = claims.toMap();
+                assertThat(claimMap.get("resource"), is((Object) "authz"));
+                assertThat(claimMap.get("status"), is((Object) "deactivated"));
+                assertThat(uri, is(locationUri));
+                assertThat(session, is(notNullValue()));
+                return HttpURLConnection.HTTP_OK;
+            }
+        };
+
+        Authorization auth = new Authorization(provider.createSession(), locationUri);
+        auth.deactivate();
+
+        provider.close();
+    }
+
+    /**
+     * Creates an {@link Authorization} instance with a set of challenges.
+     */
+    private Authorization createChallengeAuthorization() throws IOException {
+        try (TestableConnectionProvider provider = new TestableConnectionProvider()) {
+            Session session = provider.createSession();
+
+            provider.putTestChallenge(Http01Challenge.TYPE, new Http01Challenge(session));
+            provider.putTestChallenge(Dns01Challenge.TYPE, new Dns01Challenge(session));
+            provider.putTestChallenge(TlsSni02Challenge.TYPE, new TlsSni02Challenge(session));
+
+            Authorization authorization = new Authorization(session, locationUri);
+            authorization.unmarshalAuthorization(getJsonAsMap("authorizationChallenges"));
+            return authorization;
+        }
     }
 
 }

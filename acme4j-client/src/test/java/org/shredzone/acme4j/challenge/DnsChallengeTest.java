@@ -14,14 +14,14 @@
 package org.shredzone.acme4j.challenge;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.IOException;
-import java.security.KeyPair;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.shredzone.acme4j.Registration;
+import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
@@ -32,33 +32,26 @@ import org.shredzone.acme4j.util.TestUtils;
  * @author Richard "Shred" Körber
  */
 public class DnsChallengeTest {
-
     private static final String KEY_AUTHORIZATION =
             "pNvmJivs0WCko2suV7fhe-59oFqyYx_yB7tx6kIMAyE.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0";
+
+    private static Session session;
+
+    @BeforeClass
+    public static void setup() throws IOException {
+        session = TestUtils.session();
+    }
 
     /**
      * Test that {@link Dns01Challenge} generates a correct authorization key.
      */
     @Test
     public void testDnsChallenge() throws IOException {
-        KeyPair keypair = TestUtils.createKeyPair();
-        Registration reg = new Registration(keypair);
-
-        Dns01Challenge challenge = new Dns01Challenge();
+        Dns01Challenge challenge = new Dns01Challenge(session);
         challenge.unmarshall(TestUtils.getJsonAsMap("dnsChallenge"));
 
         assertThat(challenge.getType(), is(Dns01Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));
-
-        try {
-            challenge.getDigest();
-            fail("getDigest() without previous authorize()");
-        } catch (IllegalStateException ex) {
-            // expected
-        }
-
-        challenge.authorize(reg);
-
         assertThat(challenge.getDigest(), is("rzMmotrIgsithyBYc0vgiLUEEKYx0WetQRgEF2JIozA"));
 
         ClaimBuilder cb = new ClaimBuilder();

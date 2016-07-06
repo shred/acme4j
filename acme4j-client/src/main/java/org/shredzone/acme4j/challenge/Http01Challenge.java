@@ -15,6 +15,7 @@ package org.shredzone.acme4j.challenge;
 
 import java.net.InetAddress;
 
+import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.util.ClaimBuilder;
 
 /**
@@ -22,7 +23,7 @@ import org.shredzone.acme4j.util.ClaimBuilder;
  *
  * @author Richard "Shred" Körber
  */
-public class Http01Challenge extends GenericTokenChallenge {
+public class Http01Challenge extends TokenChallenge {
     private static final long serialVersionUID = 3322211185872544605L;
 
     protected static final String KEY_ADDRESS = "address";
@@ -33,6 +34,16 @@ public class Http01Challenge extends GenericTokenChallenge {
     public static final String TYPE = "http-01";
 
     private InetAddress address;
+
+    /**
+     * Creates a new generic {@link Http01Challenge} object.
+     *
+     * @param session
+     *            {@link Session} to bind to.
+     */
+    public Http01Challenge(Session session) {
+        super(session);
+    }
 
     /**
      * Returns the token to be used for this challenge.
@@ -71,7 +82,7 @@ public class Http01Challenge extends GenericTokenChallenge {
     }
 
     @Override
-    public void respond(ClaimBuilder cb) {
+    protected void respond(ClaimBuilder cb) {
         super.respond(cb);
         if (address != null) {
             cb.put(KEY_ADDRESS, address.getHostAddress());
@@ -82,6 +93,5 @@ public class Http01Challenge extends GenericTokenChallenge {
     protected boolean acceptable(String type) {
         return TYPE.equals(type);
     }
-
 
 }

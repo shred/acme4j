@@ -15,6 +15,7 @@ package org.shredzone.acme4j.challenge;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.shredzone.acme4j.util.TestUtils.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.ByteArrayInputStream;
@@ -22,36 +23,81 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyPair;
+import java.util.Map;
 
 import org.jose4j.base64url.Base64Url;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.lang.JoseException;
+import org.junit.Before;
 import org.junit.Test;
+import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
+import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.SignatureUtils;
 import org.shredzone.acme4j.util.TestUtils;
 import org.shredzone.acme4j.util.TimestampParser;
 
 /**
- * Unit tests for {@link GenericChallenge}.
+ * Unit tests for {@link Challenge}.
  *
  * @author Richard "Shred" Körber
  */
-public class GenericChallengeTest {
+public class ChallengeTest {
+    private Session session;
+    private URI resourceUri = URI.create("https://example.com/acme/some-resource");
+    private URI locationUri = URI.create("https://example.com/acme/some-location");
+
+    @Before
+    public void setup() throws IOException {
+        session = TestUtils.session();
+    }
+
+    /**
+     * Test that a challenge is properly restored.
+     */
+    @Test
+    public void testChallenge() throws Exception {
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public int sendRequest(URI uri) {
+                assertThat(uri, is(locationUri));
+                return HttpURLConnection.HTTP_ACCEPTED;
+            }
+
+            @Override
+            public Map<String, Object> readJsonResponse() {
+                return getJsonAsMap("updateHttpChallengeResponse");
+            }
+        };
+
+        Session session = provider.createSession();
+
+        provider.putTestChallenge(Http01Challenge.TYPE, new Http01Challenge(session));
+
+        Http01Challenge challenge = Challenge.bind(session, locationUri);
+
+        assertThat(challenge.getType(), is(Http01Challenge.TYPE));
+        assertThat(challenge.getStatus(), is(Status.VALID));
+        assertThat(challenge.getLocation(), is(locationUri));
+        assertThat(challenge.getToken(), is("IlirfxKKXAsHtmzK29Pj8A"));
+
+        provider.close();
+    }
 
     /**
      * Test that after unmarshalling, the challenge properties are set correctly.
      */
     @Test
     public void testUnmarshall() throws URISyntaxException {
-        GenericChallenge challenge = new GenericChallenge();
+        Challenge challenge = new Challenge(session);
 
         // Test default values
         assertThat(challenge.getType(), is(nullValue()));
@@ -70,13 +116,13 @@ public class GenericChallengeTest {
     }
 
     /**
-     * Test that {@link GenericChallenge#respond(ClaimBuilder)} contains the type.
+     * Test that {@link Challenge#respond(ClaimBuilder)} contains the type.
      */
     @Test
     public void testRespond() throws JoseException {
         String json = TestUtils.getJson("genericChallenge");
 
-        GenericChallenge challenge = new GenericChallenge();
+        Challenge challenge = new Challenge(session);
         challenge.unmarshall(JsonUtil.parseJson(json));
 
         ClaimBuilder cb = new ClaimBuilder();
@@ -90,7 +136,7 @@ public class GenericChallengeTest {
      */
     @Test(expected = AcmeProtocolException.class)
     public void testNotAcceptable() throws URISyntaxException {
-        Http01Challenge challenge = new Http01Challenge();
+        Http01Challenge challenge = new Http01Challenge(session);
         challenge.unmarshall(TestUtils.getJsonAsMap("dnsChallenge"));
     }
 
@@ -121,11 +167,75 @@ public class GenericChallengeTest {
     }
 
     /**
+     * Test that a challenge can be triggered.
+     */
+    @Test
+    public void testTrigger() throws Exception {
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+                assertThat(uri, is(resourceUri));
+                assertThat(claims.toString(), sameJSONAs(getJson("triggerHttpChallengeRequest")));
+                assertThat(session, is(notNullValue()));
+                return HttpURLConnection.HTTP_ACCEPTED;
+            }
+
+            @Override
+            public Map<String, Object> readJsonResponse() {
+                return getJsonAsMap("triggerHttpChallengeResponse");
+            }
+        };
+
+        Session session = provider.createSession();
+
+        Http01Challenge challenge = new Http01Challenge(session);
+        challenge.unmarshall(getJsonAsMap("triggerHttpChallenge"));
+
+        challenge.trigger();
+
+        assertThat(challenge.getStatus(), is(Status.PENDING));
+        assertThat(challenge.getLocation(), is(locationUri));
+
+        provider.close();
+    }
+
+    /**
+     * Test that a challenge is properly updated.
+     */
+    @Test
+    public void testUpdate() throws Exception {
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public int sendRequest(URI uri) {
+                assertThat(uri, is(locationUri));
+                return HttpURLConnection.HTTP_ACCEPTED;
+            }
+
+            @Override
+            public Map<String, Object> readJsonResponse() {
+                return getJsonAsMap("updateHttpChallengeResponse");
+            }
+        };
+
+        Session session = provider.createSession();
+
+        Challenge challenge = new Http01Challenge(session);
+        challenge.unmarshall(getJsonAsMap("triggerHttpChallengeResponse"));
+
+        challenge.update();
+
+        assertThat(challenge.getStatus(), is(Status.VALID));
+        assertThat(challenge.getLocation(), is(locationUri));
+
+        provider.close();
+    }
+
+    /**
      * Test that challenge serialization works correctly.
      */
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
-        Http01Challenge originalChallenge = new Http01Challenge();
+        Http01Challenge originalChallenge = new Http01Challenge(session);
         originalChallenge.unmarshall(TestUtils.getJsonAsMap("httpChallenge"));
 
         // Serialize

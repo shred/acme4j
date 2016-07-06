@@ -11,17 +11,14 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.shredzone.acme4j.impl;
+package org.shredzone.acme4j.connector;
 
 import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Map;
 
-import org.shredzone.acme4j.Registration;
-import org.shredzone.acme4j.connector.Connection;
-import org.shredzone.acme4j.connector.Resource;
-import org.shredzone.acme4j.connector.Session;
+import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 
@@ -39,7 +36,7 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration) {
+    public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
         throw new UnsupportedOperationException();
     }
 

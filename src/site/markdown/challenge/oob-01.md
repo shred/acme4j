@@ -4,6 +4,6 @@ The `oob-01` challenge is an "out of band" challenge that is used when there is 
 
 `OutOfBand01Challenge` implements this challenge. Its `getValidationUrl()` method returns a URL that refers to a web page with further instructions about the actions to be taken.
 
-The challenge must be triggered via `AcmeClient.triggerChallenge()` before the URL is opened in a browser.
+The challenge must be triggered before the URL is opened in a browser.
 
 Due to the nature of this challenge, it may take a considerable amount of time until its state changes to `VALID`.

@@ -19,7 +19,3 @@ Web site: [Let's Encrypt](https://letsencrypt.org)
 * SANs per Certificate: 100
 
 See [here](https://community.letsencrypt.org/t/public-beta-rate-limits/4772) for the current limits.
-
-## Intermediate Certificates
-
-The _Let's Encrypt_ intermediate certificates are available [here](https://letsencrypt.org/certificates/).

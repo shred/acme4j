@@ -20,14 +20,13 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.junit.Test;
-import org.shredzone.acme4j.provider.letsencrypt.LetsEncryptAcmeClientProvider;
 
 /**
- * Unit tests for {@link LetsEncryptAcmeClientProvider}.
+ * Unit tests for {@link LetsEncryptAcmeProvider}.
  *
  * @author Richard "Shred" Körber
  */
-public class LetsEncryptAcmeClientProviderTest {
+public class LetsEncryptAcmeProviderTest {
 
     private static final String V01_DIRECTORY_URI = "https://acme-v01.api.letsencrypt.org/directory";
     private static final String STAGING_DIRECTORY_URI = "https://acme-staging.api.letsencrypt.org/directory";
@@ -37,7 +36,7 @@ public class LetsEncryptAcmeClientProviderTest {
      */
     @Test
     public void testAccepts() throws URISyntaxException {
-        LetsEncryptAcmeClientProvider provider = new LetsEncryptAcmeClientProvider();
+        LetsEncryptAcmeProvider provider = new LetsEncryptAcmeProvider();
 
         assertThat(provider.accepts(new URI("acme://letsencrypt.org")), is(true));
         assertThat(provider.accepts(new URI("acme://letsencrypt.org/")), is(true));
@@ -53,7 +52,7 @@ public class LetsEncryptAcmeClientProviderTest {
      */
     @Test
     public void testResolve() throws URISyntaxException {
-        LetsEncryptAcmeClientProvider provider = new LetsEncryptAcmeClientProvider();
+        LetsEncryptAcmeProvider provider = new LetsEncryptAcmeProvider();
 
         assertThat(provider.resolve(new URI("acme://letsencrypt.org")), is(new URI(V01_DIRECTORY_URI)));
         assertThat(provider.resolve(new URI("acme://letsencrypt.org/")), is(new URI(V01_DIRECTORY_URI)));

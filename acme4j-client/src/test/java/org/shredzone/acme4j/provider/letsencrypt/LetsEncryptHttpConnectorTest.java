@@ -27,7 +27,6 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
-import org.shredzone.acme4j.provider.letsencrypt.LetsEncryptHttpConnector;
 
 /**
  * Unit test for {@link LetsEncryptHttpConnector}.

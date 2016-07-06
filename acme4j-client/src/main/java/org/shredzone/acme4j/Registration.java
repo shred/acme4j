@@ -13,60 +13,62 @@
  */
 package org.shredzone.acme4j;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.KeyPair;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import org.jose4j.jwk.PublicJsonWebKey;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.lang.JoseException;
+import org.shredzone.acme4j.connector.Connection;
+import org.shredzone.acme4j.connector.Resource;
+import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeNetworkException;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
+import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.SignatureUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents a registration at the ACME server.
  *
  * @author Richard "Shred" Körber
  */
-public class Registration implements Serializable {
+public class Registration extends AcmeResource {
     private static final long serialVersionUID = -8177333806740391140L;
+    private static final Logger LOG = LoggerFactory.getLogger(Registration.class);
 
-    private final KeyPair keyPair;
-    private List<URI> contacts = new ArrayList<>();
+    private final List<URI> contacts = new ArrayList<>();
     private URI agreement;
-    private URI location;
 
     /**
-     * Creates a {@link Registration} with no location URI set. This is only useful for
-     * new registrations.
+     * Creates a new instance of {@link Registration} and binds it to the {@link Session}.
      *
-     * @param keyPair
-     *            Account key pair
-     */
-    public Registration(KeyPair keyPair) {
-        if (keyPair == null) {
-            throw new NullPointerException("keypair must not be null");
-        }
-
-        this.keyPair = keyPair;
-    }
-
-    /**
-     * Creates a {@link Registration} with a location URI set. This is useful for
-     * modifications to the registration.
-     *
-     * @param keyPair
-     *            Account key pair
+     * @param session
+     *            {@link Session} to be used
      * @param location
-     *            Registration location URI
+     *            Location URI of the registration
      */
-    public Registration(KeyPair keyPair, URI location) {
-        this(keyPair);
-        this.location = location;
+    public static Registration bind(Session session, URI location) {
+        return new Registration(session, location);
     }
 
-    /**
-     * The {@link KeyPair} that belongs to this account.
-     */
-    public KeyPair getKeyPair() {
-        return keyPair;
+    protected Registration(Session session, URI location) {
+        super(session);
+        setLocation(location);
+    }
+
+    protected Registration(Session session, URI location, URI agreement) {
+        super(session);
+        setLocation(location);
+        this.agreement = agreement;
     }
 
     /**
@@ -77,61 +79,258 @@ public class Registration implements Serializable {
     }
 
     /**
-     * Sets the URI of the agreement document the user is required to accept.
-     */
-    public void setAgreement(URI agreement) {
-        this.agreement = agreement;
-    }
-
-    /**
      * List of contact addresses (emails, phone numbers etc).
      */
     public List<URI> getContacts() {
-        return contacts;
+        return Collections.unmodifiableList(contacts);
     }
 
     /**
-     * Add a contact URI to the list of contacts.
+     * Authorizes a domain. The domain is associated with this registration.
      *
-     * @param contact
-     *            Contact URI
+     * @param domain
+     *            Domain name to be authorized
+     * @return {@link Authorization} object for this domain
      */
-    public void addContact(URI contact) {
-        getContacts().add(contact);
-    }
+    public Authorization authorizeDomain(String domain) throws AcmeException {
+        if (domain == null || domain.isEmpty()) {
+            throw new NullPointerException("domain must not be empty or null");
+        }
 
-    /**
-     * Add a contact address to the list of contacts.
-     * <p>
-     * This is a convenience call for {@link #addContact(URI)}.
-     *
-     * @param contact
-     *            Contact URI as string
-     * @throws IllegalArgumentException
-     *             if there is a syntax error in the URI string
-     */
-    public void addContact(String contact) {
-        try {
-            addContact(new URI(contact));
-        } catch (URISyntaxException ex) {
-            throw new IllegalArgumentException("Invalid contact URI", ex);
+        LOG.debug("authorizeDomain {}", domain);
+        try (Connection conn = getSession().provider().connect()) {
+            ClaimBuilder claims = new ClaimBuilder();
+            claims.putResource(Resource.NEW_AUTHZ);
+            claims.object("identifier")
+                    .put("type", "dns")
+                    .put("value", domain);
+
+            int rc = conn.sendSignedRequest(getSession().resourceUri(Resource.NEW_AUTHZ), claims, getSession());
+            if (rc != HttpURLConnection.HTTP_CREATED) {
+                conn.throwAcmeException();
+            }
+
+            Map<String, Object> json = conn.readJsonResponse();
+
+            Authorization auth = new Authorization(getSession(), conn.getLocation());
+            auth.unmarshalAuthorization(json);
+            return auth;
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         }
     }
 
     /**
-     * Location URI of the registration at the server. Returned from the server after
-     * successfully creating or updating a registration.
+     * Requests a certificate for the given CSR.
+     * <p>
+     * All domains given in the CSR must be authorized before.
+     *
+     * @param csr
+     *            PKCS#10 Certificate Signing Request to be sent to the server
+     * @return The {@link Certificate}
      */
-    public URI getLocation() {
-        return location;
+    public Certificate requestCertificate(byte[] csr) throws AcmeException {
+        if (csr == null) {
+            throw new NullPointerException("csr must not be null");
+        }
+
+        LOG.debug("requestCertificate");
+        try (Connection conn = getSession().provider().connect()) {
+            ClaimBuilder claims = new ClaimBuilder();
+            claims.putResource(Resource.NEW_CERT);
+            claims.putBase64("csr", csr);
+
+            int rc = conn.sendSignedRequest(getSession().resourceUri(Resource.NEW_CERT), claims, getSession());
+            if (rc != HttpURLConnection.HTTP_CREATED && rc != HttpURLConnection.HTTP_ACCEPTED) {
+                conn.throwAcmeException();
+            }
+
+            // HTTP_ACCEPTED requires Retry-After header to be set
+
+            // Optionally returns the certificate. Currently it is just ignored.
+            // X509Certificate cert = conn.readCertificate();
+
+            return new Certificate(getSession(), conn.getLocation());
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
+        }
     }
 
     /**
-     * Location URI of the registration at the server. Must be set when updating the
-     * registration.
+     * Changes the {@link KeyPair} associated with the registration. After a successful
+     * call, the new key pair is used, and the old key pair can be disposed.
+     *
+     * @param newKeyPair
+     *            new {@link KeyPair} to be used for identifying this account
      */
-    public void setLocation(URI location) {
-        this.location = location;
+    public void changeKey(KeyPair newKeyPair) throws AcmeException {
+        if (newKeyPair == null) {
+            throw new NullPointerException("newKeyPair must not be null");
+        }
+        if (Arrays.equals(getSession().getKeyPair().getPrivate().getEncoded(),
+                        newKeyPair.getPrivate().getEncoded())) {
+            throw new IllegalArgumentException("newKeyPair must actually be a new key pair");
+        }
+
+        LOG.debug("changeKey");
+
+        String rollover;
+        try {
+            ClaimBuilder newKeyClaim = new ClaimBuilder();
+            newKeyClaim.putResource("reg");
+            newKeyClaim.putBase64("newKey", SignatureUtils.jwkThumbprint(newKeyPair.getPublic()));
+
+            final PublicJsonWebKey oldKeyJwk = PublicJsonWebKey.Factory.newPublicJwk(getSession().getKeyPair().getPublic());
+
+            JsonWebSignature jws = new JsonWebSignature();
+            jws.setPayload(newKeyClaim.toString());
+            jws.getHeaders().setJwkHeaderValue("jwk", oldKeyJwk);
+            jws.setAlgorithmHeaderValue(SignatureUtils.keyAlgorithm(oldKeyJwk));
+            jws.setKey(getSession().getKeyPair().getPrivate());
+            jws.sign();
+
+            rollover = jws.getCompactSerialization();
+        } catch (JoseException ex) {
+            throw new AcmeProtocolException("Cannot sign newKey", ex);
+        }
+
+        try (Connection conn = getSession().provider().connect()) {
+            ClaimBuilder claims = new ClaimBuilder();
+            claims.putResource("reg");
+            claims.put("rollover", rollover);
+
+            getSession().setKeyPair(newKeyPair);
+            int rc = conn.sendSignedRequest(getLocation(), claims, getSession());
+            if (rc != HttpURLConnection.HTTP_OK) {
+                conn.throwAcmeException();
+            }
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
+        }
+    }
+
+    /**
+     * Permanently deactivates an account. Related certificates may still be valid after
+     * account deactivation, and need to be revoked separately if neccessary.
+     * <p>
+     * A deactivated account cannot be reactivated!
+     */
+    public void deactivate() throws AcmeException {
+        LOG.debug("deactivate");
+        try (Connection conn = getSession().provider().connect()) {
+            ClaimBuilder claims = new ClaimBuilder();
+            claims.putResource("reg");
+            claims.put("status", "deactivated");
+
+            int rc = conn.sendSignedRequest(getLocation(), claims, getSession());
+            if (rc != HttpURLConnection.HTTP_OK) {
+                conn.throwAcmeException();
+            }
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
+        }
+    }
+
+    /**
+     * Modifies the registration data of the account.
+     *
+     * @return {@link EditableRegistration} where the account can be modified
+     */
+    public EditableRegistration modify() {
+        return new EditableRegistration();
+    }
+
+    /**
+     * Editable {@link Registration}.
+     */
+    public class EditableRegistration {
+        private final List<URI> editContacts = new ArrayList<>();
+        private URI editAgreement;
+
+        public EditableRegistration() {
+            editContacts.addAll(Registration.this.contacts);
+            editAgreement = Registration.this.agreement;
+        }
+
+        /**
+         * Returns the list of all contact URIs for modification. Use the {@link List}
+         * methods to modify the contact list.
+         */
+        public List<URI> getContacts() {
+            return editContacts;
+        }
+
+        /**
+         * Adds a new Contact to the registration.
+         *
+         * @param contact
+         *            Contact URI
+         */
+        public EditableRegistration addContact(URI contact) {
+            editContacts.add(contact);
+            return this;
+        }
+
+        /**
+         * Adds a new Contact to the registration.
+         * <p>
+         * This is a convenience call for {@link #addContact(URI)}.
+         *
+         * @param contact
+         *            Contact URI as string
+         */
+        public EditableRegistration addContact(String contact) {
+            addContact(URI.create(contact));
+            return this;
+        }
+
+        /**
+         * Sets a new agreement URI.
+         *
+         * @param agreement
+         *            New agreement URI
+         */
+        public EditableRegistration setAgreement(URI agreement) {
+            this.editAgreement = agreement;
+            return this;
+        }
+
+        /**
+         * Commits the changes and updates the account.
+         */
+        public void commit() throws AcmeException {
+            LOG.debug("modify/commit");
+            try (Connection conn = getSession().provider().connect()) {
+                ClaimBuilder claims = new ClaimBuilder();
+                claims.putResource("reg");
+                if (!editContacts.isEmpty()) {
+                    claims.put("contact", editContacts);
+                }
+                if (editAgreement != null) {
+                    claims.put("agreement", editAgreement);
+                }
+
+                int rc = conn.sendSignedRequest(getLocation(), claims, getSession());
+                if (rc != HttpURLConnection.HTTP_ACCEPTED) {
+                    conn.throwAcmeException();
+                }
+
+                URI location = conn.getLocation();
+                if (location != null) {
+                    setLocation(conn.getLocation());
+                }
+
+                URI tos = conn.getLink("terms-of-service");
+                if (tos != null) {
+                    Registration.this.agreement = tos;
+                }
+
+                Registration.this.contacts.clear();
+                Registration.this.contacts.addAll(editContacts);
+            } catch (IOException ex) {
+                throw new AcmeNetworkException(ex);
+            }
+        }
     }
 
 }

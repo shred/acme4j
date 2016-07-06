@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.shredzone.acme4j.impl;
+package org.shredzone.acme4j.connector;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,8 +19,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -37,11 +39,7 @@ import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
-import org.shredzone.acme4j.Registration;
-import org.shredzone.acme4j.connector.Connection;
-import org.shredzone.acme4j.connector.HttpConnector;
-import org.shredzone.acme4j.connector.Resource;
-import org.shredzone.acme4j.connector.Session;
+import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
@@ -95,8 +93,7 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session, Registration registration)
-                throws IOException {
+    public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) throws IOException {
         if (uri == null) {
             throw new NullPointerException("uri must not be null");
         }
@@ -106,13 +103,10 @@ public class DefaultConnection implements Connection {
         if (session == null) {
             throw new NullPointerException("session must not be null");
         }
-        if (registration == null) {
-            throw new NullPointerException("registration must not be null");
-        }
         assertConnectionIsClosed();
 
         try {
-            KeyPair keypair = registration.getKeyPair();
+            KeyPair keypair = session.getKeyPair();
 
             if (session.getNonce() == null) {
                 LOG.debug("Getting initial nonce, HEAD {}", uri);
@@ -281,12 +275,8 @@ public class DefaultConnection implements Connection {
             return null;
         }
 
-        try {
-            LOG.debug("Location: {}", location);
-            return new URI(location);
-        } catch (URISyntaxException ex) {
-            throw new AcmeProtocolException("Bad Location header: " + location);
-        }
+        LOG.debug("Location: {}", location);
+        return resolveRelative(location);
     }
 
     @Override
@@ -299,13 +289,9 @@ public class DefaultConnection implements Connection {
             for (String link : links) {
                 Matcher m = p.matcher(link);
                 if (m.matches()) {
-                    try {
-                        String location = m.group(1);
-                        LOG.debug("Link: {} -> {}", relation, location);
-                        return new URI(location);
-                    } catch (URISyntaxException ex) {
-                        throw new AcmeProtocolException("Bad '" + relation + "' Link header: " + link);
-                    }
+                    String location = m.group(1);
+                    LOG.debug("Link: {} -> {}", relation, location);
+                    return resolveRelative(location);
                 }
             }
         }
@@ -405,6 +391,22 @@ public class DefaultConnection implements Connection {
                     LOG.debug("HEADER {}: {}", key, value);
                 }
             }
+        }
+    }
+
+    /**
+     * Resolves a relative link against the connection's last URI.
+     *
+     * @param link
+     *            Link to resolve. Absolute links are just converted to an URI.
+     * @return Absolute URI of the given link.
+     */
+    private URI resolveRelative(String link) {
+        assertConnectionIsOpen();
+        try {
+            return new URL(conn.getURL(), link).toURI();
+        } catch (MalformedURLException | URISyntaxException ex) {
+            throw new AcmeProtocolException("Cannot resolve relative link: " + link, ex);
         }
     }
 

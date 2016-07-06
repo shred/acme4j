@@ -4,11 +4,10 @@
 
 With the `tls-sni-01` challenge, you prove to the CA that you are able to control the web server of the domain to be authorized, by letting it respond to a SNI request with a specific self-signed cert.
 
-After authorizing the challenge, `TlsSni01Challenge` provides a subject:
+`TlsSni01Challenge` provides a subject:
 
 ```java
 TlsSni01Challenge challenge = auth.findChallenge(TlsSni01Challenge.TYPE);
-challenge.authorize(registration);
 
 String subject = challenge.getSubject();
 ```

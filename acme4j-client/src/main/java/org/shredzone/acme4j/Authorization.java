@@ -13,25 +13,34 @@
  */
 package org.shredzone.acme4j;
 
-import java.io.Serializable;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.shredzone.acme4j.challenge.Challenge;
+import org.shredzone.acme4j.connector.Connection;
+import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeNetworkException;
+import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.TimestampParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents an authorization request at the ACME server.
  *
  * @author Richard "Shred" Körber
  */
-public class Authorization implements Serializable {
+public class Authorization extends AcmeResource {
     private static final long serialVersionUID = -3116928998379417741L;
+    private static final Logger LOG = LoggerFactory.getLogger(Authorization.class);
 
-    private URI location;
     private String domain;
     private Status status;
     private Date expires;
@@ -39,31 +48,20 @@ public class Authorization implements Serializable {
     private List<List<Challenge>> combinations;
 
     /**
-     * Create an empty {@link Authorization}.
+     * Creates a new instance of {@link Authorization} and binds it to the {@link Session}.
+     *
+     * @param session
+     *            {@link Session} to be used
+     * @param location
+     *            Location of the Authorization
      */
-    public Authorization() {
-        // default constructor
+    public static Authorization bind(Session session, URI location) {
+        return new Authorization(session, location);
     }
 
-    /**
-     * Create an {@link Authorization} for the given location URI.
-     */
-    public Authorization(URI location) {
-        this.location = location;
-    }
-
-    /**
-     * Gets the server URI for the authorization.
-     */
-    public URI getLocation() {
-        return location;
-    }
-
-    /**
-     * Sets the server URI for the authorization.
-     */
-    public void setLocation(URI location) {
-        this.location = location;
+    protected Authorization(Session session, URI location) {
+        super(session);
+        setLocation(location);
     }
 
     /**
@@ -74,24 +72,10 @@ public class Authorization implements Serializable {
     }
 
     /**
-     * Sets the domain name to authorize.
-     */
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
-    /**
      * Gets the authorization status.
      */
     public Status getStatus() {
         return status;
-    }
-
-    /**
-     * Sets the authorization status.
-     */
-    public void setStatus(Status status) {
-        this.status = status;
     }
 
     /**
@@ -102,24 +86,10 @@ public class Authorization implements Serializable {
     }
 
     /**
-     * Sets the expiry date of the authorization.
-     */
-    public void setExpires(Date expires) {
-        this.expires = expires;
-    }
-
-    /**
-     * Gets a list of all challenges available by the server.
+     * Gets a list of all challenges offered by the server.
      */
     public List<Challenge> getChallenges() {
         return challenges;
-    }
-
-    /**
-     * Sets a list of all challenges available by the server.
-     */
-    public void setChallenges(List<Challenge> challenges) {
-        this.challenges = challenges;
     }
 
     /**
@@ -127,13 +97,6 @@ public class Authorization implements Serializable {
      */
     public List<List<Challenge>> getCombinations() {
         return combinations;
-    }
-
-    /**
-     * Sets all combinations of challenges supported by the server.
-     */
-    public void setCombinations(List<List<Challenge>> combinations) {
-        this.combinations = combinations;
     }
 
     /**
@@ -193,6 +156,96 @@ public class Authorization implements Serializable {
         }
 
         return result;
+    }
+
+    /**
+     * Updates the {@link Authorization}. After invocation, the {@link Authorization}
+     * reflects the current state at the ACME server.
+     */
+    public void update() throws AcmeException {
+        LOG.debug("update");
+        try (Connection conn = getSession().provider().connect()) {
+            int rc = conn.sendRequest(getLocation());
+            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
+                conn.throwAcmeException();
+            }
+
+            // HTTP_ACCEPTED requires Retry-After header to be set
+
+            Map<String, Object> result = conn.readJsonResponse();
+            unmarshalAuthorization(result);
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
+        }
+    }
+
+    /**
+     * Permanently deactivates the {@link Authorization}.
+     */
+    public void deactivate() throws AcmeException {
+        LOG.debug("deactivate");
+        try (Connection conn = getSession().provider().connect()) {
+            ClaimBuilder claims = new ClaimBuilder();
+            claims.putResource("authz");
+            claims.put("status", "deactivated");
+
+            int rc = conn.sendSignedRequest(getLocation(), claims, getSession());
+            if (rc != HttpURLConnection.HTTP_OK) {
+                conn.throwAcmeException();
+            }
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
+        }
+    }
+
+    /**
+     * Sets the properties according to the given JSON data.
+     *
+     * @param json
+     *            JSON data
+     */
+    @SuppressWarnings("unchecked")
+    protected void unmarshalAuthorization(Map<String, Object> json) {
+        this.status = Status.parse((String) json.get("status"), Status.PENDING);
+
+        String expires = (String) json.get("expires");
+        if (expires != null) {
+            this.expires = TimestampParser.parse(expires);
+        }
+
+        Map<String, Object> identifier = (Map<String, Object>) json.get("identifier");
+        if (identifier != null) {
+            this.domain = (String) identifier.get("value");
+        }
+
+        Collection<Map<String, Object>> challenges =
+                        (Collection<Map<String, Object>>) json.get("challenges");
+        List<Challenge> cr = new ArrayList<>();
+        for (Map<String, Object> c : challenges) {
+            Challenge ch = getSession().createChallenge(c);
+            if (ch != null) {
+                cr.add(ch);
+            }
+        }
+        this.challenges = cr;
+
+        Collection<List<Number>> combinations =
+                        (Collection<List<Number>>) json.get("combinations");
+        if (combinations != null) {
+            List<List<Challenge>> cmb = new ArrayList<>(combinations.size());
+            for (List<Number> c : combinations) {
+                List<Challenge> clist = new ArrayList<>(c.size());
+                for (Number n : c) {
+                    clist.add(cr.get(n.intValue()));
+                }
+                cmb.add(clist);
+            }
+            this.combinations = cmb;
+        } else {
+            List<List<Challenge>> cmb = new ArrayList<>(1);
+            cmb.add(cr);
+            this.combinations = cmb;
+        }
     }
 
 }

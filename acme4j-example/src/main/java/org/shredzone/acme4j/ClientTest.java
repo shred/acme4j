@@ -18,6 +18,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.URI;
 import java.security.KeyPair;
 import java.security.Security;
 import java.security.cert.X509Certificate;
@@ -81,57 +82,57 @@ public class ClientTest {
             createdNewKeyPair = true;
         }
 
-        // Create an AcmeClient for Let's Encrypt
+        // Create a session for Let's Encrypt
         // Use "acme://letsencrypt.org" for production server
-        AcmeClient client = AcmeClientFactory.connect("acme://letsencrypt.org/staging");
+        Session session = new Session("acme://letsencrypt.org/staging", userKeyPair);
 
         // Register a new user
-        Registration reg = new Registration(userKeyPair);
+        Registration reg = null;
         try {
-            client.newRegistration(reg);
+            reg = RegistrationBuilder.bind(session).create();
             LOG.info("Registered a new user, URI: " + reg.getLocation());
         } catch (AcmeConflictException ex) {
+            reg = Registration.bind(session, ex.getLocation());
             LOG.info("Account does already exist, URI: " + reg.getLocation());
         }
 
-        LOG.info("Terms of Service: " + reg.getAgreement());
+        URI agreement = reg.getAgreement();
+        LOG.info("Terms of Service: " + agreement);
 
         if (createdNewKeyPair) {
-            boolean accepted = acceptAgreement(client, reg);
+            boolean accepted = acceptAgreement(reg, agreement);
             if (!accepted) {
                 return;
             }
         }
 
-
         for (String domain : domains) {
             // Create a new authorization
-            Authorization auth = new Authorization();
-            auth.setDomain(domain);
+            Authorization auth = null;
             try {
-                client.newAuthorization(reg, auth);
+                auth = reg.authorizeDomain(domain);
             } catch (AcmeUnauthorizedException ex) {
                 // Maybe there are new T&C to accept?
-                boolean accepted = acceptAgreement(client, reg);
+                boolean accepted = acceptAgreement(reg, agreement);
                 if (!accepted) {
                     return;
                 }
                 // Then try again...
-                client.newAuthorization(reg, auth);
+                auth = reg.authorizeDomain(domain);
             }
             LOG.info("New authorization for domain " + domain);
 
             // Uncomment a challenge...
-            Challenge challenge = httpChallenge(auth, reg, domain);
-//            Challenge challenge = dnsChallenge(auth, reg, domain);
-//            Challenge challenge = tlsSniChallenge(auth, reg, domain);
+            Challenge challenge = httpChallenge(auth, domain);
+//            Challenge challenge = dnsChallenge(auth, domain);
+//            Challenge challenge = tlsSniChallenge(auth, domain);
 
             if (challenge == null) {
                 return;
             }
 
             // Trigger the challenge
-            client.triggerChallenge(reg, challenge);
+            challenge.trigger();
 
             // Poll for the challenge to complete
             int attempts = 10;
@@ -145,7 +146,7 @@ public class ClientTest {
                 } catch (InterruptedException ex) {
                     LOG.warn("interrupted", ex);
                 }
-                client.updateChallenge(challenge);
+                challenge.update();
             }
             if (attempts == 0) {
                 LOG.error("Failed to pass the challenge... Giving up.");
@@ -176,40 +177,36 @@ public class ClientTest {
         }
 
         // Request a signed certificate
-        CertificateURIs certificateUris = client.requestCertificate(reg, csrb.getEncoded());
+        Certificate certificate = reg.requestCertificate(csrb.getEncoded());
         LOG.info("Success! The certificate for domains " + domains + " has been generated!");
-        LOG.info("Certificate URI: " + certificateUris.getCertUri());
-        LOG.info("Certificate Chain URI: " + certificateUris.getChainCertUri());
+        LOG.info("Certificate URI: " + certificate.getLocation());
 
         // Download the certificate
-        X509Certificate cert = client.downloadCertificate(certificateUris.getCertUri());
+        X509Certificate cert = certificate.download();
         try (FileWriter fw = new FileWriter(DOMAIN_CERT_FILE)) {
             CertificateUtils.writeX509Certificate(cert, fw);
         }
 
         // Download the certificate chain
-        X509Certificate[] chain = client.downloadCertificateChain(certificateUris.getChainCertUri());
+        X509Certificate[] chain = certificate.downloadChain();
         try (FileWriter fw = new FileWriter(CERT_CHAIN_FILE)) {
             CertificateUtils.writeX509CertificateChain(chain, fw);
         }
 
         // Revoke the certificate (uncomment if needed...)
-        // client.revokeCertificate(reg, cert);
+        // certificate.revoke();
     }
 
     /**
      * Prepares HTTP challenge.
      */
-    public Challenge httpChallenge(Authorization auth, Registration reg, String domain) throws AcmeException {
+    public Challenge httpChallenge(Authorization auth, String domain) throws AcmeException {
         // Find a single http-01 challenge
         Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
         if (challenge == null) {
             LOG.error("Found no " + Http01Challenge.TYPE + " challenge, don't know what to do...");
             return null;
         }
-
-        // Authorize the challenge
-        challenge.authorize(reg);
 
         // Output the challenge, wait for acknowledge...
         LOG.info("Please create a file in your web server's base directory.");
@@ -239,16 +236,13 @@ public class ClientTest {
     /**
      * Prepares DNS challenge.
      */
-    public Challenge dnsChallenge(Authorization auth, Registration reg, String domain) throws AcmeException {
+    public Challenge dnsChallenge(Authorization auth, String domain) throws AcmeException {
         // Find a single dns-01 challenge
         Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
         if (challenge == null) {
             LOG.error("Found no " + Dns01Challenge.TYPE + " challenge, don't know what to do...");
             return null;
         }
-
-        // Authorize the challenge
-        challenge.authorize(reg);
 
         // Output the challenge, wait for acknowledge...
         LOG.info("Please create a TXT record:");
@@ -274,16 +268,13 @@ public class ClientTest {
      * Prepares TLS-SNI challenge.
      */
     @SuppressWarnings("deprecation") // until tls-sni-02 is supported
-    public Challenge tlsSniChallenge(Authorization auth, Registration reg, String domain) throws AcmeException {
+    public Challenge tlsSniChallenge(Authorization auth, String domain) throws AcmeException {
         // Find a single tls-sni-01 challenge
         org.shredzone.acme4j.challenge.TlsSni01Challenge challenge = auth.findChallenge(org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE);
         if (challenge == null) {
             LOG.error("Found no " + org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE + " challenge, don't know what to do...");
             return null;
         }
-
-        // Authorize the challenge
-        challenge.authorize(reg);
 
         // Get the Subject
         String subject = challenge.getSubject();
@@ -332,16 +323,14 @@ public class ClientTest {
     /**
      * Presents the user a link to the Terms of Service, and asks for confirmation.
      *
-     * @param client
-     *            {@link AcmeClient} to send confirmation to
      * @param reg
      *            {@link Registration} User's registration, containing the Agreement URI
      * @return {@code true}: User confirmed, {@code false} user rejected
      */
-    public boolean acceptAgreement(AcmeClient client, Registration reg)
+    public boolean acceptAgreement(Registration reg, URI agreement)
                 throws AcmeException {
         int option = JOptionPane.showConfirmDialog(null,
-                        "Do you accept the Terms of Service?\n\n" + reg.getAgreement(),
+                        "Do you accept the Terms of Service?\n\n" + agreement,
                         "Accept T&C",
                         JOptionPane.YES_NO_OPTION);
         if (option == JOptionPane.NO_OPTION) {
@@ -349,7 +338,7 @@ public class ClientTest {
             return false;
         }
 
-        client.modifyRegistration(reg);
+        reg.modify().setAgreement(agreement).commit();
         LOG.info("Updated user's ToS");
 
         return true;

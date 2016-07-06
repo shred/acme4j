@@ -22,18 +22,18 @@ import java.net.URISyntaxException;
 import org.junit.Test;
 
 /**
- * Unit tests for {@link GenericAcmeClientProvider}.
+ * Unit tests for {@link GenericAcmeProvider}.
  *
  * @author Richard "Shred" Körber
  */
-public class GenericAcmeClientProviderTest {
+public class GenericAcmeProviderTest {
 
     /**
      * Tests if the provider accepts the correct URIs.
      */
     @Test
     public void testAccepts() throws URISyntaxException {
-        GenericAcmeClientProvider provider = new GenericAcmeClientProvider();
+        GenericAcmeProvider provider = new GenericAcmeProvider();
 
         assertThat(provider.accepts(new URI("http://example.com/acme")), is(true));
         assertThat(provider.accepts(new URI("https://example.com/acme")), is(true));
@@ -47,7 +47,7 @@ public class GenericAcmeClientProviderTest {
     public void testResolve() throws URISyntaxException {
         URI serverUri = new URI("http://example.com/acme");
 
-        GenericAcmeClientProvider provider = new GenericAcmeClientProvider();
+        GenericAcmeProvider provider = new GenericAcmeProvider();
 
         URI resolvedUri = provider.resolve(serverUri);
         assertThat(resolvedUri, is(equalTo(serverUri)));

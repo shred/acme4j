@@ -14,14 +14,14 @@
 package org.shredzone.acme4j.challenge;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.IOException;
-import java.security.KeyPair;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.shredzone.acme4j.Registration;
+import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
@@ -33,33 +33,26 @@ import org.shredzone.acme4j.util.TestUtils;
  */
 @SuppressWarnings("deprecation") // must test a deprecated challenge
 public class TlsSni01ChallengeTest {
-
     private static final String KEY_AUTHORIZATION =
             "VNLBdSiZ3LppU2CRG8bilqlwq4DuApJMg3ZJowU6JhQ.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0";
+
+    private static Session session;
+
+    @BeforeClass
+    public static void setup() throws IOException {
+        session = TestUtils.session();
+    }
 
     /**
      * Test that {@link TlsSni01Challenge} generates a correct authorization key.
      */
     @Test
     public void testTlsSniChallenge() throws IOException {
-        KeyPair keypair = TestUtils.createKeyPair();
-        Registration reg = new Registration(keypair);
-
-        TlsSni01Challenge challenge = new TlsSni01Challenge();
+        TlsSni01Challenge challenge = new TlsSni01Challenge(session);
         challenge.unmarshall(TestUtils.getJsonAsMap("tlsSniChallenge"));
 
         assertThat(challenge.getType(), is(TlsSni01Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));
-
-        try {
-            challenge.getSubject();
-            fail("getSubject() without previous authorize()");
-        } catch (IllegalStateException ex) {
-            // expected
-        }
-
-        challenge.authorize(reg);
-
         assertThat(challenge.getSubject(), is("14e2350a04434f93c2e0b6012968d99d.ed459b6a7a019d9695609b8514f9d63d.acme.invalid"));
 
         ClaimBuilder cb = new ClaimBuilder();

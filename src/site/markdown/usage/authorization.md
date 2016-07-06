@@ -1,15 +1,14 @@
 # Authorize your Domains
 
-Once you have your account set up, you need to associate your domain with it. This is done by using an `Authorization` data transfer object:
+Once you have your account set up, you need to associate your domains with it. This is done by creating an `Authorization` object:
 
 ```java
-Authorization auth = new Authorization();
-auth.setDomain("example.org");
+Registration registration = ... // your Registration object
 
-client.newAuthorization(registration, auth);
+Authorization auth = registration.authorizeDomain("example.org");
 ```
 
-When `newAuthorization()` returns successfully, the `Authorization` instance contains further details about how you can prove ownership of your domain. An ACME server offers combinations of different authorization methods, called `Challenge`s.
+The `Authorization` instance contains further details about how you can prove ownership of your domain. An ACME server offers combinations of different authorization methods, called `Challenge`s.
 
 `Authorization` methods help you find the `Challenge` that fits best to your possibilities. Just pass all the challenge types that your software is able to accept to `findCombination()`, and it returns the shortest possible combination of `Challenge`s you have to perform.
 
@@ -30,59 +29,50 @@ Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
 
 It returns a properly casted `Challenge` object, or `null` if your challenge type was not acceptable.
 
-After you have found a challenge, you need to sign it with your `Registration` first:
+The `Challenge` object provides the necessary data for a successful verification of your domain ownership. The kind of response depends on the challenge type (see the [documentation of challenges](../challenge/index.html)).
+
+After you have performed the necessary steps to set up the response to the challenge (e.g. creating a file or modifying your DNS records), the ACME server is told to test your response:
 
 ```java
-challenge.authorize(registration);
+challenge.trigger();
 ```
-
-After signing the challenge, it provides the necessary data for a successful response to the challenge. The kind of response depends on the challenge type (see the [documentation of challenges](../challenge/index.html)). Some types may also require more data for authorizing the challenge.
-
-After you have performed the necessary steps to set up the response to the challenge, the ACME server is told to test your response:
-
-```java
-client.triggerChallenge(registration, challenge);
-```
-
-Again, the call completes the `Challenge` transfer object with server side data like the current challenge status and a challenge URI.
 
 Now you have to wait for the server to test your response and set the challenge status to `VALID`. The easiest way is to poll the status:
 
 ```java
-while (challenge.getStatus() != Challenge.Status.VALID) {
+while (challenge.getStatus() != Status.VALID) {
     Thread.sleep(3000L);
-    client.updateChallenge(registration, challenge);
+    challenge.update();
 }
 ```
 
 This is a very simple example. You should limit the number of loop iterations, and abort the loop when the status should turn to `INVALID`. If you know when the CA server actually requested your response (e.g. when you notice a HTTP request on the response file), you should start polling after that event.
 
-As soon as the challenge is `VALID`, you have successfully associated the domain with your account.
+As soon as all the necessary challenges are `VALID`, you have successfully associated the domain with your account.
 
-If your final certificate contains further domains or subdomains, repeat the authorization run with each of them.
+If your final certificate will contain further domains or subdomains, repeat the authorization run with each of them.
 
 ## Update an Authorization
 
-For each authorization, the server provides an URI where the status of the authorization can be queried. It can be retrieved from `Authorization.getLocation()` after `newAuthorization()` returned.
+For an existing Authorization object, you can always invoke `update()` to read the current server state.
 
-To get a status overview of your authorization and all challenges, create a new `Authorization` object and pass the location URI to the constructor:
+The server also provides an authorization URI. It can be retrieved from `Authorization.getLocation()`. You can recreate the `Authorization` object at a later time just by binding it to your `Session` and invoking `update()`:
 
 ```java
 URI authUri = ... // Authorization URI
-Authorization auth = new Authorization(authUri);
-client.updateAuthorization(auth);
+
+Authorization auth = Authorization.bind(session, authUri);
+auth.update();
 ```
 
-After that call, the `Authorization` object contains the current server state about your authorization, including the domain name, the overall status, and an expiry date.
+After invoking `update()`, the `Authorization` object contains the current server state about your authorization, including the domain name, the overall status, and an expiry date.
 
 ## Deactivate an Authorization
 
-It is possible to deactivate an Authorization, for example if you sell the associated domain.
+It is possible to deactivate an `Authorization`, for example if you sell the associated domain.
 
 ```java
-URI authUri = ... // Authorization URI
-Authorization auth = new Authorization(authUri);
-client.deactivateAuthorization(registration, auth);
+auth.deactivate();
 ```
 
 ## Restore a Challenge
@@ -96,11 +86,11 @@ Challenge originalChallenge = ... // some Challenge instance
 URI challengeUri = originalChallenge.getLocation();
 ```
 
-Later, you pass this `challengeUri` to `restoreChallenge()`:
+Later, you restore the `Challenge` object by invoking `Challenge.bind()`.
 
 ```java
 URI challengeUri = ... // challenge URI
-Challenge restoredChallenge = client.restoreChallenge(registration, challengeUri);
+Challenge restoredChallenge = Challenge.bind(session, challengeUri);
 ```
 
 The `restoredChallenge` already reflects the current state of the challenge.

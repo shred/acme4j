@@ -16,14 +16,14 @@ package org.shredzone.acme4j.provider;
 import java.net.URI;
 
 /**
- * A generic {@link AcmeClientProvider}. It should be working for all ACME servers
- * complying to the ACME specifications.
+ * A generic {@link AcmeProvider}. It should be working for all ACME servers complying to
+ * the ACME specifications.
  * <p>
  * The {@code serverUri} is either a http or https URI to the server's directory service.
  *
  * @author Richard "Shred" Körber
  */
-public class GenericAcmeClientProvider extends AbstractAcmeClientProvider {
+public class GenericAcmeProvider extends AbstractAcmeProvider {
 
     @Override
     public boolean accepts(URI serverUri) {
@@ -32,7 +32,7 @@ public class GenericAcmeClientProvider extends AbstractAcmeClientProvider {
     }
 
     @Override
-    protected URI resolve(URI serverUri) {
+    public URI resolve(URI serverUri) {
         return serverUri;
     }
 
