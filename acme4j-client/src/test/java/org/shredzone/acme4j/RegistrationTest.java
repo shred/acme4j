@@ -309,6 +309,11 @@ public class RegistrationTest {
             }
 
             @Override
+            public Map<String, Object> readJsonResponse() {
+                return getJsonAsMap("modifyRegistrationResponse");
+            }
+
+            @Override
             public URI getLocation() {
                 return locationUri;
             }

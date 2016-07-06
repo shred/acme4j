@@ -102,17 +102,7 @@ public class Registration extends AcmeResource {
             }
 
             Map<String, Object> json = conn.readJsonResponse();
-            unmarshal(json);
-
-            URI location = conn.getLocation();
-            if (location != null) {
-                setLocation(conn.getLocation());
-            }
-
-            URI tos = conn.getLink("terms-of-service");
-            if (tos != null) {
-                this.agreement = tos;
-             }
+            unmarshal(json, conn);
          } catch (IOException ex) {
              throw new AcmeNetworkException(ex);
          }
@@ -269,9 +259,11 @@ public class Registration extends AcmeResource {
      *
      * @param json
      *            JSON data
+     * @param conn
+     *            {@link Connection} with headers to be evaluated
      */
     @SuppressWarnings("unchecked")
-    private void unmarshal(Map<String, Object> json) {
+    private void unmarshal(Map<String, Object> json, Connection conn) {
         if (json.containsKey("agreement")) {
             try {
                 this.agreement = new URI((String) json.get("agreement"));
@@ -289,6 +281,16 @@ public class Registration extends AcmeResource {
                     throw new AcmeProtocolException("Illegal contact URI", ex);
                 }
             }
+        }
+
+        URI location = conn.getLocation();
+        if (location != null) {
+            setLocation(location);
+        }
+
+        URI tos = conn.getLink("terms-of-service");
+        if (tos != null) {
+            this.agreement = tos;
         }
     }
 
@@ -376,18 +378,8 @@ public class Registration extends AcmeResource {
                     conn.throwAcmeException();
                 }
 
-                URI location = conn.getLocation();
-                if (location != null) {
-                    setLocation(conn.getLocation());
-                }
-
-                URI tos = conn.getLink("terms-of-service");
-                if (tos != null) {
-                    Registration.this.agreement = tos;
-                }
-
-                Registration.this.contacts.clear();
-                Registration.this.contacts.addAll(editContacts);
+                Map<String, Object> json = conn.readJsonResponse();
+                unmarshal(json, conn);
             } catch (IOException ex) {
                 throw new AcmeNetworkException(ex);
             }
