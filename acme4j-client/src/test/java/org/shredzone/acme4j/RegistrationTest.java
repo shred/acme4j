@@ -109,6 +109,7 @@ public class RegistrationTest {
         assertThat(registration.getAgreement(), is(agreementUri));
         assertThat(registration.getContacts(), hasSize(1));
         assertThat(registration.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
+        assertThat(registration.getStatus(), is(Status.GOOD));
 
         provider.close();
     }

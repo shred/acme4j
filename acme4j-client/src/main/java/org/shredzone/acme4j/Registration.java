@@ -49,6 +49,7 @@ public class Registration extends AcmeResource {
 
     private final List<URI> contacts = new ArrayList<>();
     private URI agreement;
+    private Status status;
 
     /**
      * Creates a new instance of {@link Registration} and binds it to the {@link Session}.
@@ -85,6 +86,13 @@ public class Registration extends AcmeResource {
      */
     public List<URI> getContacts() {
         return Collections.unmodifiableList(contacts);
+    }
+
+    /**
+     * Returns the current status of the registration.
+     */
+    public Status getStatus() {
+        return status;
     }
 
     /**
@@ -281,6 +289,10 @@ public class Registration extends AcmeResource {
                     throw new AcmeProtocolException("Illegal contact URI", ex);
                 }
             }
+        }
+
+        if (json.containsKey("status")) {
+            this.status = Status.parse((String) json.get("status"));
         }
 
         URI location = conn.getLocation();
