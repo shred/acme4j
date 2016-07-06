@@ -170,7 +170,7 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testGetLink() throws Exception {
-        Map<String, List<String>> headers = new HashMap<String, List<String>>();
+        Map<String, List<String>> headers = new HashMap<>();
         headers.put("Content-Type", Arrays.asList("application/json"));
         headers.put("Location", Arrays.asList("https://example.com/acme/reg/asdf"));
         headers.put("Link", Arrays.asList(
@@ -267,7 +267,7 @@ public class DefaultConnectionTest {
         }
 
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");
-        verify(mockUrlConnection).getResponseCode();
+        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verify(mockUrlConnection).getErrorStream();
         verifyNoMoreInteractions(mockUrlConnection);
     }
@@ -276,14 +276,16 @@ public class DefaultConnectionTest {
      * Test if an {@link AcmeServerException} is thrown on another problem.
      */
     @Test
-    public void testOtherThrowException() {
+    public void testOtherThrowException() throws IOException {
         when(mockUrlConnection.getHeaderField("Content-Type"))
                 .thenReturn("application/problem+json");
+        when(mockUrlConnection.getResponseCode())
+                .thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
             public Map<String,Object> readJsonResponse() {
-                Map<String, Object> result = new HashMap<String, Object>();
+                Map<String, Object> result = new HashMap<>();
                 result.put("type", "urn:zombie:error:apocalypse");
                 result.put("detail", "Zombie apocalypse in progress");
                 return result;
@@ -301,6 +303,7 @@ public class DefaultConnectionTest {
         }
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
+        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verifyNoMoreInteractions(mockUrlConnection);
     }
 
@@ -308,14 +311,16 @@ public class DefaultConnectionTest {
      * Test if an {@link AcmeException} is thrown if there is no error type.
      */
     @Test
-    public void testNoTypeThrowException() {
+    public void testNoTypeThrowException() throws IOException {
         when(mockUrlConnection.getHeaderField("Content-Type"))
                 .thenReturn("application/problem+json");
+        when(mockUrlConnection.getResponseCode())
+                .thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
             public Map<String,Object> readJsonResponse() {
-                return new HashMap<String, Object>();
+                return new HashMap<>();
             };
         }) {
             conn.conn = mockUrlConnection;
@@ -328,6 +333,7 @@ public class DefaultConnectionTest {
         }
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
+        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verifyNoMoreInteractions(mockUrlConnection);
     }
 

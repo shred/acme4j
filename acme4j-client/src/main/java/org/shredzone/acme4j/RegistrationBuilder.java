@@ -105,16 +105,11 @@ public class RegistrationBuilder {
             }
 
             int rc = conn.sendSignedRequest(session.resourceUri(Resource.NEW_REG), claims, session);
-            if (rc != HttpURLConnection.HTTP_CREATED && rc != HttpURLConnection.HTTP_CONFLICT) {
+            if (rc != HttpURLConnection.HTTP_CREATED) {
                 conn.throwAcmeException();
             }
 
             URI location = conn.getLocation();
-
-            if (rc == HttpURLConnection.HTTP_CONFLICT) {
-                throw new AcmeConflictException("Account is already registered", location);
-            }
-
             URI tos = conn.getLink("terms-of-service");
 
             return new Registration(session, location, tos);

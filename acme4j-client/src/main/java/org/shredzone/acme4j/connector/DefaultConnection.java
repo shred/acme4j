@@ -40,6 +40,7 @@ import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Session;
+import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
@@ -333,6 +334,10 @@ public class DefaultConnection implements Connection {
 
             if (detail == null) {
                 detail = "general problem";
+            }
+
+            if (conn.getResponseCode() == HttpURLConnection.HTTP_CONFLICT) {
+                throw new AcmeConflictException(detail, getLocation());
             }
 
             if (type == null) {
