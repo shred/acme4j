@@ -90,6 +90,8 @@ public class Certificate extends AcmeResource {
                     conn.throwAcmeException();
                 }
 
+                // TODO: HTTP_ACCEPTED plus Retry-After header if not yet available
+
                 chainCertUri = conn.getLink("up");
 
                 cert = conn.readCertificate();

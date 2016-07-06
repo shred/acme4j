@@ -18,6 +18,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyPair;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -176,12 +177,14 @@ public class Registration extends AcmeResource {
                 conn.throwAcmeException();
             }
 
-            // HTTP_ACCEPTED requires Retry-After header to be set
+            X509Certificate cert = null;
+            if (rc == HttpURLConnection.HTTP_CREATED) {
+                cert = conn.readCertificate();
+            }
 
-            // Optionally returns the certificate. Currently it is just ignored.
-            // X509Certificate cert = conn.readCertificate();
+            URI chainCertUri = conn.getLink("up");
 
-            return new Certificate(getSession(), conn.getLocation());
+            return new Certificate(getSession(), conn.getLocation(), chainCertUri, cert);
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         }

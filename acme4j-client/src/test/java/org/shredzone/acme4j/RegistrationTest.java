@@ -23,6 +23,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyPair;
+import java.security.cert.X509Certificate;
 import java.util.Map;
 
 import org.jose4j.jws.JsonWebSignature;
@@ -49,6 +50,7 @@ public class RegistrationTest {
     private URI resourceUri  = URI.create("http://example.com/acme/resource");
     private URI locationUri  = URI.create("http://example.com/acme/registration");
     private URI agreementUri = URI.create("http://example.com/agreement.pdf");
+    private URI chainUri     = URI.create("http://example.com/acme/chain");
 
     /**
      * Test getters. Make sure object cannot be modified.
@@ -171,17 +173,80 @@ public class RegistrationTest {
     }
 
     /**
-     * Test that a certificate can be requested.
+     * Test that a certificate can be requested and is delivered synchronously.
      */
     @Test
-    public void testRequestCertificate() throws AcmeException, IOException {
+    public void testRequestCertificateSync() throws AcmeException, IOException {
+        final X509Certificate originalCert = TestUtils.createCertificate();
+
         TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public int sendRequest(URI uri) {
+                fail("Attempted to download the certificate. Should be downloaded already!");
+                return HttpURLConnection.HTTP_OK;
+            }
+
             @Override
             public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequest")));
                 assertThat(session, is(notNullValue()));
                 return HttpURLConnection.HTTP_CREATED;
+            }
+
+            @Override
+            public X509Certificate readCertificate() {
+                return originalCert;
+            }
+
+            @Override
+            public URI getLocation() {
+                return locationUri;
+            }
+
+            @Override
+            public URI getLink(String relation) {
+                switch(relation) {
+                    case "up": return chainUri;
+                    default: return null;
+                }
+            }
+        };
+
+        provider.putTestResource(Resource.NEW_CERT, resourceUri);
+
+        byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
+
+        Registration registration = new Registration(provider.createSession(), locationUri);
+        Certificate cert = registration.requestCertificate(csr);
+
+        assertThat(cert.download(), is(originalCert));
+        assertThat(cert.getLocation(), is(locationUri));
+        assertThat(cert.getChainLocation(), is(chainUri));
+
+        provider.close();
+    }
+
+    /**
+     * Test that a certificate can be requested and is delivered asynchronously.
+     */
+    @Test
+    public void testRequestCertificateAsync() throws AcmeException, IOException {
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+                assertThat(uri, is(resourceUri));
+                assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequest")));
+                assertThat(session, is(notNullValue()));
+                return HttpURLConnection.HTTP_ACCEPTED;
+            }
+
+            @Override
+            public URI getLink(String relation) {
+                switch(relation) {
+                    case "up": return chainUri;
+                    default: return null;
+                }
             }
 
             @Override
@@ -198,6 +263,7 @@ public class RegistrationTest {
         Certificate cert = registration.requestCertificate(csr);
 
         assertThat(cert.getLocation(), is(locationUri));
+        assertThat(cert.getChainLocation(), is(chainUri));
 
         provider.close();
     }
