@@ -27,6 +27,7 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TimestampParser;
 import org.slf4j.Logger;
@@ -215,6 +216,10 @@ public class Authorization extends AcmeResource {
 
         Map<String, Object> identifier = (Map<String, Object>) json.get("identifier");
         if (identifier != null) {
+            String type = (String) identifier.get("type");
+            if (type != null && !"dns".equals(type)) {
+                throw new AcmeProtocolException("Unknown authorization type: " + type);
+            }
             this.domain = (String) identifier.get("value");
         }
 
