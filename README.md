@@ -10,6 +10,7 @@ It is an independent open source implementation that is not affiliated with or e
 
 ## Features
 
+* Supports ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02)
 * Easy to use Java API
 * Requires JRE 7 or higher
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)

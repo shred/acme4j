@@ -1,11 +1,11 @@
 acme4j
 ======
 
-A Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-01) protocol.
+A Java client for the _Automatic Certificate Management Environment_ (ACME) protocol.
 
 ACME is a protocol that a certificate authority (CA) and an applicant can use to automate the process of verification and certificate issuance.
 
-This Java client helps connecting to an ACME server, and performing all necessary steps to manage certificates.
+This Java client helps connecting to an ACME server, and performing all necessary steps to manage certificates. It supports the ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02).
 
 It is an independent open source implementation that is not affiliated with or endorsed by _Let's Encrypt_.
 

@@ -18,7 +18,7 @@ Session session
     = new Session("https://acme-staging.api.letsencrypt.org/directory", keyPair);
 ```
 
-However, such an URI is hard to remember and might even change in the future. Java also does not accept the certificate used by the _Let's Encrypt_ server, so calls to their servers are likely to throw a certificate exception.
+However, such an URI is hard to remember and might even change in the future. Also, Java accepts the certificate used by the _Let's Encrypt_ server since JDK 8u101, calls to their servers are likely to throw a certificate exception on older versions.
 
 For this reason, special ACME URIs should be preferred:
 

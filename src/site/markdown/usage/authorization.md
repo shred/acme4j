@@ -19,7 +19,7 @@ Collection<Challenge> combination = auth.findCombination(
         Http01Challenge.TYPE, Dns01Challenge.TYPE);
 ```
 
-The returned `combination` contains a single combination of challenges you would have to perform. If the combination consists of more than one challenge, you would have to perform _all of them_ in order to successfully authorize your domain. If `null` is returned, it means that none of your offered challenge types are acceptable to the CA.
+The returned `combination` contains a single combination of challenges you would have to perform. If the combination consists of more than one challenge, you will have to perform _all of them_ in order to successfully authorize your domain. If `null` is returned, it means that none of your offered challenge types are acceptable to the CA.
 
 If your software only implements a single challenge type, `findChallenge()` may be a little easier to use:
 
@@ -56,20 +56,17 @@ If your final certificate will contain further domains or subdomains, repeat the
 
 ## Update an Authorization
 
-For an existing Authorization object, you can always invoke `update()` to read the current server state.
-
-The server also provides an authorization URI. It can be retrieved from `Authorization.getLocation()`. You can recreate the `Authorization` object at a later time just by binding it to your `Session` and invoking `update()`:
+The server also provides an authorization URI. It can be retrieved from `Authorization.getLocation()`. You can recreate the `Authorization` object at a later time just by binding it to your `Session`:
 
 ```java
 URI authUri = ... // Authorization URI
 
 Authorization auth = Authorization.bind(session, authUri);
-auth.update();
 ```
 
-After invoking `update()`, the `Authorization` object contains the current server state about your authorization, including the domain name, the overall status, and an expiry date.
+As soon as you invoke a getter, the `Authorization` object lazily loads the current server state of your authorization, including the domain name, the overall status, and an expiry date.
 
-`update()` may throw an `AcmeRetryAfterException`, giving an estimated time in `getRetryAfter()` for when all challenges are completed. You should then wait until that moment has been reached, before trying again. The authorization state is still updated when this exception is thrown.
+You can always invoke `update()` to read the current server state again. It may throw an `AcmeRetryAfterException`, giving an estimated time in `getRetryAfter()` for when all challenges are completed. The authorization state is still updated even when this exception is thrown. If you invoke `update()` for polling the authorization state, you should wait until the moment given in the exception has been reached before trying again.
 
 ## Deactivate an Authorization
 

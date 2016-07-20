@@ -110,8 +110,8 @@ public class CertificateUtilsTest {
     }
 
     /**
-     * Test if {@link CertificateUtils#createTlsSni02Certificate(KeyPair, String)} creates
-     * a good certificate.
+     * Test if {@link CertificateUtils#createTlsSni02Certificate(KeyPair, String, String)}
+     * creates a good certificate.
      */
     @Test
     public void testCreateTlsSni02Certificate() throws IOException, CertificateParsingException {

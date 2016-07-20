@@ -1,6 +1,6 @@
 # Migration Guide
 
-With version 0.6, _acme4j_ underwent a massive change to the API.
+With version 0.6, _acme4j_ underwent a major change to the API.
 
 This document will help you migrate your code to the latest API when coming from a pre-0.6 release. It should be a matter of a few minutes in most cases.
 
@@ -91,7 +91,7 @@ In previous versions, _acme4j_ used a client centric approach, with dumb data tr
 
 This approach turned out to have major disadvantages. For example, the data transport classes contained setter methods that were supposed to be used only by _acme4j_ itself. Some other setters had to be used by the library user, but only under certain circumstances. To make a long story short: The API was not self-explanatory about when to use what setters.
 
-Also, the old API was too limited to reflect coming features of the ACME specifications. `AcmeClient` would soon become a bottleneck.
+Also, the old API was too limited to reflect some features of the ACME specifications. `AcmeClient` would have become a bottleneck.
 
 As _acme4j_ is still in beta state, I prefered to make a hard cut and do a major API makeover. Trying to maintain backward compatibility by all means would end up with an overly complicated library.
 
