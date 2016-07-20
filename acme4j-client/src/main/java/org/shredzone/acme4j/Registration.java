@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,7 @@ import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
+import org.shredzone.acme4j.connector.ResourceIterator;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -50,6 +52,8 @@ public class Registration extends AcmeResource {
 
     private final List<URI> contacts = new ArrayList<>();
     private URI agreement;
+    private URI authorizations;
+    private URI certificates;
     private Status status;
 
     /**
@@ -94,6 +98,48 @@ public class Registration extends AcmeResource {
      */
     public Status getStatus() {
         return status;
+    }
+
+    /**
+     * Returns an {@link Iterator} of all {@link Authorization} belonging to this
+     * {@link Registration}.
+     * <p>
+     * Using the iterator will initiate one or more requests to the ACME server.
+     *
+     * @return {@link Iterator} instance that returns {@link Authorization} objects.
+     *         {@link Iterator#hasNext()} and {@link Iterator#next()} may throw
+     *         {@link AcmeProtocolException} if a batch of authorization URIs could not be
+     *         fetched from the server.
+     */
+    public Iterator<Authorization> getAuthorizations() throws AcmeException {
+        LOG.debug("getAuthorizations");
+        return new ResourceIterator<Authorization>(getSession(), "authorizations", authorizations) {
+            @Override
+            protected Authorization create(Session session, URI uri) {
+                return Authorization.bind(session, uri);
+            }
+        };
+    }
+
+    /**
+     * Returns an {@link Iterator} of all {@link Certificate} belonging to this
+     * {@link Registration}.
+     * <p>
+     * Using the iterator will initiate one or more requests to the ACME server.
+     *
+     * @return {@link Iterator} instance that returns {@link Certificate} objects.
+     *         {@link Iterator#hasNext()} and {@link Iterator#next()} may throw
+     *         {@link AcmeProtocolException} if a batch of certificate URIs could not be
+     *         fetched from the server.
+     */
+    public Iterator<Certificate> getCertificates() throws AcmeException {
+        LOG.debug("getCertificates");
+        return new ResourceIterator<Certificate>(getSession(), "certificates", certificates) {
+            @Override
+            protected Certificate create(Session session, URI uri) {
+                return Certificate.bind(session, uri);
+            }
+        };
     }
 
     /**
@@ -292,6 +338,26 @@ public class Registration extends AcmeResource {
                     throw new AcmeProtocolException("Illegal contact URI", ex);
                 }
             }
+        }
+
+        if (json.containsKey("authorizations")) {
+            try {
+                this.authorizations = new URI((String) json.get("authorizations"));
+            } catch (ClassCastException | URISyntaxException ex) {
+                throw new AcmeProtocolException("Illegal authorizations URI", ex);
+            }
+        } else {
+            this.authorizations = null;
+        }
+
+        if (json.containsKey("certificates")) {
+            try {
+                this.certificates = new URI((String) json.get("certificates"));
+            } catch (ClassCastException | URISyntaxException ex) {
+                throw new AcmeProtocolException("Illegal certificates URI", ex);
+            }
+        } else {
+            this.certificates = null;
         }
 
         if (json.containsKey("status")) {

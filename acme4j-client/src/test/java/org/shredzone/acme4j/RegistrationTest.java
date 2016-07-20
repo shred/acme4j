@@ -24,6 +24,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.jose4j.jws.JsonWebSignature;
@@ -77,17 +80,39 @@ public class RegistrationTest {
     @Test
     public void testUpdateRegistration() throws AcmeException, IOException {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
+            private Map<String, Object> jsonResponse;
+
             @Override
             public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
                 assertThat(uri, is(locationUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("updateRegistration")));
                 assertThat(session, is(notNullValue()));
+                jsonResponse = getJsonAsMap("updateRegistrationResponse");
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
 
             @Override
+            public int sendRequest(URI uri) {
+                if (URI.create("https://example.com/acme/reg/1/authz").equals(uri)) {
+                    jsonResponse = new HashMap<>();
+                    jsonResponse.put("authorizations",
+                                    Arrays.asList("https://example.com/acme/auth/1"));
+                    return HttpURLConnection.HTTP_OK;
+                }
+
+                if (URI.create("https://example.com/acme/reg/1/cert").equals(uri)) {
+                    jsonResponse = new HashMap<>();
+                    jsonResponse.put("certificates",
+                                    Arrays.asList("https://example.com/acme/cert/1"));
+                    return HttpURLConnection.HTTP_OK;
+                }
+
+                return HttpURLConnection.HTTP_NOT_FOUND;
+            }
+
+            @Override
             public Map<String, Object> readJsonResponse() {
-                return getJsonAsMap("updateRegistrationResponse");
+                return jsonResponse;
             }
 
             @Override
@@ -99,6 +124,7 @@ public class RegistrationTest {
             public URI getLink(String relation) {
                 switch(relation) {
                     case "terms-of-service": return agreementUri;
+                    case "next": return null;
                     default: return null;
                 }
             }
@@ -112,6 +138,18 @@ public class RegistrationTest {
         assertThat(registration.getContacts(), hasSize(1));
         assertThat(registration.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
         assertThat(registration.getStatus(), is(Status.GOOD));
+
+        Iterator<Authorization> authIt = registration.getAuthorizations();
+        assertThat(authIt, not(nullValue()));
+        assertThat(authIt.next().getLocation(),
+                        is(URI.create("https://example.com/acme/auth/1")));
+        assertThat(authIt.hasNext(), is(false));
+
+        Iterator<Certificate> certIt = registration.getCertificates();
+        assertThat(certIt, not(nullValue()));
+        assertThat(certIt.next().getLocation(),
+                        is(URI.create("https://example.com/acme/cert/1")));
+        assertThat(certIt.hasNext(), is(false));
 
         provider.close();
     }

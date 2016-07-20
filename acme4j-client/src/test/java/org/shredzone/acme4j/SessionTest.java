@@ -193,8 +193,8 @@ public class SessionTest {
 
         final AcmeProvider mockProvider = mock(AcmeProvider.class);
         when(mockProvider.directory(
-                        org.mockito.Matchers.any(Session.class),
-                        org.mockito.Matchers.eq(serverUri)))
+                        ArgumentMatchers.any(Session.class),
+                        ArgumentMatchers.eq(serverUri)))
                 .thenReturn(TestUtils.getJsonAsMap("directoryNoMeta"));
 
         Session session = new Session(serverUri, keyPair) {
