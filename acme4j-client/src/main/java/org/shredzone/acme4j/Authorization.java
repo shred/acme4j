@@ -48,6 +48,7 @@ public class Authorization extends AcmeResource {
     private Date expires;
     private List<Challenge> challenges;
     private List<List<Challenge>> combinations;
+    private boolean loaded = false;
 
     /**
      * Creates a new instance of {@link Authorization} and binds it to the {@link Session}.
@@ -70,6 +71,7 @@ public class Authorization extends AcmeResource {
      * Gets the domain name to be authorized.
      */
     public String getDomain() {
+        load();
         return domain;
     }
 
@@ -77,6 +79,7 @@ public class Authorization extends AcmeResource {
      * Gets the authorization status.
      */
     public Status getStatus() {
+        load();
         return status;
     }
 
@@ -84,6 +87,7 @@ public class Authorization extends AcmeResource {
      * Gets the expiry date of the authorization, if set by the server.
      */
     public Date getExpires() {
+        load();
         return expires;
     }
 
@@ -91,6 +95,7 @@ public class Authorization extends AcmeResource {
      * Gets a list of all challenges offered by the server.
      */
     public List<Challenge> getChallenges() {
+        load();
         return challenges;
     }
 
@@ -98,6 +103,7 @@ public class Authorization extends AcmeResource {
      * Gets all combinations of challenges supported by the server.
      */
     public List<List<Challenge>> getCombinations() {
+        load();
         return combinations;
     }
 
@@ -136,7 +142,7 @@ public class Authorization extends AcmeResource {
      *         validation.
      */
     public Collection<Challenge> findCombination(String... types) {
-        if (combinations == null) {
+        if (getCombinations() == null) {
             return null;
         }
 
@@ -145,7 +151,7 @@ public class Authorization extends AcmeResource {
 
         Collection<Challenge> result = null;
 
-        for (List<Challenge> combination : combinations) {
+        for (List<Challenge> combination : getCombinations()) {
             combinationTypes.clear();
             for (Challenge c : combination) {
                 combinationTypes.add(c.getType());
@@ -213,6 +219,21 @@ public class Authorization extends AcmeResource {
     }
 
     /**
+     * Lazily updates the object's state when one of the getters is invoked.
+     */
+    protected void load() {
+        if (!loaded) {
+            try {
+                update();
+            } catch (AcmeRetryAfterException ex) {
+                // ignore... The object was still updated.
+            } catch (AcmeException ex) {
+                throw new AcmeProtocolException("Could not load lazily", ex);
+            }
+        }
+    }
+
+    /**
      * Sets the properties according to the given JSON data.
      *
      * @param json
@@ -264,6 +285,8 @@ public class Authorization extends AcmeResource {
             cmb.add(cr);
             this.combinations = cmb;
         }
+
+        loaded = true;
     }
 
 }

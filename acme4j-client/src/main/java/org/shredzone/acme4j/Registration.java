@@ -36,6 +36,7 @@ import org.shredzone.acme4j.connector.ResourceIterator;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
+import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.SignatureUtils;
 import org.slf4j.Logger;
@@ -55,6 +56,7 @@ public class Registration extends AcmeResource {
     private URI authorizations;
     private URI certificates;
     private Status status;
+    private boolean loaded = false;
 
     /**
      * Creates a new instance of {@link Registration} and binds it to the {@link Session}.
@@ -83,6 +85,9 @@ public class Registration extends AcmeResource {
      * Returns the URI of the agreement document the user is required to accept.
      */
     public URI getAgreement() {
+        if (agreement == null) {
+            load();
+        }
         return agreement;
     }
 
@@ -90,6 +95,7 @@ public class Registration extends AcmeResource {
      * List of contact addresses (emails, phone numbers etc).
      */
     public List<URI> getContacts() {
+        load();
         return Collections.unmodifiableList(contacts);
     }
 
@@ -97,6 +103,7 @@ public class Registration extends AcmeResource {
      * Returns the current status of the registration.
      */
     public Status getStatus() {
+        load();
         return status;
     }
 
@@ -113,6 +120,7 @@ public class Registration extends AcmeResource {
      */
     public Iterator<Authorization> getAuthorizations() throws AcmeException {
         LOG.debug("getAuthorizations");
+        load();
         return new ResourceIterator<Authorization>(getSession(), "authorizations", authorizations) {
             @Override
             protected Authorization create(Session session, URI uri) {
@@ -134,6 +142,7 @@ public class Registration extends AcmeResource {
      */
     public Iterator<Certificate> getCertificates() throws AcmeException {
         LOG.debug("getCertificates");
+        load();
         return new ResourceIterator<Certificate>(getSession(), "certificates", certificates) {
             @Override
             protected Certificate create(Session session, URI uri) {
@@ -312,6 +321,21 @@ public class Registration extends AcmeResource {
     }
 
     /**
+     * Lazily updates the object's state when one of the getters is invoked.
+     */
+    protected void load() {
+        if (!loaded) {
+            try {
+                update();
+            } catch (AcmeRetryAfterException ex) {
+                // ignore... The object was still updated.
+            } catch (AcmeException ex) {
+                throw new AcmeProtocolException("Could not load lazily", ex);
+            }
+        }
+    }
+
+    /**
      * Sets registration properties according to the given JSON data.
      *
      * @param json
@@ -373,6 +397,8 @@ public class Registration extends AcmeResource {
         if (tos != null) {
             this.agreement = tos;
         }
+
+        loaded = true;
     }
 
     /**

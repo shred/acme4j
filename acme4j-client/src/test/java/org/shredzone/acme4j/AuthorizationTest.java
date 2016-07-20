@@ -23,6 +23,7 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -154,6 +155,49 @@ public class AuthorizationTest {
                         (Challenge) httpChallenge));
         assertThat(auth.getCombinations().get(1), containsInAnyOrder(
                         (Challenge) httpChallenge, (Challenge) dnsChallenge));
+
+        provider.close();
+    }
+
+    /**
+     * Test lazy loading.
+     */
+    @Test
+    public void testLazyLoading() throws Exception {
+        final AtomicBoolean requestWasSent = new AtomicBoolean(false);
+
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public int sendRequest(URI uri) {
+                requestWasSent.set(true);
+                assertThat(uri, is(locationUri));
+                return HttpURLConnection.HTTP_OK;
+            }
+
+            @Override
+            public Map<String, Object> readJsonResponse() {
+                return getJsonAsMap("updateAuthorizationResponse");
+            }
+        };
+
+        Session session = provider.createSession();
+
+        provider.putTestChallenge("http-01", new Http01Challenge(session));
+        provider.putTestChallenge("dns-01", new Dns01Challenge(session));
+
+        Authorization auth = new Authorization(session, locationUri);
+
+        // Lazy loading
+        assertThat(requestWasSent.get(), is(false));
+        assertThat(auth.getDomain(), is("example.org"));
+        assertThat(requestWasSent.get(), is(true));
+
+        // Subsequent queries do not trigger another load
+        requestWasSent.set(false);
+        assertThat(auth.getDomain(), is("example.org"));
+        assertThat(auth.getStatus(), is(Status.VALID));
+        assertThat(auth.getExpires(), is(TimestampParser.parse("2016-01-02T17:12:40Z")));
+        assertThat(requestWasSent.get(), is(false));
 
         provider.close();
     }

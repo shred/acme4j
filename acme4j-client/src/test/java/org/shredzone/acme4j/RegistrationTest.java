@@ -21,13 +21,13 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
@@ -54,25 +54,6 @@ public class RegistrationTest {
     private URI locationUri  = URI.create("http://example.com/acme/registration");
     private URI agreementUri = URI.create("http://example.com/agreement.pdf");
     private URI chainUri     = URI.create("http://example.com/acme/chain");
-
-    /**
-     * Test getters. Make sure object cannot be modified.
-     */
-    @Test
-    public void testGetters() throws IOException, URISyntaxException {
-        Session session = TestUtils.session();
-        Registration registration = new Registration(session, locationUri);
-
-        assertThat(registration.getAgreement(), is(nullValue()));
-        assertThat(registration.getContacts(), is(empty()));
-
-        try {
-            registration.getContacts().add(new URI("mailto:foo@example.com"));
-            fail("could modify contacts list");
-        } catch (UnsupportedOperationException ex) {
-            // expected
-        }
-    }
 
     /**
      * Test that a registration can be updated.
@@ -150,6 +131,56 @@ public class RegistrationTest {
         assertThat(certIt.next().getLocation(),
                         is(URI.create("https://example.com/acme/cert/1")));
         assertThat(certIt.hasNext(), is(false));
+
+        provider.close();
+    }
+
+    /**
+     * Test lazy loading.
+     */
+    @Test
+    public void testLazyLoading() throws AcmeException, IOException {
+        final AtomicBoolean requestWasSent = new AtomicBoolean(false);
+
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+                requestWasSent.set(true);
+                assertThat(uri, is(locationUri));
+                return HttpURLConnection.HTTP_ACCEPTED;
+            }
+
+            @Override
+            public Map<String, Object> readJsonResponse() {
+                return getJsonAsMap("updateRegistrationResponse");
+            }
+
+            @Override
+            public URI getLocation() {
+                return locationUri;
+            }
+
+            @Override
+            public URI getLink(String relation) {
+                switch(relation) {
+                    case "terms-of-service": return agreementUri;
+                    default: return null;
+                }
+            }
+        };
+
+        Registration registration = new Registration(provider.createSession(), locationUri);
+
+        // Lazy loading
+        assertThat(requestWasSent.get(), is(false));
+        assertThat(registration.getAgreement(), is(agreementUri));
+        assertThat(requestWasSent.get(), is(true));
+
+        // Subsequent queries do not trigger another load
+        requestWasSent.set(false);
+        assertThat(registration.getAgreement(), is(agreementUri));
+        assertThat(registration.getStatus(), is(Status.GOOD));
+        assertThat(requestWasSent.get(), is(false));
 
         provider.close();
     }
