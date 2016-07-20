@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -217,6 +218,26 @@ public class Registration extends AcmeResource {
      * @return The {@link Certificate}
      */
     public Certificate requestCertificate(byte[] csr) throws AcmeException {
+        return requestCertificate(csr, null, null);
+    }
+
+    /**
+     * Requests a certificate for the given CSR.
+     * <p>
+     * All domains given in the CSR must be authorized before.
+     *
+     * @param csr
+     *            PKCS#10 Certificate Signing Request to be sent to the server
+     * @param notBefore
+     *            requested value of the notBefore field in the certificate, {@code null}
+     *            for default. May be ignored by the server.
+     * @param notAfter
+     *            requested value of the notAfter field in the certificate, {@code null}
+     *            for default. May be ignored by the server.
+     * @return The {@link Certificate}
+     */
+    public Certificate requestCertificate(byte[] csr, Date notBefore, Date notAfter)
+                throws AcmeException {
         if (csr == null) {
             throw new NullPointerException("csr must not be null");
         }
@@ -226,6 +247,12 @@ public class Registration extends AcmeResource {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource(Resource.NEW_CERT);
             claims.putBase64("csr", csr);
+            if (notBefore != null) {
+                claims.put("notBefore", notBefore);
+            }
+            if (notAfter != null) {
+                claims.put("notAfter", notAfter);
+            }
 
             int rc = conn.sendSignedRequest(getSession().resourceUri(Resource.NEW_CERT), claims, getSession());
             if (rc != HttpURLConnection.HTTP_CREATED && rc != HttpURLConnection.HTTP_ACCEPTED) {

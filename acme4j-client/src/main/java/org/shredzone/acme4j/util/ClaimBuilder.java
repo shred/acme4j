@@ -15,8 +15,11 @@ package org.shredzone.acme4j.util;
 
 import java.security.Key;
 import java.security.PublicKey;
+import java.text.SimpleDateFormat;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.TreeMap;
 
 import org.jose4j.base64url.Base64Url;
@@ -59,6 +62,29 @@ public class ClaimBuilder {
         }
 
         data.put(key, value);
+        return this;
+    }
+
+    /**
+     * Puts a {@link Date} to the claim. If a claim with the key exists, it will be
+     * replaced.
+     *
+     * @param key
+     *            Claim key
+     * @param value
+     *            Claim {@link Date} value
+     * @return {@code this}
+     */
+    public ClaimBuilder put(String key, Date value) {
+        if (value == null) {
+            put(key, null);
+            return this;
+        }
+
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
+        String date = fmt.format(value);
+        put(key, date);
         return this;
     }
 

@@ -19,8 +19,10 @@ import static org.junit.Assert.assertThat;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TimeZone;
 
 import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
@@ -69,6 +71,21 @@ public class ClaimBuilderTest {
                 hasEntry("fooInt", (Object) 456),
                 hasEntry("fooStr", (Object) "String")
         ));
+    }
+
+    /**
+     * Test date type.
+     */
+    @Test
+    public void testDate() {
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT+2"));
+        cal.clear();
+        cal.set(2016, Calendar.JUNE, 1, 5, 13, 46);
+
+        ClaimBuilder cb = new ClaimBuilder();
+        cb.put("fooDate", cal.getTime());
+
+        assertThat(cb.toString(), is("{\"fooDate\":\"2016-06-01T03:13:46Z\"}"));
     }
 
     /**
