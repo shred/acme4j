@@ -51,11 +51,6 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public Map<Resource, URI> readDirectory() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public void updateSession(Session session) {
         throw new UnsupportedOperationException();
     }

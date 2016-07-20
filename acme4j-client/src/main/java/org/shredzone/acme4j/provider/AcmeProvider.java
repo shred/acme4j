@@ -20,7 +20,6 @@ import java.util.ServiceLoader;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
-import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 
 /**
@@ -62,7 +61,8 @@ public interface AcmeProvider {
     Connection connect();
 
     /**
-     * Returns a map of all known {@link Resource} {@link URI} of this provider.
+     * Returns the provider's directory. The map must contain resource URIs, and may
+     * optionally contain metadata.
      * <p>
      * The default implementation resolves the server URI and fetches the directory via
      * HTTP request. Subclasses may override this method, e.g. if the directory is static.
@@ -71,9 +71,9 @@ public interface AcmeProvider {
      *            {@link Session} to be used
      * @param serverUri
      *            Server {@link URI}
-     * @return Map of resource URIs
+     * @return Map of directory data
      */
-    Map<Resource, URI> resources(Session session, URI serverUri) throws AcmeException;
+    Map<String, Object> directory(Session session, URI serverUri) throws AcmeException;
 
     /**
      * Creates a {@link Challenge} instance for the given challenge type.

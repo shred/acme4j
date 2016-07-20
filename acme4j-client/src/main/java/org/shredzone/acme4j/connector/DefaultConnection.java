@@ -28,7 +28,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Date;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -215,38 +214,6 @@ public class DefaultConnection implements Connection {
         } catch (CertificateException ex) {
             throw new AcmeProtocolException("Failed to read certificate", ex);
         }
-    }
-
-    @Override
-    public Map<Resource, URI> readDirectory() throws IOException {
-        assertConnectionIsOpen();
-
-        String contentType = conn.getHeaderField("Content-Type");
-        if (!("application/json".equals(contentType))) {
-            throw new AcmeProtocolException("Unexpected content type: " + contentType);
-        }
-
-        EnumMap<Resource, URI> resourceMap = new EnumMap<>(Resource.class);
-        String response = "";
-
-        try {
-            response = readStream(conn.getInputStream());
-
-            Map<String, Object> result = JsonUtil.parseJson(response);
-            for (Map.Entry<String, Object> entry : result.entrySet()) {
-                Resource res = Resource.parse(entry.getKey());
-                if (res != null) {
-                    URI uri = new URI(entry.getValue().toString());
-                    resourceMap.put(res, uri);
-                }
-            }
-
-            LOG.debug("Resource directory: {}", resourceMap);
-        } catch (JoseException | URISyntaxException ex) {
-            throw new AcmeProtocolException("Failed to read directory: " + response, ex);
-        }
-
-        return resourceMap;
     }
 
     @Override

@@ -14,6 +14,7 @@
 package org.shredzone.acme4j;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,6 +27,7 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.TokenChallenge;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 
 /**
@@ -38,12 +40,14 @@ import org.shredzone.acme4j.provider.AcmeProvider;
  * @author Richard "Shred" Körber
  */
 public class Session {
-    private final Map<Resource, URI> directoryMap = new EnumMap<>(Resource.class);
+    private final Map<Resource, URI> resourceMap = new EnumMap<>(Resource.class);
     private final URI serverUri;
 
     private KeyPair keyPair;
     private AcmeProvider provider;
     private byte[] nonce;
+    private Map<String, Object> directoryMap;
+    private Metadata metadata;
     protected Date directoryCacheExpiry;
 
     /**
@@ -184,21 +188,53 @@ public class Session {
         if (resource == null) {
             throw new NullPointerException("resource must not be null");
         }
+        readDirectory();
+        return resourceMap.get(resource);
+    }
 
+    /**
+     * Gets the metadata of the provider's directory. This may involve connecting to the
+     * server and getting a directory. The result is cached.
+     *
+     * @return {@link Metadata}. May contain no data, but is never {@code null}.
+     */
+    public Metadata getMetadata() throws AcmeException {
+        readDirectory();
+        return metadata;
+    }
+
+    /**
+     * Reads the provider's directory, then rebuild the resource map. The response is
+     * cached.
+     */
+    @SuppressWarnings("unchecked")
+    private void readDirectory() throws AcmeException {
         synchronized (this) {
             Date now = new Date();
-
-            if (directoryMap.isEmpty() || !directoryCacheExpiry.after(now)) {
-                Map<Resource, URI> newMap = provider().resources(this, getServerUri());
-
-                // only reached when readDirectory did not throw an exception
-                directoryMap.clear();
-                directoryMap.putAll(newMap);
+            if (directoryMap == null || !directoryCacheExpiry.after(now)) {
+                directoryMap = provider().directory(this, getServerUri());
                 directoryCacheExpiry = new Date(now.getTime() + 60 * 60 * 1000L);
+
+                Object meta = directoryMap.get("meta");
+                if (meta != null && meta instanceof Map) {
+                    metadata = new Metadata((Map<String, Object>) meta);
+                } else {
+                    metadata = new Metadata();
+                }
+
+                resourceMap.clear();
+                for (Map.Entry<String, Object> entry : directoryMap.entrySet()) {
+                    Resource res = Resource.parse(entry.getKey());
+                    if (res != null) {
+                        try {
+                            resourceMap.put(res, new URI(entry.getValue().toString()));
+                        } catch (URISyntaxException ex) {
+                            throw new AcmeProtocolException("Illegal URI for resource " + res, ex);
+                        }
+                    }
+                }
             }
         }
-
-        return directoryMap.get(resource);
     }
 
 }

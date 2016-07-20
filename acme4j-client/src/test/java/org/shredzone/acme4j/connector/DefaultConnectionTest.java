@@ -470,33 +470,4 @@ public class DefaultConnectionTest {
         verifyNoMoreInteractions(mockUrlConnection);
     }
 
-    /**
-     * Test if a resource directory is read correctly.
-     */
-    @Test
-    public void testReadDirectory() throws Exception {
-        StringBuilder jsonData = new StringBuilder();
-        jsonData.append("{\n");
-        jsonData.append("\"new-reg\":\"http://example.com/acme/newreg\",\n");
-        jsonData.append("\"new-authz\":\"http://example.com/acme/newauthz\",\n");
-        jsonData.append("\"old-foo\":\"http://example.com/acme/oldfoo\"\n");
-        jsonData.append("}\n");
-
-        when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/json");
-        when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(jsonData.toString().getBytes("utf-8")));
-
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
-            Map<Resource, URI> result = conn.readDirectory();
-            assertThat(result.keySet(), hasSize(2));
-            assertThat(result, hasEntry(Resource.NEW_REG, new URI("http://example.com/acme/newreg")));
-            assertThat(result, hasEntry(Resource.NEW_AUTHZ, new URI("http://example.com/acme/newauthz")));
-            // "old-foo" resource is unknown and thus not available in the map
-        }
-
-        verify(mockUrlConnection).getHeaderField("Content-Type");
-        verify(mockUrlConnection).getInputStream();
-        verifyNoMoreInteractions(mockUrlConnection);
-    }
-
 }

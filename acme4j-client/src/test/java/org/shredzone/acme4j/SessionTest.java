@@ -19,10 +19,8 @@ import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.KeyPair;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
@@ -46,9 +44,9 @@ public class SessionTest {
      * Test constructor
      */
     @Test
-    public void testConstructor() throws Exception {
+    public void testConstructor() throws IOException {
         KeyPair keyPair = TestUtils.createKeyPair();
-        URI serverUri = new URI(TestUtils.ACME_SERVER_URI);
+        URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
 
         try {
             new Session((URI) null, null);
@@ -93,10 +91,10 @@ public class SessionTest {
      * Test getters and setters.
      */
     @Test
-    public void testGettersAndSetters() throws Exception {
+    public void testGettersAndSetters() throws IOException {
         KeyPair kp1 = TestUtils.createKeyPair();
         KeyPair kp2 = TestUtils.createDomainKeyPair();
-        URI serverUri = new URI(TestUtils.ACME_SERVER_URI);
+        URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
 
         Session session = new Session(serverUri, kp1);
 
@@ -116,9 +114,9 @@ public class SessionTest {
      * Test if challenges are correctly created via provider.
      */
     @Test
-    public void testCreateChallenge() throws IOException, URISyntaxException {
+    public void testCreateChallenge() throws IOException {
         KeyPair keyPair = TestUtils.createKeyPair();
-        URI serverUri = new URI(TestUtils.ACME_SERVER_URI);
+        URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
         String challengeType = Http01Challenge.TYPE;
 
         Map<String, Object> data = new ClaimBuilder()
@@ -151,19 +149,15 @@ public class SessionTest {
      * Test that the directory is properly read and cached.
      */
     @Test
-    public void testResourceUri() throws AcmeException, IOException, URISyntaxException {
+    public void testDirectory() throws AcmeException, IOException {
         KeyPair keyPair = TestUtils.createKeyPair();
-        URI serverUri = new URI(TestUtils.ACME_SERVER_URI);
-
-        Map<Resource, URI> directoryMap = new HashMap<>();
-        directoryMap.put(Resource.NEW_AUTHZ, new URI("http://example.com/acme/new-authz"));
-        directoryMap.put(Resource.NEW_CERT, new URI("http://example.com/acme/new-cert"));
+        URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
 
         final AcmeProvider mockProvider = mock(AcmeProvider.class);
-        when(mockProvider.resources(
+        when(mockProvider.directory(
                         ArgumentMatchers.any(Session.class),
                         ArgumentMatchers.eq(serverUri)))
-                .thenReturn(directoryMap);
+                .thenReturn(TestUtils.getJsonAsMap("directory"));
 
         Session session = new Session(serverUri, keyPair) {
             @Override
@@ -172,15 +166,10 @@ public class SessionTest {
             };
         };
 
-        assertThat(session.resourceUri(Resource.NEW_AUTHZ),
-                        is(new URI("http://example.com/acme/new-authz")));
-        assertThat(session.resourceUri(Resource.NEW_CERT),
-                        is(new URI("http://example.com/acme/new-cert")));
-        assertThat(session.resourceUri(Resource.NEW_REG),
-                        is(nullValue()));
+        assertSession(session);
 
         // Make sure directory is only read once!
-        verify(mockProvider, times(1)).resources(
+        verify(mockProvider, times(1)).directory(
                         ArgumentMatchers.any(Session.class),
                         ArgumentMatchers.any(URI.class));
 
@@ -188,15 +177,74 @@ public class SessionTest {
         session.directoryCacheExpiry = new Date();
 
         // Make sure directory is read once again
-        assertThat(session.resourceUri(Resource.NEW_AUTHZ),
-                        is(new URI("http://example.com/acme/new-authz")));
-        assertThat(session.resourceUri(Resource.NEW_CERT),
-                        is(new URI("http://example.com/acme/new-cert")));
-        assertThat(session.resourceUri(Resource.NEW_REG),
-                        is(nullValue()));
-        verify(mockProvider, times(2)).resources(
+        assertSession(session);
+        verify(mockProvider, times(2)).directory(
                         ArgumentMatchers.any(Session.class),
                         ArgumentMatchers.any(URI.class));
+    }
+
+    /**
+     * Test that the directory is properly read even if there are no metadata.
+     */
+    @Test
+    public void testNoMeta() throws AcmeException, IOException {
+        KeyPair keyPair = TestUtils.createKeyPair();
+        URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
+
+        final AcmeProvider mockProvider = mock(AcmeProvider.class);
+        when(mockProvider.directory(
+                        org.mockito.Matchers.any(Session.class),
+                        org.mockito.Matchers.eq(serverUri)))
+                .thenReturn(TestUtils.getJsonAsMap("directoryNoMeta"));
+
+        Session session = new Session(serverUri, keyPair) {
+            @Override
+            public AcmeProvider provider() {
+                return mockProvider;
+            };
+        };
+
+        assertThat(session.resourceUri(Resource.NEW_REG),
+                        is(URI.create("https://example.com/acme/new-reg")));
+        assertThat(session.resourceUri(Resource.NEW_AUTHZ),
+                        is(URI.create("https://example.com/acme/new-authz")));
+        assertThat(session.resourceUri(Resource.NEW_CERT),
+                        is(URI.create("https://example.com/acme/new-cert")));
+        assertThat(session.resourceUri(Resource.REVOKE_CERT),
+                        is(nullValue()));
+
+        Metadata meta = session.getMetadata();
+        assertThat(meta, not(nullValue()));
+        assertThat(meta.getTermsOfService(), is(nullValue()));
+        assertThat(meta.getWebsite(), is(nullValue()));
+        assertThat(meta.getCaaIdentities(), is(nullValue()));
+    }
+
+    /**
+     * Asserts that the {@link Session} returns correct
+     * {@link Session#resourceUri(Resource)} and {@link Session#getMetadata()}.
+     *
+     * @param session
+     *            {@link Session} to assert
+     */
+    private void assertSession(Session session) throws AcmeException {
+        assertThat(session.resourceUri(Resource.NEW_REG),
+                        is(URI.create("https://example.com/acme/new-reg")));
+        assertThat(session.resourceUri(Resource.NEW_AUTHZ),
+                        is(URI.create("https://example.com/acme/new-authz")));
+        assertThat(session.resourceUri(Resource.NEW_CERT),
+                        is(URI.create("https://example.com/acme/new-cert")));
+        assertThat(session.resourceUri(Resource.REVOKE_CERT),
+                        is(nullValue()));
+
+        Metadata meta = session.getMetadata();
+        assertThat(meta, not(nullValue()));
+        assertThat(meta.getTermsOfService(), is(URI.create("https://example.com/acme/terms")));
+        assertThat(meta.getWebsite(), is(URI.create("https://www.example.com/")));
+        assertThat(meta.getCaaIdentities(), is(arrayContaining("example.com")));
+        assertThat(meta.get("x-test-string"), is("foobar"));
+        assertThat(meta.getUri("x-test-uri"), is(URI.create("https://www.example.org")));
+        assertThat(meta.getStringArray("x-test-array"), is(arrayContaining("foo", "bar", "barfoo")));
     }
 
 }

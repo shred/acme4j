@@ -27,7 +27,6 @@ import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
-import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
 
@@ -48,7 +47,7 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
     }
 
     @Override
-    public Map<Resource, URI> resources(Session session, URI serverUri) throws AcmeException {
+    public Map<String, Object> directory(Session session, URI serverUri) throws AcmeException {
         try (Connection conn = connect()) {
             int rc = conn.sendRequest(resolve(serverUri));
             if (rc != HttpURLConnection.HTTP_OK) {
@@ -58,7 +57,7 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
             // use nonce header if there is one, saves a HEAD request...
             conn.updateSession(session);
 
-            return conn.readDirectory();
+            return conn.readJsonResponse();
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         }

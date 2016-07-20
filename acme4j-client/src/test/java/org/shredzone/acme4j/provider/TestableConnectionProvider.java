@@ -15,7 +15,6 @@ package org.shredzone.acme4j.provider;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,6 +24,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DummyConnection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
@@ -34,8 +34,8 @@ import org.shredzone.acme4j.util.TestUtils;
  * @author Richard "Shred" Körber
  */
 public class TestableConnectionProvider extends DummyConnection implements AcmeProvider {
-    private final Map<Resource, URI> resourceMap = new HashMap<>();
     private final Map<String, Challenge> challengeMap = new HashMap<>();
+    private final ClaimBuilder directory = new ClaimBuilder();
 
     /**
      * Register a {@link Resource} mapping.
@@ -46,7 +46,7 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
      *            {@link URI} to be returned
      */
     public void putTestResource(Resource r, URI u) {
-        resourceMap.put(r, u);
+        directory.put(r.path(), u);
     }
 
     /**
@@ -86,11 +86,12 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
     }
 
     @Override
-    public Map<Resource, URI> resources(Session session, URI serverUri) throws AcmeException {
-        if (resourceMap.isEmpty()) {
+    public Map<String, Object> directory(Session session, URI serverUri) throws AcmeException {
+        Map<String, Object> result = directory.toMap();
+        if (result.isEmpty()) {
             throw new UnsupportedOperationException();
         }
-        return Collections.unmodifiableMap(resourceMap);
+        return result;
     }
 
     @Override

@@ -99,7 +99,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public Map<Resource, URI> resources(Session session, URI serverUri) throws AcmeException {
+        public Map<String, Object> directory(Session session, URI serverUri) throws AcmeException {
             throw new UnsupportedOperationException();
         }
 
@@ -127,7 +127,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public Map<Resource, URI> resources(Session session, URI serverUri) throws AcmeException {
+        public Map<String, Object> directory(Session session, URI serverUri) throws AcmeException {
             throw new UnsupportedOperationException();
         }
 

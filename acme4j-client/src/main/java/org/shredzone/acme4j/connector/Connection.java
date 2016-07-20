@@ -68,13 +68,6 @@ public interface Connection extends AutoCloseable {
     X509Certificate readCertificate() throws IOException;
 
     /**
-     * Reads a resource directory.
-     *
-     * @return Map of {@link Resource} and the respective {@link URI} to invoke
-     */
-    Map<Resource, URI> readDirectory() throws IOException;
-
-    /**
      * Updates a {@link Session} by evaluating the HTTP response header.
      *
      * @param session
