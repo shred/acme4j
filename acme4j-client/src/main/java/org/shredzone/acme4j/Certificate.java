@@ -19,6 +19,7 @@ import java.net.URI;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.shredzone.acme4j.connector.Connection;
@@ -26,6 +27,7 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
+import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,20 +82,29 @@ public class Certificate extends AcmeResource {
      * Downloads the certificate. The result is cached.
      *
      * @return {@link X509Certificate} that was downloaded
+     * @throws AcmeRetryAfterException
+     *             the certificate is still being created, and the server returned an
+     *             estimated date when it will be ready for download. You should wait for
+     *             the date given in {@link AcmeRetryAfterException#getRetryAfter()}
+     *             before trying again.
      */
     public X509Certificate download() throws AcmeException {
         if (cert == null) {
             LOG.debug("download");
             try (Connection conn = getSession().provider().connect()) {
                 int rc = conn.sendRequest(getLocation());
+                if (rc == HttpURLConnection.HTTP_ACCEPTED) {
+                    Date retryAfter = conn.getRetryAfterHeader();
+                    throw new AcmeRetryAfterException(
+                                    "certificate is not available for download yet",
+                                    retryAfter);
+                }
+
                 if (rc != HttpURLConnection.HTTP_OK) {
                     conn.throwAcmeException();
                 }
 
-                // TODO: HTTP_ACCEPTED plus Retry-After header if not yet available
-
                 chainCertUri = conn.getLink("up");
-
                 cert = conn.readCertificate();
             } catch (IOException ex) {
                 throw new AcmeNetworkException(ex);
@@ -106,6 +117,11 @@ public class Certificate extends AcmeResource {
      * Downloads the certificate chain. The result is cached.
      *
      * @return Chain of {@link X509Certificate}s
+     * @throws AcmeRetryAfterException
+     *             the certificate is still being created, and the server returned an
+     *             estimated date when it will be ready for download. You should wait for
+     *             the date given in {@link AcmeRetryAfterException#getRetryAfter()}
+     *             before trying again.
      */
     public X509Certificate[] downloadChain() throws AcmeException {
         if (chain == null) {

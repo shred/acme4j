@@ -14,7 +14,7 @@
 package org.shredzone.acme4j.challenge;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.shredzone.acme4j.util.TestUtils.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -27,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.KeyPair;
+import java.util.Date;
 import java.util.Map;
 
 import org.jose4j.base64url.Base64Url;
@@ -39,6 +40,7 @@ import org.junit.Test;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
+import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.SignatureUtils;
@@ -208,7 +210,7 @@ public class ChallengeTest {
             @Override
             public int sendRequest(URI uri) {
                 assertThat(uri, is(locationUri));
-                return HttpURLConnection.HTTP_ACCEPTED;
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
@@ -223,6 +225,49 @@ public class ChallengeTest {
         challenge.unmarshall(getJsonAsMap("triggerHttpChallengeResponse"));
 
         challenge.update();
+
+        assertThat(challenge.getStatus(), is(Status.VALID));
+        assertThat(challenge.getLocation(), is(locationUri));
+
+        provider.close();
+    }
+
+    /**
+     * Test that a challenge is properly updated, with Retry-After header.
+     */
+    @Test
+    public void testUpdateRetryAfter() throws Exception {
+        final long retryAfter = System.currentTimeMillis() + 30 * 1000L;
+
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public int sendRequest(URI uri) {
+                assertThat(uri, is(locationUri));
+                return HttpURLConnection.HTTP_ACCEPTED;
+            }
+
+            @Override
+            public Map<String, Object> readJsonResponse() {
+                return getJsonAsMap("updateHttpChallengeResponse");
+            }
+
+            @Override
+            public Date getRetryAfterHeader() {
+                return new Date(retryAfter);
+            }
+        };
+
+        Session session = provider.createSession();
+
+        Challenge challenge = new Http01Challenge(session);
+        challenge.unmarshall(getJsonAsMap("triggerHttpChallengeResponse"));
+
+        try {
+            challenge.update();
+            fail("Expected AcmeRetryAfterException");
+        } catch (AcmeRetryAfterException ex) {
+            assertThat(ex.getRetryAfter(), is(new Date(retryAfter)));
+        }
 
         assertThat(challenge.getStatus(), is(Status.VALID));
         assertThat(challenge.getLocation(), is(locationUri));

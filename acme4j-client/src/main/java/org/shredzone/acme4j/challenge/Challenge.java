@@ -31,6 +31,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
+import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TimestampParser;
 import org.slf4j.Logger;
@@ -228,16 +229,31 @@ public class Challenge extends AcmeResource {
 
     /**
      * Updates the state of this challenge.
+     *
+     * @throws AcmeRetryAfterException
+     *             the challenge is still being validated, and the server returned an
+     *             estimated date when the challenge will be completed. If you are polling
+     *             for the challenge to complete, you should wait for the date given in
+     *             {@link AcmeRetryAfterException#getRetryAfter()}. Note that the
+     *             challenge status is updated even if this exception was thrown.
      */
     public void update() throws AcmeException {
         LOG.debug("update");
         try (Connection conn = getSession().provider().connect()) {
             int rc = conn.sendRequest(getLocation());
-            if (rc != HttpURLConnection.HTTP_ACCEPTED) {
+            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }
 
             unmarshall(conn.readJsonResponse());
+
+            if (rc == HttpURLConnection.HTTP_ACCEPTED) {
+                Date retryAfter = conn.getRetryAfterHeader();
+                if (retryAfter != null) {
+                    throw new AcmeRetryAfterException("challenge is not completed yet",
+                                    retryAfter);
+                }
+            }
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         }

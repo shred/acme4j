@@ -28,6 +28,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
+import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TimestampParser;
 import org.slf4j.Logger;
@@ -162,6 +163,13 @@ public class Authorization extends AcmeResource {
     /**
      * Updates the {@link Authorization}. After invocation, the {@link Authorization}
      * reflects the current state at the ACME server.
+     *
+     * @throws AcmeRetryAfterException
+     *             the auhtorization is still being validated, and the server returned an
+     *             estimated date when the validation will be completed. If you are
+     *             polling for the authorization to complete, you should wait for the date
+     *             given in {@link AcmeRetryAfterException#getRetryAfter()}. Note that the
+     *             authorization status is updated even if this exception was thrown.
      */
     public void update() throws AcmeException {
         LOG.debug("update");
@@ -171,10 +179,15 @@ public class Authorization extends AcmeResource {
                 conn.throwAcmeException();
             }
 
-            // HTTP_ACCEPTED requires Retry-After header to be set
-
             Map<String, Object> result = conn.readJsonResponse();
             unmarshalAuthorization(result);
+
+            if (rc == HttpURLConnection.HTTP_ACCEPTED) {
+                Date retryAfter = conn.getRetryAfterHeader();
+                throw new AcmeRetryAfterException(
+                                "authorization is not completed yet",
+                                retryAfter);
+            }
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         }

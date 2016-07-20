@@ -14,13 +14,14 @@
 package org.shredzone.acme4j;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.shredzone.acme4j.util.TestUtils.getJsonAsMap;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Date;
 import java.util.Map;
 
 import org.junit.Test;
@@ -28,6 +29,7 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsSni02Challenge;
+import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TimestampParser;
@@ -138,6 +140,64 @@ public class AuthorizationTest {
 
         Authorization auth = new Authorization(session, locationUri);
         auth.update();
+
+        assertThat(auth.getDomain(), is("example.org"));
+        assertThat(auth.getStatus(), is(Status.VALID));
+        assertThat(auth.getExpires(), is(TimestampParser.parse("2016-01-02T17:12:40Z")));
+        assertThat(auth.getLocation(), is(locationUri));
+
+        assertThat(auth.getChallenges(), containsInAnyOrder(
+                        (Challenge) httpChallenge, (Challenge) dnsChallenge));
+
+        assertThat(auth.getCombinations(), hasSize(2));
+        assertThat(auth.getCombinations().get(0), containsInAnyOrder(
+                        (Challenge) httpChallenge));
+        assertThat(auth.getCombinations().get(1), containsInAnyOrder(
+                        (Challenge) httpChallenge, (Challenge) dnsChallenge));
+
+        provider.close();
+    }
+
+    /**
+     * Test that authorization is properly updated, with retry-after header set.
+     */
+    @Test
+    public void testUpdateRetryAfter() throws Exception {
+        final long retryAfter = System.currentTimeMillis() + 30 * 1000L;
+
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public int sendRequest(URI uri) {
+                assertThat(uri, is(locationUri));
+                return HttpURLConnection.HTTP_ACCEPTED;
+            }
+
+            @Override
+            public Map<String, Object> readJsonResponse() {
+                return getJsonAsMap("updateAuthorizationResponse");
+            }
+
+            @Override
+            public Date getRetryAfterHeader() {
+                return new Date(retryAfter);
+            }
+        };
+
+        Session session = provider.createSession();
+
+        Http01Challenge httpChallenge = new Http01Challenge(session);
+        Dns01Challenge dnsChallenge = new Dns01Challenge(session);
+        provider.putTestChallenge("http-01", httpChallenge);
+        provider.putTestChallenge("dns-01", dnsChallenge);
+
+        Authorization auth = new Authorization(session, locationUri);
+
+        try {
+            auth.update();
+            fail("Expected AcmeRetryAfterException");
+        } catch (AcmeRetryAfterException ex) {
+            assertThat(ex.getRetryAfter(), is(new Date(retryAfter)));
+        }
 
         assertThat(auth.getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));

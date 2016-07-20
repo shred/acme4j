@@ -14,7 +14,7 @@
 package org.shredzone.acme4j;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.shredzone.acme4j.util.TestUtils.getJson;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -22,10 +22,12 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.security.cert.X509Certificate;
+import java.util.Date;
 
 import org.junit.Test;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
@@ -80,6 +82,38 @@ public class CertificateTest {
         X509Certificate[] downloadedChain = cert.downloadChain();
         assertThat(downloadedChain.length, is(1));
         assertThat(downloadedChain[0], is(sameInstance(originalCert)));
+
+        provider.close();
+    }
+
+    /**
+     * Test that a {@link AcmeRetryAfterException} is thrown.
+     */
+    @Test
+    public void testRetryAfter() throws AcmeException, IOException {
+        final long retryAfter = System.currentTimeMillis() + 30 * 1000L;
+
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public int sendRequest(URI uri) {
+                assertThat(uri, is(locationUri));
+                return HttpURLConnection.HTTP_ACCEPTED;
+            }
+
+            @Override
+            public Date getRetryAfterHeader() {
+                return new Date(retryAfter);
+            }
+        };
+
+        Certificate cert = new Certificate(provider.createSession(), locationUri);
+
+        try {
+            cert.download();
+            fail("Expected AcmeRetryAfterException");
+        } catch (AcmeRetryAfterException ex) {
+            assertThat(ex.getRetryAfter(), is(new Date(retryAfter)));
+        }
 
         provider.close();
     }

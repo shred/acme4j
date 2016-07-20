@@ -45,6 +45,8 @@ X509Certificate[] chain = cert.downloadChain();
 
 Congratulations! You have just created your first certificate via _acme4j_.
 
+`download()` may throw an `AcmeRetryAfterException`, giving an estimated time in `getRetryAfter()` for when the certificate is ready for download. You should then wait until that moment has been reached, before trying again.
+
 To recreate a `Certificate` object from the location, just bind it:
 
 ```java

@@ -48,6 +48,8 @@ while (challenge.getStatus() != Status.VALID) {
 
 This is a very simple example. You should limit the number of loop iterations, and abort the loop when the status should turn to `INVALID`. If you know when the CA server actually requested your response (e.g. when you notice a HTTP request on the response file), you should start polling after that event.
 
+`update()` may throw an `AcmeRetryAfterException`, giving an estimated time in `getRetryAfter()` for when the challenge is completed. You should then wait until that moment has been reached, before trying again. The challenge state is still updated when this exception is thrown.
+
 As soon as all the necessary challenges are `VALID`, you have successfully associated the domain with your account.
 
 If your final certificate will contain further domains or subdomains, repeat the authorization run with each of them.
@@ -66,6 +68,8 @@ auth.update();
 ```
 
 After invoking `update()`, the `Authorization` object contains the current server state about your authorization, including the domain name, the overall status, and an expiry date.
+
+`update()` may throw an `AcmeRetryAfterException`, giving an estimated time in `getRetryAfter()` for when all challenges are completed. You should then wait until that moment has been reached, before trying again. The authorization state is still updated when this exception is thrown.
 
 ## Deactivate an Authorization
 
