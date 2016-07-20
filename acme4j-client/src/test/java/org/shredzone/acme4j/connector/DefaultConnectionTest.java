@@ -15,7 +15,6 @@ package org.shredzone.acme4j.connector;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -36,6 +35,7 @@ import org.jose4j.base64url.Base64Url;
 import org.jose4j.jwx.CompactSerializer;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -232,8 +232,12 @@ public class DefaultConnectionTest {
         int delta = 10 * 60 * 60;
         long now = System.currentTimeMillis();
 
-        when(mockUrlConnection.getHeaderField("Retry-After")).thenReturn(String.valueOf(delta));
-        when(mockUrlConnection.getHeaderFieldDate(eq("Date"), anyLong())).thenReturn(now);
+        when(mockUrlConnection.getHeaderField("Retry-After"))
+                .thenReturn(String.valueOf(delta));
+        when(mockUrlConnection.getHeaderFieldDate(
+                        ArgumentMatchers.eq("Date"),
+                        ArgumentMatchers.anyLong()))
+                .thenReturn(now);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;

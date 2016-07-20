@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.connector.Resource;
@@ -128,8 +129,8 @@ public class SessionTest {
         final AcmeProvider mockProvider = mock(AcmeProvider.class);
 
         when(mockProvider.createChallenge(
-                        org.mockito.Matchers.any(Session.class),
-                        org.mockito.Matchers.eq(challengeType)))
+                        ArgumentMatchers.any(Session.class),
+                        ArgumentMatchers.eq(challengeType)))
                 .thenReturn(mockChallenge);
 
         Session session = new Session(serverUri, keyPair) {
@@ -160,8 +161,8 @@ public class SessionTest {
 
         final AcmeProvider mockProvider = mock(AcmeProvider.class);
         when(mockProvider.resources(
-                        org.mockito.Matchers.any(Session.class),
-                        org.mockito.Matchers.eq(serverUri)))
+                        ArgumentMatchers.any(Session.class),
+                        ArgumentMatchers.eq(serverUri)))
                 .thenReturn(directoryMap);
 
         Session session = new Session(serverUri, keyPair) {
@@ -180,8 +181,8 @@ public class SessionTest {
 
         // Make sure directory is only read once!
         verify(mockProvider, times(1)).resources(
-                        org.mockito.Matchers.any(Session.class),
-                        org.mockito.Matchers.any(URI.class));
+                        ArgumentMatchers.any(Session.class),
+                        ArgumentMatchers.any(URI.class));
 
         // Simulate a cache expiry
         session.directoryCacheExpiry = new Date();
@@ -194,8 +195,8 @@ public class SessionTest {
         assertThat(session.resourceUri(Resource.NEW_REG),
                         is(nullValue()));
         verify(mockProvider, times(2)).resources(
-                        org.mockito.Matchers.any(Session.class),
-                        org.mockito.Matchers.any(URI.class));
+                        ArgumentMatchers.any(Session.class),
+                        ArgumentMatchers.any(URI.class));
     }
 
 }
