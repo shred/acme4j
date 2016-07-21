@@ -18,8 +18,6 @@ import java.io.IOException;
 /**
  * This exception is thrown when a network error occured while communicating with the
  * server.
- *
- * @author Richard "Shred" Körber
  */
 public class AcmeNetworkException extends AcmeException {
     private static final long serialVersionUID = 2054398693543329179L;

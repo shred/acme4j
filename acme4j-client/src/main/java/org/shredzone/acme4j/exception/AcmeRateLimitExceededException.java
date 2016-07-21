@@ -17,8 +17,6 @@ import java.util.Date;
 
 /**
  * An exception that is thrown when a rate limit was exceeded.
- *
- * @author Richard "Shred" Körber
  */
 public class AcmeRateLimitExceededException extends AcmeServerException {
     private static final long serialVersionUID = 4150484059796413069L;

@@ -8,6 +8,12 @@ This Java client helps connecting to an ACME server, and performing all necessar
 
 It is an independent open source implementation that is not affiliated with or endorsed by _Let's Encrypt_.
 
+## Migration Guide
+
+Major parts of the _acme4j_ API have changed in this version.
+
+Please see the [migration guide](https://shredzone.org/maven/acme4j/migration.html) for how to update your code to the new API. It should just be a matter of a few minutes.
+
 ## Features
 
 * Supports ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02)
@@ -19,7 +25,7 @@ It is an independent open source implementation that is not affiliated with or e
 
 ## Usage
 
-* See the [online documentation](http://www.shredzone.org/maven/acme4j/) about how to use _acme4j_.
+* See the [online documentation](https://shredzone.org/maven/acme4j/) about how to use _acme4j_.
 * For a quick start, have a look at [the source code of an example](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/ClientTest.java).
 
 ## Beta Release

@@ -28,8 +28,6 @@ import org.shredzone.acme4j.util.TestUtils;
 
 /**
  * Unit tests for {@link Dns01Challenge}.
- *
- * @author Richard "Shred" Körber
  */
 public class DnsChallengeTest {
     private static final String KEY_AUTHORIZATION =

@@ -24,7 +24,6 @@ import java.util.regex.Pattern;
  * Parses a timestamp as defined in RFC 3339.
  *
  * @see <a href="https://www.ietf.org/rfc/rfc3339.txt">RFC 3339</a>
- * @author Richard "Shred" Körber
  */
 public class TimestampParser {
 

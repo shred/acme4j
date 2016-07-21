@@ -48,8 +48,6 @@ import com.jcabi.matchers.RegexMatchers;
 
 /**
  * Unit tests for {@link CSRBuilder}.
- *
- * @author Richard "Shred" Körber
  */
 public class CSRBuilderTest {
 

@@ -47,8 +47,6 @@ import org.shredzone.acme4j.util.TestUtils;
 
 /**
  * Unit tests for {@link Registration}.
- *
- * @author Richard "Shred" Körber
  */
 public class RegistrationTest {
 

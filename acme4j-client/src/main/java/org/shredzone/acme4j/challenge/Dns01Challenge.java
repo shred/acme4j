@@ -23,8 +23,6 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
  * Implements the {@value TYPE} challenge.
- *
- * @author Richard "Shred" Körber
  */
 public class Dns01Challenge extends TokenChallenge {
     private static final long serialVersionUID = 6964687027713533075L;

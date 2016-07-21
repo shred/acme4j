@@ -10,7 +10,7 @@ Web site: [Let's Encrypt](https://letsencrypt.org)
 
 ## Features
 
-* Connection to the ACME server is pinned to the Let's Encrypt certificate
+* Accepts the ACME server certificate of Let's Encrypt even on older Java versions
 
 ## Limits
 

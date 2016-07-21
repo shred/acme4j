@@ -34,8 +34,6 @@ import org.shredzone.acme4j.util.TestUtils;
  * Unit tests for {@link Session#provider()}. Requires that both enclosed
  * {@link AcmeProvider} implementations are registered via Java's {@link ServiceLoader}
  * API when the test is run.
- *
- * @author Richard "Shred" Körber
  */
 public class SessionProviderTest {
 

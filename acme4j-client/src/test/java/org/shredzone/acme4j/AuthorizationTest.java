@@ -37,8 +37,6 @@ import org.shredzone.acme4j.util.TimestampParser;
 
 /**
  * Unit tests for {@link Authorization}.
- *
- * @author Richard "Shred" Körber
  */
 public class AuthorizationTest {
 

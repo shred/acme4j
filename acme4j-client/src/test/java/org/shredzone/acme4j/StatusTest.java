@@ -20,8 +20,6 @@ import org.junit.Test;
 
 /**
  * Unit tests for {@link Status} enumeration.
- *
- * @author Richard "Shred" Körber
  */
 public class StatusTest {
 

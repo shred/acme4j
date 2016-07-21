@@ -29,8 +29,6 @@ import org.shredzone.acme4j.util.TestUtils;
 
 /**
  * Unit tests for {@link OutOfBand01Challenge}.
- *
- * @author Richard "Shred" Körber
  */
 public class OutOfBandChallengeTest {
     private static Session session;

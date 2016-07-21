@@ -21,8 +21,6 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
  * Implements the {@value TYPE} challenge.
- *
- * @author Richard "Shred" Körber
  */
 public class OutOfBand01Challenge extends Challenge {
     private static final long serialVersionUID = -7459595198486630582L;

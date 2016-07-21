@@ -34,8 +34,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Represents a certificate and its certificate chain.
- *
- * @author Richard "Shred" Körber
  */
 public class Certificate extends AcmeResource {
     private static final long serialVersionUID = 7381527770159084201L;

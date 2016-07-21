@@ -15,7 +15,7 @@ package org.shredzone.acme4j.provider;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -39,8 +39,6 @@ import org.shredzone.acme4j.util.TestUtils;
 
 /**
  * Unit tests for {@link AbstractAcmeProvider}.
- *
- * @author Richard "Shred" Körber
  */
 public class AbstractAcmeProviderTest {
 

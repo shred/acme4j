@@ -18,7 +18,6 @@ package org.shredzone.acme4j;
  *
  * @see <a href="https://tools.ietf.org/html/rfc5280#section-5.3.1">RFC 5280 Section
  *      5.3.1</a>
- * @author Richard "Shred" Körber
  */
 public enum RevocationReason {
 

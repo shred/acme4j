@@ -20,8 +20,6 @@ import org.junit.Test;
 
 /**
  * Unit test for {@link Resource}.
- *
- * @author Richard "Shred" Körber
  */
 public class ResourceTest {
 

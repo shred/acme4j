@@ -20,8 +20,6 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 
 /**
  * Implements the {@value TYPE} challenge.
- *
- * @author Richard "Shred" Körber
  */
 public class Http01Challenge extends TokenChallenge {
     private static final long serialVersionUID = 3322211185872544605L;

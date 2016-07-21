@@ -45,8 +45,6 @@ import org.bouncycastle.util.io.pem.PemWriter;
  * Generator for a CSR (Certificate Signing Request) suitable for ACME servers.
  * <p>
  * Requires {@code Bouncy Castle}.
- *
- * @author Richard "Shred" Körber
  */
 public class CSRBuilder {
     private static final String SIGNATURE_ALG = "SHA256withRSA";

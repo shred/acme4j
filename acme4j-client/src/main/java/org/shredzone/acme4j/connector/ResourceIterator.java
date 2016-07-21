@@ -33,8 +33,6 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 /**
  * An {@link Iterator} that fetches a batch of URIs from the ACME server, and
  * generates {@link AcmeResource} instances.
- *
- * @author Richard "Shred" Körber
  */
 public abstract class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
 

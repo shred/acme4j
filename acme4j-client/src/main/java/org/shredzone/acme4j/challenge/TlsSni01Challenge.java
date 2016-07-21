@@ -26,7 +26,6 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
  * @deprecated Use {@link TlsSni02Challenge} if supported by the CA. This challenge will
  *             be removed when Let's Encrypt removes support for
  *             {@link TlsSni01Challenge}.
- * @author Richard "Shred" Körber
  */
 @Deprecated
 public class TlsSni01Challenge extends TokenChallenge {

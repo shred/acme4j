@@ -15,8 +15,6 @@ package org.shredzone.acme4j;
 
 /**
  * Status codes of challenges and authorizations.
- *
- * @author Richard "Shred" Körber
  */
 public enum Status {
 

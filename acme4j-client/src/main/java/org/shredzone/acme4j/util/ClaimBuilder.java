@@ -40,8 +40,6 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
  * cb.object("sub").put("data", "subdata");
  * cb.array("array", 123, 456, 789);
  * </pre>
- *
- * @author Richard "Shred" Körber
  */
 public class ClaimBuilder {
 

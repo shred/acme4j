@@ -23,8 +23,6 @@ import org.junit.Test;
 
 /**
  * Unit tests for {@link LetsEncryptAcmeProvider}.
- *
- * @author Richard "Shred" Körber
  */
 public class LetsEncryptAcmeProviderTest {
 

@@ -28,8 +28,6 @@ import org.shredzone.acme4j.util.TestUtils;
 
 /**
  * Unit tests for {@link TlsSni01Challenge}.
- *
- * @author Richard "Shred" Körber
  */
 @SuppressWarnings("deprecation") // must test a deprecated challenge
 public class TlsSni01ChallengeTest {

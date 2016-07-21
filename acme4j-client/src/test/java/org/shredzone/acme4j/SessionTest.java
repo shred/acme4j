@@ -35,8 +35,6 @@ import org.shredzone.acme4j.util.TestUtils;
 
 /**
  * Unit test for {@link Session}.
- *
- * @author Richard "Shred" Körber
  */
 public class SessionTest {
 

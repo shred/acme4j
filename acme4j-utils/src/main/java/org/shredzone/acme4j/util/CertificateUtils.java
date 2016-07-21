@@ -43,8 +43,6 @@ import org.shredzone.acme4j.challenge.TlsSni02Challenge;
  * Utility class offering convenience methods for certificates.
  * <p>
  * Requires {@code Bouncy Castle}.
- *
- * @author Richard "Shred" Körber
  */
 public final class CertificateUtils {
 

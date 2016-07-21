@@ -30,8 +30,6 @@ import org.junit.experimental.categories.Category;
 
 /**
  * Unit test for {@link LetsEncryptHttpConnector}.
- *
- * @author Richard "Shred" Körber
  */
 public class LetsEncryptHttpConnectorTest {
 

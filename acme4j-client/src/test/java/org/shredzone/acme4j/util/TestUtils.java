@@ -48,8 +48,6 @@ import org.shredzone.acme4j.provider.AcmeProvider;
 
 /**
  * Some utility methods for unit tests.
- *
- * @author Richard "Shred" Körber
  */
 public final class TestUtils {
     public static final String N = "pZsTKY41y_CwgJ0VX7BmmGs_7UprmXQMGPcnSbBeJAjZHA9SyyJKaWv4fNUdBIAX3Y2QoZixj50nQLyLv2ng3pvEoRL0sx9ZHgp5ndAjpIiVQ_8V01TTYCEDUc9ii7bjVkgFAb4ValZGFJZ54PcCnAHvXi5g0ELORzGcTuRqHVAUckMV2otr0g0u_5bWMm6EMAbBrGQCgUGjbZQHjava1Y-5tHXZkPBahJ2LvKRqMmJUlr0anKuJJtJUG03DJYAxABv8YAaXFBnGw6kKJRpUFAC55ry4sp4kGy0NrK2TVWmZW9kStniRv4RaJGI9aZGYwQy2kUykibBNmWEQUlIwIw";

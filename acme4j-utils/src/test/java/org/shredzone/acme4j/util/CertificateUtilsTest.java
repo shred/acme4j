@@ -39,8 +39,6 @@ import com.jcabi.matchers.RegexMatchers;
 
 /**
  * Unit tests for {@link CertificateUtils}.
- *
- * @author Richard "Shred" Körber
  */
 public class CertificateUtilsTest {
 

@@ -36,8 +36,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Represents an authorization request at the ACME server.
- *
- * @author Richard "Shred" Körber
  */
 public class Authorization extends AcmeResource {
     private static final long serialVersionUID = -3116928998379417741L;

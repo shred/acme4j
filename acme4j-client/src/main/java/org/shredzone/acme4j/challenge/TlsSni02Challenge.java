@@ -22,8 +22,6 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
  * Implements the {@value TYPE} challenge.
- *
- * @author Richard "Shred" Körber
  */
 public class TlsSni02Challenge extends TokenChallenge {
     private static final long serialVersionUID = 8921833167878544518L;

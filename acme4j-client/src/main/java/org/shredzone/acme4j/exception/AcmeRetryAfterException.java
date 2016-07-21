@@ -18,8 +18,6 @@ import java.util.Date;
 /**
  * This exception is thrown when a server side process has not been completed yet, and the
  * server returned an estimated retry date.
- *
- * @author Richard "Shred" Körber
  */
 public class AcmeRetryAfterException extends AcmeException {
     private static final long serialVersionUID = 4461979121063649905L;

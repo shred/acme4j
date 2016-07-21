@@ -32,8 +32,6 @@ import com.jcabi.matchers.RegexMatchers;
 
 /**
  * Unit tests for {@link KeyPairUtils}.
- *
- * @author Richard "Shred" Körber
  */
 public class KeyPairUtilsTest {
     private static final int KEY_SIZE = 2048;

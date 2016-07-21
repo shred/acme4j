@@ -18,8 +18,6 @@ import java.net.URI;
 /**
  * An exception that is thrown when there is a conflict with the request. For example,
  * this exception is thrown when a registration already exists.
- *
- * @author Richard "Shred" Körber
  */
 public class AcmeConflictException extends AcmeException {
     private static final long serialVersionUID = 7454201988845449591L;

@@ -26,8 +26,6 @@ import org.junit.experimental.categories.Category;
 
 /**
  * Unit tests for {@link HttpConnector}.
- *
- * @author Richard "Shred" Körber
  */
 public class HttpConnectorTest {
 

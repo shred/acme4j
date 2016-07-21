@@ -25,8 +25,6 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 /**
  * Dummy implementation of {@link Connection} that always fails. Single methods are
  * supposed to be overridden for testing.
- *
- * @author Richard "Shred" Körber
  */
 public class DummyConnection implements Connection {
 

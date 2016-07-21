@@ -52,8 +52,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Default implementation of {@link Connection}.
- *
- * @author Richard "Shred" Körber
  */
 public class DefaultConnection implements Connection {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultConnection.class);

@@ -29,8 +29,6 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
  * Utility class for signatures.
- *
- * @author Richard "Shred" Körber
  */
 public final class SignatureUtils {
 

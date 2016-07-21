@@ -18,8 +18,6 @@ import java.net.URI;
 
 /**
  * A generic ACME resource.
- *
- * @author Richard "Shred" Körber *
  */
 public abstract class AcmeResource implements Serializable {
     private static final long serialVersionUID = -7930580802257379731L;

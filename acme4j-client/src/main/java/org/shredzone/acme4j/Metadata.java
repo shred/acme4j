@@ -23,8 +23,6 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
  * Contains metadata related to the provider.
- *
- * @author Richard "Shred" Körber
  */
 public class Metadata {
 

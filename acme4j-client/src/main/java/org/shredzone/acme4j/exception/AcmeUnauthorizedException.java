@@ -16,8 +16,6 @@ package org.shredzone.acme4j.exception;
 /**
  * An exception that is thrown when the client is not authorized. The details will give
  * an explanation for the reasons (e.g. "client not on a whitelist").
- *
- * @author Richard "Shred" Körber
  */
 public class AcmeUnauthorizedException extends AcmeServerException {
     private static final long serialVersionUID = 9064697508262919366L;

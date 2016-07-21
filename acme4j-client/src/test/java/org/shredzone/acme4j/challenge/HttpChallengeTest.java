@@ -29,8 +29,6 @@ import org.shredzone.acme4j.util.TestUtils;
 
 /**
  * Unit tests for {@link Http01Challenge}.
- *
- * @author Richard "Shred" Körber
  */
 public class HttpChallengeTest {
     private static final String TOKEN =

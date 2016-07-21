@@ -28,8 +28,6 @@ import org.junit.Test;
 
 /**
  * Unit tests for {@link TimestampParser}.
- *
- * @author Richard "Shred" Körber
  */
 public class TimestampParserTest {
 

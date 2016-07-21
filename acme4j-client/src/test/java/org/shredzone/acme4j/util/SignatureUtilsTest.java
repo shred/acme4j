@@ -27,8 +27,6 @@ import org.junit.Test;
 
 /**
  * Unit tests for {@link SignatureUtils}.
- *
- * @author Richard "Shred" Körber
  */
 public class SignatureUtilsTest {
 

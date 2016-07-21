@@ -16,8 +16,6 @@ package org.shredzone.acme4j.exception;
 /**
  * This runtime exception is thrown on ACME protocol errors that should not occur. For
  * example, this exception is thrown when a server response could not be parsed.
- *
- * @author Richard "Shred" Körber
  */
 public class AcmeProtocolException extends RuntimeException {
     private static final long serialVersionUID = 2031203835755725193L;

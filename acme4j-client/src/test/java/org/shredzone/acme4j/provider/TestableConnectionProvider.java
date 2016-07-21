@@ -30,8 +30,6 @@ import org.shredzone.acme4j.util.TestUtils;
 /**
  * Test implementation of {@link AcmeProvider}. It also implements a dummy implementation
  * of {@link Connection} that is always returned on {@link #connect()}.
- *
- * @author Richard "Shred" Körber
  */
 public class TestableConnectionProvider extends DummyConnection implements AcmeProvider {
     private final Map<String, Challenge> challengeMap = new HashMap<>();

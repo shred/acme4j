@@ -23,8 +23,6 @@ import org.junit.Test;
 
 /**
  * Unit tests for {@link GenericAcmeProvider}.
- *
- * @author Richard "Shred" Körber
  */
 public class GenericAcmeProviderTest {
 

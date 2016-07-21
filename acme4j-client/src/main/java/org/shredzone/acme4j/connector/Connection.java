@@ -26,8 +26,6 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 
 /**
  * Connects to the ACME server and offers different methods for invoking the API.
- *
- * @author Richard "Shred" Körber
  */
 public interface Connection extends AutoCloseable {
 

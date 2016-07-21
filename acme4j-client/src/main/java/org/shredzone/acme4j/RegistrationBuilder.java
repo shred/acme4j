@@ -30,8 +30,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A builder for a new account registration.
- *
- * @author Richard "Shred" Körber
  */
 public class RegistrationBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationBuilder.class);

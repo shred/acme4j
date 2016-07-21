@@ -16,8 +16,6 @@ package org.shredzone.acme4j.exception;
 /**
  * An exception that is thrown when the ACME server returned an error. It contains
  * further details of the cause.
- *
- * @author Richard "Shred" Körber
  */
 public class AcmeServerException extends AcmeException {
     private static final long serialVersionUID = 5971622508467042792L;

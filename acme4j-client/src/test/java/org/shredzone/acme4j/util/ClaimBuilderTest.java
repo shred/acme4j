@@ -31,8 +31,6 @@ import org.shredzone.acme4j.connector.Resource;
 
 /**
  * Unit test for {@link ClaimBuilder}.
- *
- * @author Richard "Shred" Körber
  */
 public class ClaimBuilderTest {
 

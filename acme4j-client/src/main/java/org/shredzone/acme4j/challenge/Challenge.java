@@ -45,8 +45,6 @@ import org.slf4j.LoggerFactory;
  * Subclasses must override {@link Challenge#acceptable(String)} so it only accepts the
  * own type. {@link Challenge#respond(ClaimBuilder)} should be overridden to put all
  * required data to the response.
- *
- * @author Richard "Shred" Körber
  */
 public class Challenge extends AcmeResource {
     private static final long serialVersionUID = 2338794776848388099L;

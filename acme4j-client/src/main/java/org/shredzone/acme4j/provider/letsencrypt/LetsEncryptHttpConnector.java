@@ -32,8 +32,6 @@ import org.shredzone.acme4j.connector.HttpConnector;
 /**
  * {@link HttpConnector} to be used for Let's Encrypt. It is pinned to the Let's Encrypt
  * server certificate.
- *
- * @author Richard "Shred" Körber
  */
 public class LetsEncryptHttpConnector extends HttpConnector {
 

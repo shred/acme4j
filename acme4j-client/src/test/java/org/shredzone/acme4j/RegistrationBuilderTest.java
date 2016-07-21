@@ -28,8 +28,6 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 
 /**
  * Unit tests for {@link RegistrationBuilder}.
- *
- * @author Richard "Shred" Körber
  */
 public class RegistrationBuilderTest {
 

@@ -34,8 +34,6 @@ import org.shredzone.acme4j.util.TestUtils;
 
 /**
  * Unit tests for {@link Certificate}.
- *
- * @author Richard "Shred" Körber
  */
 public class CertificateTest {
 

@@ -35,8 +35,6 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
  * Utility class offering convenience methods for {@link KeyPair}.
  * <p>
  * Requires {@code Bouncy Castle}.
- *
- * @author Richard "Shred" Körber
  */
 public class KeyPairUtils {
 

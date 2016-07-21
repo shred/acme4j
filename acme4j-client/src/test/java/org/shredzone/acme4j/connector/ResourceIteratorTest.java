@@ -37,8 +37,6 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 
 /**
  * Unit test for {@link ResourceIterator}.
- *
- * @author Richard "Shred" Körber
  */
 public class ResourceIteratorTest {
 

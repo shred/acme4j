@@ -36,8 +36,6 @@ import org.shredzone.acme4j.provider.AcmeProvider;
  * <p>
  * Note that {@link Session} objects are not serializable, as they contain a keypair and
  * volatile data.
- *
- * @author Richard "Shred" Körber
  */
 public class Session {
     private final Map<Resource, URI> resourceMap = new EnumMap<>(Resource.class);

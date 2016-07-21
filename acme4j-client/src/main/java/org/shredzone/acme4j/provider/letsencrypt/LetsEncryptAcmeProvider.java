@@ -30,7 +30,6 @@ import org.shredzone.acme4j.provider.AcmeProvider;
  * If you want to use <em>Let's Encrypt</em>, always prefer to use this provider, as it
  * takes care for the correct connection and SSL certificates.
  *
- * @author Richard "Shred" Körber
  * @see <a href="https://letsencrypt.org/">Let's Encrypt</a>
  */
 public class LetsEncryptAcmeProvider extends AbstractAcmeProvider {

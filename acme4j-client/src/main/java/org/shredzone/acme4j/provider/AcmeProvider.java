@@ -27,8 +27,6 @@ import org.shredzone.acme4j.exception.AcmeException;
  * server. Implementations handle individual features of each ACME server.
  * <p>
  * Provider implementations must be registered with Java's {@link ServiceLoader}.
- *
- * @author Richard "Shred" Körber
  */
 public interface AcmeProvider {
 

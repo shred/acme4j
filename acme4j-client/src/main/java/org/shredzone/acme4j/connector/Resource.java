@@ -15,8 +15,6 @@ package org.shredzone.acme4j.connector;
 
 /**
  * Enumeration of resources.
- *
- * @author Richard "Shred" Körber
  */
 public enum Resource {
 

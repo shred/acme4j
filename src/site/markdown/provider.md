@@ -35,8 +35,6 @@ Client providers may verify the HTTPS certificate provided by the ACME server.
 
 To do so, override the `createHttpConnector()` method of `AbstractAcmeProvider` and return a subclassed `HttpConnector` class that modifies the `HttpURLConnection` as required.
 
-The source code of the [_Let's Encrypt_ provider](./apidocs/org/shredzone/acme4j/provider/letsencrypt/package-summary.html) gives an example of how to do that.
-
 ## Individual Challenges
 
 If your ACME server provides challenges that are not specified in the ACME protocol, there should be an own `Challenge` implementation for each of your challenge, by extending the [`Challenge`](./apidocs/org/shredzone/acme4j/challenge/Challenge.html) class.

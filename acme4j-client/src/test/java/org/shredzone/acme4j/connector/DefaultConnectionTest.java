@@ -45,8 +45,6 @@ import org.shredzone.acme4j.util.TestUtils;
 
 /**
  * Unit tests for {@link DefaultConnection}.
- *
- * @author Richard "Shred" Körber
  */
 public class DefaultConnectionTest {
 

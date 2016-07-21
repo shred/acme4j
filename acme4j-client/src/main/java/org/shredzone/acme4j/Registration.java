@@ -45,8 +45,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Represents a registration at the ACME server.
- *
- * @author Richard "Shred" Körber
  */
 public class Registration extends AcmeResource {
     private static final long serialVersionUID = -8177333806740391140L;

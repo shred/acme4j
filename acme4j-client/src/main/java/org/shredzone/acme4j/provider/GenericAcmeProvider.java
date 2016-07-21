@@ -20,8 +20,6 @@ import java.net.URI;
  * the ACME specifications.
  * <p>
  * The {@code serverUri} is either a http or https URI to the server's directory service.
- *
- * @author Richard "Shred" Körber
  */
 public class GenericAcmeProvider extends AbstractAcmeProvider {
 

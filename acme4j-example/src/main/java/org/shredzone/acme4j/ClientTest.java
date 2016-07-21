@@ -44,8 +44,6 @@ import org.slf4j.LoggerFactory;
  * A simple client test tool.
  * <p>
  * Pass the names of the domains as parameters.
- *
- * @author Richard "Shred" Körber
  */
 public class ClientTest {
     private static final File USER_KEY_FILE = new File("user.key");

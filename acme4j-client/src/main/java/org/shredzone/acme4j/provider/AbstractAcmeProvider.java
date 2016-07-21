@@ -36,8 +36,6 @@ import org.shredzone.acme4j.exception.AcmeNetworkException;
  * <p>
  * Implementing classes must implement at least {@link AcmeProvider#accepts(URI)}
  * and {@link AbstractAcmeProvider#resolve(URI)}.
- *
- * @author Richard "Shred" Körber
  */
 public abstract class AbstractAcmeProvider implements AcmeProvider {
 

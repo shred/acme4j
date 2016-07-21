@@ -23,8 +23,6 @@ import java.net.URI;
  * <p>
  * Subclasses may reconfigure the {@link HttpURLConnection} and pin it to a concrete SSL
  * certificate.
- *
- * @author Richard "Shred" Körber
  */
 public class HttpConnector {
 

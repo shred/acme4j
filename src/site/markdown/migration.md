@@ -36,7 +36,9 @@ try {
 }
 ```
 
-Let me give an example of how to use the resource objects. To start an authorization process for a domain, we previously needed a `Registration` object, an `Authorization` object, and an `AcmeClient` instance. This is the old way:
+Let me give an example of how to use the resource objects. To start an authorization process for a domain, we previously needed a `Registration` object, an `Authorization` object, and an `AcmeClient` instance.
+
+This is the *old* way:
 
 ```java
 AcmeClient client = ... // your ACME client
@@ -58,7 +60,9 @@ Authorization auth = registration.authorizeDomain("example.org");
 
 As you can see, the authorization method that actually invokes the ACME server has moved from `AcmeClient` to `Registration`.
 
-Let's continue the example. We find and trigger a HTTP challenge. Previously, it worked like this:
+Let's continue the example. We find and trigger a HTTP challenge.
+
+Previously, it worked like this:
 
 ```java
 Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
@@ -73,7 +77,7 @@ Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
 challenge.trigger();
 ```
 
-Note that the `authorize()` method is not needed any more, and has been removed.
+Note that the `authorize()` method is not needed any more, and has been removed without replacement.
 
 As a rule of thumb, you will find the action methods in one of the objects you previously passed as parameter to the `AcmeClient` method. For example, when you wrote `client.triggerChallenge(registration, challenge)`, you will find the new `trigger` method in either `registration` or `challenge` (here it's `challenge`).
 

@@ -24,8 +24,6 @@ import org.shredzone.acme4j.util.SignatureUtils;
 /**
  * An extension of {@link Challenge} that handles challenges with a {@code token} and
  * {@code keyAuthorization}.
- *
- * @author Richard "Shred" Körber
  */
 public class TokenChallenge extends Challenge {
     private static final long serialVersionUID = 1634133407432681800L;

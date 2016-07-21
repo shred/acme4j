@@ -15,8 +15,6 @@ package org.shredzone.acme4j.exception;
 
 /**
  * A generic ACME exception.
- *
- * @author Richard "Shred" Körber
  */
 public class AcmeException extends Exception {
     private static final long serialVersionUID = -2935088954705632025L;

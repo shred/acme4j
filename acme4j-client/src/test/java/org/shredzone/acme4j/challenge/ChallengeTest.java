@@ -49,8 +49,6 @@ import org.shredzone.acme4j.util.TimestampParser;
 
 /**
  * Unit tests for {@link Challenge}.
- *
- * @author Richard "Shred" Körber
  */
 public class ChallengeTest {
     private Session session;
