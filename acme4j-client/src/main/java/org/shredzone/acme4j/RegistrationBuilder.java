@@ -34,28 +34,7 @@ import org.slf4j.LoggerFactory;
 public class RegistrationBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationBuilder.class);
 
-    private final Session session;
     private List<URI> contacts = new ArrayList<>();
-
-    /**
-     * Creates a new instance of {@link RegistrationBuilder} and binds it to the
-     * {@link Session}.
-     *
-     * @param session
-     *            {@link Session} to be used
-     */
-    public static RegistrationBuilder bind(Session session) {
-        return new RegistrationBuilder(session);
-    }
-
-    /**
-     * Creates a new {@link RegistrationBuilder}.
-     *
-     * @param session {@link Session} to bind to
-     */
-    private RegistrationBuilder(Session session) {
-        this.session = session;
-    }
 
     /**
      * Add a contact URI to the list of contacts.
@@ -86,13 +65,15 @@ public class RegistrationBuilder {
     /**
      * Creates a new account.
      *
+     * @param session
+     *            {@link Session} to be used for registration
      * @return {@link Registration} referring to the new account
      * @throws AcmeConflictException
      *             if there is already an account for the connection's key pair.
      *             {@link AcmeConflictException#getLocation()} contains the registration's
      *             location URI.
      */
-    public Registration create() throws AcmeException {
+    public Registration create(Session session) throws AcmeException {
         LOG.debug("create");
 
         try (Connection conn = session.provider().connect()) {

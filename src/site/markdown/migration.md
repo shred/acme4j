@@ -28,7 +28,7 @@ You must know your account's location URI. Use a `RegistrationBuilder` if you do
 Registration registration;
 try {
   // Try to create a new Registration...
-  registration = RegistrationBuilder.bind(session).create();
+  registration = new RegistrationBuilder().create(session);
 } catch (AcmeConflictException ex) {
   // It failed because your key was already registered.
   // Retrieve the registration location URI from the exception.

@@ -2,13 +2,13 @@
 
 If it is the first time you connect to the ACME server, you need to register your account key.
 
-To do so, bind a `RegistrationBuilder`, optionally add some contact information, then invoke `create()`. If the account was successfully created, you will get a `Registration` object in return. Invoking its `getLocation()` method will return the location URI of your account. You should store it somewhere, because you will need it later. Unlike your key pair, the location is a public information that does not need security precautions.
+To do so, create a `RegistrationBuilder`, optionally add some contact information, then invoke `create()`. If the account was successfully created, you will get a `Registration` object in return. Invoking its `getLocation()` method will return the location URI of your account. You should store it somewhere, because you will need it later. Unlike your key pair, the location is a public information that does not need security precautions.
 
 ```java
-RegistrationBuilder builder = RegistrationBuilder.bind(session);
+RegistrationBuilder builder = new RegistrationBuilder();
 builder.addContact("mailto:acme@example.com");
 
-Registration registration = builder.create();
+Registration registration = builder.create(session);
 
 URI accountLocationUri = registration.getLocation();
 ```
@@ -20,7 +20,7 @@ The following example will create a new `Registration` and restore an existing `
 ```java
 Registration registration;
 try {
-  registration = RegistrationBuilder.bind(session).create();
+  registration = new RegistrationBuilder().create(session);
 } catch (AcmeConflictException ex) {
   registration = Registration.bind(session, ex.getLocation());
 }

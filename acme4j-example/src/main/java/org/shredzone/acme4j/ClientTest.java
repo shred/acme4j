@@ -87,7 +87,7 @@ public class ClientTest {
         // Register a new user
         Registration reg = null;
         try {
-            reg = RegistrationBuilder.bind(session).create();
+            reg = new RegistrationBuilder().create(session);
             LOG.info("Registered a new user, URI: " + reg.getLocation());
         } catch (AcmeConflictException ex) {
             reg = Registration.bind(session, ex.getLocation());

@@ -65,10 +65,10 @@ public class RegistrationBuilderTest {
 
         provider.putTestResource(Resource.NEW_REG, resourceUri);
 
-        RegistrationBuilder builder = RegistrationBuilder.bind(provider.createSession());
+        RegistrationBuilder builder = new RegistrationBuilder();
         builder.addContact("mailto:foo@example.com");
 
-        Registration registration = builder.create();
+        Registration registration = builder.create(provider.createSession());
 
         assertThat(registration.getLocation(), is(locationUri));
         assertThat(registration.getAgreement(), is(agreementUri));
