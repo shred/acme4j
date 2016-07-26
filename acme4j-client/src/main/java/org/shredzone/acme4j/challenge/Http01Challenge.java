@@ -74,7 +74,9 @@ public class Http01Challenge extends TokenChallenge {
      *
      * @param address
      *            Address to request the response from
+     * @deprecated feature has been removed in draft-03, do not use.
      */
+    @Deprecated
     public void setAddress(InetAddress address) {
         this.address = address;
     }
