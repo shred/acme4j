@@ -26,6 +26,7 @@ import java.net.URI;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -210,6 +211,20 @@ public class DefaultConnectionTest {
                         URI.create("https://example.com/acme/terms2"),
                         URI.create("https://example.com/acme/terms3")
             ));
+        }
+    }
+
+    /**
+     * Test that no link headers are properly handled.
+     */
+    @Test
+    public void testGetNoLink() {
+        Map<String, List<String>> headers = Collections.emptyMap();
+        when(mockUrlConnection.getHeaderFields()).thenReturn(headers);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            assertThat(conn.getLinks("something"), is(nullValue()));
         }
     }
 
