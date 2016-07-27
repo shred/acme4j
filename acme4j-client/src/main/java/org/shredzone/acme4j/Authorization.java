@@ -188,9 +188,11 @@ public class Authorization extends AcmeResource {
 
             if (rc == HttpURLConnection.HTTP_ACCEPTED) {
                 Date retryAfter = conn.getRetryAfterHeader();
-                throw new AcmeRetryAfterException(
-                                "authorization is not completed yet",
-                                retryAfter);
+                if (retryAfter != null) {
+                    throw new AcmeRetryAfterException(
+                                    "authorization is not completed yet",
+                                    retryAfter);
+                }
             }
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);

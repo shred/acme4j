@@ -93,9 +93,11 @@ public class Certificate extends AcmeResource {
                 int rc = conn.sendRequest(getLocation());
                 if (rc == HttpURLConnection.HTTP_ACCEPTED) {
                     Date retryAfter = conn.getRetryAfterHeader();
-                    throw new AcmeRetryAfterException(
-                                    "certificate is not available for download yet",
-                                    retryAfter);
+                    if (retryAfter != null) {
+                        throw new AcmeRetryAfterException(
+                                        "certificate is not available for download yet",
+                                        retryAfter);
+                    }
                 }
 
                 if (rc != HttpURLConnection.HTTP_OK) {
