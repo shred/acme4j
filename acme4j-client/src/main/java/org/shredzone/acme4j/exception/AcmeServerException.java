@@ -13,15 +13,14 @@
  */
 package org.shredzone.acme4j.exception;
 
+import org.shredzone.acme4j.connector.DefaultConnection;
+
 /**
  * An exception that is thrown when the ACME server returned an error. It contains
  * further details of the cause.
  */
 public class AcmeServerException extends AcmeException {
     private static final long serialVersionUID = 5971622508467042792L;
-
-    private static final String ACME_ERROR_PREFIX = "urn:ietf:params:acme:error:";
-    private static final String ACME_ERROR_PREFIX_DEPRECATED = "urn:acme:error:";
 
     private final String type;
 
@@ -56,11 +55,12 @@ public class AcmeServerException extends AcmeException {
      * @return ACME error type, or {@code null} if this is not an
      *         {@code "urn:ietf:params:acme:error"}
      */
+    @SuppressWarnings("deprecation")
     public String getAcmeErrorType() {
-        if (type.startsWith(ACME_ERROR_PREFIX)) {
-            return type.substring(ACME_ERROR_PREFIX.length());
-        } else if (type.startsWith(ACME_ERROR_PREFIX_DEPRECATED)) {
-            return type.substring(ACME_ERROR_PREFIX_DEPRECATED.length());
+        if (type.startsWith(DefaultConnection.ACME_ERROR_PREFIX)) {
+            return type.substring(DefaultConnection.ACME_ERROR_PREFIX.length());
+        } else if (type.startsWith(DefaultConnection.ACME_ERROR_PREFIX_DEPRECATED)) {
+            return type.substring(DefaultConnection.ACME_ERROR_PREFIX_DEPRECATED.length());
         } else {
             return null;
         }

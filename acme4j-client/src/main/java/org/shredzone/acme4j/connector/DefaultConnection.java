@@ -56,6 +56,11 @@ import org.slf4j.LoggerFactory;
 public class DefaultConnection implements Connection {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultConnection.class);
 
+    public static final String ACME_ERROR_PREFIX = "urn:ietf:params:acme:error:";
+
+    @Deprecated
+    public static final String ACME_ERROR_PREFIX_DEPRECATED = "urn:acme:error:";
+
     private static final Pattern BASE64URL_PATTERN = Pattern.compile("[0-9A-Za-z_-]+");
 
     protected final HttpConnector httpConnector;
@@ -313,12 +318,12 @@ public class DefaultConnection implements Connection {
             }
 
             switch (type) {
-                case "urn:acme:error:unauthorized":
-                case "urn:ietf:params:acme:error:unauthorized":
+                case ACME_ERROR_PREFIX + "unauthorized":
+                case ACME_ERROR_PREFIX_DEPRECATED + "unauthorized":
                     throw new AcmeUnauthorizedException(type, detail);
 
-                case "urn:acme:error:rateLimited":
-                case "urn:ietf:params:acme:error:rateLimited":
+                case ACME_ERROR_PREFIX + "rateLimited":
+                case ACME_ERROR_PREFIX_DEPRECATED + "rateLimited":
                     throw new AcmeRateLimitExceededException(type, detail, getRetryAfterHeader());
 
                 default:
