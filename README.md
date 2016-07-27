@@ -16,7 +16,7 @@ Please see the [migration guide](https://shredzone.org/maven/acme4j/migration.ht
 
 ## Features
 
-* Supports ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02)
+* Supports ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02), with a few parts of [draft 03](https://tools.ietf.org/html/draft-ietf-acme-acme-03)
 * Easy to use Java API
 * Requires JRE 7 or higher
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
@@ -28,11 +28,13 @@ Please see the [migration guide](https://shredzone.org/maven/acme4j/migration.ht
 * See the [online documentation](https://shredzone.org/maven/acme4j/) about how to use _acme4j_.
 * For a quick start, have a look at [the source code of an example](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/ClientTest.java).
 
-## Beta Release
+## Compatibility
 
-Please note that _acme4j_ is currently in beta state. The API may still change without prior notice, but I try to keep the changes minimal.
+_acme4j_ supports all CAs that implement the ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02). The latest [draft 03](https://tools.ietf.org/html/draft-ietf-acme-acme-03) is partially supported. There is currently no public server available that implements all of draft 03.
 
-The [ACME specifications](https://github.com/ietf-wg-acme/acme) are not finalized yet. The _acme4j_ API may change as features are added to, and other features removed from the specifications. Some of the _Let's Encrypt_ services may be restricted or [not yet implemented](https://github.com/letsencrypt/boulder/wiki/TODO). Also see the [_acme4j_ bug tracker](https://github.com/shred/acme4j/issues) for missing or untested features.
+The most prominent ACME CA, _Let's Encrypt_, [diverges from the specifications](https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md). Some of the _acme4j_ features may not work with _Let's Encrypt_. Also, the usage of deprecated API parts may be required.
+
+The _acme4j_ API may change as features are added to, and other features removed from the [ACME specifications](https://github.com/ietf-wg-acme/acme), because they are still work in progress. Also see the [_acme4j_ bug tracker](https://github.com/shred/acme4j/issues) for missing and untested features.
 
 ## Contribute
 
