@@ -146,7 +146,7 @@ public class ClientTest {
                 }
                 challenge.update();
             }
-            if (attempts == 0) {
+            if (challenge.getStatus() != Status.VALID) {
                 LOG.error("Failed to pass the challenge... Giving up.");
                 return;
             }
