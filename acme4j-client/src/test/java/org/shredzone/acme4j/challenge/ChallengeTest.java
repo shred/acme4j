@@ -26,14 +26,10 @@ import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.security.KeyPair;
 import java.util.Date;
 import java.util.Map;
 
-import org.jose4j.base64url.Base64Url;
 import org.jose4j.json.JsonUtil;
-import org.jose4j.jwk.JsonWebKey;
-import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.lang.JoseException;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,7 +39,6 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.util.ClaimBuilder;
-import org.shredzone.acme4j.util.SignatureUtils;
 import org.shredzone.acme4j.util.TestUtils;
 import org.shredzone.acme4j.util.TimestampParser;
 
@@ -138,32 +133,6 @@ public class ChallengeTest {
     public void testNotAcceptable() throws URISyntaxException {
         Http01Challenge challenge = new Http01Challenge(session);
         challenge.unmarshall(TestUtils.getJsonAsMap("dnsChallenge"));
-    }
-
-    /**
-     * Test that the test keypair's thumbprint is correct.
-     */
-    @Test
-    public void testJwkThumbprint() throws IOException, JoseException {
-        StringBuilder json = new StringBuilder();
-        json.append('{');
-        json.append("\"e\":\"").append(TestUtils.E).append("\",");
-        json.append("\"kty\":\"").append(TestUtils.KTY).append("\",");
-        json.append("\"n\":\"").append(TestUtils.N).append("\"");
-        json.append('}');
-
-        KeyPair keypair = TestUtils.createKeyPair();
-
-        // Test the JWK raw output. The JSON string must match the assert string
-        // exactly, as the thumbprint is a digest of that string.
-        final JsonWebKey jwk = JsonWebKey.Factory.newJwk(keypair.getPublic());
-        ClaimBuilder cb = new ClaimBuilder();
-        cb.putAll(jwk.toParams(OutputControlLevel.PUBLIC_ONLY));
-        assertThat(cb.toString(), is(json.toString()));
-
-        // Make sure the returned thumbprint is correct
-        byte[] thumbprint = SignatureUtils.jwkThumbprint(keypair.getPublic());
-        assertThat(thumbprint, is(Base64Url.decode(TestUtils.THUMBPRINT)));
     }
 
     /**

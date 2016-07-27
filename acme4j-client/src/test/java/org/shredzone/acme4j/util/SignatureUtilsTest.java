@@ -20,7 +20,6 @@ import java.security.KeyPair;
 import java.security.Security;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.jose4j.base64url.Base64Url;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -85,19 +84,6 @@ public class SignatureUtilsTest {
         String type = SignatureUtils.keyAlgorithm(jwk);
 
         assertThat(type, is("ES512"));
-    }
-
-    /**
-     * Test if {@link SignatureUtils#jwkThumbprint(java.security.PublicKey)} returns the
-     * correct thumb print.
-     */
-    @Test
-    public void testJwkThumbprint() throws Exception {
-        KeyPair keyPair = TestUtils.createKeyPair();
-
-        byte[] thumbprint = SignatureUtils.jwkThumbprint(keyPair.getPublic());
-
-        assertThat(Base64Url.encode(thumbprint), is(TestUtils.THUMBPRINT));
     }
 
 }

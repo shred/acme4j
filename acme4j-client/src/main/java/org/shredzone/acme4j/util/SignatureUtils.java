@@ -13,19 +13,11 @@
  */
 package org.shredzone.acme4j.util;
 
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.PublicKey;
-
 import org.jose4j.jwk.EllipticCurveJsonWebKey;
 import org.jose4j.jwk.JsonWebKey;
-import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.lang.JoseException;
-import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
  * Utility class for signatures.
@@ -70,34 +62,6 @@ public final class SignatureUtils {
 
         } else {
             throw new IllegalArgumentException("Unknown algorithm " + jwk.getAlgorithm());
-        }
-    }
-
-    /**
-     * Computes a JWK Thumbprint. It is frequently used in responses.
-     *
-     * @param key
-     *            {@link PublicKey} to create a thumbprint of
-     * @return Thumbprint, SHA-256 hashed
-     * @see <a href="https://tools.ietf.org/html/rfc7638">RFC 7638</a>
-     */
-    public static byte[] jwkThumbprint(PublicKey key) {
-        if (key == null) {
-            throw new NullPointerException("key must not be null");
-        }
-
-        try {
-            final JsonWebKey jwk = JsonWebKey.Factory.newJwk(key);
-
-            // We need to use ClaimBuilder to bring the keys in lexicographical order.
-            ClaimBuilder cb = new ClaimBuilder();
-            cb.putAll(jwk.toParams(OutputControlLevel.PUBLIC_ONLY));
-
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            md.update(cb.toString().getBytes("UTF-8"));
-            return md.digest();
-        } catch (JoseException | NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-            throw new AcmeProtocolException("Cannot compute key thumbprint", ex);
         }
     }
 

@@ -290,11 +290,12 @@ public class Registration extends AcmeResource {
 
         String rollover;
         try {
+            final PublicJsonWebKey oldKeyJwk = PublicJsonWebKey.Factory.newPublicJwk(getSession().getKeyPair().getPublic());
+            final PublicJsonWebKey newKeyJwk = PublicJsonWebKey.Factory.newPublicJwk(newKeyPair.getPublic());
+
             ClaimBuilder newKeyClaim = new ClaimBuilder();
             newKeyClaim.putResource("reg");
-            newKeyClaim.putBase64("newKey", SignatureUtils.jwkThumbprint(newKeyPair.getPublic()));
-
-            final PublicJsonWebKey oldKeyJwk = PublicJsonWebKey.Factory.newPublicJwk(getSession().getKeyPair().getPublic());
+            newKeyClaim.putBase64("newKey", newKeyJwk.calculateThumbprint("SHA-256"));
 
             JsonWebSignature jws = new JsonWebSignature();
             jws.setPayload(newKeyClaim.toString());

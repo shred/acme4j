@@ -16,10 +16,11 @@ package org.shredzone.acme4j.challenge;
 import java.security.PublicKey;
 
 import org.jose4j.base64url.Base64Url;
+import org.jose4j.jwk.PublicJsonWebKey;
+import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.util.ClaimBuilder;
-import org.shredzone.acme4j.util.SignatureUtils;
 
 /**
  * An extension of {@link Challenge} that handles challenges with a {@code token} and
@@ -77,10 +78,15 @@ public class TokenChallenge extends Challenge {
      * @return Authorization string
      */
     protected String computeAuthorization() {
-        PublicKey pk = getSession().getKeyPair().getPublic();
-        return getToken()
-            + '.'
-            + Base64Url.encode(SignatureUtils.jwkThumbprint(pk));
+        try {
+            PublicKey pk = getSession().getKeyPair().getPublic();
+            PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(pk);
+            return getToken()
+                        + '.'
+                        + Base64Url.encode(jwk.calculateThumbprint("SHA-256"));
+        } catch (JoseException ex) {
+            throw new AcmeProtocolException("Cannot compute key thumbprint", ex);
+        }
     }
 
     @Override
