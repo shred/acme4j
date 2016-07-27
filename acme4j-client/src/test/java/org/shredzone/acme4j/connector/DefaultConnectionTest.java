@@ -246,6 +246,22 @@ public class DefaultConnectionTest {
     }
 
     /**
+     * Test if no Retry-After header is correctly handled.
+     */
+    @Test
+    public void testGetRetryAfterHeaderNull() {
+        when(mockUrlConnection.getHeaderField("Retry-After"))
+                .thenReturn(null);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            assertThat(conn.getRetryAfterHeader(), is(nullValue()));
+        }
+
+        verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
+    }
+
+    /**
      * Test if an {@link AcmeServerException} is thrown on an acme problem.
      */
     @Test

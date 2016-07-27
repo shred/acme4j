@@ -271,6 +271,9 @@ public class DefaultConnection implements Connection {
 
         // See RFC 2616 section 14.37
         String header = conn.getHeaderField("Retry-After");
+        if (header == null) {
+            return null;
+        }
 
         try {
             // delta-seconds
