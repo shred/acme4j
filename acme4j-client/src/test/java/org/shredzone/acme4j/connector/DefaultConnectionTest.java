@@ -190,6 +190,30 @@ public class DefaultConnectionTest {
     }
 
     /**
+     * Test that multiple link headers are evaluated.
+     */
+    @Test
+    public void testGetMultiLink() {
+        Map<String, List<String>> headers = new HashMap<>();
+        headers.put("Link", Arrays.asList(
+                        "<https://example.com/acme/terms1>; rel=\"terms-of-service\"",
+                        "<https://example.com/acme/terms2>; rel=\"terms-of-service\"",
+                        "<https://example.com/acme/terms3>; rel=\"terms-of-service\""
+                    ));
+
+        when(mockUrlConnection.getHeaderFields()).thenReturn(headers);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            assertThat(conn.getLinks("terms-of-service"), containsInAnyOrder(
+                        URI.create("https://example.com/acme/terms1"),
+                        URI.create("https://example.com/acme/terms2"),
+                        URI.create("https://example.com/acme/terms3")
+            ));
+        }
+    }
+
+    /**
      * Test that no Location header returns {@code null}.
      */
     @Test

@@ -13,6 +13,9 @@
  */
 package org.shredzone.acme4j.exception;
 
+import java.net.URI;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 
 /**
@@ -22,6 +25,7 @@ public class AcmeRateLimitExceededException extends AcmeServerException {
     private static final long serialVersionUID = 4150484059796413069L;
 
     private final Date retryAfter;
+    private final Collection<URI> documents;
 
     /**
      * Creates a new {@link AcmeRateLimitExceededException}.
@@ -34,10 +38,13 @@ public class AcmeRateLimitExceededException extends AcmeServerException {
      * @param retryAfter
      *            The moment the request is expected to succeed again, may be {@code null}
      *            if not known
+     * @param documents
+     *            URIs pointing to documents about the rate limit that was hit
      */
-    public AcmeRateLimitExceededException(String type, String detail, Date retryAfter) {
+    public AcmeRateLimitExceededException(String type, String detail, Date retryAfter, Collection<URI> documents) {
         super(type, detail);
         this.retryAfter = retryAfter;
+        this.documents = (documents != null ? Collections.unmodifiableCollection(documents) : null);
     }
 
     /**
@@ -46,6 +53,14 @@ public class AcmeRateLimitExceededException extends AcmeServerException {
      */
     public Date getRetryAfter() {
         return (retryAfter != null ? new Date(retryAfter.getTime()) : null);
+    }
+
+    /**
+     * Collection of URIs pointing to documents about the rate limit that was hit.
+     * {@code null} if the server did not provide such URIs.
+     */
+    public Collection<URI> getDocuments() {
+        return documents;
     }
 
 }

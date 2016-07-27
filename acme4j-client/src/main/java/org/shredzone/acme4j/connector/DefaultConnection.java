@@ -27,6 +27,8 @@ import java.security.KeyPair;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -252,7 +254,23 @@ public class DefaultConnection implements Connection {
 
     @Override
     public URI getLink(String relation) {
+        Collection<URI> links = getLinks(relation);
+        if (links == null) {
+            return null;
+        }
+
+        if (links.size() > 1) {
+            LOG.debug("Link: {} - using the first of {}", relation, links.size());
+        }
+
+        return links.iterator().next();
+    }
+
+    @Override
+    public Collection<URI> getLinks(String relation) {
         assertConnectionIsOpen();
+
+        List<URI> result = new ArrayList<>();
 
         List<String> links = conn.getHeaderFields().get("Link");
         if (links != null) {
@@ -262,12 +280,12 @@ public class DefaultConnection implements Connection {
                 if (m.matches()) {
                     String location = m.group(1);
                     LOG.debug("Link: {} -> {}", relation, location);
-                    return resolveRelative(location);
+                    result.add(resolveRelative(location));
                 }
             }
         }
 
-        return null;
+        return (!result.isEmpty() ? result : null);
     }
 
     @Override
@@ -324,7 +342,8 @@ public class DefaultConnection implements Connection {
 
                 case ACME_ERROR_PREFIX + "rateLimited":
                 case ACME_ERROR_PREFIX_DEPRECATED + "rateLimited":
-                    throw new AcmeRateLimitExceededException(type, detail, getRetryAfterHeader());
+                    throw new AcmeRateLimitExceededException(
+                                type, detail, getRetryAfterHeader(), getLinks("rate-limit"));
 
                 default:
                     throw new AcmeServerException(type, detail);

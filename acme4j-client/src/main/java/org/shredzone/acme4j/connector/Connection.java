@@ -16,6 +16,7 @@ package org.shredzone.acme4j.connector;
 import java.io.IOException;
 import java.net.URI;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
@@ -85,13 +86,25 @@ public interface Connection extends AutoCloseable {
     /**
      * Gets a relation link from the header.
      * <p>
-     * Relative links are resolved against the last request's URL.
+     * Relative links are resolved against the last request's URL. If there is more than
+     * one relation, the first one is returned.
      *
      * @param relation
      *            Link relation
      * @return Link, or {@code null} if there was no such relation link
      */
     URI getLink(String relation);
+
+    /**
+     * Gets one or more relation link from the header.
+     * <p>
+     * Relative links are resolved against the last request's URL.
+     *
+     * @param relation
+     *            Link relation
+     * @return Collection of links, or {@code null} if there was no such relation link
+     */
+    Collection<URI> getLinks(String relation);
 
     /**
      * Returns the moment returned in a "Retry-After" header.

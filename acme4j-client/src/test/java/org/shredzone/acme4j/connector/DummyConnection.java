@@ -15,6 +15,7 @@ package org.shredzone.acme4j.connector;
 
 import java.net.URI;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
@@ -60,6 +61,11 @@ public class DummyConnection implements Connection {
 
     @Override
     public URI getLink(String relation) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Collection<URI> getLinks(String relation) {
         throw new UnsupportedOperationException();
     }
 
