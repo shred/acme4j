@@ -16,6 +16,7 @@ package org.shredzone.acme4j.connector;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.util.Properties;
 
 /**
  * A generic HTTP connector. It connects to the given URI with a 10 seconds connection and
@@ -27,6 +28,22 @@ import java.net.URI;
 public class HttpConnector {
 
     private static final int TIMEOUT = 10000;
+    private static final String USER_AGENT;
+
+    static {
+        StringBuilder agent = new StringBuilder("acme4j");
+        try {
+            Properties prop = new Properties();
+            prop.load(HttpConnector.class.getResourceAsStream("/org/shredzone/acme4j/version.properties"));
+            agent.append('/').append(prop.getProperty("version"));
+        } catch (IOException ex) {
+            // Ignore, just don't use a version
+        }
+
+        agent.append(" Java/").append(System.getProperty("java.version"));
+
+        USER_AGENT = agent.toString();
+    }
 
     /**
      * Opens a {@link HttpURLConnection} to the given {@link URI}.
@@ -40,7 +57,7 @@ public class HttpConnector {
         conn.setConnectTimeout(TIMEOUT);
         conn.setReadTimeout(TIMEOUT);
         conn.setUseCaches(false);
-        conn.setRequestProperty("User-Agent", "acme4j");
+        conn.setRequestProperty("User-Agent", USER_AGENT);
         return conn;
     }
 

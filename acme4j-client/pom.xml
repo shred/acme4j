@@ -28,6 +28,18 @@
     <name>acme4j Client</name>
     <description>ACME client for Java</description>
 
+    <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+            <resource>
+                <directory>src/main/resources-filtered</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>org.bitbucket.b_c</groupId>
