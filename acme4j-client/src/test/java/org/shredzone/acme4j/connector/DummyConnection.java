@@ -30,7 +30,7 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 public class DummyConnection implements Connection {
 
     @Override
-    public int sendRequest(URI uri) {
+    public int sendRequest(URI uri, Session session) {
         throw new UnsupportedOperationException();
     }
 

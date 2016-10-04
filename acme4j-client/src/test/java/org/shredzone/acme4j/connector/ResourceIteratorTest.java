@@ -133,7 +133,7 @@ public class ResourceIteratorTest {
             private int ix;
 
             @Override
-            public int sendRequest(URI uri) {
+            public int sendRequest(URI uri, Session session) {
                 ix = pageURIs.indexOf(uri);
                 assertThat(ix, is(greaterThanOrEqualTo(0)));
                 return HttpURLConnection.HTTP_OK;

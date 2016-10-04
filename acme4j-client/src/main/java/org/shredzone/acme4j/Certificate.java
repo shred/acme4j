@@ -90,7 +90,7 @@ public class Certificate extends AcmeResource {
         if (cert == null) {
             LOG.debug("download");
             try (Connection conn = getSession().provider().connect()) {
-                int rc = conn.sendRequest(getLocation());
+                int rc = conn.sendRequest(getLocation(), getSession());
                 if (rc == HttpURLConnection.HTTP_ACCEPTED) {
                     Date retryAfter = conn.getRetryAfterHeader();
                     if (retryAfter != null) {
@@ -139,7 +139,7 @@ public class Certificate extends AcmeResource {
             URI link = chainCertUri;
             while (link != null && certChain.size() < MAX_CHAIN_LENGTH) {
                 try (Connection conn = getSession().provider().connect()) {
-                    int rc = conn.sendRequest(chainCertUri);
+                    int rc = conn.sendRequest(chainCertUri, getSession());
                     if (rc != HttpURLConnection.HTTP_OK) {
                         conn.throwAcmeException();
                     }

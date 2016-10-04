@@ -67,6 +67,7 @@ public class HttpChallengeTest {
      * Test that {@link Http01Challenge} uses the given address.
      */
     @Test
+    @Deprecated
     public void testAddress() throws IOException {
         Http01Challenge challenge = new Http01Challenge(session);
         challenge.unmarshall(TestUtils.getJsonAsMap("httpChallenge"));

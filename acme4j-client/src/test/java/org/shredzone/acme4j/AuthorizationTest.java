@@ -119,7 +119,7 @@ public class AuthorizationTest {
     public void testUpdate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendRequest(URI uri) {
+            public int sendRequest(URI uri, Session session) {
                 assertThat(uri, is(locationUri));
                 return HttpURLConnection.HTTP_OK;
             }
@@ -166,7 +166,7 @@ public class AuthorizationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendRequest(URI uri) {
+            public int sendRequest(URI uri, Session session) {
                 requestWasSent.set(true);
                 assertThat(uri, is(locationUri));
                 return HttpURLConnection.HTTP_OK;
@@ -209,7 +209,7 @@ public class AuthorizationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendRequest(URI uri) {
+            public int sendRequest(URI uri, Session session) {
                 assertThat(uri, is(locationUri));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }

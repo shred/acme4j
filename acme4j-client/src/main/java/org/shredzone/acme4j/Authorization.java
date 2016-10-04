@@ -178,7 +178,7 @@ public class Authorization extends AcmeResource {
     public void update() throws AcmeException {
         LOG.debug("update");
         try (Connection conn = getSession().provider().connect()) {
-            int rc = conn.sendRequest(getLocation());
+            int rc = conn.sendRequest(getLocation(), getSession());
             if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }

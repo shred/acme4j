@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.jose4j.base64url.Base64Url;
@@ -62,6 +63,7 @@ public class DefaultConnectionTest {
         when(mockHttpConnection.openConnection(requestUri)).thenReturn(mockUrlConnection);
 
         session = TestUtils.session();
+        session.setLocale(Locale.JAPAN);
     }
 
     /**
@@ -400,11 +402,12 @@ public class DefaultConnectionTest {
     @Test
     public void testSendRequest() throws Exception {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.sendRequest(requestUri);
+            conn.sendRequest(requestUri, session);
         }
 
         verify(mockUrlConnection).setRequestMethod("GET");
         verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
+        verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
         verify(mockUrlConnection).setDoOutput(false);
         verify(mockUrlConnection).connect();
         verify(mockUrlConnection).getResponseCode();
@@ -441,6 +444,7 @@ public class DefaultConnectionTest {
         }
 
         verify(mockUrlConnection).setRequestMethod("HEAD");
+        verify(mockUrlConnection, times(2)).setRequestProperty("Accept-Language", "ja-JP");
         verify(mockUrlConnection, times(2)).connect();
 
         verify(mockUrlConnection).setRequestMethod("POST");

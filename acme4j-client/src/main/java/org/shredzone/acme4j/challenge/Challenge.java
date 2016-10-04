@@ -77,7 +77,7 @@ public class Challenge extends AcmeResource {
 
         LOG.debug("bind");
         try (Connection conn = session.provider().connect()) {
-            int rc = conn.sendRequest(location);
+            int rc = conn.sendRequest(location, session);
             if (rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }
@@ -238,7 +238,7 @@ public class Challenge extends AcmeResource {
     public void update() throws AcmeException {
         LOG.debug("update");
         try (Connection conn = getSession().provider().connect()) {
-            int rc = conn.sendRequest(getLocation());
+            int rc = conn.sendRequest(getLocation(), getSession());
             if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }

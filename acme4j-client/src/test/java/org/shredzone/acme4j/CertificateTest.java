@@ -52,7 +52,7 @@ public class CertificateTest {
             private boolean isLocationUri;
 
             @Override
-            public int sendRequest(URI uri) {
+            public int sendRequest(URI uri, Session session) {
                 assertThat(uri, isOneOf(locationUri, chainUri));
                 isLocationUri = uri.equals(locationUri);
                 return HttpURLConnection.HTTP_OK;
@@ -93,7 +93,7 @@ public class CertificateTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendRequest(URI uri) {
+            public int sendRequest(URI uri, Session session) {
                 assertThat(uri, is(locationUri));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }

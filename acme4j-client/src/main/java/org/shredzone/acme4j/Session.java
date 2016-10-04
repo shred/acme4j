@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.ServiceLoader;
 
@@ -46,6 +47,7 @@ public class Session {
     private byte[] nonce;
     private Map<String, Object> directoryMap;
     private Metadata metadata;
+    private Locale locale = Locale.getDefault();
     protected Date directoryCacheExpiry;
 
     /**
@@ -114,6 +116,21 @@ public class Session {
      */
     public void setNonce(byte[] nonce) {
         this.nonce = nonce;
+    }
+
+    /**
+     * Gets the current locale of this session.
+     */
+    public Locale getLocale() {
+        return locale;
+    }
+
+    /**
+     * Sets the locale used in this session. The locale is passed to the server as
+     * Accept-Language header. The server <em>may</em> respond with localized messages.
+     */
+    public void setLocale(Locale locale) {
+        this.locale = locale;
     }
 
     /**

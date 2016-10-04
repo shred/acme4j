@@ -147,7 +147,7 @@ public abstract class ResourceIterator<T extends AcmeResource> implements Iterat
     @SuppressWarnings("unchecked")
     private void readAndQueue() throws AcmeException {
         try (Connection conn = session.provider().connect()) {
-            int rc = conn.sendRequest(nextUri);
+            int rc = conn.sendRequest(nextUri, session);
             if (rc != HttpURLConnection.HTTP_OK) {
                 conn.throwAcmeException();
             }

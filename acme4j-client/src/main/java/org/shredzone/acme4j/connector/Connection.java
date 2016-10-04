@@ -35,9 +35,11 @@ public interface Connection extends AutoCloseable {
      *
      * @param uri
      *            {@link URI} to send the request to.
+     * @param session
+     *            {@link Session} instance to be used for tracking
      * @return HTTP response code
      */
-    int sendRequest(URI uri) throws IOException;
+    int sendRequest(URI uri, Session session) throws IOException;
 
     /**
      * Sends a signed POST request.

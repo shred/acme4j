@@ -77,9 +77,12 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public int sendRequest(URI uri) throws IOException {
+    public int sendRequest(URI uri, Session session) throws IOException {
         if (uri == null) {
             throw new NullPointerException("uri must not be null");
+        }
+        if (session == null) {
+            throw new NullPointerException("session must not be null");
         }
         assertConnectionIsClosed();
 
@@ -88,6 +91,7 @@ public class DefaultConnection implements Connection {
         conn = httpConnector.openConnection(uri);
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Accept-Charset", "utf-8");
+        conn.setRequestProperty("Accept-Language", session.getLocale().toLanguageTag());
         conn.setDoOutput(false);
 
         conn.connect();
@@ -117,6 +121,7 @@ public class DefaultConnection implements Connection {
                 LOG.debug("Getting initial nonce, HEAD {}", uri);
                 conn = httpConnector.openConnection(uri);
                 conn.setRequestMethod("HEAD");
+                conn.setRequestProperty("Accept-Language", session.getLocale().toLanguageTag());
                 conn.connect();
                 updateSession(session);
                 conn = null;
@@ -132,6 +137,7 @@ public class DefaultConnection implements Connection {
             conn.setRequestMethod("POST");
             conn.setRequestProperty("Accept", "application/json");
             conn.setRequestProperty("Accept-Charset", "utf-8");
+            conn.setRequestProperty("Accept-Language", session.getLocale().toLanguageTag());
             conn.setRequestProperty("Content-Type", "application/json");
             conn.setDoOutput(true);
 

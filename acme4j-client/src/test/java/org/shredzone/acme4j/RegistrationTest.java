@@ -73,7 +73,7 @@ public class RegistrationTest {
             }
 
             @Override
-            public int sendRequest(URI uri) {
+            public int sendRequest(URI uri, Session session) {
                 if (URI.create("https://example.com/acme/reg/1/authz").equals(uri)) {
                     jsonResponse = new HashMap<>();
                     jsonResponse.put("authorizations",
@@ -250,7 +250,7 @@ public class RegistrationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendRequest(URI uri) {
+            public int sendRequest(URI uri, Session session) {
                 fail("Attempted to download the certificate. Should be downloaded already!");
                 return HttpURLConnection.HTTP_OK;
             }

@@ -83,7 +83,7 @@ public class AbstractAcmeProviderTest {
         final Connection connection = mock(Connection.class);
         final Session session = mock(Session.class);
 
-        when(connection.sendRequest(testResolvedUri)).thenReturn(HttpURLConnection.HTTP_OK);
+        when(connection.sendRequest(testResolvedUri, session)).thenReturn(HttpURLConnection.HTTP_OK);
         when(connection.readJsonResponse()).thenReturn(TestUtils.getJsonAsMap("directory"));
 
         AbstractAcmeProvider provider = new AbstractAcmeProvider() {
@@ -108,7 +108,7 @@ public class AbstractAcmeProviderTest {
         Map<String, Object> map = provider.directory(session, testServerUri);
         assertThat(JsonUtil.toJson(map), sameJSONAs(TestUtils.getJson("directory")));
 
-        verify(connection).sendRequest(testResolvedUri);
+        verify(connection).sendRequest(testResolvedUri, session);
         verify(connection).updateSession(any(Session.class));
         verify(connection).readJsonResponse();
         verify(connection).close();
