@@ -8,12 +8,6 @@ This Java client helps connecting to an ACME server, and performing all necessar
 
 It is an independent open source implementation that is not affiliated with or endorsed by _Let's Encrypt_.
 
-## Migration Guide
-
-Major parts of the _acme4j_ API have changed in this version.
-
-Please see the [migration guide](https://shredzone.org/maven/acme4j/migration.html) for how to update your code to the new API. It should just be a matter of a few minutes.
-
 ## Features
 
 * Supports ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02), with a few parts of [draft 03](https://tools.ietf.org/html/draft-ietf-acme-acme-03)
@@ -30,9 +24,9 @@ Please see the [migration guide](https://shredzone.org/maven/acme4j/migration.ht
 
 ## Compatibility
 
-_acme4j_ supports all CAs that implement the ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02). The latest [draft 03](https://tools.ietf.org/html/draft-ietf-acme-acme-03) is partially supported. There is currently no public server available that implements all of draft 03.
+_acme4j_ supports all CAs that implement the ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02). The latest [draft 03](https://tools.ietf.org/html/draft-ietf-acme-acme-03) is partially supported. The missing parts are likely to be removed in the next draft.
 
-The most prominent ACME CA, _Let's Encrypt_, [diverges from the specifications](https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md). Some of the _acme4j_ features may not work with _Let's Encrypt_. Also, the usage of deprecated API parts may be required.
+The most prominent ACME CA, _Let's Encrypt_, [diverges from the specifications](https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md). Some parts of the _acme4j_ API may not work with _Let's Encrypt_. Also, the usage of deprecated API parts may be required.
 
 The _acme4j_ API may change as features are added to, and other features removed from the [ACME specifications](https://github.com/ietf-wg-acme/acme), because they are still work in progress. Also see the [_acme4j_ bug tracker](https://github.com/shred/acme4j/issues) for missing and untested features.
 
