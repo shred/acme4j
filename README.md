@@ -1,4 +1,4 @@
-# ACME Java Client ![build status](https://jenkins.shredzone.net/project/acme4j/builds/status.png?ref=master)
+# ACME Java Client ![build status](https://shredzone.org/badge/acme4j.svg)
 
 This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-01) protocol.
 

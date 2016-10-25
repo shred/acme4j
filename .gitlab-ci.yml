@@ -1,0 +1,11 @@
+
+image: maven:3-jdk-8
+
+# Cache local m2 repository
+# https://gitlab.com/gitlab-org/gitlab-ce/issues/15167#note_15206811
+variables:
+  MAVEN_OPTS: -Dmaven.repo.local=/cache/maven.repository
+
+build:
+  script:
+    - mvn -B test site:site
