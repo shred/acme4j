@@ -31,6 +31,8 @@ Now use `cert` and `sniKeyPair` to let your web server respond to a SNI request 
 
 The challenge is completed when the CA was able to send the SNI request and get the correct certificate in return.
 
+Note that the request is sent to port 443 only. There is no way to choose a different port, for security reasons. This is a limitation of the ACME protocol, not of _acme4j_.
+
 This shell command line may be helpful to test your web server configuration:
 
 ```shell

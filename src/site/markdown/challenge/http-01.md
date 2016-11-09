@@ -21,6 +21,8 @@ http://${domain}/.well-known/acme-challenge/${token}
 
 The challenge is completed when the CA was able to download that file and found `content` in it.
 
+Note that the request is sent to port 80 only. There is no way to choose a different port, for security reasons. This is a limitation of the ACME protocol, not of _acme4j_.
+
 ## Preferred Address
 
 If your domain name resolves to multiple IP adresses, you can set an explicit address that the CA server should prefer to send the request to. This address must be included in the set of your domain's IP addresses.
