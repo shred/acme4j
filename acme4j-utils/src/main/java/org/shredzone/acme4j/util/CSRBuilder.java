@@ -59,17 +59,22 @@ public class CSRBuilder {
      * <em>Common Name</em>. All domain names will be added as <em>Subject
      * Alternative Name</em>.
      * <p>
+     * IDN domain names are ACE encoded automatically.
+     * <p>
      * Note that ACME servers may not accept wildcard domains!
      */
     public void addDomain(String domain) {
+        String ace = DomainUtils.toAce(domain);
         if (namelist.isEmpty()) {
-            namebuilder.addRDN(BCStyle.CN, domain);
+            namebuilder.addRDN(BCStyle.CN, ace);
         }
-        namelist.add(domain);
+        namelist.add(ace);
     }
 
     /**
      * Adds a {@link Collection} of domains.
+     * <p>
+     * IDN domain names are ACE encoded automatically.
      */
     public void addDomains(Collection<String> domains) {
         for (String domain : domains) {
@@ -79,6 +84,8 @@ public class CSRBuilder {
 
     /**
      * Adds multiple domain names.
+     * <p>
+     * IDN domain names are ACE encoded automatically.
      */
     public void addDomains(String... domains) {
         for (String domain : domains) {

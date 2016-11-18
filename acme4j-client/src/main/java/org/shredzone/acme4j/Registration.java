@@ -39,6 +39,7 @@ import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.DomainUtils;
 import org.shredzone.acme4j.util.SignatureUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -173,6 +174,8 @@ public class Registration extends AcmeResource {
 
     /**
      * Authorizes a domain. The domain is associated with this registration.
+     * <p>
+     * IDN domain names will be ACE encoded automatically.
      *
      * @param domain
      *            Domain name to be authorized
@@ -189,7 +192,7 @@ public class Registration extends AcmeResource {
             claims.putResource(Resource.NEW_AUTHZ);
             claims.object("identifier")
                     .put("type", "dns")
-                    .put("value", domain);
+                    .put("value", DomainUtils.toAce(domain));
 
             int rc = conn.sendSignedRequest(getSession().resourceUri(Resource.NEW_AUTHZ), claims, getSession());
             if (rc != HttpURLConnection.HTTP_CREATED) {
