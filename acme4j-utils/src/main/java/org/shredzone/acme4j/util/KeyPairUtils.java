@@ -34,7 +34,7 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 /**
  * Utility class offering convenience methods for {@link KeyPair}.
  * <p>
- * Requires {@code Bouncy Castle}.
+ * Requires {@code Bouncy Castle}. This class is part of the {@code acme4j-utils} module.
  */
 public class KeyPairUtils {
 
@@ -83,7 +83,8 @@ public class KeyPairUtils {
      * Reads a {@link KeyPair} from a PEM file.
      *
      * @param r
-     *            {@link Reader} to read the PEM file from
+     *            {@link Reader} to read the PEM file from. The {@link Reader} is closed
+     *            after use.
      * @return {@link KeyPair} read
      */
     public static KeyPair readKeyPair(Reader r) throws IOException {
@@ -101,7 +102,8 @@ public class KeyPairUtils {
      * @param keypair
      *            {@link KeyPair} to write
      * @param w
-     *            {@link Writer} to write the PEM file to
+     *            {@link Writer} to write the PEM file to. The {@link Writer} is closed
+     *            after use.
      */
     public static void writeKeyPair(KeyPair keypair, Writer w) throws IOException {
         try (JcaPEMWriter jw = new JcaPEMWriter(w)) {

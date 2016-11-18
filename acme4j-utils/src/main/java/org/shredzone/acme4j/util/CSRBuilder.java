@@ -44,7 +44,7 @@ import org.bouncycastle.util.io.pem.PemWriter;
 /**
  * Generator for a CSR (Certificate Signing Request) suitable for ACME servers.
  * <p>
- * Requires {@code Bouncy Castle}.
+ * Requires {@code Bouncy Castle}. This class is part of the {@code acme4j-utils} module.
  */
 public class CSRBuilder {
     private static final String SIGNATURE_ALG = "SHA256withRSA";
@@ -199,7 +199,8 @@ public class CSRBuilder {
      * Writes the signed certificate request to a {@link Writer}.
      *
      * @param w
-     *            {@link Writer} to write the PEM file to
+     *            {@link Writer} to write the PEM file to. The {@link Writer} is closed
+     *            after use.
      */
     public void write(Writer w) throws IOException {
         if (csr == null) {
@@ -215,7 +216,8 @@ public class CSRBuilder {
      * Writes the signed certificate request to an {@link OutputStream}.
      *
      * @param out
-     *            {@link OutputStream} to write the PEM file to
+     *            {@link OutputStream} to write the PEM file to. The {@link OutputStream}
+     *            is closed after use.
      */
     public void write(OutputStream out) throws IOException {
         write(new OutputStreamWriter(out, "utf-8"));

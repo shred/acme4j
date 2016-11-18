@@ -50,6 +50,7 @@ public class ClientTest {
     private static final File DOMAIN_KEY_FILE = new File("domain.key");
     private static final File DOMAIN_CERT_FILE = new File("domain.crt");
     private static final File CERT_CHAIN_FILE = new File("chain.crt");
+    private static final File DOMAIN_CHAIN_FILE = new File("domain-chain.crt");
     private static final File DOMAIN_CSR_FILE = new File("domain.csr");
 
     private static final int KEY_SIZE = 2048;
@@ -181,14 +182,21 @@ public class ClientTest {
 
         // Download the certificate
         X509Certificate cert = certificate.download();
+        X509Certificate[] chain = certificate.downloadChain();
+
+        // Write certificate only (e.g. for Apache's SSLCertificateFile)
         try (FileWriter fw = new FileWriter(DOMAIN_CERT_FILE)) {
             CertificateUtils.writeX509Certificate(cert, fw);
         }
 
-        // Download the certificate chain
-        X509Certificate[] chain = certificate.downloadChain();
+        // Write chain only (e.g. for Apache's SSLCertificateChainFile)
         try (FileWriter fw = new FileWriter(CERT_CHAIN_FILE)) {
-            CertificateUtils.writeX509CertificateChain(chain, fw);
+            CertificateUtils.writeX509CertificateChain(fw, null, chain);
+        }
+
+        // Write combined certificate and chain (e.g. for nginx)
+        try (FileWriter fw = new FileWriter(DOMAIN_CHAIN_FILE)) {
+            CertificateUtils.writeX509CertificateChain(fw, cert, chain);
         }
 
         // Revoke the certificate (uncomment if needed...)

@@ -54,6 +54,29 @@ URI locationUri = ... // location URI from cert.getLocation()
 Certificate cert = Certificate.bind(session, locationUri);
 ```
 
+### Saving Certificates
+
+Most web servers, like _Apache_, _nginx_, but also other servers like _postfix_ or _dovecot_, need a combined certificate file that contains the leaf certificate itself, and the certificate chain up to the root certificate. `acme4j-utils` offers a method that helps to write the necessary file:
+
+```java
+try (FileWriter fw = new FileWriter("cert-chain.crt")) {
+    CertificateUtils.writeX509CertificateChain(fw, cert, chain);
+}
+```
+
+Some older servers may need the leaf certificate and the certificate chain in different files. Use this snippet to write both files:
+
+```java
+try (FileWriter fw = new FileWriter("cert.pem")) {
+    CertificateUtils.writeX509Certificate(cert, fw);
+}
+try (FileWriter fw = new FileWriter("chain.pem")) {
+    CertificateUtils.writeX509CertificateChain(fw, null, chain);
+}
+```
+
+These utility methods should be sufficient for most use cases. If you need the certificate written in a different format, see the [source code of `CertificateUtils`](https://github.com/shred/acme4j/blob/master/acme4j-utils/src/main/java/org/shredzone/acme4j/util/CertificateUtils.java) to find out how certificates are written using _Bouncy Castle_.
+
 ### Multiple Domains
 
 The example above generates a certificate per domain. However, you would usually prefer to use a single certificate for multiple domains (for example, the domain itself and the `www.` subdomain).
