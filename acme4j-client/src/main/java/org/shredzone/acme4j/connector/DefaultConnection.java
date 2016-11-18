@@ -138,7 +138,7 @@ public class DefaultConnection implements Connection {
             conn.setRequestProperty("Accept", "application/json");
             conn.setRequestProperty("Accept-Charset", "utf-8");
             conn.setRequestProperty("Accept-Language", session.getLocale().toLanguageTag());
-            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Content-Type", "application/jose+json");
             conn.setDoOutput(true);
 
             final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(keypair.getPublic());
@@ -146,6 +146,7 @@ public class DefaultConnection implements Connection {
             JsonWebSignature jws = new JsonWebSignature();
             jws.setPayload(claims.toString());
             jws.getHeaders().setObjectHeaderValue("nonce", Base64Url.encode(session.getNonce()));
+            jws.getHeaders().setObjectHeaderValue("url", uri);
             jws.getHeaders().setJwkHeaderValue("jwk", jwk);
             jws.setAlgorithmHeaderValue(SignatureUtils.keyAlgorithm(jwk));
             jws.setKey(keypair.getPrivate());

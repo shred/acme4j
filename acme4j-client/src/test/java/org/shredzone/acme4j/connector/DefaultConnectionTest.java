@@ -451,7 +451,7 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection).setRequestMethod("POST");
         verify(mockUrlConnection).setRequestProperty("Accept", "application/json");
         verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
-        verify(mockUrlConnection).setRequestProperty("Content-Type", "application/json");
+        verify(mockUrlConnection).setRequestProperty("Content-Type", "application/jose+json");
         verify(mockUrlConnection).setDoOutput(true);
         verify(mockUrlConnection).setFixedLengthStreamingMode(outputStream.toByteArray().length);
         verify(mockUrlConnection).getOutputStream();
@@ -467,6 +467,7 @@ public class DefaultConnectionTest {
         StringBuilder expectedHeader = new StringBuilder();
         expectedHeader.append('{');
         expectedHeader.append("\"nonce\":\"").append(Base64Url.encode(nonce1)).append("\",");
+        expectedHeader.append("\"url\":\"").append(requestUri).append("\",");
         expectedHeader.append("\"alg\":\"RS256\",");
         expectedHeader.append("\"jwk\":{");
         expectedHeader.append("\"kty\":\"").append(TestUtils.KTY).append("\",");
@@ -474,7 +475,7 @@ public class DefaultConnectionTest {
         expectedHeader.append("\"n\":\"").append(TestUtils.N).append("\"");
         expectedHeader.append("}}");
 
-        assertThat(header, sameJSONAs(expectedHeader.toString()).allowingExtraUnexpectedFields());
+        assertThat(header, sameJSONAs(expectedHeader.toString()));
         assertThat(claims, sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
         assertThat(signature, not(isEmptyOrNullString()));
 
