@@ -34,6 +34,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import org.jose4j.base64url.Base64Url;
+import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.CompactSerializer;
 import org.junit.Before;
 import org.junit.Test;
@@ -457,7 +458,8 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection).getResponseCode();
         verifyNoMoreInteractions(mockUrlConnection);
 
-        String[] written = CompactSerializer.deserialize(new String(outputStream.toByteArray(), "utf-8"));
+        String serialized = new String(outputStream.toByteArray(), "utf-8");
+        String[] written = CompactSerializer.deserialize(serialized);
         String header = Base64Url.decodeToUtf8String(written[0]);
         String claims = Base64Url.decodeToUtf8String(written[1]);
         String signature = written[2];
@@ -475,6 +477,11 @@ public class DefaultConnectionTest {
         assertThat(header, sameJSONAs(expectedHeader.toString()).allowingExtraUnexpectedFields());
         assertThat(claims, sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
         assertThat(signature, not(isEmptyOrNullString()));
+
+        JsonWebSignature jws = new JsonWebSignature();
+        jws.setCompactSerialization(serialized);
+        jws.setKey(DefaultConnectionTest.this.session.getKeyPair().getPublic());
+        assertThat(jws.verifySignature(), is(true));
     }
 
     /**
