@@ -274,8 +274,10 @@ public class Registration extends AcmeResource {
     }
 
     /**
-     * Changes the {@link KeyPair} associated with the registration. After a successful
-     * call, the new key pair is used, and the old key pair can be disposed.
+     * Changes the {@link KeyPair} associated with the registration.
+     * <p>
+     * After a successful call, the new key pair is used in the bound {@link Session},
+     * and the old key pair can be disposed of.
      *
      * @param newKeyPair
      *            new {@link KeyPair} to be used for identifying this account
@@ -289,41 +291,40 @@ public class Registration extends AcmeResource {
             throw new IllegalArgumentException("newKeyPair must actually be a new key pair");
         }
 
-        LOG.debug("changeKey");
-
-        String rollover;
-        try {
-            final PublicJsonWebKey oldKeyJwk = PublicJsonWebKey.Factory.newPublicJwk(getSession().getKeyPair().getPublic());
-            final PublicJsonWebKey newKeyJwk = PublicJsonWebKey.Factory.newPublicJwk(newKeyPair.getPublic());
-
-            ClaimBuilder newKeyClaim = new ClaimBuilder();
-            newKeyClaim.putResource("reg");
-            newKeyClaim.putBase64("newKey", newKeyJwk.calculateThumbprint("SHA-256"));
-
-            JsonWebSignature jws = new JsonWebSignature();
-            jws.setPayload(newKeyClaim.toString());
-            jws.getHeaders().setJwkHeaderValue("jwk", oldKeyJwk);
-            jws.setAlgorithmHeaderValue(SignatureUtils.keyAlgorithm(oldKeyJwk));
-            jws.setKey(getSession().getKeyPair().getPrivate());
-            jws.sign();
-
-            rollover = jws.getCompactSerialization();
-        } catch (JoseException ex) {
-            throw new AcmeProtocolException("Cannot sign newKey", ex);
-        }
+        LOG.debug("key-change");
 
         try (Connection conn = getSession().provider().connect()) {
-            ClaimBuilder claims = new ClaimBuilder();
-            claims.putResource("reg");
-            claims.put("rollover", rollover);
+            URI keyChangeUri = getSession().resourceUri(Resource.KEY_CHANGE);
+            PublicJsonWebKey newKeyJwk = PublicJsonWebKey.Factory.newPublicJwk(newKeyPair.getPublic());
 
-            getSession().setKeyPair(newKeyPair);
-            int rc = conn.sendSignedRequest(getLocation(), claims, getSession());
+            ClaimBuilder payloadClaim = new ClaimBuilder();
+            payloadClaim.put("account", getLocation());
+            payloadClaim.putKey("newKey", newKeyPair.getPublic());
+
+            JsonWebSignature innerJws = new JsonWebSignature();
+            innerJws.setPayload(payloadClaim.toString());
+            innerJws.getHeaders().setObjectHeaderValue("url", keyChangeUri);
+            innerJws.getHeaders().setJwkHeaderValue("jwk", newKeyJwk);
+            innerJws.setAlgorithmHeaderValue(SignatureUtils.keyAlgorithm(newKeyJwk));
+            innerJws.setKey(newKeyPair.getPrivate());
+            innerJws.sign();
+
+            ClaimBuilder outerClaim = new ClaimBuilder();
+            outerClaim.putResource(Resource.KEY_CHANGE); // Let's Encrypt needs the resource here
+            outerClaim.put("protected", innerJws.getHeaders().getEncodedHeader());
+            outerClaim.put("signature", innerJws.getEncodedSignature());
+            outerClaim.put("payload", innerJws.getEncodedPayload());
+
+            int rc = conn.sendSignedRequest(keyChangeUri, outerClaim, getSession());
             if (rc != HttpURLConnection.HTTP_OK) {
                 conn.throwAcmeException();
             }
+
+            getSession().setKeyPair(newKeyPair);
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
+        } catch (JoseException ex) {
+            throw new AcmeProtocolException("Cannot sign key-change", ex);
         }
     }
 

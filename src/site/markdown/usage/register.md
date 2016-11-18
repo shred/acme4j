@@ -42,8 +42,6 @@ registration.modify()
 
 ## Account Key Roll-Over
 
-> **CAUTION**: Account Key Roll-Over is currently not supported by _Let's Encrypt_. It silently ignores your new key, and gives you the fatal impression that you can safely dispose your old key after that.
-
 It is also possible to change the key pair that is associated with your account, for example if you suspect that your key has been compromised.
 
 The following example changes the key pair:
@@ -54,7 +52,9 @@ KeyPair newKeyPair = ... // new KeyPair to be used
 registration.changeKey(newKeyPair);
 ```
 
-All subsequent calls must now use the new key pair. The old key pair can be disposed. The key is automatically updated on the `Session` that was bound to the `Registration`.
+After a successful change, all subsequent calls related to this account must use the new key pair. The key is automatically updated on the `Session` that was bound to this `Registration`.
+
+The old key pair can be disposed of after that. However, I recommend to keep a backup of the old key pair until the key change was proven to be successful, by making a subsequent call with the new key pair. Otherwise you might lock yourself out from your account if the key change should have failed silently, for whatever reason.
 
 ## Deactivate an Account
 
@@ -66,4 +66,4 @@ registration.deactivate();
 
 Depending on the CA, the related authorizations may be automatically deactivated as well. The certificates may still be valid until expiration or explicit revocation. If you want to make sure the certificates are invalidated as well, revoke them prior to deactivation of your account.
 
-There is no way to reactivate the account once it is deactivated!
+Be very careful: There is no way to reactivate the account once it is deactivated!

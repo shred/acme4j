@@ -1,6 +1,6 @@
 # ACME Java Client ![build status](https://shredzone.org/badge/acme4j.svg)
 
-This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-01) protocol.
+This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-04) protocol.
 
 ACME is a protocol that a certificate authority (CA) and an applicant can use to automate the process of verification and certificate issuance.
 
@@ -10,7 +10,7 @@ It is an independent open source implementation that is not affiliated with or e
 
 ## Features
 
-* Supports ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02), with a few parts of [draft 03](https://tools.ietf.org/html/draft-ietf-acme-acme-03)
+* Supports ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02), with a few parts of [draft 03](https://tools.ietf.org/html/draft-ietf-acme-acme-03) and [draft 04](https://tools.ietf.org/html/draft-ietf-acme-acme-04)
 * Easy to use Java API
 * Requires JRE 7 or higher
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
@@ -24,7 +24,7 @@ It is an independent open source implementation that is not affiliated with or e
 
 ## Compatibility
 
-_acme4j_ supports all CAs that implement the ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02). The latest [draft 03](https://tools.ietf.org/html/draft-ietf-acme-acme-03) is partially supported. The missing parts are likely to be removed in the next draft.
+_acme4j_ supports all CAs that implement the ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02). [draft 03](https://tools.ietf.org/html/draft-ietf-acme-acme-03) and [draft 04](https://tools.ietf.org/html/draft-ietf-acme-acme-04) are partially supported. The missing parts are likely to be removed in the next draft, or are not yet supported by the _Let's Encrypt_ server.
 
 The most prominent ACME CA, _Let's Encrypt_, [diverges from the specifications](https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md). Some parts of the _acme4j_ API may not work with _Let's Encrypt_. Also, the usage of deprecated API parts may be required.
 

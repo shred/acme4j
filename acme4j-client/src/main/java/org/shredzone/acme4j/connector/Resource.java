@@ -18,6 +18,7 @@ package org.shredzone.acme4j.connector;
  */
 public enum Resource {
 
+    KEY_CHANGE("key-change"),
     NEW_REG("new-reg"),
     NEW_AUTHZ("new-authz"),
     NEW_CERT("new-cert"),

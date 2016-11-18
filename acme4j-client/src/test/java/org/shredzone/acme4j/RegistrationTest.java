@@ -32,6 +32,7 @@ import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.jwx.CompactSerializer;
 import org.jose4j.lang.JoseException;
 import org.junit.Test;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -39,7 +40,6 @@ import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.util.ClaimBuilder;
@@ -353,28 +353,38 @@ public class RegistrationTest {
 
         final TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
-                assertThat(uri, is(locationUri));
-                assertThat(session, is(notNullValue()));
-                assertThat(session.getKeyPair(), is(sameInstance(newKeyPair))); // registration has new KeyPair!
-
-                Map<String, Object> claimMap = claims.toMap();
-                assertThat(claimMap.get("resource"), is((Object) "reg"));
-                assertThat(claimMap.get("rollover"), not(nullValue()));
-
+            public int sendSignedRequest(URI uri, ClaimBuilder payload, Session session) {
                 try {
+                    assertThat(uri, is(locationUri));
+                    assertThat(session, is(notNullValue()));
+                    assertThat(session.getKeyPair(), is(sameInstance(oldKeyPair)));
+
+                    Map<String, Object> json = payload.toMap();
+                    assertThat((String) json.get("resource"), is("key-change")); // Required by Let's Encrypt
+
+                    String encodedHeader = (String) json.get("protected");
+                    String encodedSignature = (String) json.get("signature");
+                    String encodedPayload = (String) json.get("payload");
+
+                    String serialized = CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature);
+                    JsonWebSignature jws = new JsonWebSignature();
+                    jws.setCompactSerialization(serialized);
+                    jws.setKey(newKeyPair.getPublic());
+                    assertThat(jws.verifySignature(), is(true));
+
+                    String decodedPayload = jws.getPayload();
+
                     StringBuilder expectedPayload = new StringBuilder();
                     expectedPayload.append('{');
-                    expectedPayload.append("\"resource\":\"reg\",");
-                    expectedPayload.append("\"newKey\":\"").append(TestUtils.D_THUMBPRINT).append("\"");
-                    expectedPayload.append("}");
-
-                    String rollover = (String) claimMap.get("rollover");
-                    JsonWebSignature jws = (JsonWebSignature) JsonWebSignature.fromCompactSerialization(rollover);
-                    jws.setKey(oldKeyPair.getPublic()); // signed with the old KeyPair!
-                    assertThat(jws.getPayload(), sameJSONAs(expectedPayload.toString()));
+                    expectedPayload.append("\"account\":\"").append(resourceUri).append("\",");
+                    expectedPayload.append("\"newKey\":{");
+                    expectedPayload.append("\"kty\":\"").append(TestUtils.D_KTY).append("\",");
+                    expectedPayload.append("\"e\":\"").append(TestUtils.D_E).append("\",");
+                    expectedPayload.append("\"n\":\"").append(TestUtils.D_N).append("\"");
+                    expectedPayload.append("}}");
+                    assertThat(decodedPayload, sameJSONAs(expectedPayload.toString()));
                 } catch (JoseException ex) {
-                    throw new AcmeProtocolException("Bad rollover", ex);
+                    fail("decoding inner payload failed");
                 }
 
                 return HttpURLConnection.HTTP_OK;
@@ -382,9 +392,11 @@ public class RegistrationTest {
 
             @Override
             public URI getLocation() {
-                return locationUri;
+                return resourceUri;
             }
         };
+
+        provider.putTestResource(Resource.KEY_CHANGE, locationUri);
 
         Session session = new Session(new URI(TestUtils.ACME_SERVER_URI), oldKeyPair) {
             @Override
@@ -393,8 +405,12 @@ public class RegistrationTest {
             };
         };
 
-        Registration registration = new Registration(session, locationUri);
+        assertThat(session.getKeyPair(), is(sameInstance(oldKeyPair)));
+
+        Registration registration = new Registration(session, resourceUri);
         registration.changeKey(newKeyPair);
+
+        assertThat(session.getKeyPair(), is(sameInstance(newKeyPair)));
     }
 
     /**
