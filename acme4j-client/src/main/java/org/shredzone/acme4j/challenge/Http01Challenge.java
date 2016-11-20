@@ -13,8 +13,6 @@
  */
 package org.shredzone.acme4j.challenge;
 
-import java.net.InetAddress;
-
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.util.ClaimBuilder;
 
@@ -24,14 +22,10 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 public class Http01Challenge extends TokenChallenge {
     private static final long serialVersionUID = 3322211185872544605L;
 
-    protected static final String KEY_ADDRESS = "address";
-
     /**
      * Challenge type name: {@value}
      */
     public static final String TYPE = "http-01";
-
-    private InetAddress address;
 
     /**
      * Creates a new generic {@link Http01Challenge} object.
@@ -63,30 +57,9 @@ public class Http01Challenge extends TokenChallenge {
         return super.getAuthorization();
     }
 
-    /**
-     * An address that the CA server should connect to in order to request the response.
-     * This address must be included in the set of IP addresses to which the domain name
-     * resolves.
-     * <p>
-     * It is at the discretion of the CA server to use this address for the request.
-     * However, if the address is not included in the set of IP addresses, the challenge
-     * will fail.
-     *
-     * @param address
-     *            Address to request the response from
-     * @deprecated feature has been removed in draft-03, do not use.
-     */
-    @Deprecated
-    public void setAddress(InetAddress address) {
-        this.address = address;
-    }
-
     @Override
     protected void respond(ClaimBuilder cb) {
         super.respond(cb);
-        if (address != null) {
-            cb.put(KEY_ADDRESS, address.getHostAddress());
-        }
     }
 
     @Override
