@@ -41,6 +41,7 @@ import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Session;
+import org.shredzone.acme4j.exception.AcmeAgreementRequiredException;
 import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -346,6 +347,13 @@ public class DefaultConnection implements Connection {
                 case ACME_ERROR_PREFIX + "unauthorized":
                 case ACME_ERROR_PREFIX_DEPRECATED + "unauthorized":
                     throw new AcmeUnauthorizedException(type, detail);
+
+                case ACME_ERROR_PREFIX + "agreementRequired":
+                case ACME_ERROR_PREFIX_DEPRECATED + "agreementRequired":
+                    String instance = (String) map.get("instance");
+                    throw new AcmeAgreementRequiredException(
+                                type, detail, getLink("terms-of-service"),
+                                (instance != null ? resolveRelative(instance) : null));
 
                 case ACME_ERROR_PREFIX + "rateLimited":
                 case ACME_ERROR_PREFIX_DEPRECATED + "rateLimited":
