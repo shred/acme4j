@@ -46,7 +46,7 @@ public class OutOfBand01Challenge extends Challenge {
      */
     public URL getValidationUrl() {
         try {
-            return new URL((String) get("url"));
+            return new URL((String) get("href"));
         } catch (MalformedURLException ex) {
             throw new AcmeProtocolException("Invalid validation URL", ex);
         }
