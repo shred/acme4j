@@ -201,6 +201,9 @@ public class ClientTest {
 
         // Revoke the certificate (uncomment if needed...)
         // certificate.revoke();
+
+        // Deactivate the registration (uncomment if needed...)
+        // reg.deactivate();
     }
 
     /**

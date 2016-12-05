@@ -271,7 +271,7 @@ public class AuthorizationTest {
                 assertThat(claimMap.get("status"), is((Object) "deactivated"));
                 assertThat(uri, is(locationUri));
                 assertThat(session, is(notNullValue()));
-                return HttpURLConnection.HTTP_OK;
+                return HttpURLConnection.HTTP_ACCEPTED;
             }
         };
 

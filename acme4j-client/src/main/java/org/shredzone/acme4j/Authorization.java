@@ -210,7 +210,7 @@ public class Authorization extends AcmeResource {
             claims.put("status", "deactivated");
 
             int rc = conn.sendSignedRequest(getLocation(), claims, getSession());
-            if (rc != HttpURLConnection.HTTP_OK) {
+            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }
         } catch (IOException ex) {
