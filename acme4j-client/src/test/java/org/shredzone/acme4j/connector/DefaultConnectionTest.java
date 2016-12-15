@@ -412,6 +412,7 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection).setDoOutput(false);
         verify(mockUrlConnection).connect();
         verify(mockUrlConnection).getResponseCode();
+        verify(mockUrlConnection, atLeast(0)).getHeaderFields();
         verifyNoMoreInteractions(mockUrlConnection);
     }
 
@@ -456,6 +457,7 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection).setFixedLengthStreamingMode(outputStream.toByteArray().length);
         verify(mockUrlConnection).getOutputStream();
         verify(mockUrlConnection).getResponseCode();
+        verify(mockUrlConnection, atLeast(0)).getHeaderFields();
         verifyNoMoreInteractions(mockUrlConnection);
 
         String serialized = new String(outputStream.toByteArray(), "utf-8");
