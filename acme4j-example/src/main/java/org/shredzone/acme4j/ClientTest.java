@@ -91,6 +91,7 @@ public class ClientTest {
             reg = new RegistrationBuilder().create(session);
             LOG.info("Registered a new user, URI: " + reg.getLocation());
         } catch (AcmeConflictException ex) {
+            LOG.trace("acme4j exception caught", ex);
             reg = Registration.bind(session, ex.getLocation());
             LOG.info("Account does already exist, URI: " + reg.getLocation());
         }
@@ -112,6 +113,7 @@ public class ClientTest {
                 auth = reg.authorizeDomain(domain);
             } catch (AcmeUnauthorizedException ex) {
                 // Maybe there are new T&C to accept?
+                LOG.trace("acme4j exception caught", ex);
                 boolean accepted = acceptAgreement(reg, agreement);
                 if (!accepted) {
                     return;
@@ -134,19 +136,21 @@ public class ClientTest {
             challenge.trigger();
 
             // Poll for the challenge to complete
-            int attempts = 10;
-            while (challenge.getStatus() != Status.VALID && attempts-- > 0) {
-                if (challenge.getStatus() == Status.INVALID) {
-                    LOG.error("Challenge failed... Giving up.");
-                    return;
-                }
-                try {
+            try {
+                int attempts = 10;
+                while (challenge.getStatus() != Status.VALID && attempts-- > 0) {
+                    if (challenge.getStatus() == Status.INVALID) {
+                        LOG.error("Challenge failed... Giving up.");
+                        return;
+                    }
                     Thread.sleep(3000L);
-                } catch (InterruptedException ex) {
-                    LOG.warn("interrupted", ex);
+                    challenge.update();
                 }
-                challenge.update();
+            } catch (InterruptedException ex) {
+                LOG.error("interrupted", ex);
+                Thread.currentThread().interrupt();
             }
+
             if (challenge.getStatus() != Status.VALID) {
                 LOG.error("Failed to pass the challenge... Giving up.");
                 return;
