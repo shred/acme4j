@@ -172,33 +172,7 @@ public final class CertificateUtils {
      */
     @Deprecated
     public static X509Certificate createTlsSniCertificate(KeyPair keypair, String subject) throws IOException {
-        final long now = System.currentTimeMillis();
-        final long validSpanMs = 7 * 24 * 60 * 60 * 1000L;
-        final String signatureAlg = "SHA256withRSA";
-
-        try {
-            X500Name issuer = new X500Name("CN=acme.invalid");
-            BigInteger serial = BigInteger.valueOf(now);
-            Date notBefore = new Date(now);
-            Date notAfter = new Date(now + validSpanMs);
-
-            JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
-                        issuer, serial, notBefore, notAfter, issuer, keypair.getPublic());
-
-            GeneralName[] gns = new GeneralName[1];
-            gns[0] = new GeneralName(GeneralName.dNSName, subject);
-
-            certBuilder.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(gns));
-
-            JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlg);
-
-            byte[] cert = certBuilder.build(signerBuilder.build(keypair.getPrivate())).getEncoded();
-
-            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-            return (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(cert));
-        } catch (CertificateException | OperatorCreationException ex) {
-            throw new IOException(ex);
-        }
+        return createCertificate(keypair, subject);
     }
 
     /**
@@ -215,6 +189,20 @@ public final class CertificateUtils {
      */
     public static X509Certificate createTlsSni02Certificate(KeyPair keypair, String sanA, String sanB)
                 throws IOException {
+        return createCertificate(keypair, sanA, sanB);
+    }
+
+    /**
+     * Creates a generic self-signed challenge {@link X509Certificate}. The certificate is
+     * valid for 7 days.
+     *
+     * @param keypair
+     *            A domain {@link KeyPair} to be used for the challenge
+     * @param subject
+     *            Subjects to create a certificate for
+     * @return Created certificate
+     */
+    private static X509Certificate createCertificate(KeyPair keypair, String... subject) throws IOException {
         final long now = System.currentTimeMillis();
         final long validSpanMs = 7 * 24 * 60 * 60 * 1000L;
         final String signatureAlg = "SHA256withRSA";
@@ -228,9 +216,10 @@ public final class CertificateUtils {
             JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
                         issuer, serial, notBefore, notAfter, issuer, keypair.getPublic());
 
-            GeneralName[] gns = new GeneralName[2];
-            gns[0] = new GeneralName(GeneralName.dNSName, sanA);
-            gns[1] = new GeneralName(GeneralName.dNSName, sanB);
+            GeneralName[] gns = new GeneralName[subject.length];
+            for (int ix = 0; ix < subject.length; ix++) {
+                gns[ix] = new GeneralName(GeneralName.dNSName, subject[ix]);
+            }
 
             certBuilder.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(gns));
 
