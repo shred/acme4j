@@ -13,13 +13,9 @@
  */
 package org.shredzone.acme4j.challenge;
 
-import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import static org.shredzone.acme4j.util.AcmeUtils.*;
 
-import org.jose4j.base64url.Base64Url;
 import org.shredzone.acme4j.Session;
-import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
  * Implements the {@value TYPE} challenge.
@@ -47,14 +43,7 @@ public class Dns01Challenge extends TokenChallenge {
      * record.
      */
     public String getDigest() {
-        try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
-            md.update(getAuthorization().getBytes("UTF-8"));
-            byte[] digest = md.digest();
-            return Base64Url.encode(digest);
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-            throw new AcmeProtocolException("Failed to compute digest", ex);
-        }
+        return base64UrlEncode(sha256hash(getAuthorization()));
     }
 
     @Override

@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j.util;
 
+import static org.shredzone.acme4j.util.AcmeUtils.base64UrlEncode;
+
 import java.security.Key;
 import java.security.PublicKey;
 import java.text.SimpleDateFormat;
@@ -22,7 +24,6 @@ import java.util.Map;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
-import org.jose4j.base64url.Base64Url;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.PublicJsonWebKey;
@@ -130,7 +131,7 @@ public class ClaimBuilder {
      * @return {@code this}
      */
     public ClaimBuilder putBase64(String key, byte[] data) {
-        return put(key, Base64Url.encode(data));
+        return put(key, base64UrlEncode(data));
     }
 
     /**

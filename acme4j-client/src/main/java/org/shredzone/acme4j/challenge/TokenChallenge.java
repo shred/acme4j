@@ -13,9 +13,10 @@
  */
 package org.shredzone.acme4j.challenge;
 
+import static org.shredzone.acme4j.util.AcmeUtils.base64UrlEncode;
+
 import java.security.PublicKey;
 
-import org.jose4j.base64url.Base64Url;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Session;
@@ -83,7 +84,7 @@ public class TokenChallenge extends Challenge {
             PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(pk);
             return getToken()
                         + '.'
-                        + Base64Url.encode(jwk.calculateThumbprint("SHA-256"));
+                        + base64UrlEncode(jwk.calculateThumbprint("SHA-256"));
         } catch (JoseException ex) {
             throw new AcmeProtocolException("Cannot compute key thumbprint", ex);
         }
