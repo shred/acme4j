@@ -44,6 +44,7 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeAgreementRequiredException;
 import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
 import org.shredzone.acme4j.exception.AcmeServerException;
@@ -78,7 +79,7 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public int sendRequest(URI uri, Session session) throws IOException {
+    public int sendRequest(URI uri, Session session) throws AcmeException {
         if (uri == null) {
             throw new NullPointerException("uri must not be null");
         }
@@ -89,21 +90,25 @@ public class DefaultConnection implements Connection {
 
         LOG.debug("GET {}", uri);
 
-        conn = httpConnector.openConnection(uri);
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Accept-Charset", "utf-8");
-        conn.setRequestProperty("Accept-Language", session.getLocale().toLanguageTag());
-        conn.setDoOutput(false);
+        try {
+            conn = httpConnector.openConnection(uri);
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept-Charset", "utf-8");
+            conn.setRequestProperty("Accept-Language", session.getLocale().toLanguageTag());
+            conn.setDoOutput(false);
 
-        conn.connect();
+            conn.connect();
 
-        logHeaders();
+            logHeaders();
 
-        return conn.getResponseCode();
+            return conn.getResponseCode();
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
+        }
     }
 
     @Override
-    public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) throws IOException {
+    public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) throws AcmeException {
         if (uri == null) {
             throw new NullPointerException("uri must not be null");
         }
@@ -165,13 +170,15 @@ public class DefaultConnection implements Connection {
             updateSession(session);
 
             return conn.getResponseCode();
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         } catch (JoseException ex) {
             throw new AcmeProtocolException("Failed to generate a JSON request", ex);
         }
     }
 
     @Override
-    public Map<String, Object> readJsonResponse() throws IOException {
+    public Map<String, Object> readJsonResponse() throws AcmeException {
         assertConnectionIsOpen();
 
         String contentType = conn.getHeaderField("Content-Type");
@@ -190,6 +197,8 @@ public class DefaultConnection implements Connection {
                 result = JsonUtil.parseJson(response);
                 LOG.debug("Result JSON: {}", response);
             }
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         } catch (JoseException ex) {
             throw new AcmeProtocolException("Failed to parse response: " + response, ex);
         }
@@ -213,7 +222,7 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public X509Certificate readCertificate() throws IOException {
+    public X509Certificate readCertificate() throws AcmeException {
         assertConnectionIsOpen();
 
         String contentType = conn.getHeaderField("Content-Type");
@@ -224,6 +233,8 @@ public class DefaultConnection implements Connection {
         try (InputStream in = conn.getInputStream()) {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             return (X509Certificate) cf.generateCertificate(in);
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         } catch (CertificateException ex) {
             throw new AcmeProtocolException("Failed to read certificate", ex);
         }
@@ -323,49 +334,49 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public void throwAcmeException() throws AcmeException, IOException {
+    public void throwAcmeException() throws AcmeException {
         assertConnectionIsOpen();
 
-        if ("application/problem+json".equals(conn.getHeaderField("Content-Type"))) {
-            Map<String, Object> map = readJsonResponse();
-            String type = (String) map.get("type");
-            String detail = (String) map.get("detail");
+        if (!"application/problem+json".equals(conn.getHeaderField("Content-Type"))) {
+            throw new AcmeException("HTTP " + getResponseCode() + ": " + getResponseMessage());
+        }
 
-            if (detail == null) {
-                detail = "general problem";
-            }
+        Map<String, Object> map = readJsonResponse();
 
-            if (conn.getResponseCode() == HttpURLConnection.HTTP_CONFLICT) {
-                throw new AcmeConflictException(detail, getLocation());
-            }
+        String type = (String) map.get("type");
+        String detail = (String) map.get("detail");
 
-            if (type == null) {
-                throw new AcmeException(detail);
-            }
+        if (detail == null) {
+            detail = "general problem";
+        }
 
-            switch (type) {
-                case ACME_ERROR_PREFIX + "unauthorized":
-                case ACME_ERROR_PREFIX_DEPRECATED + "unauthorized":
-                    throw new AcmeUnauthorizedException(type, detail);
+        if (getResponseCode() == HttpURLConnection.HTTP_CONFLICT) {
+            throw new AcmeConflictException(detail, getLocation());
+        }
 
-                case ACME_ERROR_PREFIX + "agreementRequired":
-                case ACME_ERROR_PREFIX_DEPRECATED + "agreementRequired":
-                    String instance = (String) map.get("instance");
-                    throw new AcmeAgreementRequiredException(
-                                type, detail, getLink("terms-of-service"),
-                                (instance != null ? resolveRelative(instance) : null));
+        if (type == null) {
+            throw new AcmeException(detail);
+        }
 
-                case ACME_ERROR_PREFIX + "rateLimited":
-                case ACME_ERROR_PREFIX_DEPRECATED + "rateLimited":
-                    throw new AcmeRateLimitExceededException(
-                                type, detail, getRetryAfterHeader(), getLinks("rate-limit"));
+        switch (type) {
+            case ACME_ERROR_PREFIX + "unauthorized":
+            case ACME_ERROR_PREFIX_DEPRECATED + "unauthorized":
+                throw new AcmeUnauthorizedException(type, detail);
 
-                default:
-                    throw new AcmeServerException(type, detail);
-            }
-        } else {
-            throw new AcmeException("HTTP " + conn.getResponseCode() + ": "
-                + conn.getResponseMessage());
+            case ACME_ERROR_PREFIX + "agreementRequired":
+            case ACME_ERROR_PREFIX_DEPRECATED + "agreementRequired":
+                String instance = (String) map.get("instance");
+                throw new AcmeAgreementRequiredException(
+                            type, detail, getLink("terms-of-service"),
+                            instance != null ? resolveRelative(instance) : null);
+
+            case ACME_ERROR_PREFIX + "rateLimited":
+            case ACME_ERROR_PREFIX_DEPRECATED + "rateLimited":
+                throw new AcmeRateLimitExceededException(
+                            type, detail, getRetryAfterHeader(), getLinks("rate-limit"));
+
+            default:
+                throw new AcmeServerException(type, detail);
         }
     }
 
@@ -389,6 +400,28 @@ public class DefaultConnection implements Connection {
     private void assertConnectionIsClosed() {
         if (conn != null) {
             throw new IllegalStateException("Previous connection is not closed.");
+        }
+    }
+
+    /**
+     * Returns the last response code.
+     */
+    private int getResponseCode() throws AcmeException {
+        try {
+            return conn.getResponseCode();
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
+        }
+    }
+
+    /**
+     * Returns the last response message.
+     */
+    private String getResponseMessage() throws AcmeException {
+        try {
+            return conn.getResponseMessage();
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         }
     }
 

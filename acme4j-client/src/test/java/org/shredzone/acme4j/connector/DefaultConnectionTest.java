@@ -41,6 +41,7 @@ import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.util.ClaimBuilder;
@@ -358,7 +359,7 @@ public class DefaultConnectionTest {
             assertThat(ex.getType(), is("urn:zombie:error:apocalypse"));
             assertThat(ex.getMessage(), is("Zombie apocalypse in progress"));
             assertThat(ex.getAcmeErrorType(), is(nullValue()));
-        } catch (AcmeException | IOException ex) {
+        } catch (AcmeException ex) {
             fail("Expected an AcmeServerException");
         }
 
@@ -386,10 +387,10 @@ public class DefaultConnectionTest {
             conn.conn = mockUrlConnection;
             conn.throwAcmeException();
             fail("Expected to fail");
+        } catch (AcmeNetworkException ex) {
+            fail("Did not expect an AcmeNetworkException");
         } catch (AcmeException ex) {
             assertThat(ex.getMessage(), not(isEmptyOrNullString()));
-        } catch (IOException ex) {
-            fail("Expected an AcmeException");
         }
 
         verify(mockUrlConnection).getHeaderField("Content-Type");

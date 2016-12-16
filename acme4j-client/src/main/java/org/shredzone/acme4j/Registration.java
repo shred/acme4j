@@ -13,7 +13,6 @@
  */
 package org.shredzone.acme4j;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -35,7 +34,6 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.ResourceIterator;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.ClaimBuilder;
@@ -167,8 +165,6 @@ public class Registration extends AcmeResource {
 
             Map<String, Object> json = conn.readJsonResponse();
             unmarshal(json, conn);
-         } catch (IOException ex) {
-             throw new AcmeNetworkException(ex);
          }
     }
 
@@ -204,8 +200,6 @@ public class Registration extends AcmeResource {
             Authorization auth = new Authorization(getSession(), conn.getLocation());
             auth.unmarshalAuthorization(json);
             return auth;
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -268,8 +262,6 @@ public class Registration extends AcmeResource {
             URI chainCertUri = conn.getLink("up");
 
             return new Certificate(getSession(), conn.getLocation(), chainCertUri, cert);
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -321,8 +313,6 @@ public class Registration extends AcmeResource {
             }
 
             getSession().setKeyPair(newKeyPair);
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
         } catch (JoseException ex) {
             throw new AcmeProtocolException("Cannot sign key-change", ex);
         }
@@ -345,8 +335,6 @@ public class Registration extends AcmeResource {
             if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -517,8 +505,6 @@ public class Registration extends AcmeResource {
 
                 Map<String, Object> json = conn.readJsonResponse();
                 unmarshal(json, conn);
-            } catch (IOException ex) {
-                throw new AcmeNetworkException(ex);
             }
         }
     }

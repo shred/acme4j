@@ -13,7 +13,6 @@
  */
 package org.shredzone.acme4j.provider;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.Map;
@@ -28,7 +27,6 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeNetworkException;
 
 /**
  * Abstract implementation of {@link AcmeProvider}. It consists of a challenge
@@ -56,8 +54,6 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
             conn.updateSession(session);
 
             return conn.readJsonResponse();
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
         }
     }
 

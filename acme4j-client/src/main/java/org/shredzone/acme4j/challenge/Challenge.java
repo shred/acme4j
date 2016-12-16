@@ -29,7 +29,6 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.ClaimBuilder;
@@ -88,8 +87,6 @@ public class Challenge extends AcmeResource {
             }
 
             return (T) session.createChallenge(json);
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -220,8 +217,6 @@ public class Challenge extends AcmeResource {
             }
 
             unmarshall(conn.readJsonResponse());
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -252,8 +247,6 @@ public class Challenge extends AcmeResource {
                                     retryAfter);
                 }
             }
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
         }
     }
 

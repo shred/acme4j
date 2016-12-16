@@ -13,7 +13,6 @@
  */
 package org.shredzone.acme4j.connector;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -27,7 +26,6 @@ import java.util.NoSuchElementException;
 import org.shredzone.acme4j.AcmeResource;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
@@ -144,7 +142,6 @@ public abstract class ResourceIterator<T extends AcmeResource> implements Iterat
      * Reads the next batch of URIs from the server, and fills the queue with the URIs. If
      * there is a "next" header, it is used for the next batch of URIs.
      */
-    @SuppressWarnings("unchecked")
     private void readAndQueue() throws AcmeException {
         try (Connection conn = session.provider().connect()) {
             int rc = conn.sendRequest(nextUri, session);
@@ -153,22 +150,33 @@ public abstract class ResourceIterator<T extends AcmeResource> implements Iterat
             }
 
             Map<String, Object> json = conn.readJsonResponse();
-            try {
-                Collection<String> array = (Collection<String>) json.get(field);
-                if (array != null) {
-                    for (String uri : array) {
-                        uriList.add(new URI(uri));
-                    }
-                }
-            } catch (ClassCastException ex) {
-                throw new AcmeProtocolException("Expected an array");
-            } catch (URISyntaxException ex) {
-                throw new AcmeProtocolException("Invalid URI", ex);
-            }
+            fillUriList(json);
 
             nextUri = conn.getLink("next");
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
+        }
+    }
+
+    /**
+     * Fills the uri list with the URIs found in the desired field.
+     *
+     * @param json
+     *            JSON map to read from
+     */
+    private void fillUriList(Map<String, Object> json) {
+        try {
+            @SuppressWarnings("unchecked")
+            Collection<String> array = (Collection<String>) json.get(field);
+            if (array == null) {
+                return;
+            }
+
+            for (String uri : array) {
+                uriList.add(new URI(uri));
+            }
+        } catch (ClassCastException ex) {
+            throw new AcmeProtocolException("Expected an array", ex);
+        } catch (URISyntaxException ex) {
+            throw new AcmeProtocolException("Invalid URI", ex);
         }
     }
 

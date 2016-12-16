@@ -13,7 +13,6 @@
  */
 package org.shredzone.acme4j;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.security.cert.CertificateEncodingException;
@@ -25,7 +24,6 @@ import java.util.List;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.ClaimBuilder;
@@ -106,8 +104,6 @@ public class Certificate extends AcmeResource {
 
                 chainCertUri = conn.getLink("up");
                 cert = conn.readCertificate();
-            } catch (IOException ex) {
-                throw new AcmeNetworkException(ex);
             }
         }
         return cert;
@@ -146,8 +142,6 @@ public class Certificate extends AcmeResource {
 
                     certChain.add(conn.readCertificate());
                     link = conn.getLink("up");
-                } catch (IOException ex) {
-                    throw new AcmeNetworkException(ex);
                 }
             }
             if (link != null) {
@@ -200,8 +194,6 @@ public class Certificate extends AcmeResource {
             }
         } catch (CertificateEncodingException ex) {
             throw new AcmeProtocolException("Invalid certificate", ex);
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
         }
     }
 

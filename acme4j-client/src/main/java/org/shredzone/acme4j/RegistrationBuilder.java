@@ -13,7 +13,6 @@
  */
 package org.shredzone.acme4j;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.ArrayList;
@@ -23,7 +22,6 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,8 +90,6 @@ public class RegistrationBuilder {
             URI tos = conn.getLink("terms-of-service");
 
             return new Registration(session, location, tos);
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
         }
     }
 

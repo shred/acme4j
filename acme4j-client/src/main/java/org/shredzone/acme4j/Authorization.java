@@ -13,7 +13,6 @@
  */
 package org.shredzone.acme4j;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.ArrayList;
@@ -26,7 +25,6 @@ import java.util.Map;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.ClaimBuilder;
@@ -194,8 +192,6 @@ public class Authorization extends AcmeResource {
                                     retryAfter);
                 }
             }
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
         }
     }
 
@@ -213,8 +209,6 @@ public class Authorization extends AcmeResource {
             if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
                 conn.throwAcmeException();
             }
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
         }
     }
 

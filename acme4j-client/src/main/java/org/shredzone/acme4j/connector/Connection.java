@@ -13,7 +13,6 @@
  */
 package org.shredzone.acme4j.connector;
 
-import java.io.IOException;
 import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -39,7 +38,7 @@ public interface Connection extends AutoCloseable {
      *            {@link Session} instance to be used for tracking
      * @return HTTP response code
      */
-    int sendRequest(URI uri, Session session) throws IOException;
+    int sendRequest(URI uri, Session session) throws AcmeException;
 
     /**
      * Sends a signed POST request.
@@ -52,21 +51,21 @@ public interface Connection extends AutoCloseable {
      *            {@link Session} instance to be used for signing and tracking
      * @return HTTP response code
      */
-    int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) throws IOException;
+    int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) throws AcmeException;
 
     /**
      * Reads a server response as JSON data.
      *
      * @return Map containing the parsed JSON data
      */
-    Map<String, Object> readJsonResponse() throws IOException;
+    Map<String, Object> readJsonResponse() throws AcmeException;
 
     /**
      * Reads a certificate.
      *
      * @return {@link X509Certificate} that was read.
      */
-    X509Certificate readCertificate() throws IOException;
+    X509Certificate readCertificate() throws AcmeException;
 
     /**
      * Updates a {@link Session} by evaluating the HTTP response header.
@@ -120,7 +119,7 @@ public interface Connection extends AutoCloseable {
      * {@link AcmeServerException} will be thrown. Otherwise a generic
      * {@link AcmeException} is thrown.
      */
-    void throwAcmeException() throws AcmeException, IOException;
+    void throwAcmeException() throws AcmeException;
 
     /**
      * Closes the {@link Connection}, releasing all resources.
