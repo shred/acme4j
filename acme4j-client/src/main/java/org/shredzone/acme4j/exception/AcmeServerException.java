@@ -14,6 +14,7 @@
 package org.shredzone.acme4j.exception;
 
 import org.shredzone.acme4j.connector.DefaultConnection;
+import org.shredzone.acme4j.util.AcmeUtils;
 
 /**
  * An exception that is thrown when the ACME server returned an error. It contains
@@ -35,9 +36,7 @@ public class AcmeServerException extends AcmeException {
      */
     public AcmeServerException(String type, String detail) {
         super(detail);
-        if (type == null) {
-            throw new IllegalArgumentException("Error type must not be null");
-        }
+        AcmeUtils.assertNotNull(type, "type");
         this.type = type;
     }
 

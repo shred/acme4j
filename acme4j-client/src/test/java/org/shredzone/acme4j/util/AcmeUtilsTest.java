@@ -14,7 +14,7 @@
 package org.shredzone.acme4j.util;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.shredzone.acme4j.util.AcmeUtils.*;
 
 import javax.xml.bind.DatatypeConverter;
@@ -52,6 +52,21 @@ public class AcmeUtilsTest {
     public void testBase64UrlEncode() {
         String base64UrlEncode = base64UrlEncode(sha256hash("foobar"));
         assertThat(base64UrlEncode, is("w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"));
+    }
+
+    /**
+     * Test that {@code null} check works properly.
+     */
+    @Test
+    public void testAssertNotNull() {
+        AcmeUtils.assertNotNull(new Object(), "foo");
+
+        try {
+            AcmeUtils.assertNotNull(null, "bar");
+            fail("null was accepted");
+        } catch (NullPointerException ex) {
+            // expected
+        }
     }
 
 }

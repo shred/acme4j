@@ -30,6 +30,7 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AcmeProvider;
+import org.shredzone.acme4j.util.AcmeUtils;
 
 /**
  * A session stores the ACME server URI and the account's key pair. It also tracks
@@ -71,13 +72,8 @@ public class Session {
      *            {@link KeyPair} of the ACME account
      */
     public Session(URI serverUri, KeyPair keyPair) {
-        if (serverUri == null) {
-            throw new NullPointerException("serverUri must not be null");
-        }
-
-        if (keyPair == null) {
-            throw new NullPointerException("keypair must not be null");
-        }
+        AcmeUtils.assertNotNull(serverUri, "serverUri");
+        AcmeUtils.assertNotNull(keyPair, "keyPair");
 
         this.serverUri = serverUri;
         this.keyPair = keyPair;
@@ -170,9 +166,7 @@ public class Session {
      * @return {@link Challenge} instance
      */
     public Challenge createChallenge(Map<String, Object> data) {
-        if (data == null) {
-            throw new NullPointerException("data must not be null");
-        }
+        AcmeUtils.assertNotNull(data, "data");
 
         String type = (String) data.get("type");
         if (type == null || type.isEmpty()) {
@@ -200,9 +194,7 @@ public class Session {
      * @return {@link URI}, or {@code null} if the server does not offer that resource
      */
     public URI resourceUri(Resource resource) throws AcmeException {
-        if (resource == null) {
-            throw new NullPointerException("resource must not be null");
-        }
+        AcmeUtils.assertNotNull(resource, "resource");
         readDirectory();
         return resourceMap.get(resource);
     }

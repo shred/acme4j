@@ -31,6 +31,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
+import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TimestampParser;
 import org.slf4j.Logger;
@@ -67,12 +68,8 @@ public class Challenge extends AcmeResource {
      */
     @SuppressWarnings("unchecked")
     public static <T extends Challenge> T bind(Session session, URI location) throws AcmeException {
-        if (session == null) {
-            throw new NullPointerException("session must not be null");
-        }
-        if (location == null) {
-            throw new NullPointerException("location must not be null");
-        }
+        AcmeUtils.assertNotNull(session, "session");
+        AcmeUtils.assertNotNull(location, "location");
 
         LOG.debug("bind");
         try (Connection conn = session.provider().connect()) {

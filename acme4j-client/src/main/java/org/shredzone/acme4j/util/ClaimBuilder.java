@@ -56,10 +56,7 @@ public class ClaimBuilder {
      * @return {@code this}
      */
     public ClaimBuilder put(String key, Object value) {
-        if (key == null) {
-            throw new NullPointerException("key must not be null");
-        }
-
+        AcmeUtils.assertNotNull(key, "key");
         data.put(key, value);
         return this;
     }
@@ -144,9 +141,7 @@ public class ClaimBuilder {
      * @return {@code this}
      */
     public ClaimBuilder putKey(String key, PublicKey publickey) {
-        if (publickey == null) {
-            throw new NullPointerException("publickey must not be null");
-        }
+        AcmeUtils.assertNotNull(publickey, "publickey");
 
         try {
             final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(publickey);

@@ -49,6 +49,7 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
+import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.SignatureUtils;
 import org.slf4j.Logger;
@@ -71,21 +72,14 @@ public class DefaultConnection implements Connection {
     protected HttpURLConnection conn;
 
     public DefaultConnection(HttpConnector httpConnector) {
-        if (httpConnector == null) {
-            throw new NullPointerException("httpConnector must not be null");
-        }
-
+        AcmeUtils.assertNotNull(httpConnector, "httpConnector");
         this.httpConnector = httpConnector;
     }
 
     @Override
     public void sendRequest(URI uri, Session session) throws AcmeException {
-        if (uri == null) {
-            throw new NullPointerException("uri must not be null");
-        }
-        if (session == null) {
-            throw new NullPointerException("session must not be null");
-        }
+        AcmeUtils.assertNotNull(uri, "uri");
+        AcmeUtils.assertNotNull(session, "session");
         assertConnectionIsClosed();
 
         LOG.debug("GET {}", uri);
@@ -107,15 +101,9 @@ public class DefaultConnection implements Connection {
 
     @Override
     public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) throws AcmeException {
-        if (uri == null) {
-            throw new NullPointerException("uri must not be null");
-        }
-        if (claims == null) {
-            throw new NullPointerException("claims must not be null");
-        }
-        if (session == null) {
-            throw new NullPointerException("session must not be null");
-        }
+        AcmeUtils.assertNotNull(uri, "uri");
+        AcmeUtils.assertNotNull(claims, "claims");
+        AcmeUtils.assertNotNull(session, "session");
         assertConnectionIsClosed();
 
         try {

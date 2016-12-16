@@ -27,6 +27,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.util.AcmeUtils;
 
 /**
  * Abstract implementation of {@link AcmeProvider}. It consists of a challenge
@@ -58,11 +59,9 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
     @Override
     @SuppressWarnings("deprecation") // must still provide deprecated challenges
     public Challenge createChallenge(Session session, String type) {
-        if (session == null) {
-            throw new NullPointerException("session must not be null");
-        }
-
-        if (type == null || type.isEmpty()) {
+        AcmeUtils.assertNotNull(session, "session");
+        AcmeUtils.assertNotNull(type, "type");
+        if (type.isEmpty()) {
             throw new IllegalArgumentException("no type given");
         }
 

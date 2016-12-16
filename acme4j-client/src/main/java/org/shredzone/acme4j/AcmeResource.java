@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j;
 
+import static org.shredzone.acme4j.util.AcmeUtils.assertNotNull;
+
 import java.io.Serializable;
 import java.net.URI;
 
@@ -50,10 +52,7 @@ public abstract class AcmeResource implements Serializable {
      * Sets a new {@link Session}.
      */
     protected void setSession(Session session) {
-        if (session == null) {
-            throw new NullPointerException("session must not be null");
-        }
-
+        assertNotNull(session, "session");
         this.session = session;
     }
 
@@ -61,10 +60,7 @@ public abstract class AcmeResource implements Serializable {
      * Sets the resource's location.
      */
     protected void setLocation(URI location) {
-        if (location == null) {
-            throw new NullPointerException("location must not be null");
-        }
-
+        assertNotNull(location, "location");
         this.location = location;
     }
 

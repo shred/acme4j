@@ -145,11 +145,9 @@ public class CSRBuilder {
      *            {@link KeyPair} to sign the CSR with
      */
     public void sign(KeyPair keypair) throws IOException {
+        AcmeUtils.assertNotNull(keypair, "keypair");
         if (namelist.isEmpty()) {
             throw new IllegalStateException("No domain was set");
-        }
-        if (keypair == null) {
-            throw new IllegalArgumentException("keypair must not be null");
         }
 
         try {

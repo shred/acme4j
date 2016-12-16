@@ -78,4 +78,19 @@ public final class AcmeUtils {
         return Base64Url.encode(data);
     }
 
+    /**
+     * Asserts that the given value is not {@code null}. Otherwise a
+     * {@link NullPointerException} is thrown.
+     *
+     * @param value
+     *            Value to test
+     * @param name
+     *            Name of the parameter
+     */
+    public static void assertNotNull(Object value, String name) {
+        if (value == null) {
+            throw new NullPointerException(name + " must not be null");
+        }
+    }
+
 }

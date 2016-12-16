@@ -165,7 +165,7 @@ public class AbstractAcmeProviderTest {
         try {
             provider.createChallenge(session, (String) null);
             fail("null was accepted");
-        } catch (IllegalArgumentException ex) {
+        } catch (NullPointerException ex) {
             // expected
         }
 

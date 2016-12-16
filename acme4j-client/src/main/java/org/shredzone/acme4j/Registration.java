@@ -36,6 +36,7 @@ import org.shredzone.acme4j.connector.ResourceIterator;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
+import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.DomainUtils;
 import org.shredzone.acme4j.util.SignatureUtils;
@@ -176,8 +177,9 @@ public class Registration extends AcmeResource {
      * @return {@link Authorization} object for this domain
      */
     public Authorization authorizeDomain(String domain) throws AcmeException {
-        if (domain == null || domain.isEmpty()) {
-            throw new NullPointerException("domain must not be empty or null");
+        AcmeUtils.assertNotNull(domain, "domain");
+        if (domain.isEmpty()) {
+            throw new IllegalArgumentException("domain must not be empty");
         }
 
         LOG.debug("authorizeDomain {}", domain);
@@ -229,9 +231,7 @@ public class Registration extends AcmeResource {
      */
     public Certificate requestCertificate(byte[] csr, Date notBefore, Date notAfter)
                 throws AcmeException {
-        if (csr == null) {
-            throw new NullPointerException("csr must not be null");
-        }
+        AcmeUtils.assertNotNull(csr, "csr");
 
         LOG.debug("requestCertificate");
         try (Connection conn = getSession().provider().connect()) {
@@ -269,9 +269,7 @@ public class Registration extends AcmeResource {
      *            new {@link KeyPair} to be used for identifying this account
      */
     public void changeKey(KeyPair newKeyPair) throws AcmeException {
-        if (newKeyPair == null) {
-            throw new NullPointerException("newKeyPair must not be null");
-        }
+        AcmeUtils.assertNotNull(newKeyPair, "newKeyPair");
         if (Arrays.equals(getSession().getKeyPair().getPrivate().getEncoded(),
                         newKeyPair.getPrivate().getEncoded())) {
             throw new IllegalArgumentException("newKeyPair must actually be a new key pair");
