@@ -44,7 +44,8 @@ public class AcmeRateLimitExceededException extends AcmeServerException {
     public AcmeRateLimitExceededException(String type, String detail, Date retryAfter, Collection<URI> documents) {
         super(type, detail);
         this.retryAfter = retryAfter;
-        this.documents = (documents != null ? Collections.unmodifiableCollection(documents) : null);
+        this.documents =
+                documents != null ? Collections.unmodifiableCollection(documents) : null;
     }
 
     /**
@@ -52,7 +53,7 @@ public class AcmeRateLimitExceededException extends AcmeServerException {
      * moment is not known.
      */
     public Date getRetryAfter() {
-        return (retryAfter != null ? new Date(retryAfter.getTime()) : null);
+        return retryAfter != null ? new Date(retryAfter.getTime()) : null;
     }
 
     /**

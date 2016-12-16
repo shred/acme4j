@@ -335,6 +335,7 @@ public class Registration extends AcmeResource {
                 update();
             } catch (AcmeRetryAfterException ex) {
                 // ignore... The object was still updated.
+                LOG.debug("Retry-After", ex);
             } catch (AcmeException ex) {
                 throw new AcmeProtocolException("Could not load lazily", ex);
             }

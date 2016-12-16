@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
  *
  * @see <a href="https://www.ietf.org/rfc/rfc3339.txt">RFC 3339</a>
  */
-public class TimestampParser {
+public final class TimestampParser {
 
     private static final Pattern DATE_PATTERN = Pattern.compile(
                   "^(\\d{4})-(\\d{2})-(\\d{2})T"
@@ -35,6 +35,10 @@ public class TimestampParser {
 
     private static final Pattern TZ_PATTERN = Pattern.compile(
                   "([+-])(\\d{2}):?(\\d{2})$");
+
+    private TimestampParser() {
+        // Utility class without constructor
+    }
 
     /**
      * Parses a RFC 3339 formatted date.
@@ -58,15 +62,14 @@ public class TimestampParser {
         int minute = Integer.parseInt(m.group(5));
         int second = Integer.parseInt(m.group(6));
 
-        String msStr = m.group(7);
-        if (msStr == null) {
-            msStr = "000";
-        } else {
-            while (msStr.length() < 3) {
-                msStr += '0';
-            }
+        StringBuilder msStr = new StringBuilder();
+        if (m.group(7) != null) {
+            msStr.append(m.group(7));
         }
-        int ms = Integer.parseInt(msStr);
+        while (msStr.length() < 3) {
+            msStr.append('0');
+        }
+        int ms = Integer.parseInt(msStr.toString());
 
         String tz = m.group(8);
         if ("Z".equalsIgnoreCase(tz)) {

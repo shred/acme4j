@@ -14,9 +14,12 @@
 package org.shredzone.acme4j.connector;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.Properties;
+
+import org.slf4j.LoggerFactory;
 
 /**
  * A generic HTTP connector. It connects to the given URI with a 10 seconds connection and
@@ -32,16 +35,17 @@ public class HttpConnector {
 
     static {
         StringBuilder agent = new StringBuilder("acme4j");
-        try {
+
+        try (InputStream in = HttpConnector.class.getResourceAsStream("/org/shredzone/acme4j/version.properties")) {
             Properties prop = new Properties();
-            prop.load(HttpConnector.class.getResourceAsStream("/org/shredzone/acme4j/version.properties"));
+            prop.load(in);
             agent.append('/').append(prop.getProperty("version"));
         } catch (IOException ex) {
             // Ignore, just don't use a version
+            LoggerFactory.getLogger(HttpConnector.class).warn("Could not read library version", ex);
         }
 
         agent.append(" Java/").append(System.getProperty("java.version"));
-
         USER_AGENT = agent.toString();
     }
 

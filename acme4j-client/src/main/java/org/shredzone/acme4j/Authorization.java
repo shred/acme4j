@@ -118,7 +118,7 @@ public class Authorization extends AcmeResource {
     @SuppressWarnings("unchecked")
     public <T extends Challenge> T findChallenge(String type) {
         Collection<Challenge> result = findCombination(type);
-        return (result != null ? (T) result.iterator().next() : null);
+        return result != null ? (T) result.iterator().next() : null;
     }
 
     /**
@@ -217,6 +217,7 @@ public class Authorization extends AcmeResource {
                 update();
             } catch (AcmeRetryAfterException ex) {
                 // ignore... The object was still updated.
+                LOG.debug("Retry-After", ex);
             } catch (AcmeException ex) {
                 throw new AcmeProtocolException("Could not load lazily", ex);
             }
@@ -233,47 +234,47 @@ public class Authorization extends AcmeResource {
     protected void unmarshalAuthorization(Map<String, Object> json) {
         this.status = Status.parse((String) json.get("status"), Status.PENDING);
 
-        String expires = (String) json.get("expires");
-        if (expires != null) {
-            this.expires = TimestampParser.parse(expires);
+        String jsonExpires = (String) json.get("expires");
+        if (jsonExpires != null) {
+            expires = TimestampParser.parse(jsonExpires);
         }
 
-        Map<String, Object> identifier = (Map<String, Object>) json.get("identifier");
-        if (identifier != null) {
-            String type = (String) identifier.get("type");
+        Map<String, Object> jsonIdentifier = (Map<String, Object>) json.get("identifier");
+        if (jsonIdentifier != null) {
+            String type = (String) jsonIdentifier.get("type");
             if (type != null && !"dns".equals(type)) {
                 throw new AcmeProtocolException("Unknown authorization type: " + type);
             }
-            this.domain = (String) identifier.get("value");
+            domain = (String) jsonIdentifier.get("value");
         }
 
-        Collection<Map<String, Object>> challenges =
+        Collection<Map<String, Object>> jsonChallenges =
                         (Collection<Map<String, Object>>) json.get("challenges");
         List<Challenge> cr = new ArrayList<>();
-        for (Map<String, Object> c : challenges) {
+        for (Map<String, Object> c : jsonChallenges) {
             Challenge ch = getSession().createChallenge(c);
             if (ch != null) {
                 cr.add(ch);
             }
         }
-        this.challenges = cr;
+        challenges = cr;
 
-        Collection<List<Number>> combinations =
+        Collection<List<Number>> jsonCombinations =
                         (Collection<List<Number>>) json.get("combinations");
-        if (combinations != null) {
-            List<List<Challenge>> cmb = new ArrayList<>(combinations.size());
-            for (List<Number> c : combinations) {
+        if (jsonCombinations != null) {
+            List<List<Challenge>> cmb = new ArrayList<>(jsonCombinations.size());
+            for (List<Number> c : jsonCombinations) {
                 List<Challenge> clist = new ArrayList<>(c.size());
                 for (Number n : c) {
                     clist.add(cr.get(n.intValue()));
                 }
                 cmb.add(clist);
             }
-            this.combinations = cmb;
+            combinations = cmb;
         } else {
             List<List<Challenge>> cmb = new ArrayList<>(1);
             cmb.add(cr);
-            this.combinations = cmb;
+            combinations = cmb;
         }
 
         loaded = true;

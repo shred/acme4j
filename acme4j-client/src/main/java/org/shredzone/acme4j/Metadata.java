@@ -79,7 +79,7 @@ public class Metadata {
      */
     public String get(String key) {
         Object value = meta.get(key);
-        return (value != null ? value.toString() : null);
+        return value != null ? value.toString() : null;
     }
 
     /**
@@ -95,7 +95,7 @@ public class Metadata {
     public URI getUri(String key) {
         Object uri = meta.get(key);
         try {
-            return (uri != null ? new URI(uri.toString()) : null);
+            return uri != null ? new URI(uri.toString()) : null;
         } catch (URISyntaxException ex) {
             throw new AcmeProtocolException("Bad URI: " + uri, ex);
         }

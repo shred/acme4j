@@ -29,11 +29,13 @@ public enum Status {
      *         no match
      */
     public static Status parse(String str) {
-        try {
-            return valueOf(str.toUpperCase());
-        } catch (IllegalArgumentException ex) {
-            return Status.UNKNOWN;
+        String check = str.toUpperCase();
+        for (Status s : values()) {
+            if (s.name().equals(check)) {
+                return s;
+            }
         }
+        return Status.UNKNOWN;
     }
 
     /**
@@ -47,7 +49,7 @@ public enum Status {
      *         no match, or {@code def} if the str was {@code null}
      */
     public static Status parse(String str, Status def) {
-        return (str != null ? parse(str) : def);
+        return str != null ? parse(str) : def;
     }
 
 }

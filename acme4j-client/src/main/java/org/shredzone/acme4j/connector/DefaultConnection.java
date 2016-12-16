@@ -198,7 +198,8 @@ public class DefaultConnection implements Connection {
 
         String response = "";
         try {
-            InputStream in = (conn.getResponseCode() < 400 ? conn.getInputStream() : conn.getErrorStream());
+            InputStream in =
+                    conn.getResponseCode() < 400 ? conn.getInputStream() : conn.getErrorStream();
             if (in != null) {
                 response = readStream(in);
                 result = JsonUtil.parseJson(response);
@@ -311,7 +312,7 @@ public class DefaultConnection implements Connection {
             }
         }
 
-        return (!result.isEmpty() ? result : null);
+        return !result.isEmpty() ? result : null;
     }
 
     @Override
@@ -334,7 +335,7 @@ public class DefaultConnection implements Connection {
 
             // HTTP-date
             long date = conn.getHeaderFieldDate("Retry-After", 0L);
-            return (date != 0 ? new Date(date) : null);
+            return date != 0 ? new Date(date) : null;
         } catch (Exception ex) {
             throw new AcmeProtocolException("Bad retry-after header value: " + header, ex);
         }
@@ -410,12 +411,13 @@ public class DefaultConnection implements Connection {
      * Log all HTTP headers in debug mode.
      */
     private void logHeaders() {
-        if (LOG.isDebugEnabled()) {
-            Map<String, List<String>> headers = conn.getHeaderFields();
-            for (String key : headers.keySet()) {
-                for (String value : headers.get(key)) {
-                    LOG.debug("HEADER {}: {}", key, value);
-                }
+        if (!LOG.isDebugEnabled()) {
+            return;
+        }
+
+        for (Map.Entry<String, List<String>> entry : conn.getHeaderFields().entrySet()) {
+            for (String value : entry.getValue()) {
+                LOG.debug("HEADER {}: {}", entry.getKey(), value);
             }
         }
     }

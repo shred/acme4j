@@ -33,7 +33,7 @@ public class AcmeRetryAfterException extends AcmeException {
      * Returns the retry-after date returned by the server.
      */
     public Date getRetryAfter() {
-        return (retryAfter != null ? new Date(retryAfter.getTime()) : null);
+        return retryAfter != null ? new Date(retryAfter.getTime()) : null;
     }
 
 }
