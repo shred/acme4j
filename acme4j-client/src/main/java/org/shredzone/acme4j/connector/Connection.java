@@ -21,7 +21,6 @@ import java.util.Map;
 
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 
 /**
@@ -36,9 +35,8 @@ public interface Connection extends AutoCloseable {
      *            {@link URI} to send the request to.
      * @param session
      *            {@link Session} instance to be used for tracking
-     * @return HTTP response code
      */
-    int sendRequest(URI uri, Session session) throws AcmeException;
+    void sendRequest(URI uri, Session session) throws AcmeException;
 
     /**
      * Sends a signed POST request.
@@ -49,9 +47,18 @@ public interface Connection extends AutoCloseable {
      *            {@link ClaimBuilder} containing claims. Must not be {@code null}.
      * @param session
      *            {@link Session} instance to be used for signing and tracking
-     * @return HTTP response code
      */
-    int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) throws AcmeException;
+    void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) throws AcmeException;
+
+    /**
+     * Checks if the HTTP response status is in the given list of acceptable HTTP states,
+     * otherwise raises an {@link AcmeException} matching the error.
+     *
+     * @param httpStatus
+     *            Acceptable HTTP states
+     * @return Actual HTTP status that was accepted
+     */
+    int accept(int... httpStatus) throws AcmeException;
 
     /**
      * Reads a server response as JSON data.
@@ -113,13 +120,6 @@ public interface Connection extends AutoCloseable {
      * @return Moment, or {@code null} if no "Retry-After" header was set.
      */
     Date getRetryAfterHeader();
-
-    /**
-     * Handles a problem by throwing an exception. If a JSON problem was returned, an
-     * {@link AcmeServerException} will be thrown. Otherwise a generic
-     * {@link AcmeException} is thrown.
-     */
-    void throwAcmeException() throws AcmeException;
 
     /**
      * Closes the {@link Connection}, releasing all resources.

@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
+import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
@@ -62,8 +63,14 @@ public class ChallengeTest {
     public void testChallenge() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendRequest(URI uri, Session session) {
+            public void sendRequest(URI uri, Session session) {
                 assertThat(uri, is(locationUri));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
 
@@ -142,10 +149,16 @@ public class ChallengeTest {
     public void testTrigger() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("triggerHttpChallengeRequest")));
                 assertThat(session, is(notNullValue()));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
 
@@ -175,8 +188,14 @@ public class ChallengeTest {
     public void testUpdate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendRequest(URI uri, Session session) {
+            public void sendRequest(URI uri, Session session) {
                 assertThat(uri, is(locationUri));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -208,8 +227,14 @@ public class ChallengeTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendRequest(URI uri, Session session) {
+            public void sendRequest(URI uri, Session session) {
                 assertThat(uri, is(locationUri));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
 

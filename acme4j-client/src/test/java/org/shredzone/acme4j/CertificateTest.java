@@ -15,7 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.shredzone.acme4j.util.TestUtils.getJson;
+import static org.shredzone.acme4j.util.TestUtils.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.IOException;
@@ -52,9 +52,22 @@ public class CertificateTest {
             private boolean isLocationUri;
 
             @Override
-            public int sendRequest(URI uri, Session session) {
+            public void sendRequest(URI uri, Session session) {
                 assertThat(uri, isOneOf(locationUri, chainUri));
                 isLocationUri = uri.equals(locationUri);
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                if (isLocationUri) {
+                    // The leaf certificate, might be asynchronous
+                    assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                            HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
+                } else {
+                    // The root certificate chain, always OK
+                    assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                            HttpURLConnection.HTTP_OK));
+                }
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -93,8 +106,14 @@ public class CertificateTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendRequest(URI uri, Session session) {
+            public void sendRequest(URI uri, Session session) {
                 assertThat(uri, is(locationUri));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
 
@@ -125,10 +144,15 @@ public class CertificateTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("revokeCertificateRequest")));
                 assertThat(session, is(notNullValue()));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
                 return HttpURLConnection.HTTP_OK;
             }
         };
@@ -150,10 +174,15 @@ public class CertificateTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("revokeCertificateWithReasonRequest")));
                 assertThat(session, is(notNullValue()));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
                 return HttpURLConnection.HTTP_OK;
             }
         };

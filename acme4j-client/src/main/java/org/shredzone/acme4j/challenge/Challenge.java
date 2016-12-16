@@ -76,10 +76,8 @@ public class Challenge extends AcmeResource {
 
         LOG.debug("bind");
         try (Connection conn = session.provider().connect()) {
-            int rc = conn.sendRequest(location, session);
-            if (rc != HttpURLConnection.HTTP_ACCEPTED) {
-                conn.throwAcmeException();
-            }
+            conn.sendRequest(location, session);
+            conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
 
             Map<String, Object> json = conn.readJsonResponse();
             if (!(json.containsKey("type"))) {
@@ -211,10 +209,8 @@ public class Challenge extends AcmeResource {
             claims.putResource("challenge");
             respond(claims);
 
-            int rc = conn.sendSignedRequest(getLocation(), claims, getSession());
-            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
-                conn.throwAcmeException();
-            }
+            conn.sendSignedRequest(getLocation(), claims, getSession());
+            conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
 
             unmarshall(conn.readJsonResponse());
         }
@@ -233,10 +229,8 @@ public class Challenge extends AcmeResource {
     public void update() throws AcmeException {
         LOG.debug("update");
         try (Connection conn = getSession().provider().connect()) {
-            int rc = conn.sendRequest(getLocation(), getSession());
-            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
-                conn.throwAcmeException();
-            }
+            conn.sendRequest(getLocation(), getSession());
+            int rc = conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
 
             unmarshall(conn.readJsonResponse());
 

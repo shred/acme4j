@@ -88,7 +88,8 @@ public class Certificate extends AcmeResource {
         if (cert == null) {
             LOG.debug("download");
             try (Connection conn = getSession().provider().connect()) {
-                int rc = conn.sendRequest(getLocation(), getSession());
+                conn.sendRequest(getLocation(), getSession());
+                int rc = conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
                 if (rc == HttpURLConnection.HTTP_ACCEPTED) {
                     Date retryAfter = conn.getRetryAfterHeader();
                     if (retryAfter != null) {
@@ -96,10 +97,6 @@ public class Certificate extends AcmeResource {
                                         "certificate is not available for download yet",
                                         retryAfter);
                     }
-                }
-
-                if (rc != HttpURLConnection.HTTP_OK) {
-                    conn.throwAcmeException();
                 }
 
                 chainCertUri = conn.getLink("up");
@@ -135,10 +132,8 @@ public class Certificate extends AcmeResource {
             URI link = chainCertUri;
             while (link != null && certChain.size() < MAX_CHAIN_LENGTH) {
                 try (Connection conn = getSession().provider().connect()) {
-                    int rc = conn.sendRequest(chainCertUri, getSession());
-                    if (rc != HttpURLConnection.HTTP_OK) {
-                        conn.throwAcmeException();
-                    }
+                    conn.sendRequest(chainCertUri, getSession());
+                    conn.accept(HttpURLConnection.HTTP_OK);
 
                     certChain.add(conn.readCertificate());
                     link = conn.getLink("up");
@@ -188,10 +183,8 @@ public class Certificate extends AcmeResource {
                 claims.put("reason", reason.getReasonCode());
             }
 
-            int rc = conn.sendSignedRequest(resUri, claims, getSession());
-            if (rc != HttpURLConnection.HTTP_OK) {
-                conn.throwAcmeException();
-            }
+            conn.sendSignedRequest(resUri, claims, getSession());
+            conn.accept(HttpURLConnection.HTTP_OK);
         } catch (CertificateEncodingException ex) {
             throw new AcmeProtocolException("Invalid certificate", ex);
         }

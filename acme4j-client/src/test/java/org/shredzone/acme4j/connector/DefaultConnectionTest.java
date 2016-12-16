@@ -308,7 +308,24 @@ public class DefaultConnectionTest {
      * Test if an {@link AcmeServerException} is thrown on an acme problem.
      */
     @Test
-    public void testThrowException() throws Exception {
+    public void testAccept() throws Exception {
+        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            int rc = conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
+            assertThat(rc, is(HttpURLConnection.HTTP_OK));
+        }
+
+        verify(mockUrlConnection).getResponseCode();
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    /**
+     * Test if an {@link AcmeServerException} is thrown on an acme problem.
+     */
+    @Test
+    public void testAcceptThrowsException() throws Exception {
         String jsonData = "{\"type\":\"urn:ietf:params:acme:error:unauthorized\",\"detail\":\"Invalid response: 404\"}";
 
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/problem+json");
@@ -317,7 +334,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            conn.throwAcmeException();
+            conn.accept(HttpURLConnection.HTTP_OK);
             fail("Expected to fail");
         } catch (AcmeServerException ex) {
             assertThat(ex.getType(), is("urn:ietf:params:acme:error:unauthorized"));
@@ -337,7 +354,7 @@ public class DefaultConnectionTest {
      * Test if an {@link AcmeServerException} is thrown on another problem.
      */
     @Test
-    public void testOtherThrowException() throws IOException {
+    public void testAcceptThrowsOtherException() throws IOException {
         when(mockUrlConnection.getHeaderField("Content-Type"))
                 .thenReturn("application/problem+json");
         when(mockUrlConnection.getResponseCode())
@@ -353,7 +370,7 @@ public class DefaultConnectionTest {
             };
         }) {
             conn.conn = mockUrlConnection;
-            conn.throwAcmeException();
+            conn.accept(HttpURLConnection.HTTP_OK);
             fail("Expected to fail");
         } catch (AcmeServerException ex) {
             assertThat(ex.getType(), is("urn:zombie:error:apocalypse"));
@@ -372,7 +389,7 @@ public class DefaultConnectionTest {
      * Test if an {@link AcmeException} is thrown if there is no error type.
      */
     @Test
-    public void testNoTypeThrowException() throws IOException {
+    public void testAcceptThrowsNoTypeException() throws IOException {
         when(mockUrlConnection.getHeaderField("Content-Type"))
                 .thenReturn("application/problem+json");
         when(mockUrlConnection.getResponseCode())
@@ -385,7 +402,7 @@ public class DefaultConnectionTest {
             };
         }) {
             conn.conn = mockUrlConnection;
-            conn.throwAcmeException();
+            conn.accept(HttpURLConnection.HTTP_OK);
             fail("Expected to fail");
         } catch (AcmeNetworkException ex) {
             fail("Did not expect an AcmeNetworkException");
@@ -412,7 +429,6 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
         verify(mockUrlConnection).setDoOutput(false);
         verify(mockUrlConnection).connect();
-        verify(mockUrlConnection).getResponseCode();
         verify(mockUrlConnection, atLeast(0)).getHeaderFields();
         verifyNoMoreInteractions(mockUrlConnection);
     }
@@ -457,7 +473,6 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection).setDoOutput(true);
         verify(mockUrlConnection).setFixedLengthStreamingMode(outputStream.toByteArray().length);
         verify(mockUrlConnection).getOutputStream();
-        verify(mockUrlConnection).getResponseCode();
         verify(mockUrlConnection, atLeast(0)).getHeaderFields();
         verifyNoMoreInteractions(mockUrlConnection);
 

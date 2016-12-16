@@ -81,10 +81,8 @@ public class RegistrationBuilder {
                 claims.put("contact", contacts);
             }
 
-            int rc = conn.sendSignedRequest(session.resourceUri(Resource.NEW_REG), claims, session);
-            if (rc != HttpURLConnection.HTTP_CREATED) {
-                conn.throwAcmeException();
-            }
+            conn.sendSignedRequest(session.resourceUri(Resource.NEW_REG), claims, session);
+            conn.accept(HttpURLConnection.HTTP_CREATED);
 
             URI location = conn.getLocation();
             URI tos = conn.getLink("terms-of-service");

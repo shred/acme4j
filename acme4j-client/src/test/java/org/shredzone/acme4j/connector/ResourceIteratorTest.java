@@ -15,6 +15,7 @@ package org.shredzone.acme4j.connector;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.shredzone.acme4j.util.TestUtils.isIntArrayContainingInAnyOrder;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -31,6 +32,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Session;
+import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.util.ClaimBuilder;
@@ -133,9 +135,14 @@ public class ResourceIteratorTest {
             private int ix;
 
             @Override
-            public int sendRequest(URI uri, Session session) {
+            public void sendRequest(URI uri, Session session) {
                 ix = pageURIs.indexOf(uri);
                 assertThat(ix, is(greaterThanOrEqualTo(0)));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
                 return HttpURLConnection.HTTP_OK;
             }
 

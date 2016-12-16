@@ -62,33 +62,42 @@ public class RegistrationTest {
     public void testUpdateRegistration() throws AcmeException, IOException {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             private Map<String, Object> jsonResponse;
+            private Integer response;
 
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
                 assertThat(uri, is(locationUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("updateRegistration")));
                 assertThat(session, is(notNullValue()));
                 jsonResponse = getJsonAsMap("updateRegistrationResponse");
-                return HttpURLConnection.HTTP_ACCEPTED;
+                response = HttpURLConnection.HTTP_ACCEPTED;
             }
 
             @Override
-            public int sendRequest(URI uri, Session session) {
+            public void sendRequest(URI uri, Session session) {
                 if (URI.create("https://example.com/acme/reg/1/authz").equals(uri)) {
                     jsonResponse = new HashMap<>();
                     jsonResponse.put("authorizations",
                                     Arrays.asList("https://example.com/acme/auth/1"));
-                    return HttpURLConnection.HTTP_OK;
+                    response = HttpURLConnection.HTTP_OK;
+                    return;
                 }
 
                 if (URI.create("https://example.com/acme/reg/1/cert").equals(uri)) {
                     jsonResponse = new HashMap<>();
                     jsonResponse.put("certificates",
                                     Arrays.asList("https://example.com/acme/cert/1"));
-                    return HttpURLConnection.HTTP_OK;
+                    response = HttpURLConnection.HTTP_OK;
+                    return;
                 }
 
-                return HttpURLConnection.HTTP_NOT_FOUND;
+                response = HttpURLConnection.HTTP_NOT_FOUND;
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(response, not(nullValue()));
+                return response;
             }
 
             @Override
@@ -144,9 +153,15 @@ public class RegistrationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
                 requestWasSent.set(true);
                 assertThat(uri, is(locationUri));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                        HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
 
@@ -192,10 +207,15 @@ public class RegistrationTest {
     public void testAuthorizeDomain() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("newAuthorizationRequest")));
                 assertThat(session, is(notNullValue()));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_CREATED));
                 return HttpURLConnection.HTTP_CREATED;
             }
 
@@ -250,16 +270,21 @@ public class RegistrationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendRequest(URI uri, Session session) {
+            public void sendRequest(URI uri, Session session) {
                 fail("Attempted to download the certificate. Should be downloaded already!");
-                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequestWithDate")));
                 assertThat(session, is(notNullValue()));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                        HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED));
                 return HttpURLConnection.HTTP_CREATED;
             }
 
@@ -309,10 +334,16 @@ public class RegistrationTest {
     public void testRequestCertificateAsync() throws AcmeException, IOException {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequest")));
                 assertThat(session, is(notNullValue()));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                        HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
 
@@ -353,7 +384,7 @@ public class RegistrationTest {
 
         final TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder payload, Session session) {
+            public void sendSignedRequest(URI uri, ClaimBuilder payload, Session session) {
                 try {
                     assertThat(uri, is(locationUri));
                     assertThat(session, is(notNullValue()));
@@ -386,7 +417,11 @@ public class RegistrationTest {
                 } catch (JoseException ex) {
                     fail("decoding inner payload failed");
                 }
+            }
 
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -434,12 +469,18 @@ public class RegistrationTest {
     public void testDeactivate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
                 Map<String, Object> claimMap = claims.toMap();
                 assertThat(claimMap.get("resource"), is((Object) "reg"));
                 assertThat(claimMap.get("status"), is((Object) "deactivated"));
                 assertThat(uri, is(locationUri));
                 assertThat(session, is(notNullValue()));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
         };
@@ -459,10 +500,15 @@ public class RegistrationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
                 assertThat(uri, is(locationUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("modifyRegistration")));
                 assertThat(session, is(notNullValue()));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_ACCEPTED));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
 

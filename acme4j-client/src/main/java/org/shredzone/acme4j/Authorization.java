@@ -176,10 +176,8 @@ public class Authorization extends AcmeResource {
     public void update() throws AcmeException {
         LOG.debug("update");
         try (Connection conn = getSession().provider().connect()) {
-            int rc = conn.sendRequest(getLocation(), getSession());
-            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
-                conn.throwAcmeException();
-            }
+            conn.sendRequest(getLocation(), getSession());
+            int rc = conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
 
             Map<String, Object> result = conn.readJsonResponse();
             unmarshalAuthorization(result);
@@ -205,10 +203,8 @@ public class Authorization extends AcmeResource {
             claims.putResource("authz");
             claims.put("status", "deactivated");
 
-            int rc = conn.sendSignedRequest(getLocation(), claims, getSession());
-            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
-                conn.throwAcmeException();
-            }
+            conn.sendSignedRequest(getLocation(), claims, getSession());
+            conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
         }
     }
 

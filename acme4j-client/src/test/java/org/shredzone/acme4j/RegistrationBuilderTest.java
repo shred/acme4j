@@ -15,7 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.shredzone.acme4j.util.TestUtils.getJson;
+import static org.shredzone.acme4j.util.TestUtils.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.HttpURLConnection;
@@ -23,6 +23,7 @@ import java.net.URI;
 
 import org.junit.Test;
 import org.shredzone.acme4j.connector.Resource;
+import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.util.ClaimBuilder;
 
@@ -42,10 +43,15 @@ public class RegistrationBuilderTest {
     public void testRegistration() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("newRegistration")));
                 assertThat(session, is(notNullValue()));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_CREATED));
                 return HttpURLConnection.HTTP_CREATED;
             }
 

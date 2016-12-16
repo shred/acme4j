@@ -144,10 +144,8 @@ public abstract class ResourceIterator<T extends AcmeResource> implements Iterat
      */
     private void readAndQueue() throws AcmeException {
         try (Connection conn = session.provider().connect()) {
-            int rc = conn.sendRequest(nextUri, session);
-            if (rc != HttpURLConnection.HTTP_OK) {
-                conn.throwAcmeException();
-            }
+            conn.sendRequest(nextUri, session);
+            conn.accept(HttpURLConnection.HTTP_OK);
 
             Map<String, Object> json = conn.readJsonResponse();
             fillUriList(json);

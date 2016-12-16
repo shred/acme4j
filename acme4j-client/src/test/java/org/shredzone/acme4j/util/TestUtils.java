@@ -34,10 +34,14 @@ import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.TreeMap;
 
+import org.hamcrest.BaseMatcher;
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.jose4j.base64url.Base64Url;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
@@ -222,6 +226,36 @@ public final class TestUtils {
         } catch (CertificateException ex) {
             throw new IOException(ex);
         }
+    }
+
+    /**
+     * Creates a matcher that matches an array of int primitives. The array must contain
+     * exactly all of the given values, in any order.
+     *
+     * @param values
+     *            Values to test against
+     * @return {@link Matcher}
+     */
+    public static Matcher<int[]> isIntArrayContainingInAnyOrder(int... values) {
+        final int[] reference = values;
+        Arrays.sort(reference);
+
+        return new BaseMatcher<int[]>() {
+            @Override
+            public boolean matches(Object item) {
+                if (!(item instanceof int[])) {
+                    return false;
+                }
+                int[] items = (int[]) item;
+                Arrays.sort(items);
+                return Arrays.equals(items, reference);
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                description.appendValue(Arrays.toString(reference));
+            }
+        };
     }
 
     /**

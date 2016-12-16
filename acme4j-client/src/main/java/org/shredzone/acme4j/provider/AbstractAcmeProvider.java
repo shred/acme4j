@@ -45,10 +45,8 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
     @Override
     public Map<String, Object> directory(Session session, URI serverUri) throws AcmeException {
         try (Connection conn = connect()) {
-            int rc = conn.sendRequest(resolve(serverUri), session);
-            if (rc != HttpURLConnection.HTTP_OK) {
-                conn.throwAcmeException();
-            }
+            conn.sendRequest(resolve(serverUri), session);
+            conn.accept(HttpURLConnection.HTTP_OK);
 
             // use nonce header if there is one, saves a HEAD request...
             conn.updateSession(session);

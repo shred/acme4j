@@ -30,12 +30,17 @@ import org.shredzone.acme4j.util.ClaimBuilder;
 public class DummyConnection implements Connection {
 
     @Override
-    public int sendRequest(URI uri, Session session) {
+    public void sendRequest(URI uri, Session session) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+    public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int accept(int... httpStatus) throws AcmeException {
         throw new UnsupportedOperationException();
     }
 
@@ -71,11 +76,6 @@ public class DummyConnection implements Connection {
 
     @Override
     public Date getRetryAfterHeader() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public void throwAcmeException() throws AcmeException {
         throw new UnsupportedOperationException();
     }
 

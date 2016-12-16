@@ -15,7 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.shredzone.acme4j.util.TestUtils.getJsonAsMap;
+import static org.shredzone.acme4j.util.TestUtils.*;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -30,6 +30,7 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsSni02Challenge;
+import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.util.ClaimBuilder;
@@ -119,8 +120,14 @@ public class AuthorizationTest {
     public void testUpdate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendRequest(URI uri, Session session) {
+            public void sendRequest(URI uri, Session session) {
                 assertThat(uri, is(locationUri));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -166,9 +173,15 @@ public class AuthorizationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendRequest(URI uri, Session session) {
+            public void sendRequest(URI uri, Session session) {
                 requestWasSent.set(true);
                 assertThat(uri, is(locationUri));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -209,8 +222,14 @@ public class AuthorizationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendRequest(URI uri, Session session) {
+            public void sendRequest(URI uri, Session session) {
                 assertThat(uri, is(locationUri));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
 
@@ -265,12 +284,18 @@ public class AuthorizationTest {
     public void testDeactivate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
                 Map<String, Object> claimMap = claims.toMap();
                 assertThat(claimMap.get("resource"), is((Object) "authz"));
                 assertThat(claimMap.get("status"), is((Object) "deactivated"));
                 assertThat(uri, is(locationUri));
                 assertThat(session, is(notNullValue()));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
         };

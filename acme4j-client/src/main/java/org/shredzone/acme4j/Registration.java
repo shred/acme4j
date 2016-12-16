@@ -158,10 +158,8 @@ public class Registration extends AcmeResource {
             ClaimBuilder claims = new ClaimBuilder();
             claims.putResource("reg");
 
-            int rc = conn.sendSignedRequest(getLocation(), claims, getSession());
-            if (rc != HttpURLConnection.HTTP_CREATED && rc != HttpURLConnection.HTTP_ACCEPTED) {
-                conn.throwAcmeException();
-            }
+            conn.sendSignedRequest(getLocation(), claims, getSession());
+            conn.accept(HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED);
 
             Map<String, Object> json = conn.readJsonResponse();
             unmarshal(json, conn);
@@ -190,10 +188,8 @@ public class Registration extends AcmeResource {
                     .put("type", "dns")
                     .put("value", DomainUtils.toAce(domain));
 
-            int rc = conn.sendSignedRequest(getSession().resourceUri(Resource.NEW_AUTHZ), claims, getSession());
-            if (rc != HttpURLConnection.HTTP_CREATED) {
-                conn.throwAcmeException();
-            }
+            conn.sendSignedRequest(getSession().resourceUri(Resource.NEW_AUTHZ), claims, getSession());
+            conn.accept(HttpURLConnection.HTTP_CREATED);
 
             Map<String, Object> json = conn.readJsonResponse();
 
@@ -249,10 +245,8 @@ public class Registration extends AcmeResource {
                 claims.put("notAfter", notAfter);
             }
 
-            int rc = conn.sendSignedRequest(getSession().resourceUri(Resource.NEW_CERT), claims, getSession());
-            if (rc != HttpURLConnection.HTTP_CREATED && rc != HttpURLConnection.HTTP_ACCEPTED) {
-                conn.throwAcmeException();
-            }
+            conn.sendSignedRequest(getSession().resourceUri(Resource.NEW_CERT), claims, getSession());
+            int rc = conn.accept(HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED);
 
             X509Certificate cert = null;
             if (rc == HttpURLConnection.HTTP_CREATED) {
@@ -307,10 +301,8 @@ public class Registration extends AcmeResource {
             outerClaim.put("signature", innerJws.getEncodedSignature());
             outerClaim.put("payload", innerJws.getEncodedPayload());
 
-            int rc = conn.sendSignedRequest(keyChangeUri, outerClaim, getSession());
-            if (rc != HttpURLConnection.HTTP_OK) {
-                conn.throwAcmeException();
-            }
+            conn.sendSignedRequest(keyChangeUri, outerClaim, getSession());
+            conn.accept(HttpURLConnection.HTTP_OK);
 
             getSession().setKeyPair(newKeyPair);
         } catch (JoseException ex) {
@@ -331,10 +323,8 @@ public class Registration extends AcmeResource {
             claims.putResource("reg");
             claims.put("status", "deactivated");
 
-            int rc = conn.sendSignedRequest(getLocation(), claims, getSession());
-            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_ACCEPTED) {
-                conn.throwAcmeException();
-            }
+            conn.sendSignedRequest(getLocation(), claims, getSession());
+            conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
         }
     }
 
@@ -498,10 +488,8 @@ public class Registration extends AcmeResource {
                     claims.put("agreement", editAgreement);
                 }
 
-                int rc = conn.sendSignedRequest(getLocation(), claims, getSession());
-                if (rc != HttpURLConnection.HTTP_ACCEPTED) {
-                    conn.throwAcmeException();
-                }
+                conn.sendSignedRequest(getLocation(), claims, getSession());
+                conn.accept(HttpURLConnection.HTTP_ACCEPTED);
 
                 Map<String, Object> json = conn.readJsonResponse();
                 unmarshal(json, conn);
