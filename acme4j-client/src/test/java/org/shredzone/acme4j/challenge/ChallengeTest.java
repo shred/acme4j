@@ -24,8 +24,10 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Date;
 import java.util.Map;
 
@@ -98,7 +100,7 @@ public class ChallengeTest {
      * Test that after unmarshalling, the challenge properties are set correctly.
      */
     @Test
-    public void testUnmarshall() throws URISyntaxException {
+    public void testUnmarshall() throws URISyntaxException, MalformedURLException {
         Challenge challenge = new Challenge(session);
 
         // Test default values
@@ -115,6 +117,17 @@ public class ChallengeTest {
         assertThat(challenge.getStatus(), is(Status.VALID));
         assertThat(challenge.getLocation(), is(new URI("http://example.com/challenge/123")));
         assertThat(challenge.getValidated(), is(TimestampParser.parse("2015-12-12T17:19:36.336785823Z")));
+        assertThat((String) challenge.get("type"), is("generic-01"));
+        assertThat(challenge.getUrl("uri"), is(new URL("http://example.com/challenge/123")));
+        assertThat(challenge.get("not-present"), is(nullValue()));
+        assertThat(challenge.getUrl("not-present-url"), is(nullValue()));
+
+        try {
+            challenge.getUrl("type");
+            fail("bad URL is not detected");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
     }
 
     /**
@@ -265,6 +278,65 @@ public class ChallengeTest {
         assertThat(challenge.getLocation(), is(locationUri));
 
         provider.close();
+    }
+
+    /**
+     * Test that null is handled properly.
+     */
+    @Test
+    public void testNullChallenge() throws Exception {
+        try {
+            Challenge.bind(session, null);
+            fail("locationUri accepts null");
+        } catch (NullPointerException ex) {
+            // expected
+        }
+
+        try {
+            Challenge.bind(null, locationUri);
+            fail("session accepts null");
+        } catch (NullPointerException ex) {
+            // expected
+        }
+    }
+
+    /**
+     * Test that an exception is thrown on a bad location URI.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testBadBind() throws Exception {
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public void sendRequest(URI uri, Session session) {
+                assertThat(uri, is(locationUri));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
+                return HttpURLConnection.HTTP_ACCEPTED;
+            }
+
+            @Override
+            public Map<String, Object> readJsonResponse() {
+                return getJsonAsMap("updateRegistrationResponse");
+            }
+        };
+
+        Session session = provider.createSession();
+        Challenge.bind(session, locationUri);
+
+        provider.close();
+    }
+
+    /**
+     * Test that unmarshalling something different like a challenge fails.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testBadUnmarshall() {
+        Challenge challenge = new Challenge(session);
+        challenge.unmarshall(TestUtils.getJsonAsMap("updateRegistrationResponse"));
     }
 
     /**

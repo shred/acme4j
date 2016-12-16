@@ -50,6 +50,13 @@ public class HttpConnector {
     }
 
     /**
+     * Returns the default User-Agent to be used.
+     */
+    public static String defaultUserAgent() {
+        return USER_AGENT;
+    }
+
+    /**
      * Opens a {@link HttpURLConnection} to the given {@link URI}.
      *
      * @param uri
@@ -58,11 +65,24 @@ public class HttpConnector {
      */
     public HttpURLConnection openConnection(URI uri) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
+        configure(conn);
+        return conn;
+    }
+
+    /**
+     * Configures the new {@link HttpURLConnection}.
+     * <p>
+     * This implementation sets reasonable timeouts, forbids caching, and sets an user
+     * agent.
+     *
+     * @param conn
+     *            {@link HttpURLConnection} to configure.
+     */
+    protected void configure(HttpURLConnection conn) {
         conn.setConnectTimeout(TIMEOUT);
         conn.setReadTimeout(TIMEOUT);
         conn.setUseCaches(false);
         conn.setRequestProperty("User-Agent", USER_AGENT);
-        return conn;
     }
 
 }

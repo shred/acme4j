@@ -195,4 +195,12 @@ public class CertificateTest {
         provider.close();
     }
 
+    /**
+     * Test that numeric revocation reasons are correctly translated.
+     */
+    @Test
+    public void testRevocationReason() {
+        assertThat(RevocationReason.code(1), is(RevocationReason.KEY_COMPROMISE));
+    }
+
 }

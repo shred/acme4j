@@ -13,9 +13,12 @@
  */
 package org.shredzone.acme4j.util;
 
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 import static org.shredzone.acme4j.util.TimestampParser.parse;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -97,6 +100,17 @@ public class TimestampParserTest {
         } catch (IllegalArgumentException ex) {
             // expected
         }
+    }
+
+    /**
+     * Test that constructor is private.
+     */
+    @Test
+    public void testPrivateConstructor() throws Exception {
+        Constructor<TimestampParser> constructor = TimestampParser.class.getDeclaredConstructor();
+        assertThat(Modifier.isPrivate(constructor.getModifiers()), is(true));
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
 
     /**

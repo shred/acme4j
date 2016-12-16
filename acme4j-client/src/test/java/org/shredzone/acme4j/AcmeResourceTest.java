@@ -123,6 +123,19 @@ public class AcmeResourceTest {
     }
 
     /**
+     * Test if a rebind attempt fails.
+     */
+    @Test(expected = IllegalStateException.class)
+    public void testRebind() throws Exception {
+        Session session = TestUtils.session();
+        AcmeResource resource = new DummyResource(session);
+        assertThat(resource.getSession(), is(session));
+
+        Session session2 = TestUtils.session();
+        resource.rebind(session2); // fails to rebind to another session
+    }
+
+    /**
      * Minimum implementation of {@link AcmeResource}.
      */
     private static class DummyResource extends AcmeResource {

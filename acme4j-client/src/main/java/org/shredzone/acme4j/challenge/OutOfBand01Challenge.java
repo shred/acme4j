@@ -13,11 +13,9 @@
  */
 package org.shredzone.acme4j.challenge;
 
-import java.net.MalformedURLException;
 import java.net.URL;
 
 import org.shredzone.acme4j.Session;
-import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
  * Implements the {@value TYPE} challenge.
@@ -45,11 +43,7 @@ public class OutOfBand01Challenge extends Challenge {
      * challenge.
      */
     public URL getValidationUrl() {
-        try {
-            return new URL((String) get("href"));
-        } catch (MalformedURLException ex) {
-            throw new AcmeProtocolException("Invalid validation URL", ex);
-        }
+        return getUrl("href");
     }
 
 }

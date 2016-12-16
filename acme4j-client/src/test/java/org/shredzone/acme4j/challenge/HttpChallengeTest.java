@@ -23,6 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
@@ -60,6 +61,16 @@ public class HttpChallengeTest {
 
         assertThat(cb.toString(), sameJSONAs("{\"keyAuthorization\"=\""
             + KEY_AUTHORIZATION + "\"}").allowingExtraUnexpectedFields());
+    }
+
+    /**
+     * Test that an exception is thrown if there is no token.
+     */
+    @Test(expected = AcmeProtocolException.class)
+    public void testNoTokenSet() {
+        Http01Challenge challenge = new Http01Challenge(session);
+        challenge.unmarshall(TestUtils.getJsonAsMap("httpNoTokenChallenge"));
+        challenge.getToken();
     }
 
 }

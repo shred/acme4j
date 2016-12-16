@@ -19,6 +19,8 @@ import static org.junit.Assert.assertThat;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Modifier;
 import java.security.KeyPair;
 import java.security.Security;
 import java.security.interfaces.ECPublicKey;
@@ -129,6 +131,17 @@ public class KeyPairUtilsTest {
         assertThat(pair, not(sameInstance(readPair)));
         assertThat(pair.getPublic().getEncoded(), is(equalTo(readPair.getPublic().getEncoded())));
         assertThat(pair.getPrivate().getEncoded(), is(equalTo(readPair.getPrivate().getEncoded())));
+    }
+
+    /**
+     * Test that constructor is private.
+     */
+    @Test
+    public void testPrivateConstructor() throws Exception {
+        Constructor<KeyPairUtils> constructor = KeyPairUtils.class.getDeclaredConstructor();
+        assertThat(Modifier.isPrivate(constructor.getModifiers()), is(true));
+        constructor.setAccessible(true);
+        constructor.newInstance();
     }
 
 }

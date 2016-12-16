@@ -17,7 +17,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -162,7 +164,7 @@ public class Challenge extends AcmeResource {
      *            JSON map containing the challenge data
      */
     public void unmarshall(Map<String, Object> map) {
-        String type = map.get(KEY_TYPE).toString();
+        String type = (String) map.get(KEY_TYPE);
         if (type == null) {
             throw new IllegalArgumentException("map does not contain a type");
         }
@@ -185,6 +187,22 @@ public class Challenge extends AcmeResource {
     @SuppressWarnings("unchecked")
     protected <T> T get(String key) {
         return (T) data.get(key);
+    }
+
+    /**
+     * Gets an {@link URL} value from the challenge state.
+     *
+     * @param key
+     *            Key
+     * @return Value, or {@code null} if not set
+     */
+    protected URL getUrl(String key) {
+        try {
+            String value = get(key);
+            return value != null ? new URL(value) : null;
+        } catch (MalformedURLException ex) {
+            throw new AcmeProtocolException(key + ": invalid URL", ex);
+        }
     }
 
     /**
