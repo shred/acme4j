@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j;
 
+import static org.shredzone.acme4j.util.AcmeUtils.*;
+
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -38,8 +40,6 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.ClaimBuilder;
-import org.shredzone.acme4j.util.DomainUtils;
-import org.shredzone.acme4j.util.SignatureUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -188,7 +188,7 @@ public class Registration extends AcmeResource {
             claims.putResource(Resource.NEW_AUTHZ);
             claims.object("identifier")
                     .put("type", "dns")
-                    .put("value", DomainUtils.toAce(domain));
+                    .put("value", toAce(domain));
 
             conn.sendSignedRequest(getSession().resourceUri(Resource.NEW_AUTHZ), claims, getSession());
             conn.accept(HttpURLConnection.HTTP_CREATED);
@@ -289,7 +289,7 @@ public class Registration extends AcmeResource {
             innerJws.setPayload(payloadClaim.toString());
             innerJws.getHeaders().setObjectHeaderValue("url", keyChangeUri);
             innerJws.getHeaders().setJwkHeaderValue("jwk", newKeyJwk);
-            innerJws.setAlgorithmHeaderValue(SignatureUtils.keyAlgorithm(newKeyJwk));
+            innerJws.setAlgorithmHeaderValue(keyAlgorithm(newKeyJwk));
             innerJws.setKey(newKeyPair.getPrivate());
             innerJws.sign();
 

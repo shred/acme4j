@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j.challenge;
 
+import static org.shredzone.acme4j.util.AcmeUtils.parseTimestamp;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -35,7 +37,6 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.ClaimBuilder;
-import org.shredzone.acme4j.util.TimestampParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +131,7 @@ public class Challenge extends AcmeResource {
     public Date getValidated() {
         String valStr = get(KEY_VALIDATED);
         if (valStr != null) {
-            return TimestampParser.parse(valStr);
+            return parseTimestamp(valStr);
         } else {
             return null;
         }

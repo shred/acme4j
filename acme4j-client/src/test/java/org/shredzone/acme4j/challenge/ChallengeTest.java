@@ -15,6 +15,7 @@ package org.shredzone.acme4j.challenge;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.shredzone.acme4j.util.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.util.TestUtils.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -43,7 +44,6 @@ import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.shredzone.acme4j.util.TestUtils;
-import org.shredzone.acme4j.util.TimestampParser;
 
 /**
  * Unit tests for {@link Challenge}.
@@ -116,7 +116,7 @@ public class ChallengeTest {
         assertThat(challenge.getType(), is("generic-01"));
         assertThat(challenge.getStatus(), is(Status.VALID));
         assertThat(challenge.getLocation(), is(new URI("http://example.com/challenge/123")));
-        assertThat(challenge.getValidated(), is(TimestampParser.parse("2015-12-12T17:19:36.336785823Z")));
+        assertThat(challenge.getValidated(), is(parseTimestamp("2015-12-12T17:19:36.336785823Z")));
         assertThat((String) challenge.get("type"), is("generic-01"));
         assertThat(challenge.getUrl("uri"), is(new URL("http://example.com/challenge/123")));
         assertThat(challenge.get("not-present"), is(nullValue()));

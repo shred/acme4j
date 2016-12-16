@@ -15,6 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.shredzone.acme4j.util.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.util.TestUtils.*;
 
 import java.io.IOException;
@@ -34,7 +35,6 @@ import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.util.ClaimBuilder;
-import org.shredzone.acme4j.util.TimestampParser;
 
 /**
  * Unit tests for {@link Authorization}.
@@ -149,7 +149,7 @@ public class AuthorizationTest {
 
         assertThat(auth.getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));
-        assertThat(auth.getExpires(), is(TimestampParser.parse("2016-01-02T17:12:40Z")));
+        assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
         assertThat(auth.getLocation(), is(locationUri));
 
         assertThat(auth.getChallenges(), containsInAnyOrder(
@@ -207,7 +207,7 @@ public class AuthorizationTest {
         requestWasSent.set(false);
         assertThat(auth.getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));
-        assertThat(auth.getExpires(), is(TimestampParser.parse("2016-01-02T17:12:40Z")));
+        assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
         assertThat(requestWasSent.get(), is(false));
 
         provider.close();
@@ -262,7 +262,7 @@ public class AuthorizationTest {
 
         assertThat(auth.getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));
-        assertThat(auth.getExpires(), is(TimestampParser.parse("2016-01-02T17:12:40Z")));
+        assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
         assertThat(auth.getLocation(), is(locationUri));
 
         assertThat(auth.getChallenges(), containsInAnyOrder(

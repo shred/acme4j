@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j.util;
 
+import static org.shredzone.acme4j.util.AcmeUtils.toAce;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -64,7 +66,7 @@ public class CSRBuilder {
      * Note that ACME servers may not accept wildcard domains!
      */
     public void addDomain(String domain) {
-        String ace = DomainUtils.toAce(domain);
+        String ace = toAce(domain);
         if (namelist.isEmpty()) {
             namebuilder.addRDN(BCStyle.CN, ace);
         }

@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j;
 
+import static org.shredzone.acme4j.util.AcmeUtils.parseTimestamp;
+
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.ArrayList;
@@ -28,7 +30,6 @@ import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.ClaimBuilder;
-import org.shredzone.acme4j.util.TimestampParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -236,7 +237,7 @@ public class Authorization extends AcmeResource {
 
         String jsonExpires = (String) json.get("expires");
         if (jsonExpires != null) {
-            expires = TimestampParser.parse(jsonExpires);
+            expires = parseTimestamp(jsonExpires);
         }
 
         Map<String, Object> jsonIdentifier = (Map<String, Object>) json.get("identifier");

@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j.connector;
 
+import static org.shredzone.acme4j.util.AcmeUtils.keyAlgorithm;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,7 +53,6 @@ import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.ClaimBuilder;
-import org.shredzone.acme4j.util.SignatureUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,7 +141,7 @@ public class DefaultConnection implements Connection {
             jws.getHeaders().setObjectHeaderValue("nonce", Base64Url.encode(session.getNonce()));
             jws.getHeaders().setObjectHeaderValue("url", uri);
             jws.getHeaders().setJwkHeaderValue("jwk", jwk);
-            jws.setAlgorithmHeaderValue(SignatureUtils.keyAlgorithm(jwk));
+            jws.setAlgorithmHeaderValue(keyAlgorithm(jwk));
             jws.setKey(keypair.getPrivate());
             byte[] outputData = jws.getCompactSerialization().getBytes("utf-8");
 
