@@ -73,7 +73,7 @@ public class ClaimBuilder {
      */
     public ClaimBuilder put(String key, Date value) {
         if (value == null) {
-            put(key, null);
+            put(key, (Object) null);
             return this;
         }
 

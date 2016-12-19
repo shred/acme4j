@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
@@ -82,8 +83,9 @@ public class ClaimBuilderTest {
 
         ClaimBuilder cb = new ClaimBuilder();
         cb.put("fooDate", cal.getTime());
+        cb.put("fooNull", (Date) null);
 
-        assertThat(cb.toString(), is("{\"fooDate\":\"2016-06-01T03:13:46Z\"}"));
+        assertThat(cb.toString(), is("{\"fooDate\":\"2016-06-01T03:13:46Z\",\"fooNull\":null}"));
     }
 
     /**
