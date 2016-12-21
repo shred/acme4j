@@ -34,7 +34,7 @@ import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 
 /**
  * Unit tests for {@link Authorization}.
@@ -284,7 +284,7 @@ public class AuthorizationTest {
     public void testDeactivate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
                 Map<String, Object> claimMap = claims.toMap();
                 assertThat(claimMap.get("resource"), is((Object) "authz"));
                 assertThat(claimMap.get("status"), is((Object) "deactivated"));

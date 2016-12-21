@@ -21,7 +21,6 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
@@ -31,16 +30,16 @@ import org.junit.Test;
 import org.shredzone.acme4j.connector.Resource;
 
 /**
- * Unit test for {@link ClaimBuilder}.
+ * Unit test for {@link JSONBuilder}.
  */
-public class ClaimBuilderTest {
+public class JSONBuilderTest {
 
     /**
-     * Test that an empty claimbuilder is empty.
+     * Test that an empty JSON builder is empty.
      */
     @Test
     public void testEmpty() {
-        ClaimBuilder cb = new ClaimBuilder();
+        JSONBuilder cb = new JSONBuilder();
         assertThat(cb.toString(), is("{}"));
     }
 
@@ -50,9 +49,9 @@ public class ClaimBuilderTest {
      */
     @Test
     public void testBasics() {
-        ClaimBuilder res;
+        JSONBuilder res;
 
-        ClaimBuilder cb = new ClaimBuilder();
+        JSONBuilder cb = new JSONBuilder();
         res = cb.put("fooStr", "String");
         assertThat(res, is(sameInstance(cb)));
 
@@ -81,7 +80,7 @@ public class ClaimBuilderTest {
         cal.clear();
         cal.set(2016, Calendar.JUNE, 1, 5, 13, 46);
 
-        ClaimBuilder cb = new ClaimBuilder();
+        JSONBuilder cb = new JSONBuilder();
         cb.put("fooDate", cal.getTime());
         cb.put("fooNull", (Date) null);
 
@@ -93,9 +92,9 @@ public class ClaimBuilderTest {
      */
     @Test
     public void testResource() {
-        ClaimBuilder res;
+        JSONBuilder res;
 
-        ClaimBuilder cb = new ClaimBuilder();
+        JSONBuilder cb = new JSONBuilder();
         res = cb.putResource("new-reg");
         assertThat(res, is(sameInstance(cb)));
         assertThat(cb.toString(), is("{\"resource\":\"new-reg\"}"));
@@ -106,32 +105,15 @@ public class ClaimBuilderTest {
     }
 
     /**
-     * Test method to add maps.
-     */
-    @Test
-    public void testMap() {
-        Map<String, Object> map = new HashMap<>();
-        map.put("fooStr", "String");
-        map.put("fooInt", 123);
-
-        ClaimBuilder res;
-
-        ClaimBuilder cb = new ClaimBuilder();
-        res = cb.putAll(map);
-        assertThat(res, is(sameInstance(cb)));
-        assertThat(cb.toString(), is("{\"fooInt\":123,\"fooStr\":\"String\"}"));
-    }
-
-    /**
      * Test base64 encoding.
      */
     @Test
     public void testBase64() {
         byte[] data = "abc123".getBytes();
 
-        ClaimBuilder res;
+        JSONBuilder res;
 
-        ClaimBuilder cb = new ClaimBuilder();
+        JSONBuilder cb = new JSONBuilder();
         res = cb.putBase64("foo", data);
         assertThat(res, is(sameInstance(cb)));
         assertThat(cb.toString(), is("{\"foo\":\"YWJjMTIz\"}"));
@@ -145,9 +127,9 @@ public class ClaimBuilderTest {
     public void testKey() throws IOException, NoSuchAlgorithmException, JoseException {
         KeyPair keyPair = TestUtils.createKeyPair();
 
-        ClaimBuilder res;
+        JSONBuilder res;
 
-        ClaimBuilder cb = new ClaimBuilder();
+        JSONBuilder cb = new JSONBuilder();
         res = cb.putKey("foo", keyPair.getPublic());
         assertThat(res, is(sameInstance(cb)));
 
@@ -166,8 +148,8 @@ public class ClaimBuilderTest {
      */
     @Test
     public void testObject() {
-        ClaimBuilder cb = new ClaimBuilder();
-        ClaimBuilder sub = cb.object("sub");
+        JSONBuilder cb = new JSONBuilder();
+        JSONBuilder sub = cb.object("sub");
         assertThat(sub, not(sameInstance(cb)));
 
         assertThat(cb.toString(), is("{\"sub\":{}}"));
@@ -183,19 +165,19 @@ public class ClaimBuilderTest {
      */
     @Test
     public void testArray() {
-        ClaimBuilder res;
+        JSONBuilder res;
 
-        ClaimBuilder cb1 = new ClaimBuilder();
+        JSONBuilder cb1 = new JSONBuilder();
         res = cb1.array("ar", new Object[0]);
         assertThat(res, is(sameInstance(cb1)));
         assertThat(cb1.toString(), is("{\"ar\":[]}"));
 
-        ClaimBuilder cb2 = new ClaimBuilder();
+        JSONBuilder cb2 = new JSONBuilder();
         res = cb2.array("ar", 123);
         assertThat(res, is(sameInstance(cb2)));
         assertThat(cb2.toString(), is("{\"ar\":[123]}"));
 
-        ClaimBuilder cb3 = new ClaimBuilder();
+        JSONBuilder cb3 = new JSONBuilder();
         res = cb3.array("ar", 123, "foo", 456);
         assertThat(res, is(sameInstance(cb3)));
         assertThat(cb3.toString(), is("{\"ar\":[123,\"foo\",456]}"));

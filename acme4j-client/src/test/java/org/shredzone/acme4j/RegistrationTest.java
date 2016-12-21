@@ -43,7 +43,7 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
@@ -66,7 +66,7 @@ public class RegistrationTest {
             private Integer response;
 
             @Override
-            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
                 assertThat(uri, is(locationUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("updateRegistration")));
                 assertThat(session, is(notNullValue()));
@@ -154,7 +154,7 @@ public class RegistrationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
                 requestWasSent.set(true);
                 assertThat(uri, is(locationUri));
             }
@@ -208,7 +208,7 @@ public class RegistrationTest {
     public void testAuthorizeDomain() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("newAuthorizationRequest")));
                 assertThat(session, is(notNullValue()));
@@ -302,7 +302,7 @@ public class RegistrationTest {
             }
 
             @Override
-            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequestWithDate")));
                 assertThat(session, is(notNullValue()));
@@ -361,7 +361,7 @@ public class RegistrationTest {
     public void testRequestCertificateAsync() throws AcmeException, IOException {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequest")));
                 assertThat(session, is(notNullValue()));
@@ -411,7 +411,7 @@ public class RegistrationTest {
 
         final TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, ClaimBuilder payload, Session session) {
+            public void sendSignedRequest(URI uri, JSONBuilder payload, Session session) {
                 try {
                     assertThat(uri, is(locationUri));
                     assertThat(session, is(notNullValue()));
@@ -496,7 +496,7 @@ public class RegistrationTest {
     public void testDeactivate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
                 Map<String, Object> claimMap = claims.toMap();
                 assertThat(claimMap.get("resource"), is((Object) "reg"));
                 assertThat(claimMap.get("status"), is((Object) "deactivated"));
@@ -527,7 +527,7 @@ public class RegistrationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
                 assertThat(uri, is(locationUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("modifyRegistration")));
                 assertThat(session, is(notNullValue()));

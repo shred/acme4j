@@ -33,45 +33,45 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
- * Builder for claim structures.
+ * Builder for JSON structures.
  * <p>
  * Example:
  * <pre>
- * ClaimBuilder cb = new ClaimBuilder();
+ * JSONBuilder cb = new JSONBuilder();
  * cb.put("foo", 123).put("bar", "hello world");
  * cb.object("sub").put("data", "subdata");
  * cb.array("array", 123, 456, 789);
  * </pre>
  */
-public class ClaimBuilder {
+public class JSONBuilder {
 
     private final Map<String, Object> data = new TreeMap<>();
 
     /**
-     * Puts a claim. If a claim with the key exists, it will be replaced.
+     * Puts a property. If a property with the key exists, it will be replaced.
      *
      * @param key
-     *            Claim key
+     *            Property key
      * @param value
-     *            Claim value
+     *            Property value
      * @return {@code this}
      */
-    public ClaimBuilder put(String key, Object value) {
+    public JSONBuilder put(String key, Object value) {
         data.put(Objects.requireNonNull(key, "key"), value);
         return this;
     }
 
     /**
-     * Puts a {@link Date} to the claim. If a claim with the key exists, it will be
+     * Puts a {@link Date} to the JSON. If a property with the key exists, it will be
      * replaced.
      *
      * @param key
-     *            Claim key
+     *            Property key
      * @param value
-     *            Claim {@link Date} value
+     *            Property {@link Date} value
      * @return {@code this}
      */
-    public ClaimBuilder put(String key, Date value) {
+    public JSONBuilder put(String key, Date value) {
         if (value == null) {
             put(key, (Object) null);
             return this;
@@ -85,49 +85,37 @@ public class ClaimBuilder {
     }
 
     /**
-     * Puts a resource claim.
+     * Puts a resource.
      *
      * @param resource
      *            Resource name
      * @return {@code this}
      */
-    public ClaimBuilder putResource(String resource) {
+    public JSONBuilder putResource(String resource) {
         return put("resource", resource);
     }
 
     /**
-     * Puts a resource claim.
+     * Puts a resource.
      *
      * @param resource
      *            {@link Resource}
      * @return {@code this}
      */
-    public ClaimBuilder putResource(Resource resource) {
+    public JSONBuilder putResource(Resource resource) {
         return putResource(resource.path());
     }
 
     /**
-     * Puts an entire map into the claim.
-     *
-     * @param map
-     *            Map to put
-     * @return {@code this}
-     */
-    public ClaimBuilder putAll(Map<String, Object> map) {
-        data.putAll(map);
-        return this;
-    }
-
-    /**
-     * Puts binary data to the claim. The data is base64 url encoded.
+     * Puts binary data to the JSON. The data is base64 url encoded.
      *
      * @param key
-     *            Claim key
+     *            Property key
      * @param data
-     *            Claim data
+     *            Property data
      * @return {@code this}
      */
-    public ClaimBuilder putBase64(String key, byte[] data) {
+    public JSONBuilder putBase64(String key, byte[] data) {
         return put(key, base64UrlEncode(data));
     }
 
@@ -135,18 +123,18 @@ public class ClaimBuilder {
      * Puts a {@link Key} into the claim. The key is serializied as JWK.
      *
      * @param key
-     *            Claim key
+     *            Property key
      * @param publickey
      *            {@link PublicKey} to serialize
      * @return {@code this}
      */
-    public ClaimBuilder putKey(String key, PublicKey publickey) {
+    public JSONBuilder putKey(String key, PublicKey publickey) {
         Objects.requireNonNull(publickey, "publickey");
 
         try {
             final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(publickey);
             Map<String, Object> jwkParams = jwk.toParams(JsonWebKey.OutputControlLevel.PUBLIC_ONLY);
-            object(key).putAll(jwkParams);
+            object(key).data.putAll(jwkParams);
             return this;
         } catch (JoseException ex) {
             throw new AcmeProtocolException("Invalid key", ex);
@@ -154,41 +142,41 @@ public class ClaimBuilder {
     }
 
     /**
-     * Creates a sub-claim for the given key.
+     * Creates an object for the given key.
      *
      * @param key
-     *            Key of the sub-claim
-     * @return Newly created {@link ClaimBuilder} for the sub-claim.
+     *            Key of the object
+     * @return Newly created {@link JSONBuilder} for the object.
      */
-    public ClaimBuilder object(String key) {
-        ClaimBuilder subBuilder = new ClaimBuilder();
+    public JSONBuilder object(String key) {
+        JSONBuilder subBuilder = new JSONBuilder();
         data.put(key, subBuilder.data);
         return subBuilder;
     }
 
     /**
-     * Puts an array claim.
+     * Puts an array.
      *
      * @param key
-     *            Claim key
+     *            Property key
      * @param values
-     *            Array of claim values
+     *            Array of property values
      * @return {@code this}
      */
-    public ClaimBuilder array(String key, Object... values) {
+    public JSONBuilder array(String key, Object... values) {
         data.put(key, values);
         return this;
     }
 
     /**
-     * Returns a {@link Map} representation of the claims.
+     * Returns a {@link Map} representation of the current state.
      */
     public Map<String, Object> toMap() {
         return Collections.unmodifiableMap(data);
     }
 
     /**
-     * Returns a JSON representation of the claims.
+     * Returns a JSON string representation of the current state.
      */
     @Override
     public String toString() {

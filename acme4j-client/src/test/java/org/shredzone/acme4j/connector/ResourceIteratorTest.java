@@ -35,7 +35,7 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 
 /**
  * Unit test for {@link ResourceIterator}.
@@ -152,7 +152,7 @@ public class ResourceIteratorTest {
                     int start = ix * RESOURCES_PER_PAGE;
                     int end = (ix + 1) * RESOURCES_PER_PAGE;
 
-                    ClaimBuilder cb = new ClaimBuilder();
+                    JSONBuilder cb = new JSONBuilder();
                     cb.array(TYPE, resourceURIs.subList(start, end).toArray());
 
                     // Make sure to use the JSON parser

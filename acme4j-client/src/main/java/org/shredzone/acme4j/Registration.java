@@ -39,7 +39,7 @@ import org.shredzone.acme4j.connector.ResourceIterator;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -156,7 +156,7 @@ public class Registration extends AcmeResource {
     public void update() throws AcmeException {
         LOG.debug("update");
         try (Connection conn = getSession().provider().connect()) {
-            ClaimBuilder claims = new ClaimBuilder();
+            JSONBuilder claims = new JSONBuilder();
             claims.putResource("reg");
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
@@ -184,7 +184,7 @@ public class Registration extends AcmeResource {
 
         LOG.debug("authorizeDomain {}", domain);
         try (Connection conn = getSession().provider().connect()) {
-            ClaimBuilder claims = new ClaimBuilder();
+            JSONBuilder claims = new JSONBuilder();
             claims.putResource(Resource.NEW_AUTHZ);
             claims.object("identifier")
                     .put("type", "dns")
@@ -235,7 +235,7 @@ public class Registration extends AcmeResource {
 
         LOG.debug("requestCertificate");
         try (Connection conn = getSession().provider().connect()) {
-            ClaimBuilder claims = new ClaimBuilder();
+            JSONBuilder claims = new JSONBuilder();
             claims.putResource(Resource.NEW_CERT);
             claims.putBase64("csr", csr);
             if (notBefore != null) {
@@ -281,7 +281,7 @@ public class Registration extends AcmeResource {
             URI keyChangeUri = getSession().resourceUri(Resource.KEY_CHANGE);
             PublicJsonWebKey newKeyJwk = PublicJsonWebKey.Factory.newPublicJwk(newKeyPair.getPublic());
 
-            ClaimBuilder payloadClaim = new ClaimBuilder();
+            JSONBuilder payloadClaim = new JSONBuilder();
             payloadClaim.put("account", getLocation());
             payloadClaim.putKey("newKey", newKeyPair.getPublic());
 
@@ -293,7 +293,7 @@ public class Registration extends AcmeResource {
             innerJws.setKey(newKeyPair.getPrivate());
             innerJws.sign();
 
-            ClaimBuilder outerClaim = new ClaimBuilder();
+            JSONBuilder outerClaim = new JSONBuilder();
             outerClaim.putResource(Resource.KEY_CHANGE); // Let's Encrypt needs the resource here
             outerClaim.put("protected", innerJws.getHeaders().getEncodedHeader());
             outerClaim.put("signature", innerJws.getEncodedSignature());
@@ -317,7 +317,7 @@ public class Registration extends AcmeResource {
     public void deactivate() throws AcmeException {
         LOG.debug("deactivate");
         try (Connection conn = getSession().provider().connect()) {
-            ClaimBuilder claims = new ClaimBuilder();
+            JSONBuilder claims = new JSONBuilder();
             claims.putResource("reg");
             claims.put("status", "deactivated");
 
@@ -478,7 +478,7 @@ public class Registration extends AcmeResource {
         public void commit() throws AcmeException {
             LOG.debug("modify/commit");
             try (Connection conn = getSession().provider().connect()) {
-                ClaimBuilder claims = new ClaimBuilder();
+                JSONBuilder claims = new JSONBuilder();
                 claims.putResource("reg");
                 if (!editContacts.isEmpty()) {
                     claims.put("contact", editContacts);

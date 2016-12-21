@@ -52,7 +52,7 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -100,7 +100,7 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) throws AcmeException {
+    public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) throws AcmeException {
         Objects.requireNonNull(uri, "uri");
         Objects.requireNonNull(claims, "claims");
         Objects.requireNonNull(session, "session");

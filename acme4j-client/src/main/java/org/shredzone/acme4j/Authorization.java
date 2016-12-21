@@ -29,7 +29,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -200,7 +200,7 @@ public class Authorization extends AcmeResource {
     public void deactivate() throws AcmeException {
         LOG.debug("deactivate");
         try (Connection conn = getSession().provider().connect()) {
-            ClaimBuilder claims = new ClaimBuilder();
+            JSONBuilder claims = new JSONBuilder();
             claims.putResource("authz");
             claims.put("status", "deactivated");
 

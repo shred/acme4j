@@ -44,7 +44,7 @@ import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeServerException;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
@@ -483,7 +483,7 @@ public class DefaultConnectionTest {
                 }
             };
         }) {
-            ClaimBuilder cb = new ClaimBuilder();
+            JSONBuilder cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");
             conn.sendSignedRequest(requestUri, cb, DefaultConnectionTest.this.session);
         }
@@ -535,7 +535,7 @@ public class DefaultConnectionTest {
     @Test(expected = AcmeProtocolException.class)
     public void testSendSignedRequestNoNonce() throws Exception {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            ClaimBuilder cb = new ClaimBuilder();
+            JSONBuilder cb = new JSONBuilder();
             conn.sendSignedRequest(requestUri, cb, DefaultConnectionTest.this.session);
         }
     }

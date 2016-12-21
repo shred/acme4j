@@ -24,7 +24,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DummyConnection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
@@ -33,7 +33,7 @@ import org.shredzone.acme4j.util.TestUtils;
  */
 public class TestableConnectionProvider extends DummyConnection implements AcmeProvider {
     private final Map<String, Challenge> challengeMap = new HashMap<>();
-    private final ClaimBuilder directory = new ClaimBuilder();
+    private final JSONBuilder directory = new JSONBuilder();
 
     /**
      * Register a {@link Resource} mapping.

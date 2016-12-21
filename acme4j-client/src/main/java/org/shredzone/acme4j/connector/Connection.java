@@ -21,7 +21,7 @@ import java.util.Map;
 
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 
 /**
  * Connects to the ACME server and offers different methods for invoking the API.
@@ -44,11 +44,11 @@ public interface Connection extends AutoCloseable {
      * @param uri
      *            {@link URI} to send the request to.
      * @param claims
-     *            {@link ClaimBuilder} containing claims. Must not be {@code null}.
+     *            {@link JSONBuilder} containing claims. Must not be {@code null}.
      * @param session
      *            {@link Session} instance to be used for signing and tracking
      */
-    void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) throws AcmeException;
+    void sendSignedRequest(URI uri, JSONBuilder claims, Session session) throws AcmeException;
 
     /**
      * Checks if the HTTP response status is in the given list of acceptable HTTP states,

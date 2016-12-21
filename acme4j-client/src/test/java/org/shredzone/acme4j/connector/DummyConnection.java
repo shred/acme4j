@@ -21,7 +21,7 @@ import java.util.Map;
 
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 
 /**
  * Dummy implementation of {@link Connection} that always fails. Single methods are
@@ -35,7 +35,7 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+    public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
         throw new UnsupportedOperationException();
     }
 

@@ -21,7 +21,7 @@ import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 
 /**
  * An extension of {@link Challenge} that handles challenges with a {@code token} and
@@ -46,7 +46,7 @@ public class TokenChallenge extends Challenge {
     }
 
     @Override
-    protected void respond(ClaimBuilder cb) {
+    protected void respond(JSONBuilder cb) {
         super.respond(cb);
         cb.put(KEY_TOKEN, getToken());
         cb.put(KEY_KEY_AUTHORIZATION, getAuthorization());

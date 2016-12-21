@@ -23,7 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
@@ -53,7 +53,7 @@ public class TlsSni01ChallengeTest {
         assertThat(challenge.getStatus(), is(Status.PENDING));
         assertThat(challenge.getSubject(), is("14e2350a04434f93c2e0b6012968d99d.ed459b6a7a019d9695609b8514f9d63d.acme.invalid"));
 
-        ClaimBuilder cb = new ClaimBuilder();
+        JSONBuilder cb = new JSONBuilder();
         challenge.respond(cb);
 
         assertThat(cb.toString(), sameJSONAs("{\"keyAuthorization\"=\""

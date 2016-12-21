@@ -42,7 +42,7 @@ import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
@@ -131,7 +131,7 @@ public class ChallengeTest {
     }
 
     /**
-     * Test that {@link Challenge#respond(ClaimBuilder)} contains the type.
+     * Test that {@link Challenge#respond(JSONBuilder)} contains the type.
      */
     @Test
     public void testRespond() throws JoseException {
@@ -140,7 +140,7 @@ public class ChallengeTest {
         Challenge challenge = new Challenge(session);
         challenge.unmarshall(JsonUtil.parseJson(json));
 
-        ClaimBuilder cb = new ClaimBuilder();
+        JSONBuilder cb = new JSONBuilder();
         challenge.respond(cb);
 
         assertThat(cb.toString(), sameJSONAs("{\"type\"=\"generic-01\"}"));
@@ -162,7 +162,7 @@ public class ChallengeTest {
     public void testTrigger() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("triggerHttpChallengeRequest")));
                 assertThat(session, is(notNullValue()));

@@ -24,7 +24,7 @@ import org.junit.Test;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
@@ -56,7 +56,7 @@ public class HttpChallengeTest {
         assertThat(challenge.getToken(), is(TOKEN));
         assertThat(challenge.getAuthorization(), is(KEY_AUTHORIZATION));
 
-        ClaimBuilder cb = new ClaimBuilder();
+        JSONBuilder cb = new JSONBuilder();
         challenge.respond(cb);
 
         assertThat(cb.toString(), sameJSONAs("{\"keyAuthorization\"=\""

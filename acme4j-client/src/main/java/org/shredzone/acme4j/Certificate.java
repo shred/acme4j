@@ -26,7 +26,7 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -176,7 +176,7 @@ public class Certificate extends AcmeResource {
         }
 
         try (Connection conn = getSession().provider().connect()) {
-            ClaimBuilder claims = new ClaimBuilder();
+            JSONBuilder claims = new JSONBuilder();
             claims.putResource(Resource.REVOKE_CERT);
             claims.putBase64("certificate", cert.getEncoded());
             if (reason != null) {

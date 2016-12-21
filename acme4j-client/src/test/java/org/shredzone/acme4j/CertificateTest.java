@@ -29,7 +29,7 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
@@ -144,7 +144,7 @@ public class CertificateTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("revokeCertificateRequest")));
                 assertThat(session, is(notNullValue()));
@@ -174,7 +174,7 @@ public class CertificateTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) {
+            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
                 assertThat(uri, is(resourceUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("revokeCertificateWithReasonRequest")));
                 assertThat(session, is(notNullValue()));

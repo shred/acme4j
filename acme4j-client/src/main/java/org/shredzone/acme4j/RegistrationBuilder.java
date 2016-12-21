@@ -22,7 +22,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,7 +75,7 @@ public class RegistrationBuilder {
         LOG.debug("create");
 
         try (Connection conn = session.provider().connect()) {
-            ClaimBuilder claims = new ClaimBuilder();
+            JSONBuilder claims = new JSONBuilder();
             claims.putResource(Resource.NEW_REG);
             if (!contacts.isEmpty()) {
                 claims.put("contact", contacts);

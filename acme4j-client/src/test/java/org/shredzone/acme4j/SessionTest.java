@@ -30,7 +30,7 @@ import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
@@ -117,7 +117,7 @@ public class SessionTest {
         URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
         String challengeType = Http01Challenge.TYPE;
 
-        Map<String, Object> data = new ClaimBuilder()
+        Map<String, Object> data = new JSONBuilder()
                         .put("type", challengeType)
                         .toMap();
 

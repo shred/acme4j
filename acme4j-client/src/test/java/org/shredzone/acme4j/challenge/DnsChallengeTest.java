@@ -23,7 +23,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
@@ -52,7 +52,7 @@ public class DnsChallengeTest {
         assertThat(challenge.getStatus(), is(Status.PENDING));
         assertThat(challenge.getDigest(), is("rzMmotrIgsithyBYc0vgiLUEEKYx0WetQRgEF2JIozA"));
 
-        ClaimBuilder cb = new ClaimBuilder();
+        JSONBuilder cb = new JSONBuilder();
         challenge.respond(cb);
 
         assertThat(cb.toString(), sameJSONAs("{\"keyAuthorization\"=\""

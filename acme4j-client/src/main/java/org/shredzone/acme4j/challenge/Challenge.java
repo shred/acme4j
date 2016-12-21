@@ -36,7 +36,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
-import org.shredzone.acme4j.util.ClaimBuilder;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * that is unknown to acme4j.
  * <p>
  * Subclasses must override {@link Challenge#acceptable(String)} so it only accepts the
- * own type. {@link Challenge#respond(ClaimBuilder)} should be overridden to put all
+ * own type. {@link Challenge#respond(JSONBuilder)} should be overridden to put all
  * required data to the response.
  */
 public class Challenge extends AcmeResource {
@@ -141,9 +141,9 @@ public class Challenge extends AcmeResource {
      * Exports the response state, as preparation for triggering the challenge.
      *
      * @param cb
-     *            {@link ClaimBuilder} to copy the response to
+     *            {@link JSONBuilder} to copy the response to
      */
-    protected void respond(ClaimBuilder cb) {
+    protected void respond(JSONBuilder cb) {
         cb.put(KEY_TYPE, getType());
     }
 
@@ -221,7 +221,7 @@ public class Challenge extends AcmeResource {
     public void trigger() throws AcmeException {
         LOG.debug("trigger");
         try (Connection conn = getSession().provider().connect()) {
-            ClaimBuilder claims = new ClaimBuilder();
+            JSONBuilder claims = new JSONBuilder();
             claims.putResource("challenge");
             respond(claims);
 
