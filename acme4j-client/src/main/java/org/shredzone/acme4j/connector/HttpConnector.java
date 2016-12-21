@@ -51,6 +51,8 @@ public class HttpConnector {
 
     /**
      * Returns the default User-Agent to be used.
+     *
+     * @return User-Agent
      */
     public static String defaultUserAgent() {
         return USER_AGENT;

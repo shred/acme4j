@@ -32,6 +32,19 @@ public enum RevocationReason {
     PRIVILEGE_WITHDRAWN(9),
     AA_COMPROMISE(10);
 
+    private final int reasonCode;
+
+    private RevocationReason(int reasonCode) {
+        this.reasonCode = reasonCode;
+    }
+
+    /**
+     * Returns the reason code as defined in RFC 5280.
+     */
+    public int getReasonCode() {
+        return reasonCode;
+    }
+
     /**
      * Returns the {@link RevocationReason} that matches the reason code.
      *
@@ -46,19 +59,6 @@ public enum RevocationReason {
             }
         }
         return null;
-    }
-
-    private final int reasonCode;
-
-    private RevocationReason(int reasonCode) {
-        this.reasonCode = reasonCode;
-    }
-
-    /**
-     * Returns the reason code as defined in RFC 5280.
-     */
-    public int getReasonCode() {
-        return reasonCode;
     }
 
 }

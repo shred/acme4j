@@ -19,14 +19,31 @@ package org.shredzone.acme4j.exception;
 public class AcmeException extends Exception {
     private static final long serialVersionUID = -2935088954705632025L;
 
+    /**
+     * Creates a generic {@link AcmeException}.
+     */
     public AcmeException() {
         super();
     }
 
+    /**
+     * Creates a generic {@link AcmeException}.
+     *
+     * @param msg
+     *            Description
+     */
     public AcmeException(String msg) {
         super(msg);
     }
 
+    /**
+     * Creates a generic {@link AcmeException}.
+     *
+     * @param msg
+     *            Description
+     * @param cause
+     *            {@link Throwable} that caused this exception
+     */
     public AcmeException(String msg, Throwable cause) {
         super(msg, cause);
     }

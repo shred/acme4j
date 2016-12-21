@@ -48,24 +48,18 @@ public class Registration extends AcmeResource {
     private static final long serialVersionUID = -8177333806740391140L;
     private static final Logger LOG = LoggerFactory.getLogger(Registration.class);
 
+    private static final String KEY_AGREEMENT = "agreement";
+    private static final String KEY_AUTHORIZATIONS = "authorizations";
+    private static final String KEY_CERTIFICATES = "certificates";
+    private static final String KEY_CONTACT = "contact";
+    private static final String KEY_STATUS = "status";
+
     private final List<URI> contacts = new ArrayList<>();
     private URI agreement;
     private URI authorizations;
     private URI certificates;
     private Status status;
     private boolean loaded = false;
-
-    /**
-     * Creates a new instance of {@link Registration} and binds it to the {@link Session}.
-     *
-     * @param session
-     *            {@link Session} to be used
-     * @param location
-     *            Location URI of the registration
-     */
-    public static Registration bind(Session session, URI location) {
-        return new Registration(session, location);
-    }
 
     protected Registration(Session session, URI location) {
         super(session);
@@ -76,6 +70,19 @@ public class Registration extends AcmeResource {
         super(session);
         setLocation(location);
         this.agreement = agreement;
+    }
+
+    /**
+     * Creates a new instance of {@link Registration} and binds it to the {@link Session}.
+     *
+     * @param session
+     *            {@link Session} to be used
+     * @param location
+     *            Location URI of the registration
+     * @return {@link Registration} bound to the session and location
+     */
+    public static Registration bind(Session session, URI location) {
+        return new Registration(session, location);
     }
 
     /**
@@ -118,7 +125,7 @@ public class Registration extends AcmeResource {
     public Iterator<Authorization> getAuthorizations() throws AcmeException {
         LOG.debug("getAuthorizations");
         load();
-        return new ResourceIterator<Authorization>(getSession(), "authorizations", authorizations) {
+        return new ResourceIterator<Authorization>(getSession(), KEY_AUTHORIZATIONS, authorizations) {
             @Override
             protected Authorization create(Session session, URI uri) {
                 return Authorization.bind(session, uri);
@@ -140,7 +147,7 @@ public class Registration extends AcmeResource {
     public Iterator<Certificate> getCertificates() throws AcmeException {
         LOG.debug("getCertificates");
         load();
-        return new ResourceIterator<Certificate>(getSession(), "certificates", certificates) {
+        return new ResourceIterator<Certificate>(getSession(), KEY_CERTIFICATES, certificates) {
             @Override
             protected Certificate create(Session session, URI uri) {
                 return Certificate.bind(session, uri);
@@ -317,7 +324,7 @@ public class Registration extends AcmeResource {
         try (Connection conn = getSession().provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.putResource("reg");
-            claims.put("status", "deactivated");
+            claims.put(KEY_STATUS, "deactivated");
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
             conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
@@ -349,22 +356,22 @@ public class Registration extends AcmeResource {
      *            {@link Connection} with headers to be evaluated
      */
     private void unmarshal(JSON json, Connection conn) {
-        if (json.contains("agreement")) {
-            this.agreement = json.get("agreement").asURI();
+        if (json.contains(KEY_AGREEMENT)) {
+            this.agreement = json.get(KEY_AGREEMENT).asURI();
         }
 
-        if (json.contains("contact")) {
+        if (json.contains(KEY_CONTACT)) {
             contacts.clear();
-            for (JSON.Value v : json.get("contact").asArray()) {
+            for (JSON.Value v : json.get(KEY_CONTACT).asArray()) {
                 contacts.add(v.asURI());
             }
         }
 
-        this.authorizations = json.get("authorizations").asURI();
-        this.certificates = json.get("certificates").asURI();
+        this.authorizations = json.get(KEY_AUTHORIZATIONS).asURI();
+        this.certificates = json.get(KEY_CERTIFICATES).asURI();
 
-        if (json.contains("status")) {
-            this.status = Status.parse(json.get("status").asString());
+        if (json.contains(KEY_STATUS)) {
+            this.status = Status.parse(json.get(KEY_STATUS).asString());
         }
 
         URI location = conn.getLocation();
@@ -396,7 +403,7 @@ public class Registration extends AcmeResource {
         private final List<URI> editContacts = new ArrayList<>();
         private URI editAgreement;
 
-        public EditableRegistration() {
+        private EditableRegistration() {
             editContacts.addAll(Registration.this.contacts);
             editAgreement = Registration.this.agreement;
         }
@@ -414,6 +421,7 @@ public class Registration extends AcmeResource {
          *
          * @param contact
          *            Contact URI
+         * @return itself
          */
         public EditableRegistration addContact(URI contact) {
             editContacts.add(contact);
@@ -427,6 +435,7 @@ public class Registration extends AcmeResource {
          *
          * @param contact
          *            Contact URI as string
+         * @return itself
          */
         public EditableRegistration addContact(String contact) {
             addContact(URI.create(contact));
@@ -438,6 +447,7 @@ public class Registration extends AcmeResource {
          *
          * @param agreement
          *            New agreement URI
+         * @return itself
          */
         public EditableRegistration setAgreement(URI agreement) {
             this.editAgreement = agreement;
@@ -453,10 +463,10 @@ public class Registration extends AcmeResource {
                 JSONBuilder claims = new JSONBuilder();
                 claims.putResource("reg");
                 if (!editContacts.isEmpty()) {
-                    claims.put("contact", editContacts);
+                    claims.put(KEY_CONTACT, editContacts);
                 }
                 if (editAgreement != null) {
-                    claims.put("agreement", editAgreement);
+                    claims.put(KEY_AGREEMENT, editAgreement);
                 }
 
                 conn.sendSignedRequest(getLocation(), claims, getSession());

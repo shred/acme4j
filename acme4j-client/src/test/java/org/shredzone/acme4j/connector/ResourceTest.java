@@ -13,7 +13,7 @@
  */
 package org.shredzone.acme4j.connector;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
@@ -36,21 +36,6 @@ public class ResourceTest {
 
         // fails if there are untested future Resource values
         assertThat(Resource.values().length, is(5));
-    }
-
-    /**
-     * Test that invoking {@link Resource#parse(String)} with a {@link Resource#path()}
-     * gives the same {@link Resource}.
-     */
-    @Test
-    public void testParse() {
-        for (Resource r : Resource.values()) {
-            Resource parsed = Resource.parse(r.path());
-            assertThat(parsed, is(r));
-        }
-
-        // unknown paths return null
-        assertThat(Resource.parse("foo"), is(nullValue()));
     }
 
 }

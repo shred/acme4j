@@ -162,17 +162,13 @@ public class AbstractAcmeProviderTest {
         assertThat(c7, not(nullValue()));
         assertThat(c7, instanceOf(OutOfBand01Challenge.class));
 
+        Challenge c8 = provider.createChallenge(session, "");
+        assertThat(c8, is(nullValue()));
+
         try {
             provider.createChallenge(session, (String) null);
             fail("null was accepted");
         } catch (NullPointerException ex) {
-            // expected
-        }
-
-        try {
-            provider.createChallenge(session, "");
-            fail("empty string was accepted");
-        } catch (IllegalArgumentException ex) {
             // expected
         }
     }

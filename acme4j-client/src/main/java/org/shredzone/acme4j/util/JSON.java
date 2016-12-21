@@ -113,13 +113,17 @@ public final class JSON implements Serializable {
 
     /**
      * Returns a {@link JSON} of an empty document.
+     *
+     * @return Empty {@link JSON}
      */
     public static JSON empty() {
         return EMPTY_JSON;
     }
 
     /**
-     * Returns a {@link Set} of all keys of this object.
+     * Returns a set of all keys of this object.
+     *
+     * @return {@link Set} of keys
      */
     public Set<String> keySet() {
         return Collections.unmodifiableSet(data.keySet());
@@ -199,6 +203,8 @@ public final class JSON implements Serializable {
 
         /**
          * Returns the array size.
+         *
+         * @return Size of the array
          */
         public int size() {
             return data.size();
@@ -245,8 +251,10 @@ public final class JSON implements Serializable {
         }
 
         /**
-         * Checks if the value is present. An {@link AcmeProtocolException} is thrown
-         * if the value is {@code null}.
+         * Checks if the value is present. An {@link AcmeProtocolException} is thrown if
+         * the value is {@code null}.
+         *
+         * @return itself
          */
         public Value required() {
             if (val == null) {
@@ -256,14 +264,18 @@ public final class JSON implements Serializable {
         }
 
         /**
-         * Returns the value as {@link String}. May be {@code null}.
+         * Returns the value as {@link String}.
+         *
+         * @return {@link String}, or {@code null} if the value was not set.
          */
         public String asString() {
             return val != null ? val.toString() : null;
         }
 
         /**
-         * Returns the value as {@link JSON} object. May be {@code null}.
+         * Returns the value as JSON object.
+         *
+         * @return {@link JSON}, or {@code null} if the value was not set.
          */
         public JSON asObject() {
             if (val == null) {
@@ -278,7 +290,9 @@ public final class JSON implements Serializable {
         }
 
         /**
-         * Returns the value as JSON {@link Array}. May be {@code null}.
+         * Returns the value as JSON array.
+         *
+         * @return {@link JSON.Array}, or {@code null} if the value was not set.
          */
         public Array asArray() {
             if (val == null) {
@@ -294,6 +308,8 @@ public final class JSON implements Serializable {
 
         /**
          * Returns the value as int.
+         *
+         * @return integer value
          */
         public int asInt() {
             required();
@@ -306,7 +322,9 @@ public final class JSON implements Serializable {
         }
 
         /**
-         * Returns the value as {@link URI}.  May be {@code null}.
+         * Returns the value as {@link URI}.
+         *
+         * @return {@link URI}, or {@code null} if the value was not set.
          */
         public URI asURI() {
             if (val == null) {
@@ -321,7 +339,9 @@ public final class JSON implements Serializable {
         }
 
         /**
-         * Returns the value as {@link URL}. May be {@code null}.
+         * Returns the value as {@link URL}.
+         *
+         * @return {@link URL}, or {@code null} if the value was not set.
          */
         public URL asURL() {
             if (val == null) {
@@ -336,9 +356,10 @@ public final class JSON implements Serializable {
         }
 
         /**
-         * Returns the value as {@link Date}. May be {@code null}. The returned
-         * {@link Date} object is not shared, changes are not reflected in the JSON
-         * object.
+         * Returns the value as {@link Date}.
+         *
+         * @return {@link Date}, or {@code null} if the value was not set. The returned
+         *         {@link Date} object is not shared and can be modified safely.
          */
         public Date asDate() {
             if (val == null) {

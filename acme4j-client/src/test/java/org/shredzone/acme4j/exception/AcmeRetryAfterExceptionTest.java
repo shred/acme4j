@@ -38,6 +38,9 @@ public class AcmeRetryAfterExceptionTest {
 
         assertThat(ex.getMessage(), is(detail));
         assertThat(ex.getRetryAfter(), is(retryAfter));
+
+        // make sure we get a copy of the Date object
+        assertThat(ex.getRetryAfter(), not(sameInstance(retryAfter)));
     }
 
     /**
@@ -45,11 +48,24 @@ public class AcmeRetryAfterExceptionTest {
      */
     @Test
     public void testNullAcmeRetryAfterException() {
+        Date retryAfter = new Date(System.currentTimeMillis() + 60 * 1000L);
+
         AcmeRetryAfterException ex
-                = new AcmeRetryAfterException(null, null);
+                = new AcmeRetryAfterException(null, retryAfter);
 
         assertThat(ex.getMessage(), nullValue());
-        assertThat(ex.getRetryAfter(), nullValue());
+        assertThat(ex.getRetryAfter(), is(retryAfter));
+
+        // make sure we get a copy of the Date object
+        assertThat(ex.getRetryAfter(), not(sameInstance(retryAfter)));
+    }
+
+    /**
+     * Test that date is required.
+     */
+    @Test(expected = NullPointerException.class)
+    public void testRequiredAcmeRetryAfterException() {
+        new AcmeRetryAfterException("null-test", null);
     }
 
 }

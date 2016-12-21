@@ -14,6 +14,7 @@
 package org.shredzone.acme4j.exception;
 
 import java.net.URI;
+import java.util.Objects;
 
 /**
  * An exception that is thrown when there is a conflict with the request. For example,
@@ -24,9 +25,17 @@ public class AcmeConflictException extends AcmeException {
 
     private final URI location;
 
+    /**
+     * Creates a new {@link AcmeConflictException}.
+     *
+     * @param msg
+     *            Details about the conflicting resource
+     * @param location
+     *            {@link URI} of the conflicting resource
+     */
     public AcmeConflictException(String msg, URI location) {
         super(msg);
-        this.location = location;
+        this.location = Objects.requireNonNull(location, "location");
     }
 
     /**

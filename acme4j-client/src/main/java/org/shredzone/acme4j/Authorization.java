@@ -47,21 +47,23 @@ public class Authorization extends AcmeResource {
     private List<List<Challenge>> combinations;
     private boolean loaded = false;
 
+    protected Authorization(Session session, URI location) {
+        super(session);
+        setLocation(location);
+    }
+
     /**
-     * Creates a new instance of {@link Authorization} and binds it to the {@link Session}.
+     * Creates a new instance of {@link Authorization} and binds it to the
+     * {@link Session}.
      *
      * @param session
      *            {@link Session} to be used
      * @param location
      *            Location of the Authorization
+     * @return {@link Authorization} bound to the session and location
      */
     public static Authorization bind(Session session, URI location) {
         return new Authorization(session, location);
-    }
-
-    protected Authorization(Session session, URI location) {
-        super(session);
-        setLocation(location);
     }
 
     /**
@@ -240,6 +242,20 @@ public class Authorization extends AcmeResource {
             domain = jsonIdentifier.get("value").asString();
         }
 
+        challenges = fetchChallenges(json);
+        combinations = fetchCombinations(json, challenges);
+
+        loaded = true;
+    }
+
+    /**
+     * Fetches all {@link Challenge} that are defined in the JSON.
+     *
+     * @param json
+     *            {@link JSON} to read
+     * @return List of {@link Challenge}
+     */
+    private List<Challenge> fetchChallenges(JSON json) {
         JSON.Array jsonChallenges = json.get("challenges").asArray();
         List<Challenge> cr = new ArrayList<>();
         for (JSON.Value c : jsonChallenges) {
@@ -248,28 +264,34 @@ public class Authorization extends AcmeResource {
                 cr.add(ch);
             }
         }
-        challenges = cr;
+        return cr;
+    }
 
+    /**
+     * Fetches all possible combination of {@link Challenge} that are defined in the JSON.
+     *
+     * @param json
+     *            {@link JSON} to read
+     * @param challenges
+     *            List of available {@link Challenge}
+     * @return List of {@link Challenge} combinations
+     */
+    private List<List<Challenge>> fetchCombinations(JSON json, List<Challenge> challenges) {
         JSON.Array jsonCombinations = json.get("combinations").asArray();
-        if (jsonCombinations != null) {
-            List<List<Challenge>> cmb = new ArrayList<>(jsonCombinations.size());
-
-            for (int ix = 0; ix < jsonCombinations.size(); ix++) {
-                JSON.Array c = jsonCombinations.get(ix).asArray();
-                List<Challenge> clist = new ArrayList<>(c.size());
-                for (JSON.Value n : c) {
-                    clist.add(cr.get(n.asInt()));
-                }
-                cmb.add(clist);
-            }
-            combinations = cmb;
-        } else {
-            List<List<Challenge>> cmb = new ArrayList<>(1);
-            cmb.add(cr);
-            combinations = cmb;
+        if (jsonCombinations == null) {
+            return Arrays.asList(challenges);
         }
 
-        loaded = true;
+        List<List<Challenge>> cmb = new ArrayList<>(jsonCombinations.size());
+        for (JSON.Value v : jsonCombinations) {
+            JSON.Array c = v.asArray();
+            List<Challenge> clist = new ArrayList<>(c.size());
+            for (JSON.Value n : c) {
+                clist.add(challenges.get(n.asInt()));
+            }
+            cmb.add(clist);
+        }
+        return cmb;
     }
 
 }

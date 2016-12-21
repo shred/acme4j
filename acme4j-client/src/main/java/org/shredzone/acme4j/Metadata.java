@@ -16,6 +16,7 @@ package org.shredzone.acme4j;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.shredzone.acme4j.util.JSON;
@@ -57,12 +58,12 @@ public class Metadata {
 
     /**
      * Returns a collection of hostnames, which the ACME server recognises as referring to
-     * itself for the purposes of CAA record validation. {@code null} if not available.
+     * itself for the purposes of CAA record validation. Empty if not available.
      */
     public Collection<String> getCaaIdentities() {
         Array array = meta.get("caa-identities").asArray();
         if (array == null) {
-            return null;
+            return Collections.emptyList();
         }
 
         List<String> result = new ArrayList<>(array.size());

@@ -39,6 +39,7 @@ public class RegistrationBuilder {
      *
      * @param contact
      *            Contact URI
+     * @return itself
      */
     public RegistrationBuilder addContact(URI contact) {
         contacts.add(contact);
@@ -54,6 +55,7 @@ public class RegistrationBuilder {
      *            Contact URI as string
      * @throws IllegalArgumentException
      *             if there is a syntax error in the URI string
+     * @return itself
      */
     public RegistrationBuilder addContact(String contact) {
         addContact(URI.create(contact));

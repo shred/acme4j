@@ -14,6 +14,7 @@
 package org.shredzone.acme4j.exception;
 
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * This exception is thrown when a server side process has not been completed yet, and the
@@ -24,16 +25,24 @@ public class AcmeRetryAfterException extends AcmeException {
 
     private final Date retryAfter;
 
+    /**
+     * Creates a new {@link AcmeRetryAfterException}.
+     *
+     * @param msg
+     *            Error details
+     * @param retryAfter
+     *            retry-after date returned by the server
+     */
     public AcmeRetryAfterException(String msg, Date retryAfter) {
         super(msg);
-        this.retryAfter = retryAfter;
+        this.retryAfter = Objects.requireNonNull(retryAfter);
     }
 
     /**
      * Returns the retry-after date returned by the server.
      */
     public Date getRetryAfter() {
-        return retryAfter != null ? new Date(retryAfter.getTime()) : null;
+        return new Date(retryAfter.getTime());
     }
 
 }

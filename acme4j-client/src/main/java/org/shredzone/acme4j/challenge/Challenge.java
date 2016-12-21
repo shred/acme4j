@@ -51,13 +51,23 @@ public class Challenge extends AcmeResource {
     private JSON data = JSON.empty();
 
     /**
+     * Creates a new generic {@link Challenge} object.
+     *
+     * @param session
+     *            {@link Session} to bind to.
+     */
+    public Challenge(Session session) {
+        super(session);
+    }
+
+    /**
      * Returns a {@link Challenge} object of an existing challenge.
      *
      * @param session
      *            {@link Session} to be used
      * @param location
      *            Challenge location
-     * @return {@link Challenge}
+     * @return {@link Challenge} bound to this session and location
      */
     @SuppressWarnings("unchecked")
     public static <T extends Challenge> T bind(Session session, URI location) throws AcmeException {
@@ -76,16 +86,6 @@ public class Challenge extends AcmeResource {
 
             return (T) session.createChallenge(json);
         }
-    }
-
-    /**
-     * Creates a new generic {@link Challenge} object.
-     *
-     * @param session
-     *            {@link Session} to bind to.
-     */
-    public Challenge(Session session) {
-        super(session);
     }
 
     /**
@@ -142,7 +142,7 @@ public class Challenge extends AcmeResource {
      * @return {@code true} if acceptable, {@code false} if not
      */
     protected boolean acceptable(String type) {
-        return true;
+        return type != null && !type.trim().isEmpty();
     }
 
     /**

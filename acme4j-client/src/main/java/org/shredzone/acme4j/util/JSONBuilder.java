@@ -170,6 +170,8 @@ public class JSONBuilder {
 
     /**
      * Returns a {@link Map} representation of the current state.
+     *
+     * @return {@link Map} of the current state
      */
     public Map<String, Object> toMap() {
         return Collections.unmodifiableMap(data);
@@ -177,6 +179,8 @@ public class JSONBuilder {
 
     /**
      * Returns a {@link JSON} representation of the current state.
+     *
+     * @return {@link JSON} of the current state
      */
     public JSON toJSON() {
         return JSON.parse(toString());

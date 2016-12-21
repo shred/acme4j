@@ -216,7 +216,7 @@ public class SessionTest {
         assertThat(meta, not(nullValue()));
         assertThat(meta.getTermsOfService(), is(nullValue()));
         assertThat(meta.getWebsite(), is(nullValue()));
-        assertThat(meta.getCaaIdentities(), is(nullValue()));
+        assertThat(meta.getCaaIdentities(), is(empty()));
     }
 
     /**

@@ -24,23 +24,6 @@ public enum Resource {
     NEW_CERT("new-cert"),
     REVOKE_CERT("revoke-cert");
 
-    /**
-     * Parses the string and returns a matching {@link Resource} instance.
-     *
-     * @param str
-     *            String to parse
-     * @return {@link Resource} instance, or {@code null} if the resource is unknown
-     */
-    public static Resource parse(String str) {
-        for (Resource r : values()) {
-            if (r.path().equals(str)) {
-                return r;
-            }
-        }
-
-        return null;
-    }
-
     private final String path;
 
     private Resource(String path) {
@@ -49,6 +32,8 @@ public enum Resource {
 
     /**
      * Returns the resource path.
+     *
+     * @return resource path
      */
     public String path() {
         return path;

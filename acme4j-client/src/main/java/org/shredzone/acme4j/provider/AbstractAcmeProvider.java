@@ -13,8 +13,13 @@
  */
 package org.shredzone.acme4j.provider;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import org.shredzone.acme4j.Session;
@@ -38,6 +43,8 @@ import org.shredzone.acme4j.util.JSON;
  */
 public abstract class AbstractAcmeProvider implements AcmeProvider {
 
+    private static final Map<String, Constructor<? extends Challenge>> CHALLENGES = challengeMap();
+
     @Override
     public Connection connect() {
         return new DefaultConnection(createHttpConnector());
@@ -56,22 +63,48 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
         }
     }
 
-    @Override
     @SuppressWarnings("deprecation") // must still provide deprecated challenges
+    private static Map<String, Constructor<? extends Challenge>> challengeMap() {
+        Map<String, Constructor<? extends Challenge>> map = new HashMap<>();
+
+        try {
+            map.put(Dns01Challenge.TYPE,
+                            Dns01Challenge.class.getConstructor(Session.class));
+
+            map.put(org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE,
+                            org.shredzone.acme4j.challenge.TlsSni01Challenge.class.getConstructor(Session.class));
+
+            map.put(TlsSni02Challenge.TYPE,
+                            TlsSni02Challenge.class.getConstructor(Session.class));
+
+            map.put(Http01Challenge.TYPE,
+                            Http01Challenge.class.getConstructor(Session.class));
+
+            map.put(OutOfBand01Challenge.TYPE,
+                            OutOfBand01Challenge.class.getConstructor(Session.class));
+        } catch (NoSuchMethodException ex) {
+            throw new IllegalStateException("Could not find Challenge constructor", ex);
+        }
+
+        return Collections.unmodifiableMap(map);
+    }
+
+    @Override
     public Challenge createChallenge(Session session, String type) {
         Objects.requireNonNull(session, "session");
         Objects.requireNonNull(type, "type");
-        if (type.isEmpty()) {
-            throw new IllegalArgumentException("no type given");
+
+        Constructor<? extends Challenge> constructor = CHALLENGES.get(type);
+        if (constructor == null) {
+            return null;
         }
 
-        switch (type) {
-            case Dns01Challenge.TYPE: return new Dns01Challenge(session);
-            case org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE: return new org.shredzone.acme4j.challenge.TlsSni01Challenge(session);
-            case TlsSni02Challenge.TYPE: return new TlsSni02Challenge(session);
-            case Http01Challenge.TYPE: return new Http01Challenge(session);
-            case OutOfBand01Challenge.TYPE: return new OutOfBand01Challenge(session);
-            default: return null;
+        try {
+            return constructor.newInstance(session);
+        } catch (InvocationTargetException | IllegalAccessException
+                    | InstantiationException ex) {
+            throw new IllegalStateException(
+                    "Could not instantiate a Challenge for type " + type, ex);
         }
     }
 

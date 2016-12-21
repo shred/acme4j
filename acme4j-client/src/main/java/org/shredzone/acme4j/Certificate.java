@@ -41,18 +41,6 @@ public class Certificate extends AcmeResource {
     private X509Certificate cert = null;
     private X509Certificate[] chain = null;
 
-    /**
-     * Creates a new instance of {@link Certificate} and binds it to the {@link Session}.
-     *
-     * @param session
-     *            {@link Session} to be used
-     * @param location
-     *            Location of the Certificate
-     */
-    public static Certificate bind(Session session, URI location) {
-        return new Certificate(session, location);
-    }
-
     protected Certificate(Session session, URI certUri) {
         super(session);
         setLocation(certUri);
@@ -63,6 +51,19 @@ public class Certificate extends AcmeResource {
         setLocation(certUri);
         this.chainCertUri = chainUri;
         this.cert = cert;
+    }
+
+    /**
+     * Creates a new instance of {@link Certificate} and binds it to the {@link Session}.
+     *
+     * @param session
+     *            {@link Session} to be used
+     * @param location
+     *            Location of the Certificate
+     * @return {@link Certificate} bound to the session and location
+     */
+    public static Certificate bind(Session session, URI location) {
+        return new Certificate(session, location);
     }
 
     /**

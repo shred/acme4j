@@ -91,7 +91,7 @@ public final class CertificateUtils {
      */
     public static void writeX509Certificate(X509Certificate cert, Writer w) throws IOException {
         try (JcaPEMWriter jw = new JcaPEMWriter(w)) {
-            jw.writeObject(cert);
+            writeCertIfNotNull(jw, cert);
         }
     }
 
@@ -110,16 +110,24 @@ public final class CertificateUtils {
     public static void writeX509CertificateChain(Writer w, X509Certificate cert, X509Certificate... chain)
                 throws IOException {
         try (JcaPEMWriter jw = new JcaPEMWriter(w)) {
-            if (cert != null) {
-                jw.writeObject(cert);
+            writeCertIfNotNull(jw, cert);
+            for (X509Certificate c : chain) {
+                writeCertIfNotNull(jw, c);
             }
-            if (chain != null) {
-                for (X509Certificate c : chain) {
-                    if (c != null) {
-                        jw.writeObject(c);
-                    }
-                }
-            }
+        }
+    }
+
+    /**
+     * Writes an {@link X509Certificate} unless it is {@code null}.
+     *
+     * @param jw
+     *            {@link JcaPEMWriter} to write to
+     * @param cert
+     *            {@link X509Certificate} to write, or {@code null}
+     */
+    private static void writeCertIfNotNull(JcaPEMWriter jw, X509Certificate cert) throws IOException {
+        if (cert != null) {
+            jw.writeObject(cert);
         }
     }
 

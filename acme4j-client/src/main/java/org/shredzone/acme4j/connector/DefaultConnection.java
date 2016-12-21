@@ -61,16 +61,32 @@ import org.slf4j.LoggerFactory;
 public class DefaultConnection implements Connection {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultConnection.class);
 
-    public static final String ACME_ERROR_PREFIX = "urn:ietf:params:acme:error:";
 
-    @Deprecated
-    public static final String ACME_ERROR_PREFIX_DEPRECATED = "urn:acme:error:";
+    public static final String ACME_ERROR_PREFIX = "urn:ietf:params:acme:error:";
+    private static final String ACME_ERROR_PREFIX_DEPRECATED = "urn:acme:error:";
+
+    private static final String ACCEPT_HEADER = "Accept";
+    private static final String ACCEPT_CHARSET_HEADER = "Accept-Charset";
+    private static final String ACCEPT_LANGUAGE_HEADER = "Accept-Language";
+    private static final String CONTENT_TYPE_HEADER = "Content-Type";
+    private static final String DATE_HEADER = "Date";
+    private static final String LINK_HEADER = "Link";
+    private static final String LOCATION_HEADER = "Location";
+    private static final String REPLAY_NONCE_HEADER = "Replay-Nonce";
+    private static final String RETRY_AFTER_HEADER = "Retry-After";
+    private static final String DEFAULT_CHARSET = "utf-8";
 
     private static final Pattern BASE64URL_PATTERN = Pattern.compile("[0-9A-Za-z_-]+");
 
     protected final HttpConnector httpConnector;
     protected HttpURLConnection conn;
 
+    /**
+     * Creates a new {@link DefaultConnection}.
+     *
+     * @param httpConnector
+     *            {@link HttpConnector} to be used for HTTP connections
+     */
     public DefaultConnection(HttpConnector httpConnector) {
         this.httpConnector = Objects.requireNonNull(httpConnector, "httpConnector");
     }
@@ -86,8 +102,8 @@ public class DefaultConnection implements Connection {
         try {
             conn = httpConnector.openConnection(uri);
             conn.setRequestMethod("GET");
-            conn.setRequestProperty("Accept-Charset", "utf-8");
-            conn.setRequestProperty("Accept-Language", session.getLocale().toLanguageTag());
+            conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
+            conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
             conn.setDoOutput(false);
 
             conn.connect();
@@ -112,7 +128,7 @@ public class DefaultConnection implements Connection {
                 LOG.debug("Getting initial nonce, HEAD {}", uri);
                 conn = httpConnector.openConnection(uri);
                 conn.setRequestMethod("HEAD");
-                conn.setRequestProperty("Accept-Language", session.getLocale().toLanguageTag());
+                conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
                 conn.connect();
                 updateSession(session);
                 conn = null;
@@ -126,10 +142,10 @@ public class DefaultConnection implements Connection {
 
             conn = httpConnector.openConnection(uri);
             conn.setRequestMethod("POST");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setRequestProperty("Accept-Charset", "utf-8");
-            conn.setRequestProperty("Accept-Language", session.getLocale().toLanguageTag());
-            conn.setRequestProperty("Content-Type", "application/jose+json");
+            conn.setRequestProperty(ACCEPT_HEADER, "application/json");
+            conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
+            conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
+            conn.setRequestProperty(CONTENT_TYPE_HEADER, "application/jose+json");
             conn.setDoOutput(true);
 
             final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(keypair.getPublic());
@@ -141,7 +157,7 @@ public class DefaultConnection implements Connection {
             jws.getHeaders().setJwkHeaderValue("jwk", jwk);
             jws.setAlgorithmHeaderValue(keyAlgorithm(jwk));
             jws.setKey(keypair.getPrivate());
-            byte[] outputData = jws.getCompactSerialization().getBytes("utf-8");
+            byte[] outputData = jws.getCompactSerialization().getBytes(DEFAULT_CHARSET);
 
             conn.setFixedLengthStreamingMode(outputData.length);
             conn.connect();
@@ -172,7 +188,7 @@ public class DefaultConnection implements Connection {
                 }
             }
 
-            if (!"application/problem+json".equals(conn.getHeaderField("Content-Type"))) {
+            if (!"application/problem+json".equals(conn.getHeaderField(CONTENT_TYPE_HEADER))) {
                 throw new AcmeException("HTTP " + rc + ": " + conn.getResponseMessage());
             }
 
@@ -187,7 +203,7 @@ public class DefaultConnection implements Connection {
     public JSON readJsonResponse() throws AcmeException {
         assertConnectionIsOpen();
 
-        String contentType = conn.getHeaderField("Content-Type");
+        String contentType = conn.getHeaderField(CONTENT_TYPE_HEADER);
         if (!("application/json".equals(contentType)
                     || "application/problem+json".equals(contentType))) {
             throw new AcmeProtocolException("Unexpected content type: " + contentType);
@@ -214,7 +230,7 @@ public class DefaultConnection implements Connection {
     public X509Certificate readCertificate() throws AcmeException {
         assertConnectionIsOpen();
 
-        String contentType = conn.getHeaderField("Content-Type");
+        String contentType = conn.getHeaderField(CONTENT_TYPE_HEADER);
         if (!("application/pkix-cert".equals(contentType))) {
             throw new AcmeProtocolException("Unexpected content type: " + contentType);
         }
@@ -249,7 +265,7 @@ public class DefaultConnection implements Connection {
     public void updateSession(Session session) {
         assertConnectionIsOpen();
 
-        String nonceHeader = conn.getHeaderField("Replay-Nonce");
+        String nonceHeader = conn.getHeaderField(REPLAY_NONCE_HEADER);
         if (nonceHeader == null || nonceHeader.trim().isEmpty()) {
             return;
         }
@@ -267,7 +283,7 @@ public class DefaultConnection implements Connection {
     public URI getLocation() {
         assertConnectionIsOpen();
 
-        String location = conn.getHeaderField("Location");
+        String location = conn.getHeaderField(LOCATION_HEADER);
         if (location == null) {
             return null;
         }
@@ -296,7 +312,7 @@ public class DefaultConnection implements Connection {
 
         List<URI> result = new ArrayList<>();
 
-        List<String> links = conn.getHeaderFields().get("Link");
+        List<String> links = conn.getHeaderFields().get(LINK_HEADER);
         if (links != null) {
             Pattern p = Pattern.compile("<(.*?)>\\s*;\\s*rel=\"?"+ Pattern.quote(relation) + "\"?");
             for (String link : links) {
@@ -322,7 +338,7 @@ public class DefaultConnection implements Connection {
      */
     private Date getRetryAfterHeader() {
         // See RFC 2616 section 14.37
-        String header = conn.getHeaderField("Retry-After");
+        String header = conn.getHeaderField(RETRY_AFTER_HEADER);
         if (header == null) {
             return null;
         }
@@ -331,12 +347,12 @@ public class DefaultConnection implements Connection {
             // delta-seconds
             if (header.matches("^\\d+$")) {
                 int delta = Integer.parseInt(header);
-                long date = conn.getHeaderFieldDate("Date", System.currentTimeMillis());
+                long date = conn.getHeaderFieldDate(DATE_HEADER, System.currentTimeMillis());
                 return new Date(date + delta * 1000L);
             }
 
             // HTTP-date
-            long date = conn.getHeaderFieldDate("Retry-After", 0L);
+            long date = conn.getHeaderFieldDate(RETRY_AFTER_HEADER, 0L);
             return date != 0 ? new Date(date) : null;
         } catch (Exception ex) {
             throw new AcmeProtocolException("Bad retry-after header value: " + header, ex);

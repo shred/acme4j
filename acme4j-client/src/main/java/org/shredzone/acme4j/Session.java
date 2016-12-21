@@ -129,6 +129,8 @@ public class Session {
      * Returns the {@link AcmeProvider} that is used for this session.
      * <p>
      * The {@link AcmeProvider} instance is lazily created and cached.
+     *
+     * @return {@link AcmeProvider}
      */
     public AcmeProvider provider() {
         synchronized (this) {

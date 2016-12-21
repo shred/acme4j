@@ -14,7 +14,6 @@
 package org.shredzone.acme4j.challenge;
 
 import org.shredzone.acme4j.Session;
-import org.shredzone.acme4j.util.JSONBuilder;
 
 /**
  * Implements the {@value TYPE} challenge.
@@ -55,11 +54,6 @@ public class Http01Challenge extends TokenChallenge {
     @Override
     public String getAuthorization() {
         return super.getAuthorization();
-    }
-
-    @Override
-    protected void respond(JSONBuilder cb) {
-        super.respond(cb);
     }
 
     @Override

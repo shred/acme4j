@@ -19,6 +19,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import org.shredzone.acme4j.AcmeResource;
 import org.shredzone.acme4j.Session;
@@ -27,8 +28,11 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.util.JSON;
 
 /**
- * An {@link Iterator} that fetches a batch of URIs from the ACME server, and
- * generates {@link AcmeResource} instances.
+ * An {@link Iterator} that fetches a batch of URIs from the ACME server, and generates
+ * {@link AcmeResource} instances.
+ *
+ * @param <T>
+ *            {@link AcmeResource} type to iterate over
  */
 public abstract class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
 
@@ -49,8 +53,8 @@ public abstract class ResourceIterator<T extends AcmeResource> implements Iterat
      *            URI of the first JSON array, may be {@code null} for an empty iterator
      */
     public ResourceIterator(Session session, String field, URI start) {
-        this.session = session;
-        this.field = field;
+        this.session = Objects.requireNonNull(session, "session");
+        this.field = Objects.requireNonNull(field, "field");
         this.nextUri = start;
     }
 
