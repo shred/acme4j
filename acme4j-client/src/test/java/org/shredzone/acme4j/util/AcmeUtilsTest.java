@@ -86,21 +86,6 @@ public class AcmeUtilsTest {
     }
 
     /**
-     * Test that {@code null} check works properly.
-     */
-    @Test
-    public void testAssertNotNull() {
-        AcmeUtils.assertNotNull(new Object(), "foo");
-
-        try {
-            AcmeUtils.assertNotNull(null, "bar");
-            fail("null was accepted");
-        } catch (NullPointerException ex) {
-            // expected
-        }
-    }
-
-    /**
      * Test ACE conversion.
      */
     @Test

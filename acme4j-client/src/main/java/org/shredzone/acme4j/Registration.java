@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
@@ -38,7 +39,6 @@ import org.shredzone.acme4j.connector.ResourceIterator;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
-import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,7 +177,7 @@ public class Registration extends AcmeResource {
      * @return {@link Authorization} object for this domain
      */
     public Authorization authorizeDomain(String domain) throws AcmeException {
-        AcmeUtils.assertNotNull(domain, "domain");
+        Objects.requireNonNull(domain, "domain");
         if (domain.isEmpty()) {
             throw new IllegalArgumentException("domain must not be empty");
         }
@@ -231,7 +231,7 @@ public class Registration extends AcmeResource {
      */
     public Certificate requestCertificate(byte[] csr, Date notBefore, Date notAfter)
                 throws AcmeException {
-        AcmeUtils.assertNotNull(csr, "csr");
+        Objects.requireNonNull(csr, "csr");
 
         LOG.debug("requestCertificate");
         try (Connection conn = getSession().provider().connect()) {
@@ -269,7 +269,7 @@ public class Registration extends AcmeResource {
      *            new {@link KeyPair} to be used for identifying this account
      */
     public void changeKey(KeyPair newKeyPair) throws AcmeException {
-        AcmeUtils.assertNotNull(newKeyPair, "newKeyPair");
+        Objects.requireNonNull(newKeyPair, "newKeyPair");
         if (Arrays.equals(getSession().getKeyPair().getPrivate().getEncoded(),
                         newKeyPair.getPrivate().getEncoded())) {
             throw new IllegalArgumentException("newKeyPair must actually be a new key pair");

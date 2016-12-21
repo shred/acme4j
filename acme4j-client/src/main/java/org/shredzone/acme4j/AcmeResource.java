@@ -13,10 +13,9 @@
  */
 package org.shredzone.acme4j;
 
-import static org.shredzone.acme4j.util.AcmeUtils.assertNotNull;
-
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Objects;
 
 /**
  * A generic ACME resource.
@@ -52,16 +51,14 @@ public abstract class AcmeResource implements Serializable {
      * Sets a new {@link Session}.
      */
     protected void setSession(Session session) {
-        assertNotNull(session, "session");
-        this.session = session;
+        this.session = Objects.requireNonNull(session, "session");
     }
 
     /**
      * Sets the resource's location.
      */
     protected void setLocation(URI location) {
-        assertNotNull(location, "location");
-        this.location = location;
+        this.location = Objects.requireNonNull(location, "location");
     }
 
     /**

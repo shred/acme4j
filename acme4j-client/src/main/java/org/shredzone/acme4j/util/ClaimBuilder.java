@@ -21,6 +21,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TimeZone;
 import java.util.TreeMap;
 
@@ -56,8 +57,7 @@ public class ClaimBuilder {
      * @return {@code this}
      */
     public ClaimBuilder put(String key, Object value) {
-        AcmeUtils.assertNotNull(key, "key");
-        data.put(key, value);
+        data.put(Objects.requireNonNull(key, "key"), value);
         return this;
     }
 
@@ -141,7 +141,7 @@ public class ClaimBuilder {
      * @return {@code this}
      */
     public ClaimBuilder putKey(String key, PublicKey publickey) {
-        AcmeUtils.assertNotNull(publickey, "publickey");
+        Objects.requireNonNull(publickey, "publickey");
 
         try {
             final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(publickey);

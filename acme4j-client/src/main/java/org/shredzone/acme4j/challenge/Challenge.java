@@ -25,6 +25,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
@@ -35,7 +36,6 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
-import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,8 +71,8 @@ public class Challenge extends AcmeResource {
      */
     @SuppressWarnings("unchecked")
     public static <T extends Challenge> T bind(Session session, URI location) throws AcmeException {
-        AcmeUtils.assertNotNull(session, "session");
-        AcmeUtils.assertNotNull(location, "location");
+        Objects.requireNonNull(session, "session");
+        Objects.requireNonNull(location, "location");
 
         LOG.debug("bind");
         try (Connection conn = session.provider().connect()) {

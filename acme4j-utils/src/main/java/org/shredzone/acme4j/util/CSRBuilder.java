@@ -25,6 +25,7 @@ import java.security.interfaces.ECKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -147,7 +148,7 @@ public class CSRBuilder {
      *            {@link KeyPair} to sign the CSR with
      */
     public void sign(KeyPair keypair) throws IOException {
-        AcmeUtils.assertNotNull(keypair, "keypair");
+        Objects.requireNonNull(keypair, "keypair");
         if (namelist.isEmpty()) {
             throw new IllegalStateException("No domain was set");
         }

@@ -100,21 +100,6 @@ public final class AcmeUtils {
     }
 
     /**
-     * Asserts that the given value is not {@code null}. Otherwise a
-     * {@link NullPointerException} is thrown.
-     *
-     * @param value
-     *            Value to test
-     * @param name
-     *            Name of the parameter
-     */
-    public static void assertNotNull(Object value, String name) {
-        if (value == null) {
-            throw new NullPointerException(name + " must not be null");
-        }
-    }
-
-    /**
      * ASCII encodes a domain name.
      * <p>
      * The conversion is done as described in

@@ -22,6 +22,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ServiceLoader;
 
 import org.shredzone.acme4j.challenge.Challenge;
@@ -30,7 +31,6 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AcmeProvider;
-import org.shredzone.acme4j.util.AcmeUtils;
 
 /**
  * A session stores the ACME server URI and the account's key pair. It also tracks
@@ -72,11 +72,8 @@ public class Session {
      *            {@link KeyPair} of the ACME account
      */
     public Session(URI serverUri, KeyPair keyPair) {
-        AcmeUtils.assertNotNull(serverUri, "serverUri");
-        AcmeUtils.assertNotNull(keyPair, "keyPair");
-
-        this.serverUri = serverUri;
-        this.keyPair = keyPair;
+        this.serverUri = Objects.requireNonNull(serverUri, "serverUri");
+        this.keyPair = Objects.requireNonNull(keyPair, "keyPair");
     }
 
     /**
@@ -166,7 +163,7 @@ public class Session {
      * @return {@link Challenge} instance
      */
     public Challenge createChallenge(Map<String, Object> data) {
-        AcmeUtils.assertNotNull(data, "data");
+        Objects.requireNonNull(data, "data");
 
         String type = (String) data.get("type");
         if (type == null || type.isEmpty()) {
@@ -194,9 +191,8 @@ public class Session {
      * @return {@link URI}, or {@code null} if the server does not offer that resource
      */
     public URI resourceUri(Resource resource) throws AcmeException {
-        AcmeUtils.assertNotNull(resource, "resource");
         readDirectory();
-        return resourceMap.get(resource);
+        return resourceMap.get(Objects.requireNonNull(resource, "resource"));
     }
 
     /**

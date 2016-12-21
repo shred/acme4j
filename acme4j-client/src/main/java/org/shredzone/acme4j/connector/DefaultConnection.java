@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,7 +52,6 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
-import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.ClaimBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,14 +73,13 @@ public class DefaultConnection implements Connection {
     protected HttpURLConnection conn;
 
     public DefaultConnection(HttpConnector httpConnector) {
-        AcmeUtils.assertNotNull(httpConnector, "httpConnector");
-        this.httpConnector = httpConnector;
+        this.httpConnector = Objects.requireNonNull(httpConnector, "httpConnector");
     }
 
     @Override
     public void sendRequest(URI uri, Session session) throws AcmeException {
-        AcmeUtils.assertNotNull(uri, "uri");
-        AcmeUtils.assertNotNull(session, "session");
+        Objects.requireNonNull(uri, "uri");
+        Objects.requireNonNull(session, "session");
         assertConnectionIsClosed();
 
         LOG.debug("GET {}", uri);
@@ -102,9 +101,9 @@ public class DefaultConnection implements Connection {
 
     @Override
     public void sendSignedRequest(URI uri, ClaimBuilder claims, Session session) throws AcmeException {
-        AcmeUtils.assertNotNull(uri, "uri");
-        AcmeUtils.assertNotNull(claims, "claims");
-        AcmeUtils.assertNotNull(session, "session");
+        Objects.requireNonNull(uri, "uri");
+        Objects.requireNonNull(claims, "claims");
+        Objects.requireNonNull(session, "session");
         assertConnectionIsClosed();
 
         try {
