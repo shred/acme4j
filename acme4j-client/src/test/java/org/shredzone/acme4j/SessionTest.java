@@ -16,12 +16,12 @@ package org.shredzone.acme4j;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.shredzone.acme4j.util.TestUtils.getJsonAsObject;
 
 import java.io.IOException;
 import java.net.URI;
 import java.security.KeyPair;
 import java.util.Date;
-import java.util.Map;
 
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
@@ -30,6 +30,7 @@ import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
+import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
@@ -117,9 +118,9 @@ public class SessionTest {
         URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
         String challengeType = Http01Challenge.TYPE;
 
-        Map<String, Object> data = new JSONBuilder()
+        JSON data = new JSONBuilder()
                         .put("type", challengeType)
-                        .toMap();
+                        .toJSON();
 
         Http01Challenge mockChallenge = mock(Http01Challenge.class);
         final AcmeProvider mockProvider = mock(AcmeProvider.class);
@@ -155,7 +156,7 @@ public class SessionTest {
         when(mockProvider.directory(
                         ArgumentMatchers.any(Session.class),
                         ArgumentMatchers.eq(serverUri)))
-                .thenReturn(TestUtils.getJsonAsMap("directory"));
+                .thenReturn(getJsonAsObject("directory"));
 
         Session session = new Session(serverUri, keyPair) {
             @Override
@@ -193,7 +194,7 @@ public class SessionTest {
         when(mockProvider.directory(
                         ArgumentMatchers.any(Session.class),
                         ArgumentMatchers.eq(serverUri)))
-                .thenReturn(TestUtils.getJsonAsMap("directoryNoMeta"));
+                .thenReturn(getJsonAsObject("directoryNoMeta"));
 
         Session session = new Session(serverUri, keyPair) {
             @Override
@@ -239,10 +240,8 @@ public class SessionTest {
         assertThat(meta, not(nullValue()));
         assertThat(meta.getTermsOfService(), is(URI.create("https://example.com/acme/terms")));
         assertThat(meta.getWebsite(), is(URI.create("https://www.example.com/")));
-        assertThat(meta.getCaaIdentities(), is(arrayContaining("example.com")));
-        assertThat(meta.get("x-test-string"), is("foobar"));
-        assertThat(meta.getUri("x-test-uri"), is(URI.create("https://www.example.org")));
-        assertThat(meta.getStringArray("x-test-array"), is(arrayContaining("foo", "bar", "barfoo")));
+        assertThat(meta.getCaaIdentities(), containsInAnyOrder("example.com"));
+        assertThat(meta.getJSON(), is(notNullValue()));
     }
 
 }

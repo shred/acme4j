@@ -19,20 +19,14 @@ import static org.shredzone.acme4j.util.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.util.TestUtils.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
-import java.util.Map;
 
-import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,6 +36,7 @@ import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
+import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
@@ -77,8 +72,8 @@ public class ChallengeTest {
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() {
-                return getJsonAsMap("updateHttpChallengeResponse");
+            public JSON readJsonResponse() {
+                return getJsonAsObject("updateHttpChallengeResponse");
             }
         };
 
@@ -110,24 +105,17 @@ public class ChallengeTest {
         assertThat(challenge.getValidated(), is(nullValue()));
 
         // Unmarshall a challenge JSON
-        challenge.unmarshall(TestUtils.getJsonAsMap("genericChallenge"));
+        challenge.unmarshall(getJsonAsObject("genericChallenge"));
 
         // Test unmarshalled values
         assertThat(challenge.getType(), is("generic-01"));
         assertThat(challenge.getStatus(), is(Status.VALID));
         assertThat(challenge.getLocation(), is(new URI("http://example.com/challenge/123")));
         assertThat(challenge.getValidated(), is(parseTimestamp("2015-12-12T17:19:36.336785823Z")));
-        assertThat((String) challenge.get("type"), is("generic-01"));
-        assertThat(challenge.getUrl("uri"), is(new URL("http://example.com/challenge/123")));
-        assertThat(challenge.get("not-present"), is(nullValue()));
-        assertThat(challenge.getUrl("not-present-url"), is(nullValue()));
-
-        try {
-            challenge.getUrl("type");
-            fail("bad URL is not detected");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
+        assertThat(challenge.getJSON().get("type").asString(), is("generic-01"));
+        assertThat(challenge.getJSON().get("uri").asURL(), is(new URL("http://example.com/challenge/123")));
+        assertThat(challenge.getJSON().get("not-present").asString(), is(nullValue()));
+        assertThat(challenge.getJSON().get("not-present-url").asURL(), is(nullValue()));
     }
 
     /**
@@ -138,7 +126,7 @@ public class ChallengeTest {
         String json = TestUtils.getJson("genericChallenge");
 
         Challenge challenge = new Challenge(session);
-        challenge.unmarshall(JsonUtil.parseJson(json));
+        challenge.unmarshall(JSON.parse(json));
 
         JSONBuilder cb = new JSONBuilder();
         challenge.respond(cb);
@@ -152,7 +140,7 @@ public class ChallengeTest {
     @Test(expected = AcmeProtocolException.class)
     public void testNotAcceptable() throws URISyntaxException {
         Http01Challenge challenge = new Http01Challenge(session);
-        challenge.unmarshall(TestUtils.getJsonAsMap("dnsChallenge"));
+        challenge.unmarshall(getJsonAsObject("dnsChallenge"));
     }
 
     /**
@@ -176,15 +164,15 @@ public class ChallengeTest {
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() {
-                return getJsonAsMap("triggerHttpChallengeResponse");
+            public JSON readJsonResponse() {
+                return getJsonAsObject("triggerHttpChallengeResponse");
             }
         };
 
         Session session = provider.createSession();
 
         Http01Challenge challenge = new Http01Challenge(session);
-        challenge.unmarshall(getJsonAsMap("triggerHttpChallenge"));
+        challenge.unmarshall(getJsonAsObject("triggerHttpChallenge"));
 
         challenge.trigger();
 
@@ -213,15 +201,15 @@ public class ChallengeTest {
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() {
-                return getJsonAsMap("updateHttpChallengeResponse");
+            public JSON readJsonResponse() {
+                return getJsonAsObject("updateHttpChallengeResponse");
             }
         };
 
         Session session = provider.createSession();
 
         Challenge challenge = new Http01Challenge(session);
-        challenge.unmarshall(getJsonAsMap("triggerHttpChallengeResponse"));
+        challenge.unmarshall(getJsonAsObject("triggerHttpChallengeResponse"));
 
         challenge.update();
 
@@ -252,8 +240,8 @@ public class ChallengeTest {
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() {
-                return getJsonAsMap("updateHttpChallengeResponse");
+            public JSON readJsonResponse() {
+                return getJsonAsObject("updateHttpChallengeResponse");
             }
 
             @Override
@@ -265,7 +253,7 @@ public class ChallengeTest {
         Session session = provider.createSession();
 
         Challenge challenge = new Http01Challenge(session);
-        challenge.unmarshall(getJsonAsMap("triggerHttpChallengeResponse"));
+        challenge.unmarshall(getJsonAsObject("triggerHttpChallengeResponse"));
 
         try {
             challenge.update();
@@ -319,8 +307,8 @@ public class ChallengeTest {
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() {
-                return getJsonAsMap("updateRegistrationResponse");
+            public JSON readJsonResponse() {
+                return getJsonAsObject("updateRegistrationResponse");
             }
         };
 
@@ -336,39 +324,7 @@ public class ChallengeTest {
     @Test(expected = IllegalArgumentException.class)
     public void testBadUnmarshall() {
         Challenge challenge = new Challenge(session);
-        challenge.unmarshall(TestUtils.getJsonAsMap("updateRegistrationResponse"));
-    }
-
-    /**
-     * Test that challenge serialization works correctly.
-     */
-    @Test
-    public void testSerialization() throws IOException, ClassNotFoundException {
-        Http01Challenge originalChallenge = new Http01Challenge(session);
-        originalChallenge.unmarshall(TestUtils.getJsonAsMap("httpChallenge"));
-
-        // Serialize
-        byte[] data;
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
-                oos.writeObject(originalChallenge);
-            }
-            data = out.toByteArray();
-        }
-
-        // Deserialize
-        Challenge testChallenge;
-        try (ByteArrayInputStream in = new ByteArrayInputStream(data)) {
-            try (ObjectInputStream ois = new ObjectInputStream(in)) {
-                testChallenge = (Challenge) ois.readObject();
-            }
-        }
-
-        assertThat(testChallenge, not(sameInstance((Challenge) originalChallenge)));
-        assertThat(testChallenge, is(instanceOf(Http01Challenge.class)));
-        assertThat(testChallenge.getType(), is(Http01Challenge.TYPE));
-        assertThat(testChallenge.getStatus(), is(Status.PENDING));
-        assertThat(((Http01Challenge )testChallenge).getToken(), is("rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ"));
+        challenge.unmarshall(getJsonAsObject("updateRegistrationResponse"));
     }
 
 }

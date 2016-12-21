@@ -25,6 +25,7 @@ import org.shredzone.acme4j.connector.DummyConnection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.util.JSONBuilder;
+import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
@@ -84,12 +85,11 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
     }
 
     @Override
-    public Map<String, Object> directory(Session session, URI serverUri) throws AcmeException {
-        Map<String, Object> result = directory.toMap();
-        if (result.isEmpty()) {
+    public JSON directory(Session session, URI serverUri) throws AcmeException {
+        if (directory.toMap().isEmpty()) {
             throw new UnsupportedOperationException();
         }
-        return result;
+        return directory.toJSON();
     }
 
     @Override

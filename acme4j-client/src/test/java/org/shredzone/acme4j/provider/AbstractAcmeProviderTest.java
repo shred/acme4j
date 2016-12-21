@@ -17,14 +17,13 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.shredzone.acme4j.util.TestUtils.getJsonAsObject;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.jose4j.json.JsonUtil;
 import org.junit.Test;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -35,6 +34,7 @@ import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
+import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
@@ -84,7 +84,7 @@ public class AbstractAcmeProviderTest {
         final Session session = mock(Session.class);
 
         when(connection.accept(any(Integer.class))).thenReturn(HttpURLConnection.HTTP_OK);
-        when(connection.readJsonResponse()).thenReturn(TestUtils.getJsonAsMap("directory"));
+        when(connection.readJsonResponse()).thenReturn(getJsonAsObject("directory"));
 
         AbstractAcmeProvider provider = new AbstractAcmeProvider() {
             @Override
@@ -105,8 +105,8 @@ public class AbstractAcmeProviderTest {
             }
         };
 
-        Map<String, Object> map = provider.directory(session, testServerUri);
-        assertThat(JsonUtil.toJson(map), sameJSONAs(TestUtils.getJson("directory")));
+        JSON map = provider.directory(session, testServerUri);
+        assertThat(map.toString(), sameJSONAs(TestUtils.getJson("directory")));
 
         verify(connection).sendRequest(testResolvedUri, session);
         verify(connection).accept(any(Integer.class));

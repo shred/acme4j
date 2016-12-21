@@ -69,6 +69,11 @@ public class JSONBuilderTest {
                 hasEntry("fooInt", (Object) 456),
                 hasEntry("fooStr", (Object) "String")
         ));
+
+        JSON json = cb.toJSON();
+        assertThat(json.keySet(), hasSize(2));
+        assertThat(json.get("fooInt").asInt(), is(456));
+        assertThat(json.get("fooStr").asString(), is("String"));
     }
 
     /**

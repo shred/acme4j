@@ -17,11 +17,11 @@ import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Map;
 
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.util.JSONBuilder;
+import org.shredzone.acme4j.util.JSON;
 
 /**
  * Connects to the ACME server and offers different methods for invoking the API.
@@ -63,9 +63,9 @@ public interface Connection extends AutoCloseable {
     /**
      * Reads a server response as JSON data.
      *
-     * @return Map containing the parsed JSON data
+     * @return The JSON response
      */
-    Map<String, Object> readJsonResponse() throws AcmeException;
+    JSON readJsonResponse() throws AcmeException;
 
     /**
      * Reads a certificate.

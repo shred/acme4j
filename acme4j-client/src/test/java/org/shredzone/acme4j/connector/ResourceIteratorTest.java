@@ -23,19 +23,16 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.jose4j.json.JsonUtil;
-import org.jose4j.lang.JoseException;
 import org.junit.Before;
 import org.junit.Test;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.util.JSONBuilder;
+import org.shredzone.acme4j.util.JSON;
 
 /**
  * Unit test for {@link ResourceIterator}.
@@ -147,19 +144,14 @@ public class ResourceIteratorTest {
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() {
-                try {
-                    int start = ix * RESOURCES_PER_PAGE;
-                    int end = (ix + 1) * RESOURCES_PER_PAGE;
+            public JSON readJsonResponse() {
+                int start = ix * RESOURCES_PER_PAGE;
+                int end = (ix + 1) * RESOURCES_PER_PAGE;
 
-                    JSONBuilder cb = new JSONBuilder();
-                    cb.array(TYPE, resourceURIs.subList(start, end).toArray());
+                JSONBuilder cb = new JSONBuilder();
+                cb.array(TYPE, resourceURIs.subList(start, end).toArray());
 
-                    // Make sure to use the JSON parser
-                    return JsonUtil.parseJson(cb.toString());
-                } catch (JoseException ex) {
-                    throw new AcmeProtocolException("Invalid JSON", ex);
-                }
+                return JSON.parse(cb.toString());
             }
 
             @Override

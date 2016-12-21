@@ -44,6 +44,7 @@ import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeServerException;
+import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
@@ -362,11 +363,11 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
-            public Map<String,Object> readJsonResponse() {
-                Map<String, Object> result = new HashMap<>();
+            public JSON readJsonResponse() {
+                JSONBuilder result = new JSONBuilder();
                 result.put("type", "urn:zombie:error:apocalypse");
                 result.put("detail", "Zombie apocalypse in progress");
-                return result;
+                return result.toJSON();
             };
         }) {
             conn.conn = mockUrlConnection;
@@ -397,8 +398,8 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
-            public Map<String,Object> readJsonResponse() {
-                return new HashMap<>();
+            public JSON readJsonResponse() {
+                return JSON.empty();
             };
         }) {
             conn.conn = mockUrlConnection;
@@ -553,10 +554,10 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            Map<String, Object> result = conn.readJsonResponse();
+            JSON result = conn.readJsonResponse();
             assertThat(result.keySet(), hasSize(2));
-            assertThat(result, hasEntry("foo", (Object) 123L));
-            assertThat(result, hasEntry("bar", (Object) "a-string"));
+            assertThat(result.get("foo").asInt(), is(123));
+            assertThat(result.get("bar").asString(), is("a-string"));
         }
 
         verify(mockUrlConnection).getHeaderField("Content-Type");

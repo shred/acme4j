@@ -13,22 +13,11 @@
  */
 package org.shredzone.acme4j.challenge;
 
-import static org.shredzone.acme4j.util.AcmeUtils.parseTimestamp;
-
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
-import org.jose4j.json.JsonUtil;
-import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.AcmeResource;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
@@ -36,6 +25,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
+import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +48,7 @@ public class Challenge extends AcmeResource {
     protected static final String KEY_URI = "uri";
     protected static final String KEY_VALIDATED = "validated";
 
-    private transient Map<String, Object> data = new HashMap<>();
+    private JSON data = JSON.empty();
 
     /**
      * Returns a {@link Challenge} object of an existing challenge.
@@ -79,8 +69,8 @@ public class Challenge extends AcmeResource {
             conn.sendRequest(location, session);
             conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
 
-            Map<String, Object> json = conn.readJsonResponse();
-            if (!(json.containsKey("type"))) {
+            JSON json = conn.readJsonResponse();
+            if (!(json.contains("type"))) {
                 throw new IllegalArgumentException("Provided URI is not a challenge URI");
             }
 
@@ -102,14 +92,14 @@ public class Challenge extends AcmeResource {
      * Returns the challenge type by name (e.g. "http-01").
      */
     public String getType() {
-        return get(KEY_TYPE);
+        return data.get(KEY_TYPE).asString();
     }
 
     /**
      * Returns the current status of the challenge.
      */
     public Status getStatus() {
-        return Status.parse((String) get(KEY_STATUS), Status.PENDING);
+        return Status.parse(data.get(KEY_STATUS).asString(), Status.PENDING);
     }
 
     /**
@@ -117,24 +107,21 @@ public class Challenge extends AcmeResource {
      */
     @Override
     public URI getLocation() {
-        String uri = get(KEY_URI);
-        if (uri == null) {
-            return null;
-        }
-
-        return URI.create(uri);
+        return data.get(KEY_URI).asURI();
     }
 
     /**
      * Returns the validation date, if returned by the server.
      */
     public Date getValidated() {
-        String valStr = get(KEY_VALIDATED);
-        if (valStr != null) {
-            return parseTimestamp(valStr);
-        } else {
-            return null;
-        }
+        return data.get(KEY_VALIDATED).asDate();
+    }
+
+    /**
+     * Returns the JSON representation of the challenge data.
+     */
+    protected JSON getJSON() {
+        return data;
     }
 
     /**
@@ -161,11 +148,11 @@ public class Challenge extends AcmeResource {
     /**
      * Sets the challenge state to the given JSON map.
      *
-     * @param map
-     *            JSON map containing the challenge data
+     * @param json
+     *            JSON containing the challenge data
      */
-    public void unmarshall(Map<String, Object> map) {
-        String type = (String) map.get(KEY_TYPE);
+    public void unmarshall(JSON json) {
+        String type = json.get(KEY_TYPE).asString();
         if (type == null) {
             throw new IllegalArgumentException("map does not contain a type");
         }
@@ -173,37 +160,8 @@ public class Challenge extends AcmeResource {
             throw new AcmeProtocolException("wrong type: " + type);
         }
 
-        data.clear();
-        data.putAll(map);
+        data = json;
         authorize();
-    }
-
-    /**
-     * Gets a value from the challenge state.
-     *
-     * @param key
-     *            Key
-     * @return Value, or {@code null} if not set
-     */
-    @SuppressWarnings("unchecked")
-    protected <T> T get(String key) {
-        return (T) data.get(key);
-    }
-
-    /**
-     * Gets an {@link URL} value from the challenge state.
-     *
-     * @param key
-     *            Key
-     * @return Value, or {@code null} if not set
-     */
-    protected URL getUrl(String key) {
-        try {
-            String value = get(key);
-            return value != null ? new URL(value) : null;
-        } catch (MalformedURLException ex) {
-            throw new AcmeProtocolException(key + ": invalid URL", ex);
-        }
     }
 
     /**
@@ -257,26 +215,6 @@ public class Challenge extends AcmeResource {
                                     retryAfter);
                 }
             }
-        }
-    }
-
-    /**
-     * Serialize the data map in JSON.
-     */
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeUTF(JsonUtil.toJson(data));
-        out.defaultWriteObject();
-    }
-
-    /**
-     * Deserialize the JSON representation of the data map.
-     */
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        try {
-            data = new HashMap<>(JsonUtil.parseJson(in.readUTF()));
-            in.defaultReadObject();
-        } catch (JoseException ex) {
-            throw new AcmeProtocolException("Cannot deserialize", ex);
         }
     }
 

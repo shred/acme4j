@@ -15,7 +15,6 @@ package org.shredzone.acme4j.provider;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.util.Map;
 import java.util.Objects;
 
 import org.shredzone.acme4j.Session;
@@ -28,6 +27,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.util.JSON;
 
 /**
  * Abstract implementation of {@link AcmeProvider}. It consists of a challenge
@@ -44,7 +44,7 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
     }
 
     @Override
-    public Map<String, Object> directory(Session session, URI serverUri) throws AcmeException {
+    public JSON directory(Session session, URI serverUri) throws AcmeException {
         try (Connection conn = connect()) {
             conn.sendRequest(resolve(serverUri), session);
             conn.accept(HttpURLConnection.HTTP_OK);

@@ -22,13 +22,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
+import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -180,7 +180,7 @@ public class Authorization extends AcmeResource {
             conn.sendRequest(getLocation(), getSession());
             int rc = conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
 
-            Map<String, Object> result = conn.readJsonResponse();
+            JSON result = conn.readJsonResponse();
             unmarshalAuthorization(result);
 
             if (rc == HttpURLConnection.HTTP_ACCEPTED) {
@@ -231,43 +231,42 @@ public class Authorization extends AcmeResource {
      * @param json
      *            JSON data
      */
-    @SuppressWarnings("unchecked")
-    protected void unmarshalAuthorization(Map<String, Object> json) {
-        this.status = Status.parse((String) json.get("status"), Status.PENDING);
+    protected void unmarshalAuthorization(JSON json) {
+        this.status = Status.parse(json.get("status").asString(), Status.PENDING);
 
-        String jsonExpires = (String) json.get("expires");
+        String jsonExpires = json.get("expires").asString();
         if (jsonExpires != null) {
             expires = parseTimestamp(jsonExpires);
         }
 
-        Map<String, Object> jsonIdentifier = (Map<String, Object>) json.get("identifier");
+        JSON jsonIdentifier = json.get("identifier").asObject();
         if (jsonIdentifier != null) {
-            String type = (String) jsonIdentifier.get("type");
+            String type = jsonIdentifier.get("type").asString();
             if (type != null && !"dns".equals(type)) {
                 throw new AcmeProtocolException("Unknown authorization type: " + type);
             }
-            domain = (String) jsonIdentifier.get("value");
+            domain = jsonIdentifier.get("value").asString();
         }
 
-        Collection<Map<String, Object>> jsonChallenges =
-                        (Collection<Map<String, Object>>) json.get("challenges");
+        JSON.Array jsonChallenges = json.get("challenges").asArray();
         List<Challenge> cr = new ArrayList<>();
-        for (Map<String, Object> c : jsonChallenges) {
-            Challenge ch = getSession().createChallenge(c);
+        for (JSON.Value c : jsonChallenges) {
+            Challenge ch = getSession().createChallenge(c.asObject());
             if (ch != null) {
                 cr.add(ch);
             }
         }
         challenges = cr;
 
-        Collection<List<Number>> jsonCombinations =
-                        (Collection<List<Number>>) json.get("combinations");
+        JSON.Array jsonCombinations = json.get("combinations").asArray();
         if (jsonCombinations != null) {
             List<List<Challenge>> cmb = new ArrayList<>(jsonCombinations.size());
-            for (List<Number> c : jsonCombinations) {
+
+            for (int ix = 0; ix < jsonCombinations.size(); ix++) {
+                JSON.Array c = jsonCombinations.get(ix).asArray();
                 List<Challenge> clist = new ArrayList<>(c.size());
-                for (Number n : c) {
-                    clist.add(cr.get(n.intValue()));
+                for (JSON.Value n : c) {
+                    clist.add(cr.get(n.asInt()));
                 }
                 cmb.add(clist);
             }

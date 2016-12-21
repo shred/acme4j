@@ -15,18 +15,16 @@ package org.shredzone.acme4j.connector;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayDeque;
-import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 
 import org.shredzone.acme4j.AcmeResource;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
+import org.shredzone.acme4j.util.JSON;
 
 /**
  * An {@link Iterator} that fetches a batch of URIs from the ACME server, and
@@ -147,7 +145,7 @@ public abstract class ResourceIterator<T extends AcmeResource> implements Iterat
             conn.sendRequest(nextUri, session);
             conn.accept(HttpURLConnection.HTTP_OK);
 
-            Map<String, Object> json = conn.readJsonResponse();
+            JSON json = conn.readJsonResponse();
             fillUriList(json);
 
             nextUri = conn.getLink("next");
@@ -160,21 +158,13 @@ public abstract class ResourceIterator<T extends AcmeResource> implements Iterat
      * @param json
      *            JSON map to read from
      */
-    private void fillUriList(Map<String, Object> json) {
-        try {
-            @SuppressWarnings("unchecked")
-            Collection<String> array = (Collection<String>) json.get(field);
-            if (array == null) {
-                return;
-            }
-
-            for (String uri : array) {
-                uriList.add(new URI(uri));
-            }
-        } catch (ClassCastException ex) {
-            throw new AcmeProtocolException("Expected an array", ex);
-        } catch (URISyntaxException ex) {
-            throw new AcmeProtocolException("Invalid URI", ex);
+    private void fillUriList(JSON json) {
+        JSON.Array array = json.get(field).asArray();
+        if (array == null) {
+            return;
+        }
+        for (JSON.Value v : array) {
+            uriList.add(v.asURI());
         }
     }
 

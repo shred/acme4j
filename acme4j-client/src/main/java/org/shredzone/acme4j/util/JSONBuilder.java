@@ -176,6 +176,13 @@ public class JSONBuilder {
     }
 
     /**
+     * Returns a {@link JSON} representation of the current state.
+     */
+    public JSON toJSON() {
+        return JSON.parse(toString());
+    }
+
+    /**
      * Returns a JSON string representation of the current state.
      */
     @Override

@@ -23,7 +23,6 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
@@ -34,6 +33,7 @@ import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
+import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 
 /**
@@ -132,8 +132,8 @@ public class AuthorizationTest {
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() {
-                return getJsonAsMap("updateAuthorizationResponse");
+            public JSON readJsonResponse() {
+                return getJsonAsObject("updateAuthorizationResponse");
             }
         };
 
@@ -186,8 +186,8 @@ public class AuthorizationTest {
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() {
-                return getJsonAsMap("updateAuthorizationResponse");
+            public JSON readJsonResponse() {
+                return getJsonAsObject("updateAuthorizationResponse");
             }
         };
 
@@ -234,8 +234,8 @@ public class AuthorizationTest {
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() {
-                return getJsonAsMap("updateAuthorizationResponse");
+            public JSON readJsonResponse() {
+                return getJsonAsObject("updateAuthorizationResponse");
             }
 
             @Override
@@ -285,9 +285,9 @@ public class AuthorizationTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
-                Map<String, Object> claimMap = claims.toMap();
-                assertThat(claimMap.get("resource"), is((Object) "authz"));
-                assertThat(claimMap.get("status"), is((Object) "deactivated"));
+                JSON json = claims.toJSON();
+                assertThat(json.get("resource").asString(), is("authz"));
+                assertThat(json.get("status").asString(), is("deactivated"));
                 assertThat(uri, is(locationUri));
                 assertThat(session, is(notNullValue()));
             }
@@ -318,7 +318,7 @@ public class AuthorizationTest {
             provider.putTestChallenge(TlsSni02Challenge.TYPE, new TlsSni02Challenge(session));
 
             Authorization authorization = new Authorization(session, locationUri);
-            authorization.unmarshalAuthorization(getJsonAsMap("authorizationChallenges"));
+            authorization.unmarshalAuthorization(getJsonAsObject("authorizationChallenges"));
             return authorization;
         }
     }

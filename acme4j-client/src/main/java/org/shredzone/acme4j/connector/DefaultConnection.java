@@ -15,10 +15,8 @@ package org.shredzone.acme4j.connector;
 
 import static org.shredzone.acme4j.util.AcmeUtils.keyAlgorithm;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -39,7 +37,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jose4j.base64url.Base64Url;
-import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
@@ -52,6 +49,7 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
+import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,15 +175,15 @@ public class DefaultConnection implements Connection {
                 throw new AcmeException("HTTP " + rc + ": " + conn.getResponseMessage());
             }
 
-            Map<String, Object> map = readJsonResponse();
-            throw createAcmeException(rc, map);
+            JSON json = readJsonResponse();
+            throw createAcmeException(rc, json);
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         }
     }
 
     @Override
-    public Map<String, Object> readJsonResponse() throws AcmeException {
+    public JSON readJsonResponse() throws AcmeException {
         assertConnectionIsOpen();
 
         String contentType = conn.getHeaderField("Content-Type");
@@ -194,39 +192,21 @@ public class DefaultConnection implements Connection {
             throw new AcmeProtocolException("Unexpected content type: " + contentType);
         }
 
-        Map<String, Object> result = null;
+        JSON result = null;
 
         String response = "";
         try {
             InputStream in =
                     conn.getResponseCode() < 400 ? conn.getInputStream() : conn.getErrorStream();
             if (in != null) {
-                response = readStream(in);
-                result = JsonUtil.parseJson(response);
+                result = JSON.parse(in);
                 LOG.debug("Result JSON: {}", response);
             }
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
-        } catch (JoseException ex) {
-            throw new AcmeProtocolException("Failed to parse response: " + response, ex);
         }
 
         return result;
-    }
-
-    private String readStream(InputStream in) throws IOException {
-        StringBuilder sb = new StringBuilder();
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, "utf-8"))) {
-            String line = reader.readLine();
-
-            while (line != null) {
-                sb.append(line.trim());
-                line = reader.readLine();
-            }
-        }
-
-        return sb.toString();
     }
 
     @Override
@@ -351,9 +331,9 @@ public class DefaultConnection implements Connection {
      * {@link AcmeServerException} will be thrown. Otherwise a generic
      * {@link AcmeException} is thrown.
      */
-    private AcmeException createAcmeException(int rc, Map<String, Object> map) {
-        String type = (String) map.get("type");
-        String detail = (String) map.get("detail");
+    private AcmeException createAcmeException(int rc, JSON json) {
+        String type = json.get("type").asString();
+        String detail = json.get("detail").asString();
 
         if (detail == null) {
             detail = "general problem";
@@ -374,7 +354,7 @@ public class DefaultConnection implements Connection {
 
             case ACME_ERROR_PREFIX + "agreementRequired":
             case ACME_ERROR_PREFIX_DEPRECATED + "agreementRequired":
-                String instance = (String) map.get("instance");
+                String instance = json.get("instance").asString();
                 return new AcmeAgreementRequiredException(
                             type, detail, getLink("terms-of-service"),
                             instance != null ? resolveRelative(instance) : null);

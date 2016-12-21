@@ -46,7 +46,6 @@ import org.jose4j.base64url.Base64Url;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
-import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.provider.AcmeProvider;
 
@@ -109,12 +108,8 @@ public final class TestUtils {
      *            JSON resource
      * @return Parsed JSON resource
      */
-    public static Map<String, Object> getJsonAsMap(String key) {
-        try {
-            return JsonUtil.parseJson(getJson(key));
-        } catch (JoseException ex) {
-            throw new RuntimeException("JSON error", ex);
-        }
+    public static JSON getJsonAsObject(String key) {
+        return JSON.parse(getJson(key));
     }
 
     /**

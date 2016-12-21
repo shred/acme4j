@@ -43,7 +43,7 @@ public class OutOfBand01Challenge extends Challenge {
      * challenge.
      */
     public URL getValidationUrl() {
-        return getUrl("href");
+        return getJSON().get("href").asURL();
     }
 
 }

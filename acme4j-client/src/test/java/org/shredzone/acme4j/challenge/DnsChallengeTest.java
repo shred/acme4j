@@ -15,6 +15,7 @@ package org.shredzone.acme4j.challenge;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.shredzone.acme4j.util.TestUtils.getJsonAsObject;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.IOException;
@@ -46,7 +47,7 @@ public class DnsChallengeTest {
     @Test
     public void testDnsChallenge() throws IOException {
         Dns01Challenge challenge = new Dns01Challenge(session);
-        challenge.unmarshall(TestUtils.getJsonAsMap("dnsChallenge"));
+        challenge.unmarshall(getJsonAsObject("dnsChallenge"));
 
         assertThat(challenge.getType(), is(Dns01Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));

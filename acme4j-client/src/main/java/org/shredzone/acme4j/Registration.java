@@ -17,17 +17,14 @@ import static org.shredzone.acme4j.util.AcmeUtils.*;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import org.jose4j.jwk.PublicJsonWebKey;
@@ -39,6 +36,7 @@ import org.shredzone.acme4j.connector.ResourceIterator;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
+import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -162,7 +160,7 @@ public class Registration extends AcmeResource {
             conn.sendSignedRequest(getLocation(), claims, getSession());
             conn.accept(HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED);
 
-            Map<String, Object> json = conn.readJsonResponse();
+            JSON json = conn.readJsonResponse();
             unmarshal(json, conn);
          }
     }
@@ -193,7 +191,7 @@ public class Registration extends AcmeResource {
             conn.sendSignedRequest(getSession().resourceUri(Resource.NEW_AUTHZ), claims, getSession());
             conn.accept(HttpURLConnection.HTTP_CREATED);
 
-            Map<String, Object> json = conn.readJsonResponse();
+            JSON json = conn.readJsonResponse();
 
             Authorization auth = new Authorization(getSession(), conn.getLocation());
             auth.unmarshalAuthorization(json);
@@ -350,49 +348,23 @@ public class Registration extends AcmeResource {
      * @param conn
      *            {@link Connection} with headers to be evaluated
      */
-    @SuppressWarnings("unchecked")
-    private void unmarshal(Map<String, Object> json, Connection conn) {
-        if (json.containsKey("agreement")) {
-            try {
-                this.agreement = new URI((String) json.get("agreement"));
-            } catch (ClassCastException | URISyntaxException ex) {
-                throw new AcmeProtocolException("Illegal agreement URI", ex);
-            }
+    private void unmarshal(JSON json, Connection conn) {
+        if (json.contains("agreement")) {
+            this.agreement = json.get("agreement").asURI();
         }
 
-        if (json.containsKey("contact")) {
+        if (json.contains("contact")) {
             contacts.clear();
-            for (Object c : (Collection<Object>) json.get("contact")) {
-                try {
-                    contacts.add(new URI((String) c));
-                } catch (ClassCastException | URISyntaxException ex) {
-                    throw new AcmeProtocolException("Illegal contact URI", ex);
-                }
+            for (JSON.Value v : json.get("contact").asArray()) {
+                contacts.add(v.asURI());
             }
         }
 
-        if (json.containsKey("authorizations")) {
-            try {
-                this.authorizations = new URI((String) json.get("authorizations"));
-            } catch (ClassCastException | URISyntaxException ex) {
-                throw new AcmeProtocolException("Illegal authorizations URI", ex);
-            }
-        } else {
-            this.authorizations = null;
-        }
+        this.authorizations = json.get("authorizations").asURI();
+        this.certificates = json.get("certificates").asURI();
 
-        if (json.containsKey("certificates")) {
-            try {
-                this.certificates = new URI((String) json.get("certificates"));
-            } catch (ClassCastException | URISyntaxException ex) {
-                throw new AcmeProtocolException("Illegal certificates URI", ex);
-            }
-        } else {
-            this.certificates = null;
-        }
-
-        if (json.containsKey("status")) {
-            this.status = Status.parse((String) json.get("status"));
+        if (json.contains("status")) {
+            this.status = Status.parse(json.get("status").asString());
         }
 
         URI location = conn.getLocation();
@@ -490,7 +462,7 @@ public class Registration extends AcmeResource {
                 conn.sendSignedRequest(getLocation(), claims, getSession());
                 conn.accept(HttpURLConnection.HTTP_ACCEPTED);
 
-                Map<String, Object> json = conn.readJsonResponse();
+                JSON json = conn.readJsonResponse();
                 unmarshal(json, conn);
             }
         }

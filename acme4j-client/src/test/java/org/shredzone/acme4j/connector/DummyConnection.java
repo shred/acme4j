@@ -17,11 +17,11 @@ import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Map;
 
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.util.JSONBuilder;
+import org.shredzone.acme4j.util.JSON;
 
 /**
  * Dummy implementation of {@link Connection} that always fails. Single methods are
@@ -45,7 +45,7 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public Map<String, Object> readJsonResponse() {
+    public JSON readJsonResponse() {
         throw new UnsupportedOperationException();
     }
 

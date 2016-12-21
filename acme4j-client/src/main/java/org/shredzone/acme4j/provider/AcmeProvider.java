@@ -14,13 +14,13 @@
 package org.shredzone.acme4j.provider;
 
 import java.net.URI;
-import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.util.JSON;
 
 /**
  * An {@link AcmeProvider} provides methods to be used for communicating with the ACME
@@ -69,9 +69,9 @@ public interface AcmeProvider {
      *            {@link Session} to be used
      * @param serverUri
      *            Server {@link URI}
-     * @return Map of directory data
+     * @return Directory data, as JSON object
      */
-    Map<String, Object> directory(Session session, URI serverUri) throws AcmeException;
+    JSON directory(Session session, URI serverUri) throws AcmeException;
 
     /**
      * Creates a {@link Challenge} instance for the given challenge type.

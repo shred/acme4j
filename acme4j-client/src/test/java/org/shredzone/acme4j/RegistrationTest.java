@@ -23,11 +23,8 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -43,6 +40,7 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
+import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
@@ -62,7 +60,7 @@ public class RegistrationTest {
     @Test
     public void testUpdateRegistration() throws AcmeException, IOException {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
-            private Map<String, Object> jsonResponse;
+            private JSON jsonResponse;
             private Integer response;
 
             @Override
@@ -70,24 +68,24 @@ public class RegistrationTest {
                 assertThat(uri, is(locationUri));
                 assertThat(claims.toString(), sameJSONAs(getJson("updateRegistration")));
                 assertThat(session, is(notNullValue()));
-                jsonResponse = getJsonAsMap("updateRegistrationResponse");
+                jsonResponse = getJsonAsObject("updateRegistrationResponse");
                 response = HttpURLConnection.HTTP_ACCEPTED;
             }
 
             @Override
             public void sendRequest(URI uri, Session session) {
                 if (URI.create("https://example.com/acme/reg/1/authz").equals(uri)) {
-                    jsonResponse = new HashMap<>();
-                    jsonResponse.put("authorizations",
-                                    Arrays.asList("https://example.com/acme/auth/1"));
+                    jsonResponse = new JSONBuilder()
+                                .array("authorizations", "https://example.com/acme/auth/1")
+                                .toJSON();
                     response = HttpURLConnection.HTTP_OK;
                     return;
                 }
 
                 if (URI.create("https://example.com/acme/reg/1/cert").equals(uri)) {
-                    jsonResponse = new HashMap<>();
-                    jsonResponse.put("certificates",
-                                    Arrays.asList("https://example.com/acme/cert/1"));
+                    jsonResponse = new JSONBuilder()
+                                .array("certificates", "https://example.com/acme/cert/1")
+                                .toJSON();
                     response = HttpURLConnection.HTTP_OK;
                     return;
                 }
@@ -102,7 +100,7 @@ public class RegistrationTest {
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() {
+            public JSON readJsonResponse() {
                 return jsonResponse;
             }
 
@@ -167,8 +165,8 @@ public class RegistrationTest {
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() {
-                return getJsonAsMap("updateRegistrationResponse");
+            public JSON readJsonResponse() {
+                return getJsonAsObject("updateRegistrationResponse");
             }
 
             @Override
@@ -221,8 +219,8 @@ public class RegistrationTest {
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() {
-                return getJsonAsMap("newAuthorizationResponse");
+            public JSON readJsonResponse() {
+                return getJsonAsObject("newAuthorizationResponse");
             }
 
             @Override
@@ -417,12 +415,12 @@ public class RegistrationTest {
                     assertThat(session, is(notNullValue()));
                     assertThat(session.getKeyPair(), is(sameInstance(oldKeyPair)));
 
-                    Map<String, Object> json = payload.toMap();
-                    assertThat((String) json.get("resource"), is("key-change")); // Required by Let's Encrypt
+                    JSON json = payload.toJSON();
+                    assertThat(json.get("resource").asString(), is("key-change")); // Required by Let's Encrypt
 
-                    String encodedHeader = (String) json.get("protected");
-                    String encodedSignature = (String) json.get("signature");
-                    String encodedPayload = (String) json.get("payload");
+                    String encodedHeader = json.get("protected").asString();
+                    String encodedSignature = json.get("signature").asString();
+                    String encodedPayload = json.get("payload").asString();
 
                     String serialized = CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature);
                     JsonWebSignature jws = new JsonWebSignature();
@@ -497,9 +495,9 @@ public class RegistrationTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
-                Map<String, Object> claimMap = claims.toMap();
-                assertThat(claimMap.get("resource"), is((Object) "reg"));
-                assertThat(claimMap.get("status"), is((Object) "deactivated"));
+                JSON json = claims.toJSON();
+                assertThat(json.get("resource").asString(), is("reg"));
+                assertThat(json.get("status").asString(), is("deactivated"));
                 assertThat(uri, is(locationUri));
                 assertThat(session, is(notNullValue()));
             }
@@ -540,8 +538,8 @@ public class RegistrationTest {
             }
 
             @Override
-            public Map<String, Object> readJsonResponse() {
-                return getJsonAsMap("modifyRegistrationResponse");
+            public JSON readJsonResponse() {
+                return getJsonAsObject("modifyRegistrationResponse");
             }
 
             @Override

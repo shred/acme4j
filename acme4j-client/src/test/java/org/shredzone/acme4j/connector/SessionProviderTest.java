@@ -19,7 +19,6 @@ import static org.junit.Assert.assertThat;
 import java.io.IOException;
 import java.net.URI;
 import java.security.KeyPair;
-import java.util.Map;
 import java.util.ServiceLoader;
 
 import org.junit.Before;
@@ -28,6 +27,7 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
+import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
@@ -97,7 +97,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public Map<String, Object> directory(Session session, URI serverUri) throws AcmeException {
+        public JSON directory(Session session, URI serverUri) throws AcmeException {
             throw new UnsupportedOperationException();
         }
 
@@ -125,7 +125,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public Map<String, Object> directory(Session session, URI serverUri) throws AcmeException {
+        public JSON directory(Session session, URI serverUri) throws AcmeException {
             throw new UnsupportedOperationException();
         }
 

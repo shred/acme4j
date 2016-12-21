@@ -56,11 +56,7 @@ public class TokenChallenge extends Challenge {
      * Gets the token.
      */
     protected String getToken() {
-        String token = get(KEY_TOKEN);
-        if (token == null) {
-            throw new AcmeProtocolException("Challenge token required, but not set");
-        }
-        return token;
+        return getJSON().get(KEY_TOKEN).required().asString();
     }
 
     /**
