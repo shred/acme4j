@@ -47,6 +47,7 @@ import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
+import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.util.JSON;
@@ -229,6 +230,22 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
+    public void handleRetryAfter(String message) throws AcmeException {
+        assertConnectionIsOpen();
+
+        try {
+            if (conn.getResponseCode() == HttpURLConnection.HTTP_ACCEPTED) {
+                Date retryAfter = getRetryAfterHeader();
+                if (retryAfter != null) {
+                    throw new AcmeRetryAfterException(message, retryAfter);
+                }
+            }
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
+        }
+    }
+
+    @Override
     public void updateSession(Session session) {
         assertConnectionIsOpen();
 
@@ -296,9 +313,14 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public Date getRetryAfterHeader() {
-        assertConnectionIsOpen();
+    public void close() {
+        conn = null;
+    }
 
+    /**
+     * Gets the instant sent with the Retry-After header.
+     */
+    private Date getRetryAfterHeader() {
         // See RFC 2616 section 14.37
         String header = conn.getHeaderField("Retry-After");
         if (header == null) {
@@ -319,11 +341,6 @@ public class DefaultConnection implements Connection {
         } catch (Exception ex) {
             throw new AcmeProtocolException("Bad retry-after header value: " + header, ex);
         }
-    }
-
-    @Override
-    public void close() {
-        conn = null;
     }
 
     /**

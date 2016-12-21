@@ -178,19 +178,11 @@ public class Authorization extends AcmeResource {
         LOG.debug("update");
         try (Connection conn = getSession().provider().connect()) {
             conn.sendRequest(getLocation(), getSession());
-            int rc = conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
+            conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
 
-            JSON result = conn.readJsonResponse();
-            unmarshalAuthorization(result);
+            unmarshalAuthorization(conn.readJsonResponse());
 
-            if (rc == HttpURLConnection.HTTP_ACCEPTED) {
-                Date retryAfter = conn.getRetryAfterHeader();
-                if (retryAfter != null) {
-                    throw new AcmeRetryAfterException(
-                                    "authorization is not completed yet",
-                                    retryAfter);
-                }
-            }
+            conn.handleRetryAfter("authorization is not completed yet");
         }
     }
 

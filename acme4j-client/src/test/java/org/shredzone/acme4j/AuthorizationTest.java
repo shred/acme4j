@@ -135,6 +135,11 @@ public class AuthorizationTest {
             public JSON readJsonResponse() {
                 return getJsonAsObject("updateAuthorizationResponse");
             }
+
+            @Override
+            public void handleRetryAfter(String message) throws AcmeException {
+                // Just do nothing
+            }
         };
 
         Session session = provider.createSession();
@@ -189,6 +194,11 @@ public class AuthorizationTest {
             public JSON readJsonResponse() {
                 return getJsonAsObject("updateAuthorizationResponse");
             }
+
+            @Override
+            public void handleRetryAfter(String message) throws AcmeException {
+                // Just do nothing
+            }
         };
 
         Session session = provider.createSession();
@@ -239,8 +249,8 @@ public class AuthorizationTest {
             }
 
             @Override
-            public Date getRetryAfterHeader() {
-                return new Date(retryAfter);
+            public void handleRetryAfter(String message) throws AcmeException {
+                throw new AcmeRetryAfterException(message, new Date(retryAfter));
             }
         };
 

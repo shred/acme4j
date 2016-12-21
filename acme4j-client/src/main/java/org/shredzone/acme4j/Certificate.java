@@ -18,7 +18,6 @@ import java.net.URI;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.shredzone.acme4j.connector.Connection;
@@ -89,15 +88,8 @@ public class Certificate extends AcmeResource {
             LOG.debug("download");
             try (Connection conn = getSession().provider().connect()) {
                 conn.sendRequest(getLocation(), getSession());
-                int rc = conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
-                if (rc == HttpURLConnection.HTTP_ACCEPTED) {
-                    Date retryAfter = conn.getRetryAfterHeader();
-                    if (retryAfter != null) {
-                        throw new AcmeRetryAfterException(
-                                        "certificate is not available for download yet",
-                                        retryAfter);
-                    }
-                }
+                conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
+                conn.handleRetryAfter("certificate is not available for download yet");
 
                 chainCertUri = conn.getLink("up");
                 cert = conn.readCertificate();

@@ -16,12 +16,12 @@ package org.shredzone.acme4j.connector;
 import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
-import java.util.Date;
 
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.util.JSONBuilder;
+import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.JSON;
+import org.shredzone.acme4j.util.JSONBuilder;
 
 /**
  * Connects to the ACME server and offers different methods for invoking the API.
@@ -75,6 +75,15 @@ public interface Connection extends AutoCloseable {
     X509Certificate readCertificate() throws AcmeException;
 
     /**
+     * Throws an {@link AcmeRetryAfterException} if the last status was HTTP Accepted and
+     * a Retry-After header was received.
+     *
+     * @param message
+     *            Message to be sent along with the {@link AcmeRetryAfterException}
+     */
+    void handleRetryAfter(String message) throws AcmeException;
+
+    /**
      * Updates a {@link Session} by evaluating the HTTP response header.
      *
      * @param session
@@ -113,13 +122,6 @@ public interface Connection extends AutoCloseable {
      * @return Collection of links, or {@code null} if there was no such relation link
      */
     Collection<URI> getLinks(String relation);
-
-    /**
-     * Returns the moment returned in a "Retry-After" header.
-     *
-     * @return Moment, or {@code null} if no "Retry-After" header was set.
-     */
-    Date getRetryAfterHeader();
 
     /**
      * Closes the {@link Connection}, releasing all resources.

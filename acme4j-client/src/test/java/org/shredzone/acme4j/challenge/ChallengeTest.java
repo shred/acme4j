@@ -204,6 +204,11 @@ public class ChallengeTest {
             public JSON readJsonResponse() {
                 return getJsonAsObject("updateHttpChallengeResponse");
             }
+
+            @Override
+            public void handleRetryAfter(String message) throws AcmeException {
+                // Just do nothing
+            }
         };
 
         Session session = provider.createSession();
@@ -244,9 +249,10 @@ public class ChallengeTest {
                 return getJsonAsObject("updateHttpChallengeResponse");
             }
 
+
             @Override
-            public Date getRetryAfterHeader() {
-                return new Date(retryAfter);
+            public void handleRetryAfter(String message) throws AcmeException {
+                throw new AcmeRetryAfterException(message, new Date(retryAfter));
             }
         };
 

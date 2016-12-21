@@ -77,6 +77,11 @@ public class CertificateTest {
             }
 
             @Override
+            public void handleRetryAfter(String message) throws AcmeException {
+                // Just do nothing
+            }
+
+            @Override
             public URI getLink(String relation) {
                 switch(relation) {
                     case "up": return (isLocationUri ? chainUri : null);
@@ -117,9 +122,10 @@ public class CertificateTest {
                 return HttpURLConnection.HTTP_ACCEPTED;
             }
 
+
             @Override
-            public Date getRetryAfterHeader() {
-                return new Date(retryAfter);
+            public void handleRetryAfter(String message) throws AcmeException {
+                throw new AcmeRetryAfterException(message, new Date(retryAfter));
             }
         };
 

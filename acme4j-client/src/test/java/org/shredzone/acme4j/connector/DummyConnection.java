@@ -16,12 +16,11 @@ package org.shredzone.acme4j.connector;
 import java.net.URI;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
-import java.util.Date;
 
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.JSON;
+import org.shredzone.acme4j.util.JSONBuilder;
 
 /**
  * Dummy implementation of {@link Connection} that always fails. Single methods are
@@ -55,6 +54,11 @@ public class DummyConnection implements Connection {
     }
 
     @Override
+    public void handleRetryAfter(String message) throws AcmeException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void updateSession(Session session) {
         throw new UnsupportedOperationException();
     }
@@ -71,11 +75,6 @@ public class DummyConnection implements Connection {
 
     @Override
     public Collection<URI> getLinks(String relation) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public Date getRetryAfterHeader() {
         throw new UnsupportedOperationException();
     }
 
