@@ -416,6 +416,32 @@ public class DefaultConnectionTest {
     }
 
     /**
+     * Test if an {@link AcmeException} is thrown if there is a generic error.
+     */
+    @Test
+    public void testAcceptThrowsServerException() throws IOException {
+        when(mockUrlConnection.getHeaderField("Content-Type"))
+                .thenReturn("text/html");
+        when(mockUrlConnection.getResponseCode())
+                .thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
+        when(mockUrlConnection.getResponseMessage())
+                .thenReturn("Infernal Server Error");
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            conn.accept(HttpURLConnection.HTTP_OK);
+            fail("Expected to fail");
+        } catch (AcmeException ex) {
+            assertThat(ex.getMessage(), is("HTTP 500: Infernal Server Error"));
+        }
+
+        verify(mockUrlConnection).getHeaderField("Content-Type");
+        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
+        verify(mockUrlConnection, atLeastOnce()).getResponseMessage();
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    /**
      * Test GET requests.
      */
     @Test
@@ -501,6 +527,17 @@ public class DefaultConnectionTest {
         jws.setCompactSerialization(serialized);
         jws.setKey(DefaultConnectionTest.this.session.getKeyPair().getPublic());
         assertThat(jws.verifySignature(), is(true));
+    }
+
+    /**
+     * Test signed POST requests if there is no nonce.
+     */
+    @Test(expected = AcmeProtocolException.class)
+    public void testSendSignedRequestNoNonce() throws Exception {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            ClaimBuilder cb = new ClaimBuilder();
+            conn.sendSignedRequest(requestUri, cb, DefaultConnectionTest.this.session);
+        }
     }
 
     /**

@@ -35,6 +35,7 @@ import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.CompactSerializer;
 import org.jose4j.lang.JoseException;
 import org.junit.Test;
+import org.shredzone.acme4j.Registration.EditableRegistration;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
@@ -257,6 +258,32 @@ public class RegistrationTest {
                         (Challenge) httpChallenge));
         assertThat(auth.getCombinations().get(1), containsInAnyOrder(
                         (Challenge) httpChallenge, (Challenge) dnsChallenge));
+
+        provider.close();
+    }
+
+    /**
+     * Test that a bad domain parameter is not accepted.
+     */
+    @Test
+    public void testAuthorizeBadDomain() throws Exception {
+        TestableConnectionProvider provider = new TestableConnectionProvider();
+        Session session = provider.createSession();
+        Registration registration = Registration.bind(session, locationUri);
+
+        try {
+            registration.authorizeDomain(null);
+            fail("null domain was accepted");
+        } catch (NullPointerException ex) {
+            // expected
+        }
+
+        try {
+            registration.authorizeDomain("");
+            fail("empty domain string was accepted");
+        } catch (IllegalArgumentException ex) {
+            // expected
+        }
 
         provider.close();
     }
@@ -533,15 +560,19 @@ public class RegistrationTest {
 
         Registration registration = new Registration(provider.createSession(), locationUri);
 
-        registration.modify()
-                .setAgreement(agreementUri)
-                .addContact("mailto:foo2@example.com")
-                .commit();
+        EditableRegistration editable = registration.modify();
+        assertThat(editable, notNullValue());
+
+        editable.setAgreement(agreementUri);
+        editable.addContact("mailto:foo2@example.com");
+        editable.getContacts().add(URI.create("mailto:foo3@example.com"));
+        editable.commit();
 
         assertThat(registration.getLocation(), is(locationUri));
         assertThat(registration.getAgreement(), is(agreementUri));
-        assertThat(registration.getContacts().size(), is(1));
+        assertThat(registration.getContacts().size(), is(2));
         assertThat(registration.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
+        assertThat(registration.getContacts().get(1), is(URI.create("mailto:foo3@example.com")));
 
         provider.close();
     }
