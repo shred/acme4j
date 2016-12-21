@@ -234,6 +234,17 @@ public class AcmeUtilsTest {
     }
 
     /**
+     * Test that error prefix is correctly removed.
+     */
+    @Test
+    public void testStripErrorPrefix() {
+        assertThat(stripErrorPrefix("urn:ietf:params:acme:error:unauthorized"), is("unauthorized"));
+        assertThat(stripErrorPrefix("urn:acme:error:deprecated"), is("deprecated"));
+        assertThat(stripErrorPrefix("urn:somethingelse:error:message"), is(nullValue()));
+        assertThat(stripErrorPrefix(null), is(nullValue()));
+    }
+
+    /**
      * Matches the given time.
      */
     private DateMatcher isDate(int year, int month, int dom, int hour, int minute, int second) {

@@ -40,6 +40,8 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
  */
 public final class AcmeUtils {
     private static final char[] HEX = "0123456789abcdef".toCharArray();
+    private static final String ACME_ERROR_PREFIX = "urn:ietf:params:acme:error:";
+    private static final String ACME_ERROR_PREFIX_DEPRECATED = "urn:acme:error:";
 
     private static final Pattern DATE_PATTERN = Pattern.compile(
                     "^(\\d{4})-(\\d{2})-(\\d{2})T"
@@ -201,6 +203,28 @@ public final class AcmeUtils {
         cal.set(year, month - 1, dom, hour, minute, second);
         cal.set(Calendar.MILLISECOND, ms);
         return cal.getTime();
+    }
+
+    /**
+     * Strips the acme error prefix from the error string.
+     * <p>
+     * For example, for "urn:ietf:params:acme:error:conflict", "conflict" is returned.
+     * <p>
+     * This method also handles the deprecated prefix "urn:acme:error:" that is still in
+     * use at Let's Encrypt.
+     *
+     * @param type
+     *            Error type to strip the prefix from. {@code null} is safe.
+     * @return Stripped error type, or {@code null} if the prefix was not found.
+     */
+    public static String stripErrorPrefix(String type) {
+        if (type != null && type.startsWith(ACME_ERROR_PREFIX)) {
+            return type.substring(ACME_ERROR_PREFIX.length());
+        } else if (type != null && type.startsWith(ACME_ERROR_PREFIX_DEPRECATED)) {
+            return type.substring(ACME_ERROR_PREFIX_DEPRECATED.length());
+        } else {
+            return null;
+        }
     }
 
 }

@@ -15,7 +15,7 @@ package org.shredzone.acme4j.exception;
 
 import java.util.Objects;
 
-import org.shredzone.acme4j.connector.DefaultConnection;
+import org.shredzone.acme4j.util.AcmeUtils;
 
 /**
  * An exception that is thrown when the ACME server returned an error. It contains
@@ -23,8 +23,6 @@ import org.shredzone.acme4j.connector.DefaultConnection;
  */
 public class AcmeServerException extends AcmeException {
     private static final long serialVersionUID = 5971622508467042792L;
-
-    private static final String ACME_ERROR_PREFIX_DEPRECATED = "urn:acme:error:";
 
     private final String type;
 
@@ -57,13 +55,7 @@ public class AcmeServerException extends AcmeException {
      *         {@code "urn:ietf:params:acme:error"}
      */
     public String getAcmeErrorType() {
-        if (type.startsWith(DefaultConnection.ACME_ERROR_PREFIX)) {
-            return type.substring(DefaultConnection.ACME_ERROR_PREFIX.length());
-        } else if (type.startsWith(ACME_ERROR_PREFIX_DEPRECATED)) {
-            return type.substring(ACME_ERROR_PREFIX_DEPRECATED.length());
-        } else {
-            return null;
-        }
+        return AcmeUtils.stripErrorPrefix(type);
     }
 
 }

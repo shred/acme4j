@@ -446,7 +446,7 @@ public class DefaultConnectionTest {
         } catch (AcmeNetworkException ex) {
             fail("Did not expect an AcmeNetworkException");
         } catch (AcmeException ex) {
-            assertThat(ex.getMessage(), not(isEmptyOrNullString()));
+            assertThat(ex.getMessage(), isEmptyOrNullString());
         }
 
         verify(mockUrlConnection).getHeaderField("Content-Type");

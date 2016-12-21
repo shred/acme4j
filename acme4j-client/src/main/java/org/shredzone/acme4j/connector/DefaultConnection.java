@@ -50,6 +50,7 @@ import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
+import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
@@ -60,10 +61,6 @@ import org.slf4j.LoggerFactory;
  */
 public class DefaultConnection implements Connection {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultConnection.class);
-
-
-    public static final String ACME_ERROR_PREFIX = "urn:ietf:params:acme:error:";
-    private static final String ACME_ERROR_PREFIX_DEPRECATED = "urn:acme:error:";
 
     private static final String ACCEPT_HEADER = "Accept";
     private static final String ACCEPT_CHARSET_HEADER = "Accept-Charset";
@@ -193,7 +190,12 @@ public class DefaultConnection implements Connection {
             }
 
             JSON json = readJsonResponse();
-            throw createAcmeException(rc, json);
+
+            if (rc == HttpURLConnection.HTTP_CONFLICT) {
+                throw new AcmeConflictException(json.get("detail").asString(), getLocation());
+            }
+
+            throw createAcmeException(json);
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         }
@@ -361,45 +363,35 @@ public class DefaultConnection implements Connection {
 
     /**
      * Handles a problem by throwing an exception. If a JSON problem was returned, an
-     * {@link AcmeServerException} will be thrown. Otherwise a generic
+     * {@link AcmeServerException} or subtype will be thrown. Otherwise a generic
      * {@link AcmeException} is thrown.
      */
-    private AcmeException createAcmeException(int rc, JSON json) {
+    private AcmeException createAcmeException(JSON json) {
         String type = json.get("type").asString();
         String detail = json.get("detail").asString();
-
-        if (detail == null) {
-            detail = "general problem";
-        }
-
-        if (rc == HttpURLConnection.HTTP_CONFLICT) {
-            return new AcmeConflictException(detail, getLocation());
-        }
+        String error = AcmeUtils.stripErrorPrefix(type);
 
         if (type == null) {
             return new AcmeException(detail);
         }
 
-        switch (type) {
-            case ACME_ERROR_PREFIX + "unauthorized":
-            case ACME_ERROR_PREFIX_DEPRECATED + "unauthorized":
-                return new AcmeUnauthorizedException(type, detail);
-
-            case ACME_ERROR_PREFIX + "agreementRequired":
-            case ACME_ERROR_PREFIX_DEPRECATED + "agreementRequired":
-                String instance = json.get("instance").asString();
-                return new AcmeAgreementRequiredException(
-                            type, detail, getLink("terms-of-service"),
-                            instance != null ? resolveRelative(instance) : null);
-
-            case ACME_ERROR_PREFIX + "rateLimited":
-            case ACME_ERROR_PREFIX_DEPRECATED + "rateLimited":
-                return new AcmeRateLimitExceededException(
-                            type, detail, getRetryAfterHeader(), getLinks("rate-limit"));
-
-            default:
-                return new AcmeServerException(type, detail);
+        if ("unauthorized".equals(error)) {
+            return new AcmeUnauthorizedException(type, detail);
         }
+
+        if ("agreementRequired".equals(error)) {
+            URI instance = resolveRelative(json.get("instance").asString());
+            URI tos = getLink("terms-of-service");
+            return new AcmeAgreementRequiredException(type, detail, tos, instance);
+        }
+
+        if ("rateLimited".equals(error)) {
+            Date retryAfter = getRetryAfterHeader();
+            Collection<URI> rateLimits = getLinks("rate-limit");
+            return new AcmeRateLimitExceededException(type, detail, retryAfter, rateLimits);
+        }
+
+        return new AcmeServerException(type, detail);
     }
 
     /**
@@ -439,10 +431,16 @@ public class DefaultConnection implements Connection {
      * Resolves a relative link against the connection's last URI.
      *
      * @param link
-     *            Link to resolve. Absolute links are just converted to an URI.
-     * @return Absolute URI of the given link.
+     *            Link to resolve. Absolute links are just converted to an URI. May be
+     *            {@code null}.
+     * @return Absolute URI of the given link, or {@code null} if the link was
+     *         {@code null}.
      */
     private URI resolveRelative(String link) {
+        if (link == null) {
+            return null;
+        }
+
         assertConnectionIsOpen();
         try {
             return new URL(conn.getURL(), link).toURI();
