@@ -106,11 +106,11 @@ public class AuthorizationTest {
 
         // Finds only entire combinations
         Collection<Challenge> c6 = authorization.findCombination(Dns01Challenge.TYPE);
-        assertThat(c6, is(nullValue()));
+        assertThat(c6, is(empty()));
 
         // Does not find challenges that have not been provided
         Collection<Challenge> c7 = authorization.findCombination(SNAILMAIL_TYPE);
-        assertThat(c7, is(nullValue()));
+        assertThat(c7, is(empty()));
     }
 
     /**

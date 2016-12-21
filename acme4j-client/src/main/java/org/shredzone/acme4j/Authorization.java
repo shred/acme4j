@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -114,14 +115,14 @@ public class Authorization extends AcmeResource {
      * @param type
      *            Challenge name (e.g. "http-01")
      * @return {@link Challenge} matching that name, or {@code null} if there is no such
-     *         challenge, or the challenge alone is not sufficient for authorization.
+     *         challenge, or if the challenge alone is not sufficient for authorization.
      * @throws ClassCastException
      *             if the type does not match the expected Challenge class type
      */
     @SuppressWarnings("unchecked")
     public <T extends Challenge> T findChallenge(String type) {
         Collection<Challenge> result = findCombination(type);
-        return result != null ? (T) result.iterator().next() : null;
+        return !result.isEmpty() ? (T) result.iterator().next() : null;
     }
 
     /**
@@ -134,21 +135,17 @@ public class Authorization extends AcmeResource {
      *            Challenge name or names (e.g. "http-01"), in no particular order.
      *            Basically this is a collection of all challenge types supported by your
      *            implementation.
-     * @return Matching {@link Challenge} combination, or {@code null} if the ACME server
-     *         does not support any of your challenges. The challenges are returned in no
-     *         particular order. The result may be a subset of the types you have
+     * @return Matching {@link Challenge} combination, or an empty collection if the ACME
+     *         server does not support any of your challenges. The challenges are returned
+     *         in no particular order. The result may be a subset of the types you have
      *         provided, if fewer challenges are actually required for a successful
      *         validation.
      */
     public Collection<Challenge> findCombination(String... types) {
-        if (getCombinations() == null) {
-            return null;
-        }
-
         Collection<String> available = Arrays.asList(types);
         Collection<String> combinationTypes = new ArrayList<>();
 
-        Collection<Challenge> result = null;
+        Collection<Challenge> result = Collections.emptyList();
 
         for (List<Challenge> combination : getCombinations()) {
             combinationTypes.clear();
@@ -157,12 +154,12 @@ public class Authorization extends AcmeResource {
             }
 
             if (available.containsAll(combinationTypes) &&
-                    (result == null || result.size() > combination.size())) {
+                    (result.isEmpty() || result.size() > combination.size())) {
                 result = combination;
             }
         }
 
-        return result;
+        return Collections.unmodifiableCollection(result);
     }
 
     /**
