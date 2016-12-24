@@ -19,9 +19,9 @@ Collection<Challenge> combination = auth.findCombination(
         Http01Challenge.TYPE, Dns01Challenge.TYPE);
 ```
 
-The returned `combination` contains a single combination of challenges you would have to perform. If the combination consists of more than one challenge, you will have to perform _all of them_ in order to successfully authorize your domain. If `null` is returned, it means that none of your offered challenge types are acceptable to the CA.
+The returned `combination` contains a single combination of challenges you would have to perform. If the combination consists of more than one challenge, you will have to perform _all of them_ in order to successfully authorize your domain. If the returned collection is empty, it means that none of your offered challenge types are acceptable to the CA.
 
-If your software only implements a single challenge type, `findChallenge()` may be a little easier to use:
+If your software only supports a single challenge type, `findChallenge()` may be a little easier to use:
 
 ```java
 Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);

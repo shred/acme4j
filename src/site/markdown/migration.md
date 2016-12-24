@@ -1,10 +1,18 @@
 # Migration Guide
 
+This document will help you migrate your code to the latest _acme4j_ version.
+
+## Migration to Version 0.9
+
+Version 0.9 brought many changes to the internal API. However, this is only relevant if you run your own CA and make own extensions to _acme4j_ (e.g. if you implement a proprietary `Challenge`). If you use _acme4j_ only for retrieving certificates, you should not notice any changes.
+
+There is one exception: `Authorization.findCombinations()` previously returned `null` if it did not find a matching set of combinations. Now it returns an empty list instead, to avoid unnecessary `null` checks in your code. If you use this method, make sure your code correctly handles empty lists.
+
+If you use `Authorization.findChallenge()`, no changes are necessary to your code.
+
+## Migration to Version 0.6
+
 With version 0.6, _acme4j_ underwent a major change to the API.
-
-This document will help you migrate your code to the latest API when coming from a pre-0.6 release. It should be a matter of a few minutes in most cases.
-
-## What's different?
 
 In previous versions, the resource classes like `Registration` or `Authorization` were plain data transport objects, and an `AcmeClient` was used for the actual server communication. Now, the resource classes communicate directly with the server. The result is an API that is more object oriented.
 
@@ -82,21 +90,3 @@ Note that the `authorize()` method is not needed any more, and has been removed 
 As a rule of thumb, you will find the action methods in one of the objects you previously passed as parameter to the `AcmeClient` method. For example, when you wrote `client.triggerChallenge(registration, challenge)`, you will find the new `trigger` method in either `registration` or `challenge` (here it's `challenge`).
 
 The API has also been cleaned up, with many confusing setter methods being removed. If you should miss a setter method, you was actually not supposed to invoke it anyway.
-
-## tl;dr
-
-There is no `AcmeClient` any more, but only a `Session`. The `Session` is bound to the resource classes `Registration`, `Authorization`, `Challenge` and `Certificate`.
-
-All action methods can now be found in one of the resource classes. They are easy to spot because they have a `throws AcmeException` clause.
-
-## Why the change?
-
-In previous versions, _acme4j_ used a client centric approach, with dumb data transport classes that only stored a mix of parameters and return values.
-
-This approach turned out to have major disadvantages. For example, the data transport classes contained setter methods that were supposed to be used only by _acme4j_ itself. Some other setters had to be used by the library user, but only under certain circumstances. To make a long story short: The API was not self-explanatory about when to use what setters.
-
-Also, the old API was too limited to reflect some features of the ACME specifications. `AcmeClient` would have become a bottleneck.
-
-As _acme4j_ is still in beta state, I prefered to make a hard cut and do a major API makeover. Trying to maintain backward compatibility by all means would end up with an overly complicated library.
-
-It took me a lot of time to refactor _acme4j_ and unclutter the API. I hope you like the change.
