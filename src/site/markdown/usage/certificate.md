@@ -120,6 +120,8 @@ X509Certificate cert = cert.download();
 
 Instead of loading the original CSR, you can also generate a new one. So renewing a certificate is basically the same as requesting a new certificate.
 
+If `registration.requestCertificate(csr)` throws an `AcmeUnauthorizedException`, the authorizations of some or all involved domains have expired. In this case, you need to go through the [authorization](./authorization.html) process again, before requesting the renewed certificate.
+
 ## Revocation
 
 To revoke a certificate, just invoke the respective method:
