@@ -13,14 +13,13 @@
  */
 package org.shredzone.acme4j.provider;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -43,7 +42,7 @@ import org.shredzone.acme4j.util.JSON;
  */
 public abstract class AbstractAcmeProvider implements AcmeProvider {
 
-    private static final Map<String, Constructor<? extends Challenge>> CHALLENGES = challengeMap();
+    private static final Map<String, Function<Session, Challenge>> CHALLENGES = challengeMap();
 
     @Override
     public Connection connect() {
@@ -64,27 +63,14 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
     }
 
     @SuppressWarnings("deprecation") // must still provide deprecated challenges
-    private static Map<String, Constructor<? extends Challenge>> challengeMap() {
-        Map<String, Constructor<? extends Challenge>> map = new HashMap<>();
+    private static Map<String, Function<Session, Challenge>> challengeMap() {
+        Map<String, Function<Session, Challenge>> map = new HashMap<>();
 
-        try {
-            map.put(Dns01Challenge.TYPE,
-                            Dns01Challenge.class.getConstructor(Session.class));
-
-            map.put(org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE,
-                            org.shredzone.acme4j.challenge.TlsSni01Challenge.class.getConstructor(Session.class));
-
-            map.put(TlsSni02Challenge.TYPE,
-                            TlsSni02Challenge.class.getConstructor(Session.class));
-
-            map.put(Http01Challenge.TYPE,
-                            Http01Challenge.class.getConstructor(Session.class));
-
-            map.put(OutOfBand01Challenge.TYPE,
-                            OutOfBand01Challenge.class.getConstructor(Session.class));
-        } catch (NoSuchMethodException ex) {
-            throw new IllegalStateException("Could not find Challenge constructor", ex);
-        }
+        map.put(Dns01Challenge.TYPE, Dns01Challenge::new);
+        map.put(org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE, org.shredzone.acme4j.challenge.TlsSni01Challenge::new);
+        map.put(TlsSni02Challenge.TYPE, TlsSni02Challenge::new);
+        map.put(Http01Challenge.TYPE, Http01Challenge::new);
+        map.put(OutOfBand01Challenge.TYPE, OutOfBand01Challenge::new);
 
         return Collections.unmodifiableMap(map);
     }
@@ -94,18 +80,12 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
         Objects.requireNonNull(session, "session");
         Objects.requireNonNull(type, "type");
 
-        Constructor<? extends Challenge> constructor = CHALLENGES.get(type);
+        Function<Session, Challenge> constructor = CHALLENGES.get(type);
         if (constructor == null) {
             return null;
         }
 
-        try {
-            return constructor.newInstance(session);
-        } catch (InvocationTargetException | IllegalAccessException
-                    | InstantiationException ex) {
-            throw new IllegalStateException(
-                    "Could not instantiate a Challenge for type " + type, ex);
-        }
+        return constructor.apply(session);
     }
 
     /**
