@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j;
 
+import java.util.Arrays;
+
 /**
  * Status codes of challenges and authorizations.
  */
@@ -30,12 +32,10 @@ public enum Status {
      */
     public static Status parse(String str) {
         String check = str.toUpperCase();
-        for (Status s : values()) {
-            if (s.name().equals(check)) {
-                return s;
-            }
-        }
-        return Status.UNKNOWN;
+        return Arrays.stream(values())
+                .filter(s -> s.name().equals(check))
+                .findFirst()
+                .orElse(Status.UNKNOWN);
     }
 
     /**

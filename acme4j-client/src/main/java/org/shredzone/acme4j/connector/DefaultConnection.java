@@ -28,11 +28,12 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -179,10 +180,9 @@ public class DefaultConnection implements Connection {
 
         try {
             int rc = conn.getResponseCode();
-            for (int s : httpStatus) {
-                if (s == rc) {
-                    return rc;
-                }
+            OptionalInt match = Arrays.stream(httpStatus).filter(s -> s == rc).findFirst();
+            if (match.isPresent()) {
+                return match.getAsInt();
             }
 
             if (!"application/problem+json".equals(conn.getHeaderField(CONTENT_TYPE_HEADER))) {
@@ -420,11 +420,11 @@ public class DefaultConnection implements Connection {
             return;
         }
 
-        for (Map.Entry<String, List<String>> entry : conn.getHeaderFields().entrySet()) {
-            for (String value : entry.getValue()) {
-                LOG.debug("HEADER {}: {}", entry.getKey(), value);
-            }
-        }
+        conn.getHeaderFields().forEach((key, headers) ->
+            headers.forEach(value ->
+                LOG.debug("HEADER {}: {}", key, value)
+            )
+        );
     }
 
     /**

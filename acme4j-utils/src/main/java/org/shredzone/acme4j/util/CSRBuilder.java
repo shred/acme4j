@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.util;
 
+import static java.util.stream.Collectors.joining;
 import static org.shredzone.acme4j.util.AcmeUtils.toAce;
 
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.interfaces.ECKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -86,9 +88,7 @@ public class CSRBuilder {
      *            Collection of domain names to add
      */
     public void addDomains(Collection<String> domains) {
-        for (String domain : domains) {
-            addDomain(domain);
-        }
+        domains.forEach(this::addDomain);
     }
 
     /**
@@ -100,9 +100,7 @@ public class CSRBuilder {
      *            Domain names to add
      */
     public void addDomains(String... domains) {
-        for (String domain : domains) {
-            addDomain(domain);
-        }
+        Arrays.stream(domains).forEach(this::addDomain);
     }
 
     /**
@@ -237,9 +235,7 @@ public class CSRBuilder {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(namebuilder.build());
-        for (String domain : namelist) {
-            sb.append(",DNS=").append(domain);
-        }
+        sb.append(namelist.stream().collect(joining(",DNS=", ",DNS=", "")));
         return sb.toString();
     }
 

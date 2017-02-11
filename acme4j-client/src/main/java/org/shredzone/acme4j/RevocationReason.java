@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j;
 
+import java.util.Arrays;
+
 /**
  * Enumeration of revocation reasons.
  *
@@ -53,12 +55,10 @@ public enum RevocationReason {
      * @return Matching {@link RevocationReason}, or {@code null} if not known
      */
     public static RevocationReason code(int reasonCode) {
-        for (RevocationReason rr : values()) {
-            if (rr.reasonCode == reasonCode) {
-                return rr;
-            }
-        }
-        return null;
+        return Arrays.stream(values())
+                .filter(rr -> rr.reasonCode == reasonCode)
+                .findFirst()
+                .orElse(null);
     }
 
 }

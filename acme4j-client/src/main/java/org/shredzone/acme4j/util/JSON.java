@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.util;
 
+import static java.util.stream.Collectors.joining;
 import static org.shredzone.acme4j.util.AcmeUtils.parseTimestamp;
 
 import java.io.BufferedReader;
@@ -82,18 +83,10 @@ public final class JSON implements Serializable {
      * @return {@link JSON} of the read content.
      */
     public static JSON parse(InputStream in) throws IOException {
-        StringBuilder sb = new StringBuilder();
-
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, "utf-8"))) {
-            String line = reader.readLine();
-
-            while (line != null) {
-                sb.append(line.trim());
-                line = reader.readLine();
-            }
+            String json = reader.lines().map(String::trim).collect(joining());
+            return parse(json);
         }
-
-        return parse(sb.toString());
     }
 
     /**

@@ -12,7 +12,7 @@ It is an independent open source implementation that is not affiliated with or e
 
 * Supports ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02), with a few parts of [draft 03](https://tools.ietf.org/html/draft-ietf-acme-acme-03) and [draft 04](https://tools.ietf.org/html/draft-ietf-acme-acme-04)
 * Easy to use Java API
-* Requires JRE 7 or higher
+* Requires JRE 8 or higher
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
 * Small, only requires [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home) and [slf4j](http://www.slf4j.org/) as dependencies
 * Extensive unit tests
