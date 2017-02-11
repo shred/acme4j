@@ -15,7 +15,7 @@ package org.shredzone.acme4j.challenge;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.util.Date;
+import java.time.Instant;
 import java.util.Objects;
 
 import org.shredzone.acme4j.AcmeResource;
@@ -113,8 +113,8 @@ public class Challenge extends AcmeResource {
     /**
      * Returns the validation date, if returned by the server.
      */
-    public Date getValidated() {
-        return data.get(KEY_VALIDATED).asDate();
+    public Instant getValidated() {
+        return data.get(KEY_VALIDATED).asInstant();
     }
 
     /**

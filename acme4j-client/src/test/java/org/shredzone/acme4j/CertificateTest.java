@@ -22,7 +22,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.security.cert.X509Certificate;
-import java.util.Date;
+import java.time.Duration;
+import java.time.Instant;
 
 import org.junit.Test;
 import org.shredzone.acme4j.connector.Resource;
@@ -107,7 +108,7 @@ public class CertificateTest {
      */
     @Test
     public void testRetryAfter() throws AcmeException, IOException {
-        final long retryAfter = System.currentTimeMillis() + 30 * 1000L;
+        final Instant retryAfter = Instant.now().plus(Duration.ofSeconds(30));
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
@@ -125,7 +126,7 @@ public class CertificateTest {
 
             @Override
             public void handleRetryAfter(String message) throws AcmeException {
-                throw new AcmeRetryAfterException(message, new Date(retryAfter));
+                throw new AcmeRetryAfterException(message, retryAfter);
             }
         };
 
@@ -135,7 +136,7 @@ public class CertificateTest {
             cert.download();
             fail("Expected AcmeRetryAfterException");
         } catch (AcmeRetryAfterException ex) {
-            assertThat(ex.getRetryAfter(), is(new Date(retryAfter)));
+            assertThat(ex.getRetryAfter(), is(retryAfter));
         }
 
         provider.close();

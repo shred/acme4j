@@ -15,8 +15,9 @@ package org.shredzone.acme4j;
 
 import java.net.URI;
 import java.security.KeyPair;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Locale;
@@ -48,7 +49,7 @@ public class Session {
     private JSON directoryJson;
     private Metadata metadata;
     private Locale locale = Locale.getDefault();
-    protected Date directoryCacheExpiry;
+    protected Instant directoryCacheExpiry;
 
     /**
      * Creates a new {@link Session}.
@@ -210,10 +211,10 @@ public class Session {
      */
     private void readDirectory() throws AcmeException {
         synchronized (this) {
-            Date now = new Date();
-            if (directoryJson == null || !directoryCacheExpiry.after(now)) {
+            Instant now = Instant.now();
+            if (directoryJson == null || !directoryCacheExpiry.isAfter(now)) {
                 directoryJson = provider().directory(this, getServerUri());
-                directoryCacheExpiry = new Date(now.getTime() + 60 * 60 * 1000L);
+                directoryCacheExpiry = now.plus(Duration.ofHours(1));
 
                 JSON meta = directoryJson.get("meta").asObject();
                 if (meta != null) {

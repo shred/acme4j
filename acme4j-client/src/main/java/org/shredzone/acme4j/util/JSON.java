@@ -27,8 +27,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.Instant;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -349,12 +349,11 @@ public final class JSON implements Serializable {
         }
 
         /**
-         * Returns the value as {@link Date}.
+         * Returns the value as {@link Instant}.
          *
-         * @return {@link Date}, or {@code null} if the value was not set. The returned
-         *         {@link Date} object is not shared and can be modified safely.
+         * @return {@link Instant}, or {@code null} if the value was not set.
          */
-        public Date asDate() {
+        public Instant asInstant() {
             if (val == null) {
                 return null;
             }

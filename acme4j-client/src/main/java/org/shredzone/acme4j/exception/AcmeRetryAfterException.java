@@ -13,7 +13,7 @@
  */
 package org.shredzone.acme4j.exception;
 
-import java.util.Date;
+import java.time.Instant;
 import java.util.Objects;
 
 /**
@@ -23,7 +23,7 @@ import java.util.Objects;
 public class AcmeRetryAfterException extends AcmeException {
     private static final long serialVersionUID = 4461979121063649905L;
 
-    private final Date retryAfter;
+    private final Instant retryAfter;
 
     /**
      * Creates a new {@link AcmeRetryAfterException}.
@@ -33,7 +33,7 @@ public class AcmeRetryAfterException extends AcmeException {
      * @param retryAfter
      *            retry-after date returned by the server
      */
-    public AcmeRetryAfterException(String msg, Date retryAfter) {
+    public AcmeRetryAfterException(String msg, Instant retryAfter) {
         super(msg);
         this.retryAfter = Objects.requireNonNull(retryAfter);
     }
@@ -41,8 +41,8 @@ public class AcmeRetryAfterException extends AcmeException {
     /**
      * Returns the retry-after date returned by the server.
      */
-    public Date getRetryAfter() {
-        return new Date(retryAfter.getTime());
+    public Instant getRetryAfter() {
+        return retryAfter;
     }
 
 }

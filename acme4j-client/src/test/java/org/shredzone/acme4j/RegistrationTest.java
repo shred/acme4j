@@ -23,9 +23,10 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
-import java.util.Calendar;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Iterator;
-import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jose4j.jws.JsonWebSignature;
@@ -335,15 +336,12 @@ public class RegistrationTest {
         provider.putTestResource(Resource.NEW_CERT, resourceUri);
 
         byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
-        Calendar notBefore = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        notBefore.clear();
-        notBefore.set(2016, Calendar.JANUARY, 1);
-        Calendar notAfter = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        notAfter.clear();
-        notAfter.set(2016, Calendar.JANUARY, 8);
+        ZoneId utc = ZoneId.of("UTC");
+        Instant notBefore = LocalDate.of(2016, 1, 1).atStartOfDay(utc).toInstant();
+        Instant notAfter = LocalDate.of(2016, 1, 8).atStartOfDay(utc).toInstant();
 
         Registration registration = new Registration(provider.createSession(), locationUri);
-        Certificate cert = registration.requestCertificate(csr, notBefore.getTime(), notAfter.getTime());
+        Certificate cert = registration.requestCertificate(csr, notBefore, notAfter);
 
         assertThat(cert.download(), is(originalCert));
         assertThat(cert.getLocation(), is(locationUri));

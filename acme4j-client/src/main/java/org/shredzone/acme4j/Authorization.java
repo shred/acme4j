@@ -17,11 +17,11 @@ import static org.shredzone.acme4j.util.AcmeUtils.parseTimestamp;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import org.shredzone.acme4j.challenge.Challenge;
@@ -43,7 +43,7 @@ public class Authorization extends AcmeResource {
 
     private String domain;
     private Status status;
-    private Date expires;
+    private Instant expires;
     private List<Challenge> challenges;
     private List<List<Challenge>> combinations;
     private boolean loaded = false;
@@ -86,7 +86,7 @@ public class Authorization extends AcmeResource {
     /**
      * Gets the expiry date of the authorization, if set by the server.
      */
-    public Date getExpires() {
+    public Instant getExpires() {
         load();
         return expires;
     }

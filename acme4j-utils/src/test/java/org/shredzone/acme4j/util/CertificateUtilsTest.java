@@ -28,6 +28,8 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -132,13 +134,13 @@ public class CertificateUtilsTest {
 
         X509Certificate cert = CertificateUtils.createTlsSniCertificate(keypair, subject);
 
-        Date now = new Date();
-        Date end = new Date(now.getTime() + (8 * 24 * 60 * 60 * 1000L));
+        Instant now = Instant.now();
+        Instant end = now.plus(Duration.ofDays(8));
 
         assertThat(cert, not(nullValue()));
-        assertThat(cert.getNotAfter(), is(greaterThan(now)));
-        assertThat(cert.getNotAfter(), is(lessThan(end)));
-        assertThat(cert.getNotBefore(), is(lessThanOrEqualTo(now)));
+        assertThat(cert.getNotAfter(), is(greaterThan(Date.from(now))));
+        assertThat(cert.getNotAfter(), is(lessThan(Date.from(end))));
+        assertThat(cert.getNotBefore(), is(lessThanOrEqualTo(Date.from(now))));
         assertThat(cert.getSubjectX500Principal().getName(), is("CN=acme.invalid"));
         assertThat(getSANs(cert), containsInAnyOrder(subject));
     }
@@ -156,13 +158,13 @@ public class CertificateUtilsTest {
 
         X509Certificate cert = CertificateUtils.createTlsSni02Certificate(keypair, sanA, sanB);
 
-        Date now = new Date();
-        Date end = new Date(now.getTime() + (8 * 24 * 60 * 60 * 1000L));
+        Instant now = Instant.now();
+        Instant end = now.plus(Duration.ofDays(8));
 
         assertThat(cert, not(nullValue()));
-        assertThat(cert.getNotAfter(), is(greaterThan(now)));
-        assertThat(cert.getNotAfter(), is(lessThan(end)));
-        assertThat(cert.getNotBefore(), is(lessThanOrEqualTo(now)));
+        assertThat(cert.getNotAfter(), is(greaterThan(Date.from(now))));
+        assertThat(cert.getNotAfter(), is(lessThan(Date.from(end))));
+        assertThat(cert.getNotBefore(), is(lessThanOrEqualTo(Date.from(now))));
         assertThat(cert.getSubjectX500Principal().getName(), is("CN=acme.invalid"));
         assertThat(getSANs(cert), containsInAnyOrder(sanA, sanB));
     }

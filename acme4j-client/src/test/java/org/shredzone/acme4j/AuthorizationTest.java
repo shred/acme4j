@@ -21,8 +21,9 @@ import static org.shredzone.acme4j.util.TestUtils.*;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Collection;
-import java.util.Date;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
@@ -228,7 +229,7 @@ public class AuthorizationTest {
      */
     @Test
     public void testUpdateRetryAfter() throws Exception {
-        final long retryAfter = System.currentTimeMillis() + 30 * 1000L;
+        final Instant retryAfter = Instant.now().plus(Duration.ofSeconds(30));
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
@@ -250,7 +251,7 @@ public class AuthorizationTest {
 
             @Override
             public void handleRetryAfter(String message) throws AcmeException {
-                throw new AcmeRetryAfterException(message, new Date(retryAfter));
+                throw new AcmeRetryAfterException(message, retryAfter);
             }
         };
 
@@ -267,7 +268,7 @@ public class AuthorizationTest {
             auth.update();
             fail("Expected AcmeRetryAfterException");
         } catch (AcmeRetryAfterException ex) {
-            assertThat(ex.getRetryAfter(), is(new Date(retryAfter)));
+            assertThat(ex.getRetryAfter(), is(retryAfter));
         }
 
         assertThat(auth.getDomain(), is("example.org"));

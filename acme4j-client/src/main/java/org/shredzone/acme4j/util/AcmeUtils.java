@@ -17,10 +17,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.IDN;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.TimeZone;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -164,12 +163,12 @@ public final class AcmeUtils {
      *
      * @param str
      *            Date string
-     * @return {@link Date} that was parsed
+     * @return {@link Instant} that was parsed
      * @throws IllegalArgumentException
      *             if the date string was not RFC 3339 formatted
      * @see <a href="https://www.ietf.org/rfc/rfc3339.txt">RFC 3339</a>
      */
-    public static Date parseTimestamp(String str) {
+    public static Instant parseTimestamp(String str) {
         Matcher m = DATE_PATTERN.matcher(str);
         if (!m.matches()) {
             throw new IllegalArgumentException("Illegal date: " + str);
@@ -198,11 +197,9 @@ public final class AcmeUtils {
             tz = TZ_PATTERN.matcher(tz).replaceAll("GMT$1$2:$3");
         }
 
-        Calendar cal = GregorianCalendar.getInstance(TimeZone.getTimeZone(tz));
-        cal.clear();
-        cal.set(year, month - 1, dom, hour, minute, second);
-        cal.set(Calendar.MILLISECOND, ms);
-        return cal.getTime();
+        return ZonedDateTime.of(
+                year, month, dom, hour, minute, second, ms * 1_000_000,
+                ZoneId.of(tz)).toInstant();
     }
 
     /**

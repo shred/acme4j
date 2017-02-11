@@ -19,10 +19,10 @@ import static org.junit.Assert.assertThat;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
-import java.util.Calendar;
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Map;
-import java.util.TimeZone;
 
 import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
@@ -81,13 +81,11 @@ public class JSONBuilderTest {
      */
     @Test
     public void testDate() {
-        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT+2"));
-        cal.clear();
-        cal.set(2016, Calendar.JUNE, 1, 5, 13, 46);
+        Instant date = ZonedDateTime.of(2016, 6, 1, 5, 13, 46, 0, ZoneId.of("GMT+2")).toInstant();
 
         JSONBuilder cb = new JSONBuilder();
-        cb.put("fooDate", cal.getTime());
-        cb.put("fooNull", (Date) null);
+        cb.put("fooDate", date);
+        cb.put("fooNull", (Instant) null);
 
         assertThat(cb.toString(), is("{\"fooDate\":\"2016-06-01T03:13:46Z\",\"fooNull\":null}"));
     }

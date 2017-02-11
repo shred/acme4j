@@ -26,10 +26,11 @@ import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.Calendar;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.TimeZone;
 
 import org.junit.Test;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -145,9 +146,7 @@ public class JSONTest {
      */
     @Test
     public void testGetter() throws MalformedURLException {
-        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        cal.clear();
-        cal.set(2016, 0, 8);
+        Instant date = LocalDate.of(2016, 1, 8).atStartOfDay(ZoneId.of("UTC")).toInstant();
 
         JSON json = TestUtils.getJsonAsObject("json");
 
@@ -155,7 +154,7 @@ public class JSONTest {
         assertThat(json.get("number").asInt(), is(123));
         assertThat(json.get("uri").asURI(), is(URI.create("mailto:foo@example.com")));
         assertThat(json.get("url").asURL(), is(new URL("http://example.com")));
-        assertThat(json.get("date").asDate(), is(cal.getTime()));
+        assertThat(json.get("date").asInstant(), is(date));
 
         JSON.Array array = json.get("array").asArray();
         assertThat(array.get(0).asString(), is("foo"));
@@ -181,7 +180,7 @@ public class JSONTest {
         assertThat(json.get("none").asString(), is(nullValue()));
         assertThat(json.get("none").asURI(), is(nullValue()));
         assertThat(json.get("none").asURL(), is(nullValue()));
-        assertThat(json.get("none").asDate(), is(nullValue()));
+        assertThat(json.get("none").asInstant(), is(nullValue()));
         assertThat(json.get("none").asArray(), is(nullValue()));
         assertThat(json.get("none").asObject(), is(nullValue()));
 
@@ -246,7 +245,7 @@ public class JSONTest {
         }
 
         try {
-            json.get("text").asDate();
+            json.get("text").asInstant();
             fail("no exception was thrown");
         } catch (AcmeProtocolException ex) {
             // expected

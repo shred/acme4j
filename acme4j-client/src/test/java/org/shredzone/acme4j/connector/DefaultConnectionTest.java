@@ -25,9 +25,10 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -254,12 +255,12 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testHandleRetryAfterHeaderDate() throws AcmeException, IOException {
-        Date retryDate = new Date(System.currentTimeMillis() + 10 * 60 * 60 * 1000L);
+        Instant retryDate = Instant.now().plus(Duration.ofHours(10));
         String retryMsg = "absolute date";
 
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_ACCEPTED);
         when(mockUrlConnection.getHeaderField("Retry-After")).thenReturn(retryDate.toString());
-        when(mockUrlConnection.getHeaderFieldDate("Retry-After", 0L)).thenReturn(retryDate.getTime());
+        when(mockUrlConnection.getHeaderFieldDate("Retry-After", 0L)).thenReturn(retryDate.toEpochMilli());
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
@@ -297,7 +298,7 @@ public class DefaultConnectionTest {
             conn.handleRetryAfter(retryMsg);
             fail("no AcmeRetryAfterException was thrown");
         } catch (AcmeRetryAfterException ex) {
-            assertThat(ex.getRetryAfter(), is(new Date(now + delta * 1000L)));
+            assertThat(ex.getRetryAfter(), is(Instant.ofEpochMilli(now).plusSeconds(delta)));
             assertThat(ex.getMessage(), is(retryMsg));
         }
 

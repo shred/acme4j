@@ -16,7 +16,8 @@ package org.shredzone.acme4j.exception;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
-import java.util.Date;
+import java.time.Duration;
+import java.time.Instant;
 
 import org.junit.Test;
 
@@ -31,16 +32,12 @@ public class AcmeRetryAfterExceptionTest {
     @Test
     public void testAcmeRetryAfterException() {
         String detail = "Too early";
-        Date retryAfter = new Date(System.currentTimeMillis() + 60 * 1000L);
+        Instant retryAfter = Instant.now().plus(Duration.ofMinutes(1));
 
-        AcmeRetryAfterException ex
-                = new AcmeRetryAfterException(detail, retryAfter);
+        AcmeRetryAfterException ex = new AcmeRetryAfterException(detail, retryAfter);
 
         assertThat(ex.getMessage(), is(detail));
         assertThat(ex.getRetryAfter(), is(retryAfter));
-
-        // make sure we get a copy of the Date object
-        assertThat(ex.getRetryAfter(), not(sameInstance(retryAfter)));
     }
 
     /**
@@ -48,16 +45,12 @@ public class AcmeRetryAfterExceptionTest {
      */
     @Test
     public void testNullAcmeRetryAfterException() {
-        Date retryAfter = new Date(System.currentTimeMillis() + 60 * 1000L);
+        Instant retryAfter = Instant.now().plus(Duration.ofMinutes(1));
 
-        AcmeRetryAfterException ex
-                = new AcmeRetryAfterException(null, retryAfter);
+        AcmeRetryAfterException ex = new AcmeRetryAfterException(null, retryAfter);
 
         assertThat(ex.getMessage(), nullValue());
         assertThat(ex.getRetryAfter(), is(retryAfter));
-
-        // make sure we get a copy of the Date object
-        assertThat(ex.getRetryAfter(), not(sameInstance(retryAfter)));
     }
 
     /**

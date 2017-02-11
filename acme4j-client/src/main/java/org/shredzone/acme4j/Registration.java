@@ -19,10 +19,10 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
@@ -234,7 +234,7 @@ public class Registration extends AcmeResource {
      *            for default. May be ignored by the server.
      * @return The {@link Certificate}
      */
-    public Certificate requestCertificate(byte[] csr, Date notBefore, Date notAfter)
+    public Certificate requestCertificate(byte[] csr, Instant notBefore, Instant notAfter)
                 throws AcmeException {
         Objects.requireNonNull(csr, "csr");
 

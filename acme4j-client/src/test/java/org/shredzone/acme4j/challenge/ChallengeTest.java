@@ -25,7 +25,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Date;
+import java.time.Duration;
+import java.time.Instant;
 
 import org.jose4j.lang.JoseException;
 import org.junit.Before;
@@ -229,7 +230,7 @@ public class ChallengeTest {
      */
     @Test
     public void testUpdateRetryAfter() throws Exception {
-        final long retryAfter = System.currentTimeMillis() + 30 * 1000L;
+        final Instant retryAfter = Instant.now().plus(Duration.ofSeconds(30));
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
@@ -252,7 +253,7 @@ public class ChallengeTest {
 
             @Override
             public void handleRetryAfter(String message) throws AcmeException {
-                throw new AcmeRetryAfterException(message, new Date(retryAfter));
+                throw new AcmeRetryAfterException(message, retryAfter);
             }
         };
 
@@ -265,7 +266,7 @@ public class ChallengeTest {
             challenge.update();
             fail("Expected AcmeRetryAfterException");
         } catch (AcmeRetryAfterException ex) {
-            assertThat(ex.getRetryAfter(), is(new Date(retryAfter)));
+            assertThat(ex.getRetryAfter(), is(retryAfter));
         }
 
         assertThat(challenge.getStatus(), is(Status.VALID));

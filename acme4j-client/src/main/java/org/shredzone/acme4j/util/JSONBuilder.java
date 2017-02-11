@@ -17,12 +17,11 @@ import static org.shredzone.acme4j.util.AcmeUtils.base64UrlEncode;
 
 import java.security.Key;
 import java.security.PublicKey;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TimeZone;
 import java.util.TreeMap;
 
 import org.jose4j.json.JsonUtil;
@@ -62,25 +61,22 @@ public class JSONBuilder {
     }
 
     /**
-     * Puts a {@link Date} to the JSON. If a property with the key exists, it will be
+     * Puts an {@link Instant} to the JSON. If a property with the key exists, it will be
      * replaced.
      *
      * @param key
      *            Property key
      * @param value
-     *            Property {@link Date} value
+     *            Property {@link Instant} value
      * @return {@code this}
      */
-    public JSONBuilder put(String key, Date value) {
+    public JSONBuilder put(String key, Instant value) {
         if (value == null) {
             put(key, (Object) null);
             return this;
         }
 
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-        fmt.setTimeZone(TimeZone.getTimeZone("UTC"));
-        String date = fmt.format(value);
-        put(key, date);
+        put(key, DateTimeFormatter.ISO_INSTANT.format(value));
         return this;
     }
 

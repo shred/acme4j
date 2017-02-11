@@ -21,11 +21,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.security.KeyPair;
 import java.security.Security;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -247,57 +246,55 @@ public class AcmeUtilsTest {
     /**
      * Matches the given time.
      */
-    private DateMatcher isDate(int year, int month, int dom, int hour, int minute, int second) {
+    private InstantMatcher isDate(int year, int month, int dom, int hour, int minute, int second) {
         return isDate(year, month, dom, hour, minute, second, 0);
     }
 
     /**
      * Matches the given time and milliseconds.
      */
-    private DateMatcher isDate(int year, int month, int dom, int hour, int minute, int second, int ms) {
-        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-        cal.clear();
-        cal.set(year, month - 1, dom, hour, minute, second);
-        cal.set(Calendar.MILLISECOND, ms);
-        return new DateMatcher(cal);
+    private InstantMatcher isDate(int year, int month, int dom, int hour, int minute, int second, int ms) {
+        Instant cmp = ZonedDateTime.of(
+                    year, month, dom, hour, minute, second, ms * 1_000_000,
+                    ZoneId.of("UTC")).toInstant();
+        return new InstantMatcher(cmp);
     }
 
     /**
      * Date matcher that gives a readable output on mismatch.
      */
-    private static class DateMatcher extends BaseMatcher<Date> {
-        private final Calendar cal;
-        private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.ENGLISH);
+    private static class InstantMatcher extends BaseMatcher<Instant> {
+        private final Instant cmp;
+        private final DateTimeFormatter dtf = DateTimeFormatter.ISO_INSTANT;
 
-        public DateMatcher(Calendar cal) {
-            this.cal = cal;
-            sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+        public InstantMatcher(Instant cmp) {
+            this.cmp = cmp;
         }
 
         @Override
         public boolean matches(Object item) {
-            if (!(item instanceof Date)) {
+            if (!(item instanceof Instant)) {
                 return false;
             }
 
-            Date date = (Date) item;
-            return date.equals(cal.getTime());
+            Instant date = (Instant) item;
+            return date.equals(cmp);
         }
 
         @Override
         public void describeTo(Description description) {
-            description.appendValue(sdf.format(cal.getTime()));
+            description.appendValue(dtf.format(cmp));
         }
 
         @Override
         public void describeMismatch(Object item, Description description) {
-            if (!(item instanceof Date)) {
-                description.appendText("is not a Date");
+            if (!(item instanceof Instant)) {
+                description.appendText("is not an Instant");
                 return;
             }
 
-            Date date = (Date) item;
-            description.appendText("was ").appendValue(sdf.format(date));
+            Instant date = (Instant) item;
+            description.appendText("was ").appendValue(dtf.format(date));
         }
     }
 

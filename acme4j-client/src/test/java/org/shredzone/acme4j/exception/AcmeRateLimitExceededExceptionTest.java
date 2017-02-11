@@ -17,9 +17,10 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 import java.net.URI;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 
 import org.junit.Test;
 
@@ -35,7 +36,7 @@ public class AcmeRateLimitExceededExceptionTest {
     public void testAcmeRateLimitExceededException() {
         String type = "urn:ietf:params:acme:error:rateLimited";
         String detail = "Too many requests per minute";
-        Date retryAfter = new Date(System.currentTimeMillis() + 60 * 1000L);
+        Instant retryAfter = Instant.now().plus(Duration.ofMinutes(1));
         Collection<URI> documents = Arrays.asList(
                         URI.create("http://example.com/doc1.html"),
                         URI.create("http://example.com/doc2.html"));

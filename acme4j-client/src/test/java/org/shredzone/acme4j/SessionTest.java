@@ -21,7 +21,7 @@ import static org.shredzone.acme4j.util.TestUtils.getJsonAsObject;
 import java.io.IOException;
 import java.net.URI;
 import java.security.KeyPair;
-import java.util.Date;
+import java.time.Instant;
 
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
@@ -173,7 +173,7 @@ public class SessionTest {
                         ArgumentMatchers.any(URI.class));
 
         // Simulate a cache expiry
-        session.directoryCacheExpiry = new Date();
+        session.directoryCacheExpiry = Instant.now();
 
         // Make sure directory is read once again
         assertSession(session);

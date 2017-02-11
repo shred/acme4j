@@ -25,6 +25,8 @@ import java.security.KeyPair;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
 
 import org.bouncycastle.asn1.x500.X500Name;
@@ -212,17 +214,17 @@ public final class CertificateUtils {
      */
     private static X509Certificate createCertificate(KeyPair keypair, String... subject) throws IOException {
         final long now = System.currentTimeMillis();
-        final long validSpanMs = 7 * 24 * 60 * 60 * 1000L;
         final String signatureAlg = "SHA256withRSA";
 
         try {
             X500Name issuer = new X500Name("CN=acme.invalid");
             BigInteger serial = BigInteger.valueOf(now);
-            Date notBefore = new Date(now);
-            Date notAfter = new Date(now + validSpanMs);
+            Instant notBefore = Instant.ofEpochMilli(now);
+            Instant notAfter = notBefore.plus(Duration.ofDays(7));
 
             JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
-                        issuer, serial, notBefore, notAfter, issuer, keypair.getPublic());
+                        issuer, serial, Date.from(notBefore), Date.from(notAfter),
+                        issuer, keypair.getPublic());
 
             GeneralName[] gns = new GeneralName[subject.length];
             for (int ix = 0; ix < subject.length; ix++) {

@@ -27,12 +27,13 @@ import java.security.KeyPair;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -253,9 +254,9 @@ public class DefaultConnection implements Connection {
 
         try {
             if (conn.getResponseCode() == HttpURLConnection.HTTP_ACCEPTED) {
-                Date retryAfter = getRetryAfterHeader();
-                if (retryAfter != null) {
-                    throw new AcmeRetryAfterException(message, retryAfter);
+                Optional<Instant> retryAfter = getRetryAfterHeader();
+                if (retryAfter.isPresent()) {
+                    throw new AcmeRetryAfterException(message, retryAfter.get());
                 }
             }
         } catch (IOException ex) {
@@ -338,27 +339,29 @@ public class DefaultConnection implements Connection {
     /**
      * Gets the instant sent with the Retry-After header.
      */
-    private Date getRetryAfterHeader() {
+    private Optional<Instant> getRetryAfterHeader() {
         // See RFC 2616 section 14.37
         String header = conn.getHeaderField(RETRY_AFTER_HEADER);
-        if (header == null) {
-            return null;
-        }
+        if (header != null) {
+            try {
+                // delta-seconds
+                if (header.matches("^\\d+$")) {
+                    int delta = Integer.parseInt(header);
+                    long date = conn.getHeaderFieldDate(DATE_HEADER, System.currentTimeMillis());
+                    return Optional.of(Instant.ofEpochMilli(date).plusSeconds(delta));
+                }
 
-        try {
-            // delta-seconds
-            if (header.matches("^\\d+$")) {
-                int delta = Integer.parseInt(header);
-                long date = conn.getHeaderFieldDate(DATE_HEADER, System.currentTimeMillis());
-                return new Date(date + delta * 1000L);
+                // HTTP-date
+                long date = conn.getHeaderFieldDate(RETRY_AFTER_HEADER, 0L);
+                if (date != 0) {
+                    return Optional.of(Instant.ofEpochMilli(date));
+                }
+            } catch (Exception ex) {
+                throw new AcmeProtocolException("Bad retry-after header value: " + header, ex);
             }
-
-            // HTTP-date
-            long date = conn.getHeaderFieldDate(RETRY_AFTER_HEADER, 0L);
-            return date != 0 ? new Date(date) : null;
-        } catch (Exception ex) {
-            throw new AcmeProtocolException("Bad retry-after header value: " + header, ex);
         }
+
+        return Optional.empty();
     }
 
     /**
@@ -386,9 +389,9 @@ public class DefaultConnection implements Connection {
         }
 
         if ("rateLimited".equals(error)) {
-            Date retryAfter = getRetryAfterHeader();
+            Optional<Instant> retryAfter = getRetryAfterHeader();
             Collection<URI> rateLimits = getLinks("rate-limit");
-            return new AcmeRateLimitExceededException(type, detail, retryAfter, rateLimits);
+            return new AcmeRateLimitExceededException(type, detail, retryAfter.orElse(null), rateLimits);
         }
 
         return new AcmeServerException(type, detail);
