@@ -48,28 +48,22 @@ public class Registration extends AcmeResource {
     private static final long serialVersionUID = -8177333806740391140L;
     private static final Logger LOG = LoggerFactory.getLogger(Registration.class);
 
-    private static final String KEY_AGREEMENT = "agreement";
+    private static final String KEY_TOS_AGREED = "terms-of-service-agreed";
     private static final String KEY_AUTHORIZATIONS = "authorizations";
     private static final String KEY_CERTIFICATES = "certificates";
     private static final String KEY_CONTACT = "contact";
     private static final String KEY_STATUS = "status";
 
     private final List<URI> contacts = new ArrayList<>();
-    private URI agreement;
+    private Status status;
+    private Boolean termsOfServiceAgreed;
     private URI authorizations;
     private URI certificates;
-    private Status status;
     private boolean loaded = false;
 
     protected Registration(Session session, URI location) {
         super(session);
         setLocation(location);
-    }
-
-    protected Registration(Session session, URI location, URI agreement) {
-        super(session);
-        setLocation(location);
-        this.agreement = agreement;
     }
 
     /**
@@ -86,13 +80,14 @@ public class Registration extends AcmeResource {
     }
 
     /**
-     * Returns the URI of the agreement document the user is required to accept.
+     * Returns if the user agreed to the terms of service.
+     *
+     * @return {@code true} if the user agreed to the terms of service. May be
+     *         {@code null} if the server did not provide such an information.
      */
-    public URI getAgreement() {
-        if (agreement == null) {
-            load();
-        }
-        return agreement;
+    public Boolean getTermsOfServiceAgreed() {
+        load();
+        return termsOfServiceAgreed;
     }
 
     /**
@@ -346,8 +341,8 @@ public class Registration extends AcmeResource {
      *            {@link Connection} with headers to be evaluated
      */
     private void unmarshal(JSON json, Connection conn) {
-        if (json.contains(KEY_AGREEMENT)) {
-            this.agreement = json.get(KEY_AGREEMENT).asURI();
+        if (json.contains(KEY_TOS_AGREED)) {
+            this.termsOfServiceAgreed = json.get(KEY_TOS_AGREED).asBoolean();
         }
 
         if (json.contains(KEY_CONTACT)) {
@@ -369,11 +364,6 @@ public class Registration extends AcmeResource {
             setLocation(location);
         }
 
-        URI tos = conn.getLink("terms-of-service");
-        if (tos != null) {
-            this.agreement = tos;
-        }
-
         loaded = true;
     }
 
@@ -391,11 +381,9 @@ public class Registration extends AcmeResource {
      */
     public class EditableRegistration {
         private final List<URI> editContacts = new ArrayList<>();
-        private URI editAgreement;
 
         private EditableRegistration() {
             editContacts.addAll(Registration.this.contacts);
-            editAgreement = Registration.this.agreement;
         }
 
         /**
@@ -433,18 +421,6 @@ public class Registration extends AcmeResource {
         }
 
         /**
-         * Sets a new agreement URI.
-         *
-         * @param agreement
-         *            New agreement URI
-         * @return itself
-         */
-        public EditableRegistration setAgreement(URI agreement) {
-            this.editAgreement = agreement;
-            return this;
-        }
-
-        /**
          * Commits the changes and updates the account.
          */
         public void commit() throws AcmeException {
@@ -454,9 +430,6 @@ public class Registration extends AcmeResource {
                 claims.putResource("reg");
                 if (!editContacts.isEmpty()) {
                     claims.put(KEY_CONTACT, editContacts);
-                }
-                if (editAgreement != null) {
-                    claims.put(KEY_AGREEMENT, editAgreement);
                 }
 
                 conn.sendSignedRequest(getLocation(), claims, getSession());

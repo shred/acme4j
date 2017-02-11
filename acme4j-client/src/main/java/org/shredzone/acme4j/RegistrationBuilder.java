@@ -33,6 +33,7 @@ public class RegistrationBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationBuilder.class);
 
     private List<URI> contacts = new ArrayList<>();
+    private Boolean termsOfServiceAgreed;
 
     /**
      * Add a contact URI to the list of contacts.
@@ -63,6 +64,16 @@ public class RegistrationBuilder {
     }
 
     /**
+     * Signals that the user agrees to the terms of service.
+     *
+     * @return itself
+     */
+    public RegistrationBuilder agreeToTermsOfService() {
+        this.termsOfServiceAgreed = true;
+        return this;
+    }
+
+    /**
      * Creates a new account.
      *
      * @param session
@@ -82,14 +93,16 @@ public class RegistrationBuilder {
             if (!contacts.isEmpty()) {
                 claims.put("contact", contacts);
             }
+            if (termsOfServiceAgreed != null) {
+                claims.put("terms-of-service-agreed", termsOfServiceAgreed);
+            }
 
             conn.sendSignedRequest(session.resourceUri(Resource.NEW_REG), claims, session);
             conn.accept(HttpURLConnection.HTTP_CREATED);
 
             URI location = conn.getLocation();
-            URI tos = conn.getLink("terms-of-service");
 
-            return new Registration(session, location, tos);
+            return new Registration(session, location);
         }
     }
 

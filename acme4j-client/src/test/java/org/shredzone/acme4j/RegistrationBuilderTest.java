@@ -14,7 +14,7 @@
 package org.shredzone.acme4j;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.shredzone.acme4j.util.TestUtils.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
+import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 
 /**
@@ -34,7 +35,6 @@ public class RegistrationBuilderTest {
 
     private URI resourceUri  = URI.create("http://example.com/acme/resource");;
     private URI locationUri  = URI.create("http://example.com/acme/registration");;
-    private URI agreementUri = URI.create("http://example.com/agreement.pdf");;
 
     /**
      * Test if a new registration can be created.
@@ -42,17 +42,30 @@ public class RegistrationBuilderTest {
     @Test
     public void testRegistration() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
+            private boolean isUpdate;
+
             @Override
             public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
-                assertThat(uri, is(resourceUri));
-                assertThat(claims.toString(), sameJSONAs(getJson("newRegistration")));
                 assertThat(session, is(notNullValue()));
+                if (resourceUri.equals(uri)) {
+                    isUpdate = false;
+                    assertThat(claims.toString(), sameJSONAs(getJson("newRegistration")));
+                } else if (locationUri.equals(uri)) {
+                    isUpdate = true;
+                } else {
+                    fail("bad URI");
+                }
             }
 
             @Override
             public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_CREATED));
-                return HttpURLConnection.HTTP_CREATED;
+                if (isUpdate) {
+                    assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED));
+                    return HttpURLConnection.HTTP_ACCEPTED;
+                } else {
+                    assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_CREATED));
+                    return HttpURLConnection.HTTP_CREATED;
+                }
             }
 
             @Override
@@ -61,11 +74,9 @@ public class RegistrationBuilderTest {
             }
 
             @Override
-            public URI getLink(String relation) {
-                switch(relation) {
-                    case "terms-of-service": return agreementUri;
-                    default: return null;
-                }
+            public JSON readJsonResponse() {
+                assertThat(isUpdate, is(true));
+                return getJsonAsObject("newRegistrationResponse");
             }
         };
 
@@ -73,11 +84,12 @@ public class RegistrationBuilderTest {
 
         RegistrationBuilder builder = new RegistrationBuilder();
         builder.addContact("mailto:foo@example.com");
+        builder.agreeToTermsOfService();
 
         Registration registration = builder.create(provider.createSession());
 
         assertThat(registration.getLocation(), is(locationUri));
-        assertThat(registration.getAgreement(), is(agreementUri));
+        assertThat(registration.getTermsOfServiceAgreed(), is(true));
 
         provider.close();
     }

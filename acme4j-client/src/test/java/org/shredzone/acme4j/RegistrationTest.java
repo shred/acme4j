@@ -124,7 +124,7 @@ public class RegistrationTest {
         registration.update();
 
         assertThat(registration.getLocation(), is(locationUri));
-        assertThat(registration.getAgreement(), is(agreementUri));
+        assertThat(registration.getTermsOfServiceAgreed(), is(true));
         assertThat(registration.getContacts(), hasSize(1));
         assertThat(registration.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
         assertThat(registration.getStatus(), is(Status.GOOD));
@@ -188,12 +188,12 @@ public class RegistrationTest {
 
         // Lazy loading
         assertThat(requestWasSent.get(), is(false));
-        assertThat(registration.getAgreement(), is(agreementUri));
+        assertThat(registration.getTermsOfServiceAgreed(), is(true));
         assertThat(requestWasSent.get(), is(true));
 
         // Subsequent queries do not trigger another load
         requestWasSent.set(false);
-        assertThat(registration.getAgreement(), is(agreementUri));
+        assertThat(registration.getTermsOfServiceAgreed(), is(true));
         assertThat(registration.getStatus(), is(Status.GOOD));
         assertThat(requestWasSent.get(), is(false));
 
@@ -519,8 +519,6 @@ public class RegistrationTest {
      */
     @Test
     public void testModify() throws Exception {
-        final URI agreementUri = URI.create("http://example.com/agreement.pdf");
-
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
@@ -544,14 +542,6 @@ public class RegistrationTest {
             public URI getLocation() {
                 return locationUri;
             }
-
-            @Override
-            public URI getLink(String relation) {
-                switch(relation) {
-                    case "terms-of-service": return agreementUri;
-                    default: return null;
-                }
-            }
         };
 
         Registration registration = new Registration(provider.createSession(), locationUri);
@@ -559,13 +549,11 @@ public class RegistrationTest {
         EditableRegistration editable = registration.modify();
         assertThat(editable, notNullValue());
 
-        editable.setAgreement(agreementUri);
         editable.addContact("mailto:foo2@example.com");
         editable.getContacts().add(URI.create("mailto:foo3@example.com"));
         editable.commit();
 
         assertThat(registration.getLocation(), is(locationUri));
-        assertThat(registration.getAgreement(), is(agreementUri));
         assertThat(registration.getContacts().size(), is(2));
         assertThat(registration.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
         assertThat(registration.getContacts().get(1), is(URI.create("mailto:foo3@example.com")));

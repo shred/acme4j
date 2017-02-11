@@ -2,11 +2,12 @@
 
 If it is the first time you connect to the ACME server, you need to register your account key.
 
-To do so, create a `RegistrationBuilder`, optionally add some contact information, then invoke `create()`. If the account was successfully created, you will get a `Registration` object in return. Invoking its `getLocation()` method will return the location URI of your account. You should store it somewhere, because you will need it later. Unlike your key pair, the location is a public information that does not need security precautions.
+To do so, create a `RegistrationBuilder`, optionally add some contact information, agree to the terms of service, then invoke `create()`. If the account was successfully created, you will get a `Registration` object in return. Invoking its `getLocation()` method will return the location URI of your account. You should store it somewhere, because you will need it later. Unlike your key pair, the location is a public information that does not need security precautions.
 
 ```java
 RegistrationBuilder builder = new RegistrationBuilder();
 builder.addContact("mailto:acme@example.com");
+builder.agreeToTermsOfService();
 
 Registration registration = builder.create(session);
 
@@ -20,7 +21,7 @@ The following example will create a new `Registration` and restore an existing `
 ```java
 Registration registration;
 try {
-  registration = new RegistrationBuilder().create(session);
+  registration = new RegistrationBuilder().agreeToTermsOfService().create(session);
 } catch (AcmeConflictException ex) {
   registration = Registration.bind(session, ex.getLocation());
 }
@@ -28,15 +29,15 @@ try {
 
 ## Update your Registration
 
-At some point, you may want to update your registration. For example your contact address might have changed, or you were asked by the CA to accept the latest terms of service. To do so, invoke `Registration.modify()`, perform the changes, and invoke `commit()` to make them permanent.
+At some point, you may want to update your registration. For example your contact address might have changed. To do so, invoke `Registration.modify()`, perform the changes, and invoke `commit()` to make them permanent.
 
-The following example accepts the terms of service by explicitly setting the URL to the agreement document.
+The following example adds another email address.
 
 ```java
 URI agreementUri = ... // TAC link provided by the CA
 
 registration.modify()
-      .setAgreement(agreementUri)
+      .addContact("mailto:acme2@example.com")
       .commit();
 ```
 

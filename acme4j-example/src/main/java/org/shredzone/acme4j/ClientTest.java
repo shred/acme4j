@@ -185,18 +185,18 @@ public class ClientTest {
      * @return {@link Registration} connected to your account
      */
     private Registration findOrRegisterAccount(Session session) throws AcmeException {
+        // Ask the user to accept the TOS, if server provides us with a link.
+        URI tos = session.getMetadata().getTermsOfService();
+        if (tos != null) {
+            acceptAgreement(tos);
+        }
+
         Registration reg;
 
         try {
             // Try to create a new Registration.
-            reg = new RegistrationBuilder().create(session);
+            reg = new RegistrationBuilder().agreeToTermsOfService().create(session);
             LOG.info("Registered a new user, URI: " + reg.getLocation());
-
-            // This is a new account. Let the user accept the Terms of Service.
-            // We won't be able to authorize domains until the ToS is accepted.
-            URI agreement = reg.getAgreement();
-            LOG.info("Terms of Service: " + agreement);
-            acceptAgreement(reg, agreement);
 
         } catch (AcmeConflictException ex) {
             // The Key Pair is already registered. getLocation() contains the
@@ -433,12 +433,10 @@ public class ClientTest {
      * Presents the user a link to the Terms of Service, and asks for confirmation. If the
      * user denies confirmation, an exception is thrown.
      *
-     * @param reg
-     *            {@link Registration} User's registration
      * @param agreement
      *            {@link URI} of the Terms of Service
      */
-    public void acceptAgreement(Registration reg, URI agreement) throws AcmeException {
+    public void acceptAgreement(URI agreement) throws AcmeException {
         int option = JOptionPane.showConfirmDialog(null,
                         "Do you accept the Terms of Service?\n\n" + agreement,
                         "Accept ToS",
@@ -446,10 +444,6 @@ public class ClientTest {
         if (option == JOptionPane.NO_OPTION) {
             throw new AcmeException("User did not accept Terms of Service");
         }
-
-        // Motify the Registration and accept the agreement
-        reg.modify().setAgreement(agreement).commit();
-        LOG.info("Updated user's ToS");
     }
 
     /**
