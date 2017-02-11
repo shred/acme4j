@@ -62,12 +62,10 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
         }
     }
 
-    @SuppressWarnings("deprecation") // must still provide deprecated challenges
     private static Map<String, Function<Session, Challenge>> challengeMap() {
         Map<String, Function<Session, Challenge>> map = new HashMap<>();
 
         map.put(Dns01Challenge.TYPE, Dns01Challenge::new);
-        map.put(org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE, org.shredzone.acme4j.challenge.TlsSni01Challenge::new);
         map.put(TlsSni02Challenge.TYPE, TlsSni02Challenge::new);
         map.put(Http01Challenge.TYPE, Http01Challenge::new);
         map.put(OutOfBand01Challenge.TYPE, OutOfBand01Challenge::new);

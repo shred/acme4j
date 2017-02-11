@@ -169,24 +169,6 @@ public final class CertificateUtils {
 
     /**
      * Creates a self-signed {@link X509Certificate} that can be used for
-     * {@link org.shredzone.acme4j.challenge.TlsSni01Challenge}. The certificate is valid
-     * for 7 days.
-     *
-     * @param keypair
-     *            A domain {@link KeyPair} to be used for the challenge
-     * @param subject
-     *            Subject to create a certificate for
-     * @return Created certificate
-     * @deprecated Will be removed when
-     *             {@link org.shredzone.acme4j.challenge.TlsSni01Challenge} is removed
-     */
-    @Deprecated
-    public static X509Certificate createTlsSniCertificate(KeyPair keypair, String subject) throws IOException {
-        return createCertificate(keypair, subject);
-    }
-
-    /**
-     * Creates a self-signed {@link X509Certificate} that can be used for
      * {@link TlsSni02Challenge}. The certificate is valid for 7 days.
      *
      * @param keypair

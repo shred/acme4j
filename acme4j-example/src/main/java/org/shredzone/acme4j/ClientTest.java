@@ -31,6 +31,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
+import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.util.CSRBuilder;
@@ -368,16 +369,16 @@ public class ClientTest {
      *            Domain name to be authorized
      * @return {@link Challenge} to verify
      */
-    @SuppressWarnings("deprecation") // until tls-sni-02 is supported
     public Challenge tlsSniChallenge(Authorization auth, String domain) throws AcmeException {
-        // Find a single tls-sni-01 challenge
-        org.shredzone.acme4j.challenge.TlsSni01Challenge challenge = auth.findChallenge(org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE);
+        // Find a single tls-sni-02 challenge
+        TlsSni02Challenge challenge = auth.findChallenge(TlsSni02Challenge.TYPE);
         if (challenge == null) {
-            throw new AcmeException("Found no " + org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE + " challenge, don't know what to do...");
+            throw new AcmeException("Found no " + TlsSni02Challenge.TYPE + " challenge, don't know what to do...");
         }
 
         // Get the Subject
         String subject = challenge.getSubject();
+        String sanB = challenge.getSanB();
 
         // Create a validation key pair
         KeyPair domainKeyPair;
@@ -390,7 +391,7 @@ public class ClientTest {
 
         // Create a validation certificate
         try (FileWriter fw = new FileWriter("tlssni.crt")) {
-            X509Certificate cert = CertificateUtils.createTlsSniCertificate(domainKeyPair, subject);
+            X509Certificate cert = CertificateUtils.createTlsSni02Certificate(domainKeyPair, subject, sanB);
             CertificateUtils.writeX509Certificate(cert, fw);
         } catch (IOException ex) {
             throw new AcmeException("Could not write certificate", ex);

@@ -120,7 +120,6 @@ public class AbstractAcmeProviderTest {
      * Test that challenges are generated properly.
      */
     @Test
-    @SuppressWarnings("deprecation") // must test deprecated challenges
     public void testCreateChallenge() {
         Session session = mock(Session.class);
 
@@ -146,10 +145,6 @@ public class AbstractAcmeProviderTest {
         Challenge c3 = provider.createChallenge(session, Dns01Challenge.TYPE);
         assertThat(c3, not(nullValue()));
         assertThat(c3, instanceOf(Dns01Challenge.class));
-
-        Challenge c4 = provider.createChallenge(session, org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE);
-        assertThat(c4, not(nullValue()));
-        assertThat(c4, instanceOf(org.shredzone.acme4j.challenge.TlsSni01Challenge.class));
 
         Challenge c5 = provider.createChallenge(session, TlsSni02Challenge.TYPE);
         assertThat(c5, not(nullValue()));

@@ -122,30 +122,6 @@ public class CertificateUtilsTest {
     }
 
     /**
-     * Test if {@link CertificateUtils#createTlsSniCertificate(KeyPair, String)} creates a
-     * good certificate.
-     */
-    @Test
-    @SuppressWarnings("deprecation") // test deprecated method
-    public void testCreateTlsSniCertificate() throws IOException, CertificateParsingException {
-        String subject = "30c452b9bd088cdbc2c4094947025d7c.7364ea602ac325a1b55ceaae024fbe29.acme.invalid";
-
-        KeyPair keypair = KeyPairUtils.createKeyPair(2048);
-
-        X509Certificate cert = CertificateUtils.createTlsSniCertificate(keypair, subject);
-
-        Instant now = Instant.now();
-        Instant end = now.plus(Duration.ofDays(8));
-
-        assertThat(cert, not(nullValue()));
-        assertThat(cert.getNotAfter(), is(greaterThan(Date.from(now))));
-        assertThat(cert.getNotAfter(), is(lessThan(Date.from(end))));
-        assertThat(cert.getNotBefore(), is(lessThanOrEqualTo(Date.from(now))));
-        assertThat(cert.getSubjectX500Principal().getName(), is("CN=acme.invalid"));
-        assertThat(getSANs(cert), containsInAnyOrder(subject));
-    }
-
-    /**
      * Test if {@link CertificateUtils#createTlsSni02Certificate(KeyPair, String, String)}
      * creates a good certificate.
      */
