@@ -125,12 +125,7 @@ public class Registration extends AcmeResource {
     public Iterator<Authorization> getAuthorizations() throws AcmeException {
         LOG.debug("getAuthorizations");
         load();
-        return new ResourceIterator<Authorization>(getSession(), KEY_AUTHORIZATIONS, authorizations) {
-            @Override
-            protected Authorization create(Session session, URI uri) {
-                return Authorization.bind(session, uri);
-            }
-        };
+        return new ResourceIterator<>(getSession(), KEY_AUTHORIZATIONS, authorizations, Authorization::bind);
     }
 
     /**
@@ -147,12 +142,7 @@ public class Registration extends AcmeResource {
     public Iterator<Certificate> getCertificates() throws AcmeException {
         LOG.debug("getCertificates");
         load();
-        return new ResourceIterator<Certificate>(getSession(), KEY_CERTIFICATES, certificates) {
-            @Override
-            protected Certificate create(Session session, URI uri) {
-                return Certificate.bind(session, uri);
-            }
-        };
+        return new ResourceIterator<>(getSession(), KEY_CERTIFICATES, certificates, Certificate::bind);
     }
 
     /**

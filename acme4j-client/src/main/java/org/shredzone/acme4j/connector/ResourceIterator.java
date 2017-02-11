@@ -20,6 +20,7 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.function.BiFunction;
 
 import org.shredzone.acme4j.AcmeResource;
 import org.shredzone.acme4j.Session;
@@ -34,11 +35,12 @@ import org.shredzone.acme4j.util.JSON;
  * @param <T>
  *            {@link AcmeResource} type to iterate over
  */
-public abstract class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
+public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
 
     private final Session session;
     private final String field;
     private final Deque<URI> uriList = new ArrayDeque<>();
+    private final BiFunction<Session, URI, T> creator;
     private boolean eol = false;
     private URI nextUri;
 
@@ -51,11 +53,15 @@ public abstract class ResourceIterator<T extends AcmeResource> implements Iterat
      *            Field name to be used in the JSON response
      * @param start
      *            URI of the first JSON array, may be {@code null} for an empty iterator
+     * @param creator
+     *            Creator for an {@link AcmeResource} that is bound to the given
+     *            {@link Session} and {@link URI}.
      */
-    public ResourceIterator(Session session, String field, URI start) {
+    public ResourceIterator(Session session, String field, URI start, BiFunction<Session, URI, T> creator) {
         this.session = Objects.requireNonNull(session, "session");
         this.field = Objects.requireNonNull(field, "field");
         this.nextUri = start;
+        this.creator = Objects.requireNonNull(creator, "creator");
     }
 
     /**
@@ -101,7 +107,7 @@ public abstract class ResourceIterator<T extends AcmeResource> implements Iterat
             throw new NoSuchElementException("no more " + field);
         }
 
-        return create(session, next);
+        return creator.apply(session, next);
     }
 
     /**
@@ -111,18 +117,6 @@ public abstract class ResourceIterator<T extends AcmeResource> implements Iterat
     public void remove() {
         throw new UnsupportedOperationException("cannot remove " + field);
     }
-
-    /**
-     * Creates a new {@link AcmeResource} object by binding it to the {@link Session} and
-     * using the given {@link URI}.
-     *
-     * @param session
-     *            {@link Session} to bind the object to
-     * @param uri
-     *            {@link URI} of the resource
-     * @return Created object
-     */
-    protected abstract T create(Session session, URI uri);
 
     /**
      * Fetches the next batch of URIs. Handles exceptions. Does nothing if there is no

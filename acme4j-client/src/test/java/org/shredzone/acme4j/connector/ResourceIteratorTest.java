@@ -31,8 +31,8 @@ import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
-import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.JSON;
+import org.shredzone.acme4j.util.JSONBuilder;
 
 /**
  * Unit test for {@link ResourceIterator}.
@@ -167,12 +167,7 @@ public class ResourceIteratorTest {
 
         provider.close();
 
-        return new ResourceIterator<Authorization>(session, TYPE, first) {
-            @Override
-            protected Authorization create(Session session, URI uri) {
-                return Authorization.bind(session, uri);
-            }
-        };
+        return new ResourceIterator<>(session, TYPE, first, Authorization::bind);
     }
 
 }
