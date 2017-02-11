@@ -238,7 +238,6 @@ public class AcmeUtilsTest {
     @Test
     public void testStripErrorPrefix() {
         assertThat(stripErrorPrefix("urn:ietf:params:acme:error:unauthorized"), is("unauthorized"));
-        assertThat(stripErrorPrefix("urn:acme:error:deprecated"), is("deprecated"));
         assertThat(stripErrorPrefix("urn:somethingelse:error:message"), is(nullValue()));
         assertThat(stripErrorPrefix(null), is(nullValue()));
     }
