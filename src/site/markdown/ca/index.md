@@ -34,3 +34,4 @@ URI website = meta.getWebsite();
 In _acme4j_ these providers are available:
 
 * [Let's Encrypt](./letsencrypt.html)
+* [Pebble](./pebble.html)

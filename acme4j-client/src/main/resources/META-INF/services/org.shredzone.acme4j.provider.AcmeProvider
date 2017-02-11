@@ -3,3 +3,6 @@ org.shredzone.acme4j.provider.GenericAcmeProvider
 
 # Let's Encrypt: https://letsencrypt.org
 org.shredzone.acme4j.provider.letsencrypt.LetsEncryptAcmeProvider
+
+# Pebble (ACME Test Server): https://github.com/letsencrypt/pebble
+org.shredzone.acme4j.provider.pebble.PebbleAcmeProvider

@@ -45,6 +45,7 @@
       </item>
       <item name="CAs" href="ca/index.html">
         <item name="Let's Encrypt" href="ca/letsencrypt.html"/>
+        <item name="Pebble" href="ca/pebble.html"/>
       </item>
       <item name="ACME Provider" href="provider.html"/>
     </menu>
