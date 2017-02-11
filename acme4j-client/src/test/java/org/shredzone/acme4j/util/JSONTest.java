@@ -84,7 +84,7 @@ public class JSONTest {
         JSON json = TestUtils.getJsonAsObject("json");
 
         assertThat(json.keySet(), containsInAnyOrder(
-                    "text", "number", "uri", "url", "date", "array", "collect"));
+                    "text", "number", "boolean", "uri", "url", "date", "array", "collect"));
         assertThat(json.contains("text"), is(true));
         assertThat(json.contains("music"), is(false));
         assertThat(json.get("text"), is(notNullValue()));
@@ -174,6 +174,7 @@ public class JSONTest {
 
         assertThat(json.get("text").asString(), is("lorem ipsum"));
         assertThat(json.get("number").asInt(), is(123));
+        assertThat(json.get("boolean").asBoolean(), is(true));
         assertThat(json.get("uri").asURI(), is(URI.create("mailto:foo@example.com")));
         assertThat(json.get("url").asURL(), is(new URL("http://example.com")));
         assertThat(json.get("date").asInstant(), is(date));
@@ -209,6 +210,13 @@ public class JSONTest {
         try {
             json.get("none").asInt();
             fail("asInt did not fail");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
+
+        try {
+            json.get("none").asBoolean();
+            fail("asBoolean did not fail");
         } catch (AcmeProtocolException ex) {
             // expected
         }

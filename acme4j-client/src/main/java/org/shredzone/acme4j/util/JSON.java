@@ -327,6 +327,21 @@ public final class JSON implements Serializable {
         }
 
         /**
+         * Returns the value as boolean.
+         *
+         * @return integer value
+         */
+        public boolean asBoolean() {
+            required();
+
+            try {
+                return (Boolean) val;
+            } catch (ClassCastException ex) {
+                throw new AcmeProtocolException(path + ": bad boolean " + val, ex);
+            }
+        }
+
+        /**
          * Returns the value as {@link URI}.
          *
          * @return {@link URI}, or {@code null} if the value was not set.
