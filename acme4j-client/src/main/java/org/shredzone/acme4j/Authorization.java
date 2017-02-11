@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j;
 
+import static java.util.stream.Collectors.toList;
 import static org.shredzone.acme4j.util.AcmeUtils.parseTimestamp;
 
 import java.net.HttpURLConnection;
@@ -121,8 +122,7 @@ public class Authorization extends AcmeResource {
      */
     @SuppressWarnings("unchecked")
     public <T extends Challenge> T findChallenge(String type) {
-        Collection<Challenge> result = findCombination(type);
-        return !result.isEmpty() ? (T) result.iterator().next() : null;
+        return (T) findCombination(type).stream().findFirst().orElse(null);
     }
 
     /**
@@ -253,15 +253,12 @@ public class Authorization extends AcmeResource {
      * @return List of {@link Challenge}
      */
     private List<Challenge> fetchChallenges(JSON json) {
-        JSON.Array jsonChallenges = json.get("challenges").asArray();
-        List<Challenge> cr = new ArrayList<>();
-        for (JSON.Value c : jsonChallenges) {
-            Challenge ch = getSession().createChallenge(c.asObject());
-            if (ch != null) {
-                cr.add(ch);
-            }
-        }
-        return cr;
+        Session session = getSession();
+
+        return Collections.unmodifiableList(json.get("challenges").asArray().stream()
+                .map(JSON.Value::asObject)
+                .map(session::createChallenge)
+                .collect(toList()));
     }
 
     /**
@@ -279,16 +276,24 @@ public class Authorization extends AcmeResource {
             return Arrays.asList(challenges);
         }
 
-        List<List<Challenge>> cmb = new ArrayList<>(jsonCombinations.size());
-        for (JSON.Value v : jsonCombinations) {
-            JSON.Array c = v.asArray();
-            List<Challenge> clist = new ArrayList<>(c.size());
-            for (JSON.Value n : c) {
-                clist.add(challenges.get(n.asInt()));
-            }
-            cmb.add(clist);
-        }
-        return cmb;
+        return Collections.unmodifiableList(jsonCombinations.stream()
+                .map(JSON.Value::asArray)
+                .map(this::findChallenges)
+                .collect(toList()));
+    }
+
+    /**
+     * Converts an array of challenge indexes to a list of matching {@link Challenge}.
+     *
+     * @param combination
+     *            {@link Array} of the challenge indexes
+     * @return List of matching {@link Challenge}
+     */
+    private List<Challenge> findChallenges(JSON.Array combination) {
+        return combination.stream()
+               .mapToInt(JSON.Value::asInt)
+               .mapToObj(challenges::get)
+               .collect(toList());
     }
 
 }

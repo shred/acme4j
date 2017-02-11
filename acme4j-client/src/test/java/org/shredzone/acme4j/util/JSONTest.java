@@ -29,8 +29,11 @@ import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -139,6 +142,25 @@ public class JSONTest {
         } catch (NoSuchElementException ex) {
             // expected
         }
+    }
+
+    /**
+     * Test the array stream.
+     */
+    @Test
+    public void testArrayStream() {
+        JSON json = TestUtils.getJsonAsObject("json");
+        JSON.Array array = json.get("array").asArray();
+
+        List<JSON.Value> streamValues = array.stream().collect(Collectors.toList());
+
+        List<JSON.Value> iteratorValues = new ArrayList<>();
+        Iterator<JSON.Value> it = array.iterator();
+        while (it.hasNext()) {
+            iteratorValues.add(it.next());
+        }
+
+        assertThat(streamValues, contains(iteratorValues.toArray()));
     }
 
     /**

@@ -352,9 +352,9 @@ public class Registration extends AcmeResource {
 
         if (json.contains(KEY_CONTACT)) {
             contacts.clear();
-            for (JSON.Value v : json.get(KEY_CONTACT).asArray()) {
-                contacts.add(v.asURI());
-            }
+            json.get(KEY_CONTACT).asArray().stream()
+                    .map(JSON.Value::asURI)
+                    .forEach(contacts::add);
         }
 
         this.authorizations = json.get(KEY_AUTHORIZATIONS).asURI();

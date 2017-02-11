@@ -161,9 +161,8 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
         if (array == null) {
             return;
         }
-        for (JSON.Value v : array) {
-            uriList.add(v.asURI());
-        }
+
+        array.stream().map(JSON.Value::asURI).forEach(uriList::add);
     }
 
 }

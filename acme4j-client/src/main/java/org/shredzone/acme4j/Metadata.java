@@ -13,11 +13,11 @@
  */
 package org.shredzone.acme4j;
 
+import static java.util.stream.Collectors.toList;
+
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSON.Array;
@@ -66,11 +66,7 @@ public class Metadata {
             return Collections.emptyList();
         }
 
-        List<String> result = new ArrayList<>(array.size());
-        for (Value v : array) {
-            result.add(v.asString());
-        }
-        return result;
+        return array.stream().map(Value::asString).collect(toList());
     }
 
     /**

@@ -34,7 +34,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
@@ -215,6 +218,15 @@ public final class JSON implements Serializable {
         }
 
         /**
+         * Returns a stream of values.
+         *
+         * @return {@link Stream} of all {@link Value} of this array
+         */
+        public Stream<Value> stream() {
+            return StreamSupport.stream(spliterator(), false);
+        }
+
+        /**
          * Creates a new {@link Iterator} that iterates over the array {@link Value}.
          */
         @Override
@@ -363,6 +375,19 @@ public final class JSON implements Serializable {
             } catch (IllegalArgumentException ex) {
                 throw new AcmeProtocolException(path + ": bad date " + val, ex);
             }
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null || !(obj instanceof Value)) {
+                return false;
+            }
+            return Objects.equals(val, ((Value) obj).val);
+        }
+
+        @Override
+        public int hashCode() {
+            return val != null ? val.hashCode() : 0;
         }
     }
 
