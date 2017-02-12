@@ -51,6 +51,9 @@ public class SessionIT extends AbstractPebbleIT {
     public void testResources() throws AcmeException {
         Session session = new Session(pebbleURI(), keyPair);
 
+        // TODO: Not yet supported by Pebble
+        // assertIsPebbleUri(session.resourceUri(Resource.KEY_CHANGE));
+
         assertIsPebbleUri(session.resourceUri(Resource.NEW_NONCE));
         assertIsPebbleUri(session.resourceUri(Resource.NEW_REG));
     }
