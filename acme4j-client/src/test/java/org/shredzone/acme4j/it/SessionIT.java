@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
+import java.net.URI;
 import java.security.KeyPair;
 
 import org.junit.Test;
@@ -66,10 +67,12 @@ public class SessionIT extends AbstractPebbleIT {
         assertThat(meta, not(nullValue()));
 
         // Pebble does not currently deliver any metadata
-        assertThat(meta.getTermsOfService(), is(nullValue()));
+        assertThat(meta.getTermsOfService(), is(URI.create("data:text/plain,Do%20what%20thou%20wilt")));
         assertThat(meta.getWebsite(), is(nullValue()));
         assertThat(meta.getCaaIdentities(), is(empty()));
-        assertThat(meta.getJSON().toString(), sameJSONAs("{}"));
+        assertThat(meta.getJSON().toString(), sameJSONAs("{"
+                        + "'terms-of-service': 'data:text/plain,Do%20what%20thou%20wilt'"
+                        + "}"));
     }
 
 }
