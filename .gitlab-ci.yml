@@ -3,5 +3,13 @@ image: maven:3-jdk-8
 
 build:
   script:
-    - mvn -B clean org.jacoco:jacoco-maven-plugin:prepare-agent install site:site -Dmaven.test.failure.ignore=true
+    - mvn -B clean compile
+
+test:
+  script:
+    - mvn -B org.jacoco:jacoco-maven-plugin:prepare-agent verify -Dmaven.test.failure.ignore=true -DskipITs=false -DpebbleHost=pebble
     - mvn -B sonar:sonar -Dsonar.gitlab.commit_sha=$CI_BUILD_REF -Dsonar.gitlab.ref_name=$CI_BUILD_REF_NAME
+
+deploy:
+  script:
+    - mvn -B install site:site
