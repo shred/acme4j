@@ -91,6 +91,38 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
+    public void resetNonce(Session session) throws AcmeException {
+        assertConnectionIsClosed();
+
+        try {
+            session.setNonce(null);
+
+            URI newNonceUri = session.resourceUri(Resource.NEW_NONCE);
+
+            conn = httpConnector.openConnection(newNonceUri);
+            conn.setRequestMethod("HEAD");
+            conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
+            conn.connect();
+
+            int rc = conn.getResponseCode();
+            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_NO_CONTENT) {
+                throw new AcmeProtocolException("Fetching a nonce returned " + rc + " "
+                    + conn.getResponseMessage());
+            }
+
+            updateSession(session);
+
+            if (session.getNonce() == null) {
+                throw new AcmeProtocolException("Server did not provide a nonce");
+            }
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
+        } finally {
+            conn = null;
+        }
+    }
+
+    @Override
     public void sendRequest(URI uri, Session session) throws AcmeException {
         Objects.requireNonNull(uri, "uri");
         Objects.requireNonNull(session, "session");
@@ -124,17 +156,7 @@ public class DefaultConnection implements Connection {
             KeyPair keypair = session.getKeyPair();
 
             if (session.getNonce() == null) {
-                LOG.debug("Getting initial nonce, HEAD {}", uri);
-                conn = httpConnector.openConnection(uri);
-                conn.setRequestMethod("HEAD");
-                conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
-                conn.connect();
-                updateSession(session);
-                conn = null;
-            }
-
-            if (session.getNonce() == null) {
-                throw new AcmeProtocolException("Server did not provide a nonce");
+                resetNonce(session);
             }
 
             LOG.debug("POST {} with claims: {}", uri, claims);

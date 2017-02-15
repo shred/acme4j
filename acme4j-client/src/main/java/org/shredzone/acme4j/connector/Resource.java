@@ -22,6 +22,7 @@ public enum Resource {
     NEW_REG("new-reg"),
     NEW_AUTHZ("new-authz"),
     NEW_CERT("new-cert"),
+    NEW_NONCE("new-nonce"),
     REVOKE_CERT("revoke-cert");
 
     private final String path;

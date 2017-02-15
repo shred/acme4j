@@ -46,6 +46,7 @@ import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
+import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
@@ -61,13 +62,19 @@ public class DefaultConnectionTest {
     private Session session;
 
     @Before
-    public void setup() throws IOException {
+    public void setup() throws AcmeException, IOException {
         mockUrlConnection = mock(HttpURLConnection.class);
 
         mockHttpConnection = mock(HttpConnector.class);
         when(mockHttpConnection.openConnection(requestUri)).thenReturn(mockUrlConnection);
 
-        session = TestUtils.session();
+        final AcmeProvider mockProvider = mock(AcmeProvider.class);
+        when(mockProvider.directory(
+                        ArgumentMatchers.any(Session.class),
+                        ArgumentMatchers.eq(URI.create(TestUtils.ACME_SERVER_URI))))
+            .thenReturn(TestUtils.getJsonAsObject("directory"));
+
+        session = TestUtils.session(mockProvider);
         session.setLocale(Locale.JAPAN);
     }
 
@@ -130,6 +137,47 @@ public class DefaultConnectionTest {
         }
 
         verify(mockUrlConnection).getHeaderField("Replay-Nonce");
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    /**
+     * Test that {@link DefaultConnection#resetNonce(Session)} fetches a new nonce via
+     * new-nonce resource and a HEAD request.
+     */
+    @Test
+    public void testResetNonce() throws AcmeException, IOException {
+        byte[] nonce = "foo-nonce-foo".getBytes();
+
+        when(mockHttpConnection.openConnection(URI.create("https://example.com/acme/new-nonce")))
+                .thenReturn(mockUrlConnection);
+        when(mockUrlConnection.getResponseCode())
+                .thenReturn(HttpURLConnection.HTTP_NO_CONTENT);
+
+        assertThat(session.getNonce(), is(nullValue()));
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.resetNonce(session);
+            fail("missing Replay-Nonce header not detected");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
+
+        assertThat(session.getNonce(), is(nullValue()));
+
+        when(mockUrlConnection.getHeaderField("Replay-Nonce"))
+                .thenReturn(Base64Url.encode(nonce));
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.resetNonce(session);
+        }
+
+        assertThat(session.getNonce(), is(nonce));
+
+        verify(mockUrlConnection, atLeastOnce()).setRequestMethod("HEAD");
+        verify(mockUrlConnection, atLeastOnce()).setRequestProperty("Accept-Language", "ja-JP");
+        verify(mockUrlConnection, atLeastOnce()).connect();
+        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
+        verify(mockUrlConnection, atLeastOnce()).getHeaderField("Replay-Nonce");
         verifyNoMoreInteractions(mockUrlConnection);
     }
 
@@ -512,11 +560,19 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
-            public void updateSession(Session session) {
+            public void resetNonce(Session session) throws AcmeException {
                 assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
                 if (session.getNonce() == null) {
                     session.setNonce(nonce1);
-                } else if (session.getNonce() == nonce1) {
+                } else {
+                    fail("unknown nonce");
+                }
+            };
+
+            @Override
+            public void updateSession(Session session) {
+                assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
+                if (session.getNonce() == nonce1) {
                     session.setNonce(nonce2);
                 } else {
                     fail("unknown nonce");
@@ -528,14 +584,12 @@ public class DefaultConnectionTest {
             conn.sendSignedRequest(requestUri, cb, DefaultConnectionTest.this.session);
         }
 
-        verify(mockUrlConnection).setRequestMethod("HEAD");
-        verify(mockUrlConnection, times(2)).setRequestProperty("Accept-Language", "ja-JP");
-        verify(mockUrlConnection, times(2)).connect();
-
         verify(mockUrlConnection).setRequestMethod("POST");
         verify(mockUrlConnection).setRequestProperty("Accept", "application/json");
         verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
+        verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
         verify(mockUrlConnection).setRequestProperty("Content-Type", "application/jose+json");
+        verify(mockUrlConnection).connect();
         verify(mockUrlConnection).setDoOutput(true);
         verify(mockUrlConnection).setFixedLengthStreamingMode(outputStream.toByteArray().length);
         verify(mockUrlConnection).getOutputStream();
@@ -574,6 +628,11 @@ public class DefaultConnectionTest {
      */
     @Test(expected = AcmeProtocolException.class)
     public void testSendSignedRequestNoNonce() throws Exception {
+        when(mockHttpConnection.openConnection(URI.create("https://example.com/acme/new-nonce")))
+                .thenReturn(mockUrlConnection);
+        when(mockUrlConnection.getResponseCode())
+                .thenReturn(HttpURLConnection.HTTP_NOT_FOUND);
+
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             JSONBuilder cb = new JSONBuilder();
             conn.sendSignedRequest(requestUri, cb, DefaultConnectionTest.this.session);

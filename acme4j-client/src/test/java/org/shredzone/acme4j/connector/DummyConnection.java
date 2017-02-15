@@ -29,6 +29,11 @@ import org.shredzone.acme4j.util.JSONBuilder;
 public class DummyConnection implements Connection {
 
     @Override
+    public void resetNonce(Session session) throws AcmeException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void sendRequest(URI uri, Session session) {
         throw new UnsupportedOperationException();
     }

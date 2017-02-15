@@ -29,6 +29,14 @@ import org.shredzone.acme4j.util.JSONBuilder;
 public interface Connection extends AutoCloseable {
 
     /**
+     * Resets the session nonce, by fetching a new one.
+     *
+     * @param session
+     *            {@link Session} instance to fetch a nonce for
+     */
+    void resetNonce(Session session) throws AcmeException;
+
+    /**
      * Sends a simple GET request.
      *
      * @param uri
