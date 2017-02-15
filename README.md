@@ -1,4 +1,4 @@
-# ACME Java Client ![build status](https://shredzone.org/badge/acme4j.svg)
+# ACME Java Client ![build status](https://shredzone.org/badge/draft/acme4j.svg)
 
 This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-04) protocol.
 
@@ -8,9 +8,15 @@ This Java client helps connecting to an ACME server, and performing all necessar
 
 It is an independent open source implementation that is not affiliated with or endorsed by _Let's Encrypt_.
 
+## Work in Progress!
+
+In this branch, the latest draft of the ACME protocol is being implemented. It is not meant for production. There are no servers that fully support this draft at the moment.
+
+Use the [master branch](https://github.com/shred/acme4j/tree/master) for production purposes.
+
 ## Features
 
-* Supports ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02), with a few parts of [draft 03](https://tools.ietf.org/html/draft-ietf-acme-acme-03) and [draft 04](https://tools.ietf.org/html/draft-ietf-acme-acme-04)
+* Supports ACME protocol up to [draft 04](https://tools.ietf.org/html/draft-ietf-acme-acme-04)
 * Easy to use Java API
 * Requires JRE 8 or higher
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
@@ -21,14 +27,6 @@ It is an independent open source implementation that is not affiliated with or e
 
 * See the [online documentation](https://shredzone.org/maven/acme4j/) about how to use _acme4j_.
 * For a quick start, have a look at [the source code of an example](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/ClientTest.java).
-
-## Compatibility
-
-_acme4j_ supports all CAs that implement the ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02). [draft 03](https://tools.ietf.org/html/draft-ietf-acme-acme-03) and [draft 04](https://tools.ietf.org/html/draft-ietf-acme-acme-04) are partially supported. The missing parts are likely to be removed in the next draft, or are not yet supported by the _Let's Encrypt_ server.
-
-The most prominent ACME CA, _Let's Encrypt_, [diverges from the specifications](https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md). Some parts of the _acme4j_ API may not work with _Let's Encrypt_. Also, the usage of deprecated API parts may be required.
-
-The _acme4j_ API may change as features are added to, and other features removed from the [ACME specifications](https://github.com/ietf-wg-acme/acme), because they are still work in progress. Also see the [_acme4j_ bug tracker](https://github.com/shred/acme4j/issues) for missing and untested features.
 
 ## Contribute
 
