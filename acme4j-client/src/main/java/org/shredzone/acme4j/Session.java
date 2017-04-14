@@ -17,13 +17,12 @@ import java.net.URI;
 import java.security.KeyPair;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.EnumMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.stream.StreamSupport;
 
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.TokenChallenge;
@@ -42,9 +41,9 @@ import org.shredzone.acme4j.util.JSON;
 public class Session {
     private final Map<Resource, URI> resourceMap = new EnumMap<>(Resource.class);
     private final URI serverUri;
+    private final AcmeProvider provider;
 
     private KeyPair keyPair;
-    private AcmeProvider provider;
     private byte[] nonce;
     private JSON directoryJson;
     private Metadata metadata;
@@ -70,10 +69,25 @@ public class Session {
      *            {@link URI} of the ACME server
      * @param keyPair
      *            {@link KeyPair} of the ACME account
+     * @throws IllegalArgumentException
+     *             if no ACME provider was found for the server URI.
      */
     public Session(URI serverUri, KeyPair keyPair) {
         this.serverUri = Objects.requireNonNull(serverUri, "serverUri");
         this.keyPair = Objects.requireNonNull(keyPair, "keyPair");
+
+        final URI localServerUri = serverUri;
+
+        Iterable<AcmeProvider> providers = ServiceLoader.load(AcmeProvider.class);
+        provider = StreamSupport.stream(providers.spliterator(), false)
+            .filter(p -> p.accepts(localServerUri))
+            .reduce((a, b) -> {
+                    throw new IllegalArgumentException("Both ACME providers "
+                        + a.getClass().getSimpleName() + " and "
+                        + b.getClass().getSimpleName() + " accept "
+                        + localServerUri + ". Please check your classpath.");
+                })
+            .orElseThrow(() -> new IllegalArgumentException("No ACME provider found for " + localServerUri));
     }
 
     /**
@@ -128,32 +142,10 @@ public class Session {
 
     /**
      * Returns the {@link AcmeProvider} that is used for this session.
-     * <p>
-     * The {@link AcmeProvider} instance is lazily created and cached.
      *
      * @return {@link AcmeProvider}
      */
     public AcmeProvider provider() {
-        synchronized (this) {
-            if (provider == null) {
-                List<AcmeProvider> candidates = new ArrayList<>();
-                for (AcmeProvider acp : ServiceLoader.load(AcmeProvider.class)) {
-                    if (acp.accepts(serverUri)) {
-                        candidates.add(acp);
-                    }
-                }
-
-                if (candidates.isEmpty()) {
-                    throw new IllegalArgumentException("No ACME provider found for " + serverUri);
-                } else if (candidates.size() > 1) {
-                    throw new IllegalStateException("There are " + candidates.size() + " "
-                        + AcmeProvider.class.getSimpleName() + " accepting " + serverUri
-                        + ". Please check your classpath.");
-                } else {
-                    provider = candidates.get(0);
-                }
-            }
-        }
         return provider;
     }
 

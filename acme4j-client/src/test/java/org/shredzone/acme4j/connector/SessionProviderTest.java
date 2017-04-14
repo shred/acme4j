@@ -71,9 +71,9 @@ public class SessionProviderTest {
 
     /**
      * There are two testing providers accepting {@code acme://example.net}. Test that
-     * connecting to this URI will result in an {@link IllegalStateException}.
+     * connecting to this URI will result in an {@link IllegalArgumentException}.
      */
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testDuplicate() throws Exception {
         new Session(new URI("acme://example.net"), keyPair).provider();
     }
