@@ -2,6 +2,12 @@
 
 This document will help you migrate your code to the latest _acme4j_ version.
 
+## Migration to Version 0.10
+
+Starting with version 0.10, _acme4j_ requires Java 8 or higher. This is also reflected in the API.
+
+The most noticeable change is that the old `java.util.Date` has been replaced by the new `java.time` API in the entire project. If you don't want to migrate your code to the new API, you can use `Date.from()` and `Date.toInstant()` to convert between the different date objects, where necessary.
+
 ## Migration to Version 0.9
 
 Version 0.9 brought many changes to the internal API. However, this is only relevant if you run your own CA and make own extensions to _acme4j_ (e.g. if you implement a proprietary `Challenge`). If you use _acme4j_ only for retrieving certificates, you should not notice any changes.
