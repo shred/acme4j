@@ -19,7 +19,7 @@
 
     <groupId>org.shredzone.acme4j</groupId>
     <artifactId>acme4j</artifactId>
-    <version>0.10-SNAPSHOT</version>
+    <version>0.10</version>
     <packaging>pom</packaging>
 
     <name>acme4j</name>
@@ -37,7 +37,7 @@
         <url>https://github.com/shred/acme4j/</url>
         <connection>scm:git:git@github.com:shred/acme4j.git</connection>
         <developerConnection>scm:git:git@github.com:shred/acme4j.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>v0.10</tag>
   </scm>
     <issueManagement>
         <system>GitHub</system>
