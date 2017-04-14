@@ -22,6 +22,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.StreamSupport;
 
 import org.shredzone.acme4j.challenge.Challenge;
@@ -39,14 +40,14 @@ import org.shredzone.acme4j.util.JSON;
  * volatile data.
  */
 public class Session {
-    private final Map<Resource, URI> resourceMap = new EnumMap<>(Resource.class);
+    private final AtomicReference<Map<Resource, URI>> resourceMap = new AtomicReference<>();
+    private final AtomicReference<Metadata> metadata = new AtomicReference<>();
     private final URI serverUri;
     private final AcmeProvider provider;
 
     private KeyPair keyPair;
     private byte[] nonce;
     private JSON directoryJson;
-    private Metadata metadata;
     private Locale locale = Locale.getDefault();
     protected Instant directoryCacheExpiry;
 
@@ -183,7 +184,7 @@ public class Session {
      */
     public URI resourceUri(Resource resource) throws AcmeException {
         readDirectory();
-        return resourceMap.get(Objects.requireNonNull(resource, "resource"));
+        return resourceMap.get().get(Objects.requireNonNull(resource, "resource"));
     }
 
     /**
@@ -194,7 +195,7 @@ public class Session {
      */
     public Metadata getMetadata() throws AcmeException {
         readDirectory();
-        return metadata;
+        return metadata.get();
     }
 
     /**
@@ -204,26 +205,28 @@ public class Session {
     private void readDirectory() throws AcmeException {
         synchronized (this) {
             Instant now = Instant.now();
-            if (directoryJson == null || !directoryCacheExpiry.isAfter(now)) {
-                directoryJson = provider().directory(this, getServerUri());
-                directoryCacheExpiry = now.plus(Duration.ofHours(1));
+            if (directoryJson != null && directoryCacheExpiry.isAfter(now)) {
+                return;
+            }
+            directoryJson = provider().directory(this, getServerUri());
+            directoryCacheExpiry = now.plus(Duration.ofHours(1));
+        }
 
-                JSON meta = directoryJson.get("meta").asObject();
-                if (meta != null) {
-                    metadata = new Metadata(meta);
-                } else {
-                    metadata = new Metadata(JSON.empty());
-                }
+        JSON meta = directoryJson.get("meta").asObject();
+        if (meta != null) {
+            metadata.set(new Metadata(meta));
+        } else {
+            metadata.set(new Metadata(JSON.empty()));
+        }
 
-                resourceMap.clear();
-                for (Resource res : Resource.values()) {
-                    URI uri = directoryJson.get(res.path()).asURI();
-                    if (uri != null) {
-                        resourceMap.put(res, uri);
-                    }
-                }
+        Map<Resource, URI> map = new EnumMap<>(Resource.class);
+        for (Resource res : Resource.values()) {
+            URI uri = directoryJson.get(res.path()).asURI();
+            if (uri != null) {
+                map.put(res, uri);
             }
         }
+        resourceMap.set(map);
     }
 
 }
