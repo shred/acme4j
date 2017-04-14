@@ -1,6 +1,6 @@
 # ACME Java Client ![build status](https://shredzone.org/badge/acme4j.svg)
 
-This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-04) protocol.
+This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-06) protocol.
 
 ACME is a protocol that a certificate authority (CA) and an applicant can use to automate the process of verification and certificate issuance.
 
@@ -24,11 +24,9 @@ It is an independent open source implementation that is not affiliated with or e
 
 ## Compatibility
 
-_acme4j_ supports all CAs that implement the ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02). [draft 03](https://tools.ietf.org/html/draft-ietf-acme-acme-03) and [draft 04](https://tools.ietf.org/html/draft-ietf-acme-acme-04) are partially supported. The missing parts are likely to be removed in the next draft, or are not yet supported by the _Let's Encrypt_ server.
+This version of _acme4j_ is tailor-made for _Let's Encrypt_ and other CAs that use the [Boulder](https://github.com/letsencrypt/boulder) server. Boulder [diverges from the ACME specifications](https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md), so _acme4j_ cannot yet be used against other servers that fully comply to the ACME specifications.
 
-The most prominent ACME CA, _Let's Encrypt_, [diverges from the specifications](https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md). Some parts of the _acme4j_ API may not work with _Let's Encrypt_. Also, the usage of deprecated API parts may be required.
-
-The _acme4j_ API may change as features are added to, and other features removed from the [ACME specifications](https://github.com/ietf-wg-acme/acme), because they are still work in progress. Also see the [_acme4j_ bug tracker](https://github.com/shred/acme4j/issues) for missing and untested features.
+The latest [ACME specifications](https://github.com/ietf-wg-acme/acme) are being implemented in the ["draft" branch](https://github.com/shred/acme4j/tree/draft) of _acme4j_.
 
 ## Contribute
 
@@ -42,3 +40,4 @@ _acme4j_ is open source software. The source code is distributed under the terms
 ## Acknowledgements
 
 * I would like to thank Brian Campbell and all the other [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home) developers. _acme4j_ would not exist without your excellent work.
+* I also like to thank everyone who contributed to _acme4j_.
