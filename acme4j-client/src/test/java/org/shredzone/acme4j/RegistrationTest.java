@@ -39,6 +39,7 @@ import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.util.JSON;
@@ -390,6 +391,62 @@ public class RegistrationTest {
 
         Registration registration = new Registration(provider.createSession(), locationUri);
         Certificate cert = registration.requestCertificate(csr);
+
+        assertThat(cert.getLocation(), is(locationUri));
+        assertThat(cert.getChainLocation(), is(chainUri));
+
+        provider.close();
+    }
+
+    /**
+     * Test that an unparseable certificate can be requested, and at least its location
+     * is made available.
+     */
+    @Test
+    public void testRequestCertificateBrokenSync() throws AcmeException, IOException {
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
+                assertThat(uri, is(resourceUri));
+                assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequestWithDate")));
+                assertThat(session, is(notNullValue()));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
+                        HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED));
+                return HttpURLConnection.HTTP_CREATED;
+            }
+
+            @Override
+            public X509Certificate readCertificate() {
+                throw new AcmeProtocolException("Failed to read certificate");
+            }
+
+            @Override
+            public URI getLink(String relation) {
+                switch(relation) {
+                    case "up": return chainUri;
+                    default: return null;
+                }
+            }
+
+            @Override
+            public URI getLocation() {
+                return locationUri;
+            }
+        };
+
+        provider.putTestResource(Resource.NEW_CERT, resourceUri);
+
+        byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
+        ZoneId utc = ZoneId.of("UTC");
+        Instant notBefore = LocalDate.of(2016, 1, 1).atStartOfDay(utc).toInstant();
+        Instant notAfter = LocalDate.of(2016, 1, 8).atStartOfDay(utc).toInstant();
+
+        Registration registration = new Registration(provider.createSession(), locationUri);
+        Certificate cert = registration.requestCertificate(csr, notBefore, notAfter);
 
         assertThat(cert.getLocation(), is(locationUri));
         assertThat(cert.getChainLocation(), is(chainUri));

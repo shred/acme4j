@@ -245,7 +245,11 @@ public class Registration extends AcmeResource {
 
             X509Certificate cert = null;
             if (rc == HttpURLConnection.HTTP_CREATED) {
-                cert = conn.readCertificate();
+                try {
+                    cert = conn.readCertificate();
+                } catch (AcmeProtocolException ex) {
+                    LOG.warn("Could not parse attached certificate", ex);
+                }
             }
 
             URI chainCertUri = conn.getLink("up");
