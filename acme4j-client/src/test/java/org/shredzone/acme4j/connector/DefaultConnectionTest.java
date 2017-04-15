@@ -56,7 +56,8 @@ import org.shredzone.acme4j.util.TestUtils;
  */
 public class DefaultConnectionTest {
 
-    private URI requestUri = URI.create("http://example.com/acme/");;
+    private URI requestUri = URI.create("http://example.com/acme/");
+    private URI keyIdentifierUri = URI.create(TestUtils.ACME_SERVER_URI + "/acct/1");
     private HttpURLConnection mockUrlConnection;
     private HttpConnector mockHttpConnection;
     private Session session;
@@ -581,7 +582,81 @@ public class DefaultConnectionTest {
         }) {
             JSONBuilder cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");
-            conn.sendSignedRequest(requestUri, cb, DefaultConnectionTest.this.session);
+            session.setKeyIdentifier(keyIdentifierUri);
+            conn.sendSignedRequest(requestUri, cb, session);
+        }
+
+        verify(mockUrlConnection).setRequestMethod("POST");
+        verify(mockUrlConnection).setRequestProperty("Accept", "application/json");
+        verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
+        verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
+        verify(mockUrlConnection).setRequestProperty("Content-Type", "application/jose+json");
+        verify(mockUrlConnection).connect();
+        verify(mockUrlConnection).setDoOutput(true);
+        verify(mockUrlConnection).setFixedLengthStreamingMode(outputStream.toByteArray().length);
+        verify(mockUrlConnection).getOutputStream();
+        verify(mockUrlConnection, atLeast(0)).getHeaderFields();
+        verifyNoMoreInteractions(mockUrlConnection);
+
+        String serialized = new String(outputStream.toByteArray(), "utf-8");
+        String[] written = CompactSerializer.deserialize(serialized);
+        String header = Base64Url.decodeToUtf8String(written[0]);
+        String claims = Base64Url.decodeToUtf8String(written[1]);
+        String signature = written[2];
+
+        StringBuilder expectedHeader = new StringBuilder();
+        expectedHeader.append('{');
+        expectedHeader.append("\"nonce\":\"").append(Base64Url.encode(nonce1)).append("\",");
+        expectedHeader.append("\"url\":\"").append(requestUri).append("\",");
+        expectedHeader.append("\"alg\":\"RS256\",");
+        expectedHeader.append("\"kid\":\"").append(keyIdentifierUri).append('"');
+        expectedHeader.append('}');
+
+        assertThat(header, sameJSONAs(expectedHeader.toString()));
+        assertThat(claims, sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
+        assertThat(signature, not(isEmptyOrNullString()));
+
+        JsonWebSignature jws = new JsonWebSignature();
+        jws.setCompactSerialization(serialized);
+        jws.setKey(session.getKeyPair().getPublic());
+        assertThat(jws.verifySignature(), is(true));
+    }
+
+    /**
+     * Test signed POST requests without KeyIdentifier.
+     */
+    @Test
+    public void testSendSignedRequestNoKid() throws Exception {
+        final byte[] nonce1 = "foo-nonce-1-foo".getBytes();
+        final byte[] nonce2 = "foo-nonce-2-foo".getBytes();
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        when(mockUrlConnection.getOutputStream()).thenReturn(outputStream);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
+            @Override
+            public void resetNonce(Session session) throws AcmeException {
+                assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
+                if (session.getNonce() == null) {
+                    session.setNonce(nonce1);
+                } else {
+                    fail("unknown nonce");
+                }
+            };
+
+            @Override
+            public void updateSession(Session session) {
+                assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
+                if (session.getNonce() == nonce1) {
+                    session.setNonce(nonce2);
+                } else {
+                    fail("unknown nonce");
+                }
+            };
+        }) {
+            JSONBuilder cb = new JSONBuilder();
+            cb.put("foo", 123).put("bar", "a-string");
+            conn.sendJwkSignedRequest(requestUri, cb, session);
         }
 
         verify(mockUrlConnection).setRequestMethod("POST");
@@ -619,8 +694,19 @@ public class DefaultConnectionTest {
 
         JsonWebSignature jws = new JsonWebSignature();
         jws.setCompactSerialization(serialized);
-        jws.setKey(DefaultConnectionTest.this.session.getKeyPair().getPublic());
+        jws.setKey(session.getKeyPair().getPublic());
         assertThat(jws.verifySignature(), is(true));
+    }
+
+    /**
+     * Test signed POST requests without a required KeyIdentifier.
+     */
+    @Test(expected = IllegalStateException.class)
+    public void testSendSignedRequestNoKidFailed() throws Exception {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            JSONBuilder cb = new JSONBuilder();
+            conn.sendSignedRequest(requestUri, cb, session);
+        }
     }
 
     /**
@@ -635,7 +721,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             JSONBuilder cb = new JSONBuilder();
-            conn.sendSignedRequest(requestUri, cb, DefaultConnectionTest.this.session);
+            conn.sendJwkSignedRequest(requestUri, cb, DefaultConnectionTest.this.session);
         }
     }
 

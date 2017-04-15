@@ -147,6 +147,15 @@ public class DefaultConnection implements Connection {
 
     @Override
     public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) throws AcmeException {
+        if (session.getKeyIdentifier() == null) {
+            throw new IllegalStateException("session has no KeyIdentifier set");
+        }
+
+        sendJwkSignedRequest(uri, claims, session);
+    }
+
+    @Override
+    public void sendJwkSignedRequest(URI uri, JSONBuilder claims, Session session) throws AcmeException {
         Objects.requireNonNull(uri, "uri");
         Objects.requireNonNull(claims, "claims");
         Objects.requireNonNull(session, "session");
@@ -170,12 +179,15 @@ public class DefaultConnection implements Connection {
             conn.setDoOutput(true);
 
             final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(keypair.getPublic());
-
             JsonWebSignature jws = new JsonWebSignature();
             jws.setPayload(claims.toString());
             jws.getHeaders().setObjectHeaderValue("nonce", Base64Url.encode(session.getNonce()));
             jws.getHeaders().setObjectHeaderValue("url", uri);
-            jws.getHeaders().setJwkHeaderValue("jwk", jwk);
+            if (session.getKeyIdentifier() != null) {
+                jws.getHeaders().setObjectHeaderValue("kid", session.getKeyIdentifier());
+            } else {
+                jws.getHeaders().setJwkHeaderValue("jwk", jwk);
+            }
             jws.setAlgorithmHeaderValue(keyAlgorithm(jwk));
             jws.setKey(keypair.getPrivate());
             byte[] outputData = jws.getCompactSerialization().getBytes(DEFAULT_CHARSET);

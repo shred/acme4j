@@ -44,6 +44,11 @@ public class DummyConnection implements Connection {
     }
 
     @Override
+    public void sendJwkSignedRequest(URI uri, JSONBuilder claims, Session session) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public int accept(int... httpStatus) throws AcmeException {
         throw new UnsupportedOperationException();
     }

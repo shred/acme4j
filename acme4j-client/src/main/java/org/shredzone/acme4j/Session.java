@@ -44,6 +44,7 @@ public class Session {
     private final URI serverUri;
 
     private KeyPair keyPair;
+    private URI keyIdentifier;
     private AcmeProvider provider;
     private byte[] nonce;
     private JSON directoryJson;
@@ -95,6 +96,20 @@ public class Session {
      */
     public void setKeyPair(KeyPair keyPair) {
         this.keyPair = keyPair;
+    }
+
+    /**
+     * Gets the key identifier of the ACME account.
+     */
+    public URI getKeyIdentifier() {
+        return keyIdentifier;
+    }
+
+    /**
+     * Sets the key identifier of the ACME account.
+     */
+    public void setKeyIdentifier(URI keyIdentifier) {
+        this.keyIdentifier = keyIdentifier;
     }
 
     /**

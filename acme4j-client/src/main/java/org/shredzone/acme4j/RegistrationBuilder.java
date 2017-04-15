@@ -87,6 +87,10 @@ public class RegistrationBuilder {
     public Registration create(Session session) throws AcmeException {
         LOG.debug("create");
 
+        if (session.getKeyIdentifier() != null) {
+            throw new IllegalArgumentException("session already seems to have a Registration");
+        }
+
         try (Connection conn = session.provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.putResource(Resource.NEW_REG);
@@ -97,7 +101,7 @@ public class RegistrationBuilder {
                 claims.put("terms-of-service-agreed", termsOfServiceAgreed);
             }
 
-            conn.sendSignedRequest(session.resourceUri(Resource.NEW_REG), claims, session);
+            conn.sendJwkSignedRequest(session.resourceUri(Resource.NEW_REG), claims, session);
             conn.accept(HttpURLConnection.HTTP_CREATED);
 
             URI location = conn.getLocation();

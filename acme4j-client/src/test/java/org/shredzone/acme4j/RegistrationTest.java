@@ -120,9 +120,11 @@ public class RegistrationTest {
             }
         };
 
-        Registration registration = new Registration(provider.createSession(), locationUri);
+        Session session = provider.createSession();
+        Registration registration = new Registration(session, locationUri);
         registration.update();
 
+        assertThat(session.getKeyIdentifier(), is(locationUri));
         assertThat(registration.getLocation(), is(locationUri));
         assertThat(registration.getTermsOfServiceAgreed(), is(true));
         assertThat(registration.getContacts(), hasSize(1));

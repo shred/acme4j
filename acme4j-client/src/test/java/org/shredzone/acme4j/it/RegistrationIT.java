@@ -14,7 +14,7 @@
 package org.shredzone.acme4j.it;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 
 import java.net.URI;
 import java.security.KeyPair;
@@ -25,7 +25,6 @@ import org.shredzone.acme4j.Registration;
 import org.shredzone.acme4j.RegistrationBuilder;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
-import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 
@@ -47,6 +46,9 @@ public class RegistrationIT extends AbstractPebbleIT {
         Registration reg = rb.create(session);
         URI location = reg.getLocation();
         assertIsPebbleUri(location);
+        URI keyIdentifier = session.getKeyIdentifier();
+        assertIsPebbleUri(keyIdentifier);
+        assertThat(keyIdentifier, is(location));
 
         // TODO: Not yet supported by Pebble
         /*
@@ -118,22 +120,6 @@ public class RegistrationIT extends AbstractPebbleIT {
         Session sessionNewKey = new Session(pebbleURI(), newKeyPair);
         Registration newRegistration = Registration.bind(sessionNewKey, location);
         assertThat(newRegistration.getStatus(), is(Status.GOOD));
-    }
-
-    @Test
-    public void testDuplicate() throws AcmeException {
-        KeyPair keyPair = createKeyPair();
-        Session session = new Session(pebbleURI(), keyPair);
-
-        // First registration
-        new RegistrationBuilder().agreeToTermsOfService().create(session);
-
-        try {
-            new RegistrationBuilder().agreeToTermsOfService().create(session);
-            fail("Successfully registered KeyPair a second time");
-        } catch (AcmeConflictException ex) {
-            // This exception is expected
-        }
     }
 
     @Test

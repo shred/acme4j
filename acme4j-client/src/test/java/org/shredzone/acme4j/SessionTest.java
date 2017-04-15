@@ -72,11 +72,13 @@ public class SessionTest {
         assertThat(session, not(nullValue()));
         assertThat(session.getServerUri(), is(serverUri));
         assertThat(session.getKeyPair(), is(keyPair));
+        assertThat(session.getKeyIdentifier(), is(nullValue()));
 
         Session session2 = new Session("https://example.com/acme", keyPair);
         assertThat(session2, not(nullValue()));
         assertThat(session2.getServerUri(), is(serverUri));
         assertThat(session2.getKeyPair(), is(keyPair));
+        assertThat(session2.getKeyIdentifier(), is(nullValue()));
 
         try {
             new Session("#*aBaDuRi*#", keyPair);
@@ -94,6 +96,7 @@ public class SessionTest {
         KeyPair kp1 = TestUtils.createKeyPair();
         KeyPair kp2 = TestUtils.createDomainKeyPair();
         URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
+        URI keyIdentifierUri = URI.create(TestUtils.ACME_SERVER_URI + "/acct/1");
 
         Session session = new Session(serverUri, kp1);
 
@@ -105,6 +108,10 @@ public class SessionTest {
         assertThat(session.getKeyPair(), is(kp1));
         session.setKeyPair(kp2);
         assertThat(session.getKeyPair(), is(kp2));
+
+        assertThat(session.getKeyIdentifier(), is(nullValue()));
+        session.setKeyIdentifier(keyIdentifierUri);
+        assertThat(session.getKeyIdentifier(), is(keyIdentifierUri));
 
         assertThat(session.getServerUri(), is(serverUri));
     }

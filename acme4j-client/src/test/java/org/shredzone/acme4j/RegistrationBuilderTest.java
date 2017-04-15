@@ -47,14 +47,17 @@ public class RegistrationBuilderTest {
             @Override
             public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
                 assertThat(session, is(notNullValue()));
-                if (resourceUri.equals(uri)) {
-                    isUpdate = false;
-                    assertThat(claims.toString(), sameJSONAs(getJson("newRegistration")));
-                } else if (locationUri.equals(uri)) {
-                    isUpdate = true;
-                } else {
-                    fail("bad URI");
-                }
+                assertThat(uri, is(locationUri));
+                assertThat(isUpdate, is(false));
+                isUpdate = true;
+            }
+
+            @Override
+            public void sendJwkSignedRequest(URI uri, JSONBuilder claims, Session session) {
+                assertThat(session, is(notNullValue()));
+                assertThat(uri, is(resourceUri));
+                assertThat(claims.toString(), sameJSONAs(getJson("newRegistration")));
+                isUpdate = false;
             }
 
             @Override
@@ -86,10 +89,21 @@ public class RegistrationBuilderTest {
         builder.addContact("mailto:foo@example.com");
         builder.agreeToTermsOfService();
 
-        Registration registration = builder.create(provider.createSession());
+        Session session = provider.createSession();
+        Registration registration = builder.create(session);
 
         assertThat(registration.getLocation(), is(locationUri));
         assertThat(registration.getTermsOfServiceAgreed(), is(true));
+        assertThat(session.getKeyIdentifier(), is(locationUri));
+
+        try {
+            RegistrationBuilder builder2 = new RegistrationBuilder();
+            builder2.agreeToTermsOfService();
+            builder2.create(session);
+            fail("registered twice on same session");
+        } catch (IllegalArgumentException ex) {
+            // expected
+        }
 
         provider.close();
     }
