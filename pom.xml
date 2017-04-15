@@ -19,7 +19,7 @@
 
     <groupId>org.shredzone.acme4j</groupId>
     <artifactId>acme4j</artifactId>
-    <version>0.10-SNAPSHOT</version>
+    <version>0.11-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>acme4j</name>
@@ -51,9 +51,9 @@
     </developers>
 
     <properties>
-        <bouncycastle.version>1.55</bouncycastle.version>
-        <jose4j.version>0.5.3</jose4j.version>
-        <slf4j.version>1.7.21</slf4j.version>
+        <bouncycastle.version>1.56</bouncycastle.version>
+        <jose4j.version>0.5.5</jose4j.version>
+        <slf4j.version>1.7.25</slf4j.version>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
         <skipITs>true</skipITs>
     </properties>
@@ -133,6 +133,19 @@
                     <pushChanges>false</pushChanges>
                     <localCheckout>true</localCheckout>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+		<version>3.0.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

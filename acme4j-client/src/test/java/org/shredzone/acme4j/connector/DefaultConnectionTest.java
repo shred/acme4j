@@ -775,4 +775,22 @@ public class DefaultConnectionTest {
         verifyNoMoreInteractions(mockUrlConnection);
     }
 
+    /**
+     * Test that a bad certificate throws an exception.
+     */
+    @Test(expected = AcmeProtocolException.class)
+    public void testReadBadCertificate() throws Exception {
+        X509Certificate original = TestUtils.createCertificate();
+        byte[] badCert = original.getEncoded();
+        Arrays.sort(badCert); // break it
+
+        when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/pkix-cert");
+        when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(badCert));
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            conn.readCertificate();
+        }
+    }
+
 }

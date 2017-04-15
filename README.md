@@ -1,6 +1,6 @@
 # ACME Java Client ![build status](https://shredzone.org/badge/draft/acme4j.svg)
 
-This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-04) protocol.
+This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-06) protocol.
 
 ACME is a protocol that a certificate authority (CA) and an applicant can use to automate the process of verification and certificate issuance.
 
@@ -40,3 +40,4 @@ _acme4j_ is open source software. The source code is distributed under the terms
 ## Acknowledgements
 
 * I would like to thank Brian Campbell and all the other [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home) developers. _acme4j_ would not exist without your excellent work.
+* I also like to thank everyone who contributed to _acme4j_.
