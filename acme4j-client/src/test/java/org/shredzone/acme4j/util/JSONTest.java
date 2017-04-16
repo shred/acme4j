@@ -102,10 +102,24 @@ public class JSONTest {
         JSON.Array array = json.get("array").asArray();
 
         assertThat(array.size(), is(4));
+        assertThat(array.isEmpty(), is(false));
         assertThat(array.get(0), is(notNullValue()));
         assertThat(array.get(1), is(notNullValue()));
         assertThat(array.get(2), is(notNullValue()));
         assertThat(array.get(3), is(notNullValue()));
+    }
+
+    /**
+     * Test empty array.
+     */
+    @Test
+    public void testEmptyArray() {
+        JSON json = TestUtils.getJsonAsObject("json");
+        JSON.Array array = json.get("missingArray").asArray();
+
+        assertThat(array.size(), is(0));
+        assertThat(array.isEmpty(), is(true));
+        assertThat(array.stream().count(), is(0L));
     }
 
     /**

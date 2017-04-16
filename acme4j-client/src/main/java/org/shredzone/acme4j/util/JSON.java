@@ -208,6 +208,13 @@ public final class JSON implements Serializable {
         }
 
         /**
+         * Returns {@code true} if the array is empty.
+         */
+        public boolean isEmpty() {
+            return data.isEmpty();
+        }
+
+        /**
          * Gets the {@link Value} at the given index.
          *
          * @param index
@@ -298,11 +305,11 @@ public final class JSON implements Serializable {
         /**
          * Returns the value as JSON array.
          *
-         * @return {@link JSON.Array}, or {@code null} if the value was not set.
+         * @return {@link JSON.Array}, which is empty if the value was not set.
          */
         public Array asArray() {
             if (val == null) {
-                return null;
+                return new Array(path, Collections.emptyList());
             }
 
             try {

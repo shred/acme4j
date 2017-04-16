@@ -272,7 +272,7 @@ public class Authorization extends AcmeResource {
      */
     private List<List<Challenge>> fetchCombinations(JSON json, List<Challenge> challenges) {
         JSON.Array jsonCombinations = json.get("combinations").asArray();
-        if (jsonCombinations == null) {
+        if (jsonCombinations.isEmpty()) {
             return Arrays.asList(challenges);
         }
 

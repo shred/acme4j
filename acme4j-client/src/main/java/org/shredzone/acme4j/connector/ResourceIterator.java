@@ -157,12 +157,9 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
      *            JSON map to read from
      */
     private void fillUriList(JSON json) {
-        JSON.Array array = json.get(field).asArray();
-        if (array == null) {
-            return;
-        }
-
-        array.stream().map(JSON.Value::asURI).forEach(uriList::add);
+        json.get(field).asArray().stream()
+                .map(JSON.Value::asURI)
+                .forEach(uriList::add);
     }
 
 }

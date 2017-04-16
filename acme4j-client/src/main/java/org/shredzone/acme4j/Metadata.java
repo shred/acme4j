@@ -17,10 +17,8 @@ import static java.util.stream.Collectors.toList;
 
 import java.net.URI;
 import java.util.Collection;
-import java.util.Collections;
 
 import org.shredzone.acme4j.util.JSON;
-import org.shredzone.acme4j.util.JSON.Array;
 import org.shredzone.acme4j.util.JSON.Value;
 
 /**
@@ -61,12 +59,9 @@ public class Metadata {
      * itself for the purposes of CAA record validation. Empty if not available.
      */
     public Collection<String> getCaaIdentities() {
-        Array array = meta.get("caa-identities").asArray();
-        if (array == null) {
-            return Collections.emptyList();
-        }
-
-        return array.stream().map(Value::asString).collect(toList());
+        return meta.get("caa-identities").asArray().stream()
+                .map(Value::asString)
+                .collect(toList());
     }
 
     /**
