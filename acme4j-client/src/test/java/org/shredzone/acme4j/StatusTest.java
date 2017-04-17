@@ -35,9 +35,6 @@ public class StatusTest {
 
         // unknown status returns UNKNOWN
         assertThat(Status.parse("foo"), is(Status.UNKNOWN));
-
-        // null returns default value
-        assertThat(Status.parse(null, Status.PROCESSING), is(Status.PROCESSING));
     }
 
 }

@@ -36,6 +36,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
+import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
@@ -84,7 +85,8 @@ public class JSONTest {
         JSON json = TestUtils.getJsonAsObject("json");
 
         assertThat(json.keySet(), containsInAnyOrder(
-                    "text", "number", "boolean", "uri", "url", "date", "array", "collect"));
+                    "text", "number", "boolean", "uri", "url", "date", "array",
+                    "collect", "status"));
         assertThat(json.contains("text"), is(true));
         assertThat(json.contains("music"), is(false));
         assertThat(json.get("text"), is(notNullValue()));
@@ -178,6 +180,7 @@ public class JSONTest {
         assertThat(json.get("uri").asURI(), is(URI.create("mailto:foo@example.com")));
         assertThat(json.get("url").asURL(), is(new URL("http://example.com")));
         assertThat(json.get("date").asInstant(), is(date));
+        assertThat(json.get("status").asStatusOrElse(Status.INVALID), is(Status.VALID));
 
         JSON.Array array = json.get("array").asArray();
         assertThat(array.get(0).asString(), is("foo"));
@@ -204,8 +207,8 @@ public class JSONTest {
         assertThat(json.get("none").asURI(), is(nullValue()));
         assertThat(json.get("none").asURL(), is(nullValue()));
         assertThat(json.get("none").asInstant(), is(nullValue()));
-        assertThat(json.get("none").asArray(), is(nullValue()));
         assertThat(json.get("none").asObject(), is(nullValue()));
+        assertThat(json.get("none").asStatusOrElse(Status.INVALID), is(Status.INVALID));
 
         try {
             json.get("none").asInt();

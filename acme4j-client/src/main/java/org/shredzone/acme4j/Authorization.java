@@ -223,7 +223,7 @@ public class Authorization extends AcmeResource {
      *            JSON data
      */
     protected void unmarshalAuthorization(JSON json) {
-        this.status = Status.parse(json.get("status").asString(), Status.PENDING);
+        this.status = json.get("status").asStatusOrElse(Status.PENDING);
 
         String jsonExpires = json.get("expires").asString();
         if (jsonExpires != null) {

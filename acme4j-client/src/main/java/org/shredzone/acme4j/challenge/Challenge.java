@@ -99,7 +99,7 @@ public class Challenge extends AcmeResource {
      * Returns the current status of the challenge.
      */
     public Status getStatus() {
-        return Status.parse(data.get(KEY_STATUS).asString(), Status.PENDING);
+        return data.get(KEY_STATUS).asStatusOrElse(Status.PENDING);
     }
 
     /**

@@ -38,18 +38,4 @@ public enum Status {
                 .orElse(Status.UNKNOWN);
     }
 
-    /**
-     * Parses the string and returns a corresponding Status object.
-     *
-     * @param str
-     *            String to parse
-     * @param def
-     *            Default Status if str is {@code null}
-     * @return {@link Status} matching the string, or {@link Status#UNKNOWN} if there was
-     *         no match, or {@code def} if the str was {@code null}
-     */
-    public static Status parse(String str, Status def) {
-        return str != null ? parse(str) : def;
-    }
-
 }

@@ -41,6 +41,7 @@ import java.util.stream.StreamSupport;
 
 import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
+import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
@@ -390,6 +391,21 @@ public final class JSON implements Serializable {
             } catch (IllegalArgumentException ex) {
                 throw new AcmeProtocolException(path + ": bad date " + val, ex);
             }
+        }
+
+        /**
+         * Returns the parsed status.
+         *
+         * @param def
+         *            Default status if value is not present or {@code null}
+         * @return {@link Status}
+         */
+        public Status asStatusOrElse(Status def) {
+            if (val == null) {
+                return def;
+            }
+
+            return Status.parse(val.toString());
         }
 
         @Override
