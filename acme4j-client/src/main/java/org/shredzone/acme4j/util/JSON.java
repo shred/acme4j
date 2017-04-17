@@ -394,6 +394,19 @@ public final class JSON implements Serializable {
         }
 
         /**
+         * Returns the value as base64 decoded byte array.
+         *
+         * @return byte array, or {@code null} if the value was not set.
+         */
+        public byte[] asBinary() {
+            if (val == null) {
+                return null;
+            }
+
+            return AcmeUtils.base64UrlDecode(val.toString());
+        }
+
+        /**
          * Returns the parsed status.
          *
          * @param def

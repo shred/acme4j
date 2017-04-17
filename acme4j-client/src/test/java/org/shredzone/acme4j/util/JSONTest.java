@@ -86,7 +86,7 @@ public class JSONTest {
 
         assertThat(json.keySet(), containsInAnyOrder(
                     "text", "number", "boolean", "uri", "url", "date", "array",
-                    "collect", "status"));
+                    "collect", "status", "binary"));
         assertThat(json.contains("text"), is(true));
         assertThat(json.contains("music"), is(false));
         assertThat(json.get("text"), is(notNullValue()));
@@ -181,6 +181,7 @@ public class JSONTest {
         assertThat(json.get("url").asURL(), is(new URL("http://example.com")));
         assertThat(json.get("date").asInstant(), is(date));
         assertThat(json.get("status").asStatusOrElse(Status.INVALID), is(Status.VALID));
+        assertThat(json.get("binary").asBinary(), is("Chainsaw".getBytes()));
 
         JSON.Array array = json.get("array").asArray();
         assertThat(array.get(0).asString(), is("foo"));
@@ -209,6 +210,7 @@ public class JSONTest {
         assertThat(json.get("none").asInstant(), is(nullValue()));
         assertThat(json.get("none").asObject(), is(nullValue()));
         assertThat(json.get("none").asStatusOrElse(Status.INVALID), is(Status.INVALID));
+        assertThat(json.get("none").asBinary(), is(nullValue()));
 
         try {
             json.get("none").asInt();

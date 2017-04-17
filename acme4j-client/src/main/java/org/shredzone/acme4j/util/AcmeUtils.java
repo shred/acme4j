@@ -100,6 +100,17 @@ public final class AcmeUtils {
     }
 
     /**
+     * Base64 decodes to a byte array, using URL style encoding.
+     *
+     * @param base64
+     *            base64 encoded string
+     * @return decoded data
+     */
+    public static byte[] base64UrlDecode(String base64) {
+        return Base64Url.decode(base64);
+    }
+
+    /**
      * ASCII encodes a domain name.
      * <p>
      * The conversion is done as described in

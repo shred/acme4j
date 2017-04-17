@@ -85,6 +85,15 @@ public class AcmeUtilsTest {
     }
 
     /**
+     * Test base64 URL decode.
+     */
+    @Test
+    public void testBase64UrlDecode() {
+        byte[] base64UrlDecode = base64UrlDecode("w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI");
+        assertThat(base64UrlDecode, is(sha256hash("foobar")));
+    }
+
+    /**
      * Test ACE conversion.
      */
     @Test
