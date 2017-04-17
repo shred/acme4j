@@ -22,7 +22,6 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
@@ -46,8 +45,8 @@ import org.shredzone.acme4j.util.TestUtils;
  */
 public class ChallengeTest {
     private Session session;
-    private URI resourceUri = URI.create("https://example.com/acme/some-resource");
-    private URI locationUri = URI.create("https://example.com/acme/some-location");
+    private URL resourceUrl = url("https://example.com/acme/some-resource");
+    private URL locationUrl = url("https://example.com/acme/some-location");
 
     @Before
     public void setup() throws IOException {
@@ -61,8 +60,8 @@ public class ChallengeTest {
     public void testChallenge() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URI uri, Session session) {
-                assertThat(uri, is(locationUri));
+            public void sendRequest(URL url, Session session) {
+                assertThat(url, is(locationUrl));
             }
 
             @Override
@@ -82,11 +81,11 @@ public class ChallengeTest {
 
         provider.putTestChallenge(Http01Challenge.TYPE, new Http01Challenge(session));
 
-        Http01Challenge challenge = Challenge.bind(session, locationUri);
+        Http01Challenge challenge = Challenge.bind(session, locationUrl);
 
         assertThat(challenge.getType(), is(Http01Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.VALID));
-        assertThat(challenge.getLocation(), is(locationUri));
+        assertThat(challenge.getLocation(), is(locationUrl));
         assertThat(challenge.getToken(), is("IlirfxKKXAsHtmzK29Pj8A"));
 
         provider.close();
@@ -111,7 +110,7 @@ public class ChallengeTest {
         // Test unmarshalled values
         assertThat(challenge.getType(), is("generic-01"));
         assertThat(challenge.getStatus(), is(Status.VALID));
-        assertThat(challenge.getLocation(), is(new URI("http://example.com/challenge/123")));
+        assertThat(challenge.getLocation(), is(url("http://example.com/challenge/123")));
         assertThat(challenge.getValidated(), is(parseTimestamp("2015-12-12T17:19:36.336785823Z")));
         assertThat(challenge.getJSON().get("type").asString(), is("generic-01"));
         assertThat(challenge.getJSON().get("uri").asURL(), is(new URL("http://example.com/challenge/123")));
@@ -151,8 +150,8 @@ public class ChallengeTest {
     public void testTrigger() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
-                assertThat(uri, is(resourceUri));
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+                assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJson("triggerHttpChallengeRequest")));
                 assertThat(session, is(notNullValue()));
             }
@@ -178,7 +177,7 @@ public class ChallengeTest {
         challenge.trigger();
 
         assertThat(challenge.getStatus(), is(Status.PENDING));
-        assertThat(challenge.getLocation(), is(locationUri));
+        assertThat(challenge.getLocation(), is(locationUrl));
 
         provider.close();
     }
@@ -190,8 +189,8 @@ public class ChallengeTest {
     public void testUpdate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URI uri, Session session) {
-                assertThat(uri, is(locationUri));
+            public void sendRequest(URL url, Session session) {
+                assertThat(url, is(locationUrl));
             }
 
             @Override
@@ -220,7 +219,7 @@ public class ChallengeTest {
         challenge.update();
 
         assertThat(challenge.getStatus(), is(Status.VALID));
-        assertThat(challenge.getLocation(), is(locationUri));
+        assertThat(challenge.getLocation(), is(locationUrl));
 
         provider.close();
     }
@@ -234,8 +233,8 @@ public class ChallengeTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URI uri, Session session) {
-                assertThat(uri, is(locationUri));
+            public void sendRequest(URL url, Session session) {
+                assertThat(url, is(locationUrl));
             }
 
             @Override
@@ -270,7 +269,7 @@ public class ChallengeTest {
         }
 
         assertThat(challenge.getStatus(), is(Status.VALID));
-        assertThat(challenge.getLocation(), is(locationUri));
+        assertThat(challenge.getLocation(), is(locationUrl));
 
         provider.close();
     }
@@ -288,7 +287,7 @@ public class ChallengeTest {
         }
 
         try {
-            Challenge.bind(null, locationUri);
+            Challenge.bind(null, locationUrl);
             fail("session accepts null");
         } catch (NullPointerException ex) {
             // expected
@@ -296,14 +295,14 @@ public class ChallengeTest {
     }
 
     /**
-     * Test that an exception is thrown on a bad location URI.
+     * Test that an exception is thrown on a bad location URL.
      */
     @Test(expected = IllegalArgumentException.class)
     public void testBadBind() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URI uri, Session session) {
-                assertThat(uri, is(locationUri));
+            public void sendRequest(URL url, Session session) {
+                assertThat(url, is(locationUrl));
             }
 
             @Override
@@ -320,7 +319,7 @@ public class ChallengeTest {
         };
 
         Session session = provider.createSession();
-        Challenge.bind(session, locationUri);
+        Challenge.bind(session, locationUrl);
 
         provider.close();
     }

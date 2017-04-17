@@ -14,6 +14,7 @@
 package org.shredzone.acme4j.connector;
 
 import java.net.URI;
+import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 
@@ -34,17 +35,17 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public void sendRequest(URI uri, Session session) {
+    public void sendRequest(URL url, Session session) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
+    public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void sendJwkSignedRequest(URI uri, JSONBuilder claims, Session session) {
+    public void sendJwkSignedRequest(URL url, JSONBuilder claims, Session session) {
         throw new UnsupportedOperationException();
     }
 
@@ -74,12 +75,12 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public URI getLocation() {
+    public URL getLocation() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public URI getLink(String relation) {
+    public URL getLink(String relation) {
         throw new UnsupportedOperationException();
     }
 

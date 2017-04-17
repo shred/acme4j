@@ -16,6 +16,7 @@ package org.shredzone.acme4j;
 import static java.util.stream.Collectors.toList;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.Collection;
 
 import org.shredzone.acme4j.util.JSON;
@@ -47,11 +48,11 @@ public class Metadata {
     }
 
     /**
-     * Returns an {@link URI} to a website providing more information about the ACME
+     * Returns an {@link URL} to a website providing more information about the ACME
      * server. {@code null} if not available.
      */
-    public URI getWebsite() {
-        return meta.get("website").asURI();
+    public URL getWebsite() {
+        return meta.get("website").asURL();
     }
 
     /**

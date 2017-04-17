@@ -18,8 +18,7 @@ import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.URL;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLHandshakeException;
@@ -41,12 +40,12 @@ public class LetsEncryptHttpConnectorTest {
      */
     @Test
     @Category(HttpURLConnection.class)
-    public void testCertificate() throws IOException, URISyntaxException {
+    public void testCertificate() throws IOException {
         LetsEncryptHttpConnector connector = new LetsEncryptHttpConnector();
 
         try {
             HttpURLConnection goodConn = connector.openConnection(
-                            new URI("https://acme-staging.api.letsencrypt.org/directory"));
+                            new URL("https://acme-staging.api.letsencrypt.org/directory"));
             assertThat(goodConn, is(instanceOf(HttpsURLConnection.class)));
             goodConn.connect();
         } catch (SSLHandshakeException ex) {
@@ -55,7 +54,7 @@ public class LetsEncryptHttpConnectorTest {
 
         try {
             HttpURLConnection badConn = connector.openConnection(
-                            new URI("https://www.google.com"));
+                            new URL("https://www.google.com"));
             assertThat(badConn, is(instanceOf(HttpsURLConnection.class)));
             badConn.connect();
             fail("Connection accepts foreign certificate");

@@ -18,6 +18,7 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.security.KeyPair;
 import java.util.ServiceLoader;
 
@@ -92,7 +93,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public URI resolve(URI serverUri) {
+        public URL resolve(URI serverUri) {
             throw new UnsupportedOperationException();
         }
 
@@ -120,7 +121,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public URI resolve(URI serverUri) {
+        public URL resolve(URI serverUri) {
             throw new UnsupportedOperationException();
         }
 

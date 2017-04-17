@@ -14,7 +14,7 @@
 package org.shredzone.acme4j;
 
 import java.net.HttpURLConnection;
-import java.net.URI;
+import java.net.URL;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -37,19 +37,19 @@ public class Certificate extends AcmeResource {
     private static final Logger LOG = LoggerFactory.getLogger(Certificate.class);
     private static final int MAX_CHAIN_LENGTH = 10;
 
-    private URI chainCertUri;
+    private URL chainCertUrl;
     private X509Certificate cert = null;
     private X509Certificate[] chain = null;
 
-    protected Certificate(Session session, URI certUri) {
+    protected Certificate(Session session, URL certUrl) {
         super(session);
-        setLocation(certUri);
+        setLocation(certUrl);
     }
 
-    protected Certificate(Session session, URI certUri, URI chainUri, X509Certificate cert) {
+    protected Certificate(Session session, URL certUrl, URL chainUrl, X509Certificate cert) {
         super(session);
-        setLocation(certUri);
-        this.chainCertUri = chainUri;
+        setLocation(certUrl);
+        this.chainCertUrl = chainUrl;
         this.cert = cert;
     }
 
@@ -62,16 +62,16 @@ public class Certificate extends AcmeResource {
      *            Location of the Certificate
      * @return {@link Certificate} bound to the session and location
      */
-    public static Certificate bind(Session session, URI location) {
+    public static Certificate bind(Session session, URL location) {
         return new Certificate(session, location);
     }
 
     /**
-     * Returns the URI of the certificate chain. {@code null} if not known or not
+     * Returns the URL of the certificate chain. {@code null} if not known or not
      * available.
      */
-    public URI getChainLocation() {
-        return chainCertUri;
+    public URL getChainLocation() {
+        return chainCertUrl;
     }
 
     /**
@@ -92,7 +92,7 @@ public class Certificate extends AcmeResource {
                 conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
                 conn.handleRetryAfter("certificate is not available for download yet");
 
-                chainCertUri = conn.getLink("up");
+                chainCertUrl = conn.getLink("up");
                 cert = conn.readCertificate();
             }
         }
@@ -111,21 +111,21 @@ public class Certificate extends AcmeResource {
      */
     public X509Certificate[] downloadChain() throws AcmeException {
         if (chain == null) {
-            if (chainCertUri == null) {
+            if (chainCertUrl == null) {
                 download();
             }
 
-            if (chainCertUri == null) {
+            if (chainCertUrl == null) {
                 throw new AcmeProtocolException("No certificate chain provided");
             }
 
             LOG.debug("downloadChain");
 
             List<X509Certificate> certChain = new ArrayList<>();
-            URI link = chainCertUri;
+            URL link = chainCertUrl;
             while (link != null && certChain.size() < MAX_CHAIN_LENGTH) {
                 try (Connection conn = getSession().provider().connect()) {
-                    conn.sendRequest(chainCertUri, getSession());
+                    conn.sendRequest(chainCertUrl, getSession());
                     conn.accept(HttpURLConnection.HTTP_OK);
 
                     certChain.add(conn.readCertificate());
@@ -159,8 +159,8 @@ public class Certificate extends AcmeResource {
      */
     public void revoke(RevocationReason reason) throws AcmeException {
         LOG.debug("revoke");
-        URI resUri = getSession().resourceUri(Resource.REVOKE_CERT);
-        if (resUri == null) {
+        URL resUrl = getSession().resourceUrl(Resource.REVOKE_CERT);
+        if (resUrl == null) {
             throw new AcmeProtocolException("CA does not support certificate revocation");
         }
 
@@ -176,7 +176,7 @@ public class Certificate extends AcmeResource {
                 claims.put("reason", reason.getReasonCode());
             }
 
-            conn.sendSignedRequest(resUri, claims, getSession());
+            conn.sendSignedRequest(resUrl, claims, getSession());
             conn.accept(HttpURLConnection.HTTP_OK);
         } catch (CertificateEncodingException ex) {
             throw new AcmeProtocolException("Invalid certificate", ex);

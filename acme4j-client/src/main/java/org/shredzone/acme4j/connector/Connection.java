@@ -14,6 +14,7 @@
 package org.shredzone.acme4j.connector;
 
 import java.net.URI;
+import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 
@@ -39,38 +40,38 @@ public interface Connection extends AutoCloseable {
     /**
      * Sends a simple GET request.
      *
-     * @param uri
-     *            {@link URI} to send the request to.
+     * @param url
+     *            {@link URL} to send the request to.
      * @param session
      *            {@link Session} instance to be used for tracking
      */
-    void sendRequest(URI uri, Session session) throws AcmeException;
+    void sendRequest(URL url, Session session) throws AcmeException;
 
     /**
      * Sends a signed POST request. Ensures that the session has a KeyIdentifier set that
      * is used in the "kid" protected header.
      *
-     * @param uri
-     *            {@link URI} to send the request to.
+     * @param url
+     *            {@link URL} to send the request to.
      * @param claims
      *            {@link JSONBuilder} containing claims. Must not be {@code null}.
      * @param session
      *            {@link Session} instance to be used for signing and tracking
      */
-    void sendSignedRequest(URI uri, JSONBuilder claims, Session session) throws AcmeException;
+    void sendSignedRequest(URL url, JSONBuilder claims, Session session) throws AcmeException;
 
     /**
      * Sends a signed POST request. If the session's KeyIdentifier is set, a "kid"
      * protected header is sent. If not, a "jwk" protected header is sent.
      *
-     * @param uri
-     *            {@link URI} to send the request to.
+     * @param url
+     *            {@link URL} to send the request to.
      * @param claims
      *            {@link JSONBuilder} containing claims. Must not be {@code null}.
      * @param session
      *            {@link Session} instance to be used for signing and tracking
      */
-    void sendJwkSignedRequest(URI uri, JSONBuilder claims, Session session) throws AcmeException;
+    void sendJwkSignedRequest(URL url, JSONBuilder claims, Session session) throws AcmeException;
 
     /**
      * Checks if the HTTP response status is in the given list of acceptable HTTP states,
@@ -118,12 +119,12 @@ public interface Connection extends AutoCloseable {
      * <p>
      * Relative links are resolved against the last request's URL.
      *
-     * @return Location {@link URI}, or {@code null} if no Location header was set
+     * @return Location {@link URL}, or {@code null} if no Location header was set
      */
-    URI getLocation();
+    URL getLocation();
 
     /**
-     * Gets a relation link from the header.
+     * Gets a relation link from the header. The result is expected to be an URL.
      * <p>
      * Relative links are resolved against the last request's URL. If there is more than
      * one relation, the first one is returned.
@@ -132,10 +133,10 @@ public interface Connection extends AutoCloseable {
      *            Link relation
      * @return Link, or {@code null} if there was no such relation link
      */
-    URI getLink(String relation);
+    URL getLink(String relation);
 
     /**
-     * Gets one or more relation link from the header.
+     * Gets one or more relation links from the header.
      * <p>
      * Relative links are resolved against the last request's URL.
      *

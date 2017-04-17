@@ -17,7 +17,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyFactory;
 import java.security.KeyPair;
@@ -118,6 +120,22 @@ public final class TestUtils {
     public static Session session() throws IOException {
         KeyPair keyPair = createKeyPair();
         return new Session(URI.create(ACME_SERVER_URI), keyPair);
+    }
+
+    /**
+     * Creates an {@link URL} from a String. Only throws a runtime exception if the URL is
+     * malformed.
+     *
+     * @param url
+     *            URL to use
+     * @return {@link URL} object
+     */
+    public static URL url(String url) {
+        try {
+            return new URL(url);
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException(url, ex);
+        }
     }
 
     /**

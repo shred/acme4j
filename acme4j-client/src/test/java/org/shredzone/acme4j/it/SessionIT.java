@@ -53,10 +53,10 @@ public class SessionIT extends AbstractPebbleIT {
         Session session = new Session(pebbleURI(), keyPair);
 
         // TODO: Not yet supported by Pebble
-        // assertIsPebbleUri(session.resourceUri(Resource.KEY_CHANGE));
+        // assertIsPebbleUrl(session.resourceUrl(Resource.KEY_CHANGE));
 
-        assertIsPebbleUri(session.resourceUri(Resource.NEW_NONCE));
-        assertIsPebbleUri(session.resourceUri(Resource.NEW_REG));
+        assertIsPebbleUrl(session.resourceUrl(Resource.NEW_NONCE));
+        assertIsPebbleUrl(session.resourceUrl(Resource.NEW_REG));
     }
 
     @Test

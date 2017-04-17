@@ -13,7 +13,9 @@
  */
 package org.shredzone.acme4j.provider;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 
 /**
  * A generic {@link AcmeProvider}. It should be working for all ACME servers complying to
@@ -30,8 +32,12 @@ public class GenericAcmeProvider extends AbstractAcmeProvider {
     }
 
     @Override
-    public URI resolve(URI serverUri) {
-        return serverUri;
+    public URL resolve(URI serverUri) {
+        try {
+            return serverUri.toURL();
+        } catch (MalformedURLException ex) {
+            throw new IllegalArgumentException("Bad generic server URI", ex);
+        }
     }
 
 }

@@ -32,11 +32,11 @@ Session session = new Session("acme://letsencrypt.org/staging", keyPair);
 Instead of creating a plain `Registration` object, you now bind it to the session.
 
 ```java
-URI accountLocationUri = ... // your account's URI
-Registration registration = Registration.bind(session, accountLocationUri);
+URL accountLocationUrl = ... // your account's URL
+Registration registration = Registration.bind(session, accountLocationUrl);
 ```
 
-You must know your account's location URI. Use a `RegistrationBuilder` if you do not know it, or if you want to register a new account:
+You must know your account's location URL. Use a `RegistrationBuilder` if you do not know it, or if you want to register a new account:
 
 ```java
 Registration registration;
@@ -45,7 +45,7 @@ try {
   registration = new RegistrationBuilder().create(session);
 } catch (AcmeConflictException ex) {
   // It failed because your key was already registered.
-  // Retrieve the registration location URI from the exception.
+  // Retrieve the registration location URL from the exception.
   registration = Registration.bind(session, ex.getLocation());
 }
 ```

@@ -15,6 +15,7 @@ package org.shredzone.acme4j.provider.letsencrypt;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
+import static org.shredzone.acme4j.util.TestUtils.url;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -52,10 +53,10 @@ public class LetsEncryptAcmeProviderTest {
     public void testResolve() throws URISyntaxException {
         LetsEncryptAcmeProvider provider = new LetsEncryptAcmeProvider();
 
-        assertThat(provider.resolve(new URI("acme://letsencrypt.org")), is(new URI(V01_DIRECTORY_URI)));
-        assertThat(provider.resolve(new URI("acme://letsencrypt.org/")), is(new URI(V01_DIRECTORY_URI)));
-        assertThat(provider.resolve(new URI("acme://letsencrypt.org/v01")), is(new URI(V01_DIRECTORY_URI)));
-        assertThat(provider.resolve(new URI("acme://letsencrypt.org/staging")), is(new URI(STAGING_DIRECTORY_URI)));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org")), is(url(V01_DIRECTORY_URI)));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org/")), is(url(V01_DIRECTORY_URI)));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org/v01")), is(url(V01_DIRECTORY_URI)));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org/staging")), is(url(STAGING_DIRECTORY_URI)));
 
         try {
             provider.resolve(new URI("acme://letsencrypt.org/v99"));

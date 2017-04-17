@@ -20,8 +20,8 @@ import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -57,9 +57,9 @@ public class HttpConnectorTest {
      */
     @Test
     @Category(HttpURLConnection.class)
-    public void testOpenConnection() throws IOException, URISyntaxException {
+    public void testOpenConnection() throws IOException {
         HttpConnector connector = new HttpConnector();
-        HttpURLConnection conn = connector.openConnection(new URI("http://example.com"));
+        HttpURLConnection conn = connector.openConnection(new URL("http://example.com"));
         assertThat(conn, not(nullValue()));
         conn.connect();
         assertThat(conn.getResponseCode(), is(HttpURLConnection.HTTP_OK));

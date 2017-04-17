@@ -16,10 +16,11 @@ package org.shredzone.acme4j;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
-import static org.shredzone.acme4j.util.TestUtils.getJsonAsObject;
+import static org.shredzone.acme4j.util.TestUtils.*;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.security.KeyPair;
 import java.time.Instant;
 
@@ -210,13 +211,13 @@ public class SessionTest {
             };
         };
 
-        assertThat(session.resourceUri(Resource.NEW_REG),
-                        is(URI.create("https://example.com/acme/new-reg")));
-        assertThat(session.resourceUri(Resource.NEW_AUTHZ),
-                        is(URI.create("https://example.com/acme/new-authz")));
-        assertThat(session.resourceUri(Resource.NEW_CERT),
-                        is(URI.create("https://example.com/acme/new-cert")));
-        assertThat(session.resourceUri(Resource.REVOKE_CERT),
+        assertThat(session.resourceUrl(Resource.NEW_REG),
+                        is(new URL("https://example.com/acme/new-reg")));
+        assertThat(session.resourceUrl(Resource.NEW_AUTHZ),
+                        is(new URL("https://example.com/acme/new-authz")));
+        assertThat(session.resourceUrl(Resource.NEW_CERT),
+                        is(new URL("https://example.com/acme/new-cert")));
+        assertThat(session.resourceUrl(Resource.REVOKE_CERT),
                         is(nullValue()));
 
         Metadata meta = session.getMetadata();
@@ -233,20 +234,20 @@ public class SessionTest {
      * @param session
      *            {@link Session} to assert
      */
-    private void assertSession(Session session) throws AcmeException {
-        assertThat(session.resourceUri(Resource.NEW_REG),
-                        is(URI.create("https://example.com/acme/new-reg")));
-        assertThat(session.resourceUri(Resource.NEW_AUTHZ),
-                        is(URI.create("https://example.com/acme/new-authz")));
-        assertThat(session.resourceUri(Resource.NEW_CERT),
-                        is(URI.create("https://example.com/acme/new-cert")));
-        assertThat(session.resourceUri(Resource.REVOKE_CERT),
+    private void assertSession(Session session) throws AcmeException, IOException {
+        assertThat(session.resourceUrl(Resource.NEW_REG),
+                        is(new URL("https://example.com/acme/new-reg")));
+        assertThat(session.resourceUrl(Resource.NEW_AUTHZ),
+                        is(new URL("https://example.com/acme/new-authz")));
+        assertThat(session.resourceUrl(Resource.NEW_CERT),
+                        is(new URL("https://example.com/acme/new-cert")));
+        assertThat(session.resourceUrl(Resource.REVOKE_CERT),
                         is(nullValue()));
 
         Metadata meta = session.getMetadata();
         assertThat(meta, not(nullValue()));
         assertThat(meta.getTermsOfService(), is(URI.create("https://example.com/acme/terms")));
-        assertThat(meta.getWebsite(), is(URI.create("https://www.example.com/")));
+        assertThat(meta.getWebsite(), is(url("https://www.example.com/")));
         assertThat(meta.getCaaIdentities(), containsInAnyOrder("example.com"));
         assertThat(meta.getJSON(), is(notNullValue()));
     }

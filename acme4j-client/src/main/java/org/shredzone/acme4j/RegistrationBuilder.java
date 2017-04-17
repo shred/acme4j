@@ -15,6 +15,7 @@ package org.shredzone.acme4j;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,10 +102,10 @@ public class RegistrationBuilder {
                 claims.put("terms-of-service-agreed", termsOfServiceAgreed);
             }
 
-            conn.sendJwkSignedRequest(session.resourceUri(Resource.NEW_REG), claims, session);
+            conn.sendJwkSignedRequest(session.resourceUrl(Resource.NEW_REG), claims, session);
             conn.accept(HttpURLConnection.HTTP_CREATED);
 
-            URI location = conn.getLocation();
+            URL location = conn.getLocation();
 
             return new Registration(session, location);
         }

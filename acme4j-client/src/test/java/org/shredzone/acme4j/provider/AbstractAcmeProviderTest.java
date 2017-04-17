@@ -22,6 +22,7 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
@@ -34,6 +35,7 @@ import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
+import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.TestUtils;
 
@@ -56,7 +58,7 @@ public class AbstractAcmeProviderTest {
             }
 
             @Override
-            public URI resolve(URI serverUri) {
+            public URL resolve(URI serverUri) {
                 throw new UnsupportedOperationException();
             }
 
@@ -77,9 +79,9 @@ public class AbstractAcmeProviderTest {
      * Verify that the resources directory is read.
      */
     @Test
-    public void testResources() throws Exception {
-        final URI testServerUri = new URI("http://example.com/acme");
-        final URI testResolvedUri = new URI("http://example.com/acme/directory");
+    public void testResources() throws AcmeException {
+        final URI testServerUri = URI.create("http://example.com/acme");
+        final URL testResolvedUrl = TestUtils.url("http://example.com/acme/directory");
         final Connection connection = mock(Connection.class);
         final Session session = mock(Session.class);
 
@@ -99,16 +101,16 @@ public class AbstractAcmeProviderTest {
             }
 
             @Override
-            public URI resolve(URI serverUri) {
+            public URL resolve(URI serverUri) {
                 assertThat(serverUri, is(testServerUri));
-                return testResolvedUri;
+                return testResolvedUrl;
             }
         };
 
         JSON map = provider.directory(session, testServerUri);
         assertThat(map.toString(), sameJSONAs(TestUtils.getJson("directory")));
 
-        verify(connection).sendRequest(testResolvedUri, session);
+        verify(connection).sendRequest(testResolvedUrl, session);
         verify(connection).accept(any(Integer.class));
         verify(connection).updateSession(any(Session.class));
         verify(connection).readJsonResponse();
@@ -130,7 +132,7 @@ public class AbstractAcmeProviderTest {
             }
 
             @Override
-            public URI resolve(URI serverUri) {
+            public URL resolve(URI serverUri) {
                 throw new UnsupportedOperationException();
             }
         };

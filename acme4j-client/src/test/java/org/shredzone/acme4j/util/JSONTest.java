@@ -15,6 +15,7 @@ package org.shredzone.acme4j.util;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.shredzone.acme4j.util.TestUtils.url;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.ByteArrayInputStream;
@@ -25,7 +26,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -183,7 +183,7 @@ public class JSONTest {
      * Test all getters on existing values.
      */
     @Test
-    public void testGetter() throws MalformedURLException {
+    public void testGetter() {
         Instant date = LocalDate.of(2016, 1, 8).atStartOfDay(ZoneId.of("UTC")).toInstant();
 
         JSON json = TestUtils.getJsonAsObject("json");
@@ -192,7 +192,7 @@ public class JSONTest {
         assertThat(json.get("number").asInt(), is(123));
         assertThat(json.get("boolean").asBoolean(), is(true));
         assertThat(json.get("uri").asURI(), is(URI.create("mailto:foo@example.com")));
-        assertThat(json.get("url").asURL(), is(new URL("http://example.com")));
+        assertThat(json.get("url").asURL(), is(url("http://example.com")));
         assertThat(json.get("date").asInstant(), is(date));
         assertThat(json.get("status").asStatusOrElse(Status.INVALID), is(Status.VALID));
         assertThat(json.get("binary").asBinary(), is("Chainsaw".getBytes()));

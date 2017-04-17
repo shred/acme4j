@@ -20,7 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.URI;
+import java.net.URL;
 
 import org.junit.Test;
 import org.shredzone.acme4j.util.TestUtils;
@@ -36,7 +36,7 @@ public class AcmeResourceTest {
     @Test
     public void testConstructor() throws Exception {
         Session session = TestUtils.session();
-        URI location = new URI("http://example.com/acme/resource");
+        URL location = new URL("http://example.com/acme/resource");
 
         try {
             new DummyResource(null);

@@ -14,7 +14,7 @@
 package org.shredzone.acme4j.connector;
 
 import java.net.HttpURLConnection;
-import java.net.URI;
+import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
@@ -29,7 +29,7 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.util.JSON;
 
 /**
- * An {@link Iterator} that fetches a batch of URIs from the ACME server, and generates
+ * An {@link Iterator} that fetches a batch of URLs from the ACME server, and generates
  * {@link AcmeResource} instances.
  *
  * @param <T>
@@ -39,10 +39,10 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
 
     private final Session session;
     private final String field;
-    private final Deque<URI> uriList = new ArrayDeque<>();
-    private final BiFunction<Session, URI, T> creator;
+    private final Deque<URL> urlList = new ArrayDeque<>();
+    private final BiFunction<Session, URL, T> creator;
     private boolean eol = false;
-    private URI nextUri;
+    private URL nextUrl;
 
     /**
      * Creates a new {@link ResourceIterator}.
@@ -52,15 +52,15 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
      * @param field
      *            Field name to be used in the JSON response
      * @param start
-     *            URI of the first JSON array, may be {@code null} for an empty iterator
+     *            URL of the first JSON array, may be {@code null} for an empty iterator
      * @param creator
      *            Creator for an {@link AcmeResource} that is bound to the given
-     *            {@link Session} and {@link URI}.
+     *            {@link Session} and {@link URL}.
      */
-    public ResourceIterator(Session session, String field, URI start, BiFunction<Session, URI, T> creator) {
+    public ResourceIterator(Session session, String field, URL start, BiFunction<Session, URL, T> creator) {
         this.session = Objects.requireNonNull(session, "session");
         this.field = Objects.requireNonNull(field, "field");
-        this.nextUri = start;
+        this.nextUrl = start;
         this.creator = Objects.requireNonNull(creator, "creator");
     }
 
@@ -68,7 +68,7 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
      * Checks if there is another object in the result.
      *
      * @throws AcmeProtocolException
-     *             if the next batch of URIs could not be fetched from the server
+     *             if the next batch of URLs could not be fetched from the server
      */
     @Override
     public boolean hasNext() {
@@ -76,32 +76,32 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
             return false;
         }
 
-        if (uriList.isEmpty()) {
+        if (urlList.isEmpty()) {
             fetch();
         }
 
-        if (uriList.isEmpty()) {
+        if (urlList.isEmpty()) {
             eol = true;
         }
 
-        return !uriList.isEmpty();
+        return !urlList.isEmpty();
     }
 
     /**
      * Returns the next object of the result.
      *
      * @throws AcmeProtocolException
-     *             if the next batch of URIs could not be fetched from the server
+     *             if the next batch of URLs could not be fetched from the server
      * @throws NoSuchElementException
      *             if there are no more entries
      */
     @Override
     public T next() {
-        if (!eol && uriList.isEmpty()) {
+        if (!eol && urlList.isEmpty()) {
             fetch();
         }
 
-        URI next = uriList.poll();
+        URL next = urlList.poll();
         if (next == null) {
             eol = true;
             throw new NoSuchElementException("no more " + field);
@@ -119,11 +119,11 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
     }
 
     /**
-     * Fetches the next batch of URIs. Handles exceptions. Does nothing if there is no
-     * URI of the next batch.
+     * Fetches the next batch of URLs. Handles exceptions. Does nothing if there is no
+     * URL of the next batch.
      */
     private void fetch() {
-        if (nextUri == null) {
+        if (nextUrl == null) {
             return;
         }
 
@@ -135,31 +135,31 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
     }
 
     /**
-     * Reads the next batch of URIs from the server, and fills the queue with the URIs. If
-     * there is a "next" header, it is used for the next batch of URIs.
+     * Reads the next batch of URLs from the server, and fills the queue with the URLs. If
+     * there is a "next" header, it is used for the next batch of URLs.
      */
     private void readAndQueue() throws AcmeException {
         try (Connection conn = session.provider().connect()) {
-            conn.sendRequest(nextUri, session);
+            conn.sendRequest(nextUrl, session);
             conn.accept(HttpURLConnection.HTTP_OK);
 
             JSON json = conn.readJsonResponse();
-            fillUriList(json);
+            fillUrlList(json);
 
-            nextUri = conn.getLink("next");
+            nextUrl = conn.getLink("next");
         }
     }
 
     /**
-     * Fills the uri list with the URIs found in the desired field.
+     * Fills the url list with the URLs found in the desired field.
      *
      * @param json
      *            JSON map to read from
      */
-    private void fillUriList(JSON json) {
+    private void fillUrlList(JSON json) {
         json.get(field).asArray().stream()
-                .map(JSON.Value::asURI)
-                .forEach(uriList::add);
+                .map(JSON.Value::asURL)
+                .forEach(urlList::add);
     }
 
 }

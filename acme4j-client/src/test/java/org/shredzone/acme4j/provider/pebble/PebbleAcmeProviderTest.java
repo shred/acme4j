@@ -15,6 +15,7 @@ package org.shredzone.acme4j.provider.pebble;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
+import static org.shredzone.acme4j.util.TestUtils.url;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -50,15 +51,15 @@ public class PebbleAcmeProviderTest {
         PebbleAcmeProvider provider = new PebbleAcmeProvider();
 
         assertThat(provider.resolve(new URI("acme://pebble")),
-                        is(new URI("http://localhost:14000/dir")));
+                        is(url("http://localhost:14000/dir")));
         assertThat(provider.resolve(new URI("acme://pebble/")),
-                        is(new URI("http://localhost:14000/dir")));
+                        is(url("http://localhost:14000/dir")));
         assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com")),
-                        is(new URI("http://pebble.example.com:14000/dir")));
+                        is(url("http://pebble.example.com:14000/dir")));
         assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com:12345")),
-                        is(new URI("http://pebble.example.com:12345/dir")));
+                        is(url("http://pebble.example.com:12345/dir")));
         assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com:12345/")),
-                        is(new URI("http://pebble.example.com:12345/dir")));
+                        is(url("http://pebble.example.com:12345/dir")));
 
         try {
             provider.resolve(new URI("acme://pebble/bad.example.com:port"));

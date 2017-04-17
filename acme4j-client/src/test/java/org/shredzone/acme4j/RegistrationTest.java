@@ -21,11 +21,15 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -51,23 +55,24 @@ import org.shredzone.acme4j.util.TestUtils;
  */
 public class RegistrationTest {
 
-    private URI resourceUri  = URI.create("http://example.com/acme/resource");
-    private URI locationUri  = URI.create("http://example.com/acme/registration");
+    private URL resourceUrl  = url("http://example.com/acme/resource");
+    private URL locationUrl  = url("http://example.com/acme/registration");
     private URI agreementUri = URI.create("http://example.com/agreement.pdf");
-    private URI chainUri     = URI.create("http://example.com/acme/chain");
+    private URL chainUrl     = url("http://example.com/acme/chain");
 
     /**
      * Test that a registration can be updated.
+     * @throws URISyntaxException
      */
     @Test
-    public void testUpdateRegistration() throws AcmeException, IOException {
+    public void testUpdateRegistration() throws AcmeException, IOException, URISyntaxException {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             private JSON jsonResponse;
             private Integer response;
 
             @Override
-            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
-                assertThat(uri, is(locationUri));
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+                assertThat(url, is(locationUrl));
                 assertThat(claims.toString(), sameJSONAs(getJson("updateRegistration")));
                 assertThat(session, is(notNullValue()));
                 jsonResponse = getJsonAsObject("updateRegistrationResponse");
@@ -75,8 +80,8 @@ public class RegistrationTest {
             }
 
             @Override
-            public void sendRequest(URI uri, Session session) {
-                if (URI.create("https://example.com/acme/reg/1/authz").equals(uri)) {
+            public void sendRequest(URL url, Session session) {
+                if (url("https://example.com/acme/reg/1/authz").equals(url)) {
                     jsonResponse = new JSONBuilder()
                                 .array("authorizations", "https://example.com/acme/auth/1")
                                 .toJSON();
@@ -84,7 +89,7 @@ public class RegistrationTest {
                     return;
                 }
 
-                if (URI.create("https://example.com/acme/reg/1/cert").equals(uri)) {
+                if (url("https://example.com/acme/reg/1/cert").equals(url)) {
                     jsonResponse = new JSONBuilder()
                                 .array("certificates", "https://example.com/acme/cert/1")
                                 .toJSON();
@@ -107,26 +112,30 @@ public class RegistrationTest {
             }
 
             @Override
-            public URI getLocation() {
-                return locationUri;
+            public URL getLocation() {
+                return locationUrl;
             }
 
             @Override
-            public URI getLink(String relation) {
+            public URL getLink(String relation) {
+                return null;
+            }
+
+            @Override
+            public Collection<URI> getLinks(String relation) {
                 switch(relation) {
-                    case "terms-of-service": return agreementUri;
-                    case "next": return null;
+                    case "terms-of-service": return Arrays.asList(agreementUri);
                     default: return null;
                 }
             }
         };
 
         Session session = provider.createSession();
-        Registration registration = new Registration(session, locationUri);
+        Registration registration = new Registration(session, locationUrl);
         registration.update();
 
-        assertThat(session.getKeyIdentifier(), is(locationUri));
-        assertThat(registration.getLocation(), is(locationUri));
+        assertThat(session.getKeyIdentifier(), is(locationUrl.toURI()));
+        assertThat(registration.getLocation(), is(locationUrl));
         assertThat(registration.getTermsOfServiceAgreed(), is(true));
         assertThat(registration.getContacts(), hasSize(1));
         assertThat(registration.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
@@ -134,14 +143,12 @@ public class RegistrationTest {
 
         Iterator<Authorization> authIt = registration.getAuthorizations();
         assertThat(authIt, not(nullValue()));
-        assertThat(authIt.next().getLocation(),
-                        is(URI.create("https://example.com/acme/auth/1")));
+        assertThat(authIt.next().getLocation(), is(url("https://example.com/acme/auth/1")));
         assertThat(authIt.hasNext(), is(false));
 
         Iterator<Certificate> certIt = registration.getCertificates();
         assertThat(certIt, not(nullValue()));
-        assertThat(certIt.next().getLocation(),
-                        is(URI.create("https://example.com/acme/cert/1")));
+        assertThat(certIt.next().getLocation(), is(url("https://example.com/acme/cert/1")));
         assertThat(certIt.hasNext(), is(false));
 
         provider.close();
@@ -156,9 +163,9 @@ public class RegistrationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 requestWasSent.set(true);
-                assertThat(uri, is(locationUri));
+                assertThat(url, is(locationUrl));
             }
 
             @Override
@@ -174,20 +181,25 @@ public class RegistrationTest {
             }
 
             @Override
-            public URI getLocation() {
-                return locationUri;
+            public URL getLocation() {
+                return locationUrl;
             }
 
             @Override
-            public URI getLink(String relation) {
+            public URL getLink(String relation) {
+                return null;
+            }
+
+            @Override
+            public Collection<URI> getLinks(String relation) {
                 switch(relation) {
-                    case "terms-of-service": return agreementUri;
+                    case "terms-of-service": return Arrays.asList(agreementUri);
                     default: return null;
                 }
             }
         };
 
-        Registration registration = new Registration(provider.createSession(), locationUri);
+        Registration registration = new Registration(provider.createSession(), locationUrl);
 
         // Lazy loading
         assertThat(requestWasSent.get(), is(false));
@@ -210,8 +222,8 @@ public class RegistrationTest {
     public void testAuthorizeDomain() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
-                assertThat(uri, is(resourceUri));
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+                assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJson("newAuthorizationRequest")));
                 assertThat(session, is(notNullValue()));
             }
@@ -228,8 +240,8 @@ public class RegistrationTest {
             }
 
             @Override
-            public URI getLocation() {
-                return locationUri;
+            public URL getLocation() {
+                return locationUrl;
             }
         };
 
@@ -238,19 +250,19 @@ public class RegistrationTest {
         Http01Challenge httpChallenge = new Http01Challenge(session);
         Dns01Challenge dnsChallenge = new Dns01Challenge(session);
 
-        provider.putTestResource(Resource.NEW_AUTHZ, resourceUri);
+        provider.putTestResource(Resource.NEW_AUTHZ, resourceUrl);
         provider.putTestChallenge(Http01Challenge.TYPE, httpChallenge);
         provider.putTestChallenge(Dns01Challenge.TYPE, dnsChallenge);
 
         String domainName = "example.org";
 
-        Registration registration = new Registration(session, locationUri);
+        Registration registration = new Registration(session, locationUrl);
         Authorization auth = registration.authorizeDomain(domainName);
 
         assertThat(auth.getDomain(), is(domainName));
         assertThat(auth.getStatus(), is(Status.PENDING));
         assertThat(auth.getExpires(), is(nullValue()));
-        assertThat(auth.getLocation(), is(locationUri));
+        assertThat(auth.getLocation(), is(locationUrl));
 
         assertThat(auth.getChallenges(), containsInAnyOrder(
                         (Challenge) httpChallenge, (Challenge) dnsChallenge));
@@ -271,7 +283,7 @@ public class RegistrationTest {
     public void testAuthorizeBadDomain() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider();
         Session session = provider.createSession();
-        Registration registration = Registration.bind(session, locationUri);
+        Registration registration = Registration.bind(session, locationUrl);
 
         try {
             registration.authorizeDomain(null);
@@ -299,13 +311,13 @@ public class RegistrationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URI uri, Session session) {
+            public void sendRequest(URL url, Session session) {
                 fail("Attempted to download the certificate. Should be downloaded already!");
             }
 
             @Override
-            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
-                assertThat(uri, is(resourceUri));
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+                assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequestWithDate")));
                 assertThat(session, is(notNullValue()));
             }
@@ -323,32 +335,32 @@ public class RegistrationTest {
             }
 
             @Override
-            public URI getLocation() {
-                return locationUri;
+            public URL getLocation() {
+                return locationUrl;
             }
 
             @Override
-            public URI getLink(String relation) {
+            public URL getLink(String relation) {
                 switch(relation) {
-                    case "up": return chainUri;
+                    case "up": return chainUrl;
                     default: return null;
                 }
             }
         };
 
-        provider.putTestResource(Resource.NEW_CERT, resourceUri);
+        provider.putTestResource(Resource.NEW_CERT, resourceUrl);
 
         byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
         ZoneId utc = ZoneId.of("UTC");
         Instant notBefore = LocalDate.of(2016, 1, 1).atStartOfDay(utc).toInstant();
         Instant notAfter = LocalDate.of(2016, 1, 8).atStartOfDay(utc).toInstant();
 
-        Registration registration = new Registration(provider.createSession(), locationUri);
+        Registration registration = new Registration(provider.createSession(), locationUrl);
         Certificate cert = registration.requestCertificate(csr, notBefore, notAfter);
 
         assertThat(cert.download(), is(originalCert));
-        assertThat(cert.getLocation(), is(locationUri));
-        assertThat(cert.getChainLocation(), is(chainUri));
+        assertThat(cert.getLocation(), is(locationUrl));
+        assertThat(cert.getChainLocation(), is(chainUrl));
 
         provider.close();
     }
@@ -360,8 +372,8 @@ public class RegistrationTest {
     public void testRequestCertificateAsync() throws AcmeException, IOException {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
-                assertThat(uri, is(resourceUri));
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+                assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequest")));
                 assertThat(session, is(notNullValue()));
             }
@@ -374,28 +386,28 @@ public class RegistrationTest {
             }
 
             @Override
-            public URI getLink(String relation) {
+            public URL getLink(String relation) {
                 switch(relation) {
-                    case "up": return chainUri;
+                    case "up": return chainUrl;
                     default: return null;
                 }
             }
 
             @Override
-            public URI getLocation() {
-                return locationUri;
+            public URL getLocation() {
+                return locationUrl;
             }
         };
 
-        provider.putTestResource(Resource.NEW_CERT, resourceUri);
+        provider.putTestResource(Resource.NEW_CERT, resourceUrl);
 
         byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
 
-        Registration registration = new Registration(provider.createSession(), locationUri);
+        Registration registration = new Registration(provider.createSession(), locationUrl);
         Certificate cert = registration.requestCertificate(csr);
 
-        assertThat(cert.getLocation(), is(locationUri));
-        assertThat(cert.getChainLocation(), is(chainUri));
+        assertThat(cert.getLocation(), is(locationUrl));
+        assertThat(cert.getChainLocation(), is(chainUrl));
 
         provider.close();
     }
@@ -408,8 +420,8 @@ public class RegistrationTest {
     public void testRequestCertificateBrokenSync() throws AcmeException, IOException {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
-                assertThat(uri, is(resourceUri));
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+                assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequestWithDate")));
                 assertThat(session, is(notNullValue()));
             }
@@ -427,31 +439,31 @@ public class RegistrationTest {
             }
 
             @Override
-            public URI getLink(String relation) {
+            public URL getLink(String relation) {
                 switch(relation) {
-                    case "up": return chainUri;
+                    case "up": return chainUrl;
                     default: return null;
                 }
             }
 
             @Override
-            public URI getLocation() {
-                return locationUri;
+            public URL getLocation() {
+                return locationUrl;
             }
         };
 
-        provider.putTestResource(Resource.NEW_CERT, resourceUri);
+        provider.putTestResource(Resource.NEW_CERT, resourceUrl);
 
         byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
         ZoneId utc = ZoneId.of("UTC");
         Instant notBefore = LocalDate.of(2016, 1, 1).atStartOfDay(utc).toInstant();
         Instant notAfter = LocalDate.of(2016, 1, 8).atStartOfDay(utc).toInstant();
 
-        Registration registration = new Registration(provider.createSession(), locationUri);
+        Registration registration = new Registration(provider.createSession(), locationUrl);
         Certificate cert = registration.requestCertificate(csr, notBefore, notAfter);
 
-        assertThat(cert.getLocation(), is(locationUri));
-        assertThat(cert.getChainLocation(), is(chainUri));
+        assertThat(cert.getLocation(), is(locationUrl));
+        assertThat(cert.getChainLocation(), is(chainUrl));
 
         provider.close();
     }
@@ -466,9 +478,9 @@ public class RegistrationTest {
 
         final TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, JSONBuilder payload, Session session) {
+            public void sendSignedRequest(URL url, JSONBuilder payload, Session session) {
                 try {
-                    assertThat(uri, is(locationUri));
+                    assertThat(url, is(locationUrl));
                     assertThat(session, is(notNullValue()));
                     assertThat(session.getKeyPair(), is(sameInstance(oldKeyPair)));
 
@@ -489,7 +501,7 @@ public class RegistrationTest {
 
                     StringBuilder expectedPayload = new StringBuilder();
                     expectedPayload.append('{');
-                    expectedPayload.append("\"account\":\"").append(resourceUri).append("\",");
+                    expectedPayload.append("\"account\":\"").append(resourceUrl).append("\",");
                     expectedPayload.append("\"newKey\":{");
                     expectedPayload.append("\"kty\":\"").append(TestUtils.D_KTY).append("\",");
                     expectedPayload.append("\"e\":\"").append(TestUtils.D_E).append("\",");
@@ -508,12 +520,12 @@ public class RegistrationTest {
             }
 
             @Override
-            public URI getLocation() {
-                return resourceUri;
+            public URL getLocation() {
+                return resourceUrl;
             }
         };
 
-        provider.putTestResource(Resource.KEY_CHANGE, locationUri);
+        provider.putTestResource(Resource.KEY_CHANGE, locationUrl);
 
         Session session = new Session(new URI(TestUtils.ACME_SERVER_URI), oldKeyPair) {
             @Override
@@ -524,7 +536,7 @@ public class RegistrationTest {
 
         assertThat(session.getKeyPair(), is(sameInstance(oldKeyPair)));
 
-        Registration registration = new Registration(session, resourceUri);
+        Registration registration = new Registration(session, resourceUrl);
         registration.changeKey(newKeyPair);
 
         assertThat(session.getKeyPair(), is(sameInstance(newKeyPair)));
@@ -538,7 +550,7 @@ public class RegistrationTest {
         TestableConnectionProvider provider = new TestableConnectionProvider();
         Session session = provider.createSession();
 
-        Registration registration = new Registration(session, locationUri);
+        Registration registration = new Registration(session, locationUrl);
         registration.changeKey(session.getKeyPair());
 
         provider.close();
@@ -551,11 +563,11 @@ public class RegistrationTest {
     public void testDeactivate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 JSON json = claims.toJSON();
                 assertThat(json.get("resource").asString(), is("reg"));
                 assertThat(json.get("status").asString(), is("deactivated"));
-                assertThat(uri, is(locationUri));
+                assertThat(url, is(locationUrl));
                 assertThat(session, is(notNullValue()));
             }
 
@@ -567,7 +579,7 @@ public class RegistrationTest {
             }
         };
 
-        Registration registration = new Registration(provider.createSession(), locationUri);
+        Registration registration = new Registration(provider.createSession(), locationUrl);
         registration.deactivate();
 
         provider.close();
@@ -580,8 +592,8 @@ public class RegistrationTest {
     public void testModify() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
-                assertThat(uri, is(locationUri));
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+                assertThat(url, is(locationUrl));
                 assertThat(claims.toString(), sameJSONAs(getJson("modifyRegistration")));
                 assertThat(session, is(notNullValue()));
             }
@@ -598,12 +610,12 @@ public class RegistrationTest {
             }
 
             @Override
-            public URI getLocation() {
-                return locationUri;
+            public URL getLocation() {
+                return locationUrl;
             }
         };
 
-        Registration registration = new Registration(provider.createSession(), locationUri);
+        Registration registration = new Registration(provider.createSession(), locationUrl);
 
         EditableRegistration editable = registration.modify();
         assertThat(editable, notNullValue());
@@ -612,7 +624,7 @@ public class RegistrationTest {
         editable.getContacts().add(URI.create("mailto:foo3@example.com"));
         editable.commit();
 
-        assertThat(registration.getLocation(), is(locationUri));
+        assertThat(registration.getLocation(), is(locationUrl));
         assertThat(registration.getContacts().size(), is(2));
         assertThat(registration.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
         assertThat(registration.getContacts().get(1), is(URI.create("mailto:foo3@example.com")));

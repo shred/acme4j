@@ -16,7 +16,8 @@ package org.shredzone.acme4j.exception;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import java.net.URI;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import org.junit.Test;
 
@@ -26,15 +27,15 @@ import org.junit.Test;
 public class AcmeConflictExceptionTest {
 
     @Test
-    public void testAcmeConflictException() {
+    public void testAcmeConflictException() throws MalformedURLException {
         String msg = "Account already exists";
-        URI locationUri = URI.create("http://example.com/location/123");
+        URL locationUrl = new URL("http://example.com/location/123");
 
         AcmeConflictException ex
-            = new AcmeConflictException(msg, locationUri);
+            = new AcmeConflictException(msg, locationUrl);
 
         assertThat(ex.getMessage(), is(msg));
-        assertThat(ex.getLocation(), is(locationUri));
+        assertThat(ex.getLocation(), is(locationUrl));
     }
 
 }

@@ -19,7 +19,7 @@ import static org.shredzone.acme4j.util.TestUtils.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.HttpURLConnection;
-import java.net.URI;
+import java.net.URL;
 
 import org.junit.Test;
 import org.shredzone.acme4j.connector.Resource;
@@ -33,8 +33,8 @@ import org.shredzone.acme4j.util.JSONBuilder;
  */
 public class RegistrationBuilderTest {
 
-    private URI resourceUri  = URI.create("http://example.com/acme/resource");;
-    private URI locationUri  = URI.create("http://example.com/acme/registration");;
+    private URL resourceUrl = url("http://example.com/acme/resource");
+    private URL locationUrl = url("http://example.com/acme/registration");;
 
     /**
      * Test if a new registration can be created.
@@ -45,17 +45,17 @@ public class RegistrationBuilderTest {
             private boolean isUpdate;
 
             @Override
-            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(session, is(notNullValue()));
-                assertThat(uri, is(locationUri));
+                assertThat(url, is(locationUrl));
                 assertThat(isUpdate, is(false));
                 isUpdate = true;
             }
 
             @Override
-            public void sendJwkSignedRequest(URI uri, JSONBuilder claims, Session session) {
+            public void sendJwkSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(session, is(notNullValue()));
-                assertThat(uri, is(resourceUri));
+                assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJson("newRegistration")));
                 isUpdate = false;
             }
@@ -72,8 +72,8 @@ public class RegistrationBuilderTest {
             }
 
             @Override
-            public URI getLocation() {
-                return locationUri;
+            public URL getLocation() {
+                return locationUrl;
             }
 
             @Override
@@ -83,7 +83,7 @@ public class RegistrationBuilderTest {
             }
         };
 
-        provider.putTestResource(Resource.NEW_REG, resourceUri);
+        provider.putTestResource(Resource.NEW_REG, resourceUrl);
 
         RegistrationBuilder builder = new RegistrationBuilder();
         builder.addContact("mailto:foo@example.com");
@@ -92,9 +92,9 @@ public class RegistrationBuilderTest {
         Session session = provider.createSession();
         Registration registration = builder.create(session);
 
-        assertThat(registration.getLocation(), is(locationUri));
+        assertThat(registration.getLocation(), is(locationUrl));
         assertThat(registration.getTermsOfServiceAgreed(), is(true));
-        assertThat(session.getKeyIdentifier(), is(locationUri));
+        assertThat(session.getKeyIdentifier(), is(locationUrl.toURI()));
 
         try {
             RegistrationBuilder builder2 = new RegistrationBuilder();

@@ -18,6 +18,7 @@ import static org.junit.Assert.assertThat;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 import org.junit.Test;
 
@@ -47,8 +48,8 @@ public class GenericAcmeProviderTest {
 
         GenericAcmeProvider provider = new GenericAcmeProvider();
 
-        URI resolvedUri = provider.resolve(serverUri);
-        assertThat(resolvedUri, is(equalTo(serverUri)));
+        URL resolvedUrl = provider.resolve(serverUri);
+        assertThat(resolvedUrl.toString(), is(equalTo(serverUri.toString())));
     }
 
 }

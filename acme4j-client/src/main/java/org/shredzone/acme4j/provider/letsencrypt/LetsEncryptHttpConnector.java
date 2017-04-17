@@ -15,7 +15,7 @@ package org.shredzone.acme4j.provider.letsencrypt;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URI;
+import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -38,8 +38,8 @@ public class LetsEncryptHttpConnector extends HttpConnector {
     private static SSLSocketFactory sslSocketFactory;
 
     @Override
-    public HttpURLConnection openConnection(URI uri) throws IOException {
-        HttpURLConnection conn = super.openConnection(uri);
+    public HttpURLConnection openConnection(URL url) throws IOException {
+        HttpURLConnection conn = super.openConnection(url);
         if (conn instanceof HttpsURLConnection) {
             ((HttpsURLConnection) conn).setSSLSocketFactory(createSocketFactory());
         }

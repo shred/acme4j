@@ -15,7 +15,6 @@ package org.shredzone.acme4j.provider.pebble;
 
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,7 +43,7 @@ public class PebbleAcmeProvider extends AbstractAcmeProvider {
     }
 
     @Override
-    public URI resolve(URI serverUri) {
+    public URL resolve(URI serverUri) {
         try {
             String path = serverUri.getPath();
 
@@ -64,8 +63,8 @@ public class PebbleAcmeProvider extends AbstractAcmeProvider {
                 }
             }
 
-            return baseUrl.toURI();
-        } catch (MalformedURLException | URISyntaxException ex) {
+            return baseUrl;
+        } catch (MalformedURLException ex) {
             throw new IllegalArgumentException("Bad server URI " + serverUri, ex);
         }
     }

@@ -24,7 +24,7 @@ Some CAs provide metadata related to their ACME server. This information can be 
 
 ```java
 Metadata meta = session.getMetadata();
-URI website = meta.getWebsite();
+URL website = meta.getWebsite();
 ```
 
 `meta` is never `null`, even if the server did not provide any metadata. All of the `Metadata` getters are optional though, and may return `null` if the respective information was not provided by the server.

@@ -16,7 +16,6 @@ package org.shredzone.acme4j.it;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
@@ -58,24 +57,18 @@ public abstract class AbstractPebbleIT {
     }
 
     /**
-     * Asserts that the given {@link URI} is not {@code null} and refers to the Pebble
+     * Asserts that the given {@link URL} is not {@code null} and refers to the Pebble
      * server.
      *
-     * @param uri
-     *            {@link URI} to assert
+     * @param url
+     *            {@link URL} to assert
      */
-    protected void assertIsPebbleUri(URI uri) {
-        assertThat(uri, not(nullValue()));
-
-        try {
-            URL url = uri.toURL();
-            assertThat(url.getProtocol(), is("http"));
-            assertThat(url.getHost(), is(pebbleHost));
-            assertThat(url.getPort(), is(pebblePort));
-            assertThat(url.getPath(), not(isEmptyOrNullString()));
-        } catch (MalformedURLException ex) {
-            throw new IllegalArgumentException(ex);
-        }
+    protected void assertIsPebbleUrl(URL url) {
+        assertThat(url, not(nullValue()));
+        assertThat(url.getProtocol(), is("http"));
+        assertThat(url.getHost(), is(pebbleHost));
+        assertThat(url.getPort(), is(pebblePort));
+        assertThat(url.getPath(), not(isEmptyOrNullString()));
     }
 
 }

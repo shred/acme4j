@@ -20,7 +20,7 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URI;
+import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
@@ -38,9 +38,9 @@ import org.shredzone.acme4j.util.TestUtils;
  */
 public class CertificateTest {
 
-    private URI resourceUri = URI.create("http://example.com/acme/resource");
-    private URI locationUri = URI.create("http://example.com/acme/certificate");
-    private URI chainUri    = URI.create("http://example.com/acme/chain");
+    private URL resourceUrl = url("http://example.com/acme/resource");
+    private URL locationUrl = url("http://example.com/acme/certificate");
+    private URL chainUrl    = url("http://example.com/acme/chain");
 
     /**
      * Test that a certificate can be downloaded.
@@ -50,17 +50,17 @@ public class CertificateTest {
         final X509Certificate originalCert = TestUtils.createCertificate();
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
-            private boolean isLocationUri;
+            private boolean isLocationUrl;
 
             @Override
-            public void sendRequest(URI uri, Session session) {
-                assertThat(uri, isOneOf(locationUri, chainUri));
-                isLocationUri = uri.equals(locationUri);
+            public void sendRequest(URL url, Session session) {
+                assertThat(url, isOneOf(locationUrl, chainUrl));
+                isLocationUrl = url.equals(locationUrl);
             }
 
             @Override
             public int accept(int... httpStatus) throws AcmeException {
-                if (isLocationUri) {
+                if (isLocationUrl) {
                     // The leaf certificate, might be asynchronous
                     assertThat(httpStatus, isIntArrayContainingInAnyOrder(
                             HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
@@ -83,18 +83,18 @@ public class CertificateTest {
             }
 
             @Override
-            public URI getLink(String relation) {
+            public URL getLink(String relation) {
                 switch(relation) {
-                    case "up": return (isLocationUri ? chainUri : null);
+                    case "up": return (isLocationUrl ? chainUrl : null);
                     default: return null;
                 }
             }
         };
 
-        Certificate cert = new Certificate(provider.createSession(), locationUri);
+        Certificate cert = new Certificate(provider.createSession(), locationUrl);
         X509Certificate downloadedCert = cert.download();
         assertThat(downloadedCert, is(sameInstance(originalCert)));
-        assertThat(cert.getChainLocation(), is(chainUri));
+        assertThat(cert.getChainLocation(), is(chainUrl));
 
         X509Certificate[] downloadedChain = cert.downloadChain();
         assertThat(downloadedChain.length, is(1));
@@ -112,8 +112,8 @@ public class CertificateTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URI uri, Session session) {
-                assertThat(uri, is(locationUri));
+            public void sendRequest(URL url, Session session) {
+                assertThat(url, is(locationUrl));
             }
 
             @Override
@@ -130,7 +130,7 @@ public class CertificateTest {
             }
         };
 
-        Certificate cert = new Certificate(provider.createSession(), locationUri);
+        Certificate cert = new Certificate(provider.createSession(), locationUrl);
 
         try {
             cert.download();
@@ -151,8 +151,8 @@ public class CertificateTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
-                assertThat(uri, is(resourceUri));
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+                assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJson("revokeCertificateRequest")));
                 assertThat(session, is(notNullValue()));
             }
@@ -164,9 +164,9 @@ public class CertificateTest {
             }
         };
 
-        provider.putTestResource(Resource.REVOKE_CERT, resourceUri);
+        provider.putTestResource(Resource.REVOKE_CERT, resourceUrl);
 
-        Certificate cert = new Certificate(provider.createSession(), locationUri, null, originalCert);
+        Certificate cert = new Certificate(provider.createSession(), locationUrl, null, originalCert);
         cert.revoke();
 
         provider.close();
@@ -181,8 +181,8 @@ public class CertificateTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
-                assertThat(uri, is(resourceUri));
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+                assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJson("revokeCertificateWithReasonRequest")));
                 assertThat(session, is(notNullValue()));
             }
@@ -194,9 +194,9 @@ public class CertificateTest {
             }
         };
 
-        provider.putTestResource(Resource.REVOKE_CERT, resourceUri);
+        provider.putTestResource(Resource.REVOKE_CERT, resourceUrl);
 
-        Certificate cert = new Certificate(provider.createSession(), locationUri, null, originalCert);
+        Certificate cert = new Certificate(provider.createSession(), locationUrl, null, originalCert);
         cert.revoke(RevocationReason.KEY_COMPROMISE);
 
         provider.close();

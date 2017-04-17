@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 import java.net.URI;
+import java.net.URL;
 import java.security.KeyPair;
 
 import org.junit.Ignore;
@@ -44,11 +45,10 @@ public class RegistrationIT extends AbstractPebbleIT {
         rb.agreeToTermsOfService();
 
         Registration reg = rb.create(session);
-        URI location = reg.getLocation();
-        assertIsPebbleUri(location);
+        URL location = reg.getLocation();
+        assertIsPebbleUrl(location);
         URI keyIdentifier = session.getKeyIdentifier();
-        assertIsPebbleUri(keyIdentifier);
-        assertThat(keyIdentifier, is(location));
+        assertThat(keyIdentifier.toString(), is(location.toString()));
 
         // TODO: Not yet supported by Pebble
         /*
@@ -81,8 +81,8 @@ public class RegistrationIT extends AbstractPebbleIT {
         rb.agreeToTermsOfService();
 
         Registration reg = rb.create(session);
-        URI location = reg.getLocation();
-        assertIsPebbleUri(location);
+        URL location = reg.getLocation();
+        assertIsPebbleUrl(location);
 
         reg.modify().addContact("mailto:acme2@example.com").commit();
 
@@ -104,7 +104,7 @@ public class RegistrationIT extends AbstractPebbleIT {
         Session session = new Session(pebbleURI(), keyPair);
 
         Registration reg = new RegistrationBuilder().agreeToTermsOfService().create(session);
-        URI location = reg.getLocation();
+        URL location = reg.getLocation();
 
         KeyPair newKeyPair = createKeyPair();
         reg.changeKey(newKeyPair);
@@ -129,7 +129,7 @@ public class RegistrationIT extends AbstractPebbleIT {
         Session session = new Session(pebbleURI(), keyPair);
 
         Registration reg = new RegistrationBuilder().agreeToTermsOfService().create(session);
-        URI location = reg.getLocation();
+        URL location = reg.getLocation();
 
         reg.deactivate();
 

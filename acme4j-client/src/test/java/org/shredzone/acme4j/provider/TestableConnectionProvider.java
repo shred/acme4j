@@ -15,6 +15,7 @@ package org.shredzone.acme4j.provider;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,8 +25,8 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DummyConnection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.JSON;
+import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
@@ -42,9 +43,9 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
      * @param r
      *            {@link Resource} to be mapped
      * @param u
-     *            {@link URI} to be returned
+     *            {@link URL} to be returned
      */
-    public void putTestResource(Resource r, URI u) {
+    public void putTestResource(Resource r, URL u) {
         directory.put(r.path(), u);
     }
 
@@ -75,7 +76,7 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
     }
 
     @Override
-    public URI resolve(URI serverUri) {
+    public URL resolve(URI serverUri) {
         throw new UnsupportedOperationException();
     }
 

@@ -16,7 +16,9 @@ package org.shredzone.acme4j.exception;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 
 import org.junit.Test;
 
@@ -29,19 +31,19 @@ public class AcmeAgreementRequiredExceptionTest {
      * Test that parameters are correctly returned.
      */
     @Test
-    public void testAcmeAgreementRequiredException() {
+    public void testAcmeAgreementRequiredException() throws MalformedURLException {
         String type = "urn:ietf:params:acme:error:agreementRequired";
         String detail = "Agreement is required";
         URI agreementUri = URI.create("http://example.com/agreement.pdf");
-        URI instanceUri = URI.create("http://example.com/howToAgree.html");
+        URL instanceUrl = new URL("http://example.com/howToAgree.html");
 
         AcmeAgreementRequiredException ex
-            = new AcmeAgreementRequiredException(type, detail, agreementUri, instanceUri);
+            = new AcmeAgreementRequiredException(type, detail, agreementUri, instanceUrl);
 
         assertThat(ex.getType(), is(type));
         assertThat(ex.getMessage(), is(detail));
         assertThat(ex.getAgreementUri(), is(agreementUri));
-        assertThat(ex.getInstance(), is(instanceUri));
+        assertThat(ex.getInstance(), is(instanceUrl));
     }
 
     /**

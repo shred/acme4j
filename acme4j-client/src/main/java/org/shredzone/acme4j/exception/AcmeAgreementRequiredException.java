@@ -14,6 +14,7 @@
 package org.shredzone.acme4j.exception;
 
 import java.net.URI;
+import java.net.URL;
 
 /**
  * An exception that is thrown when the client needs to accept the terms of service in
@@ -23,7 +24,7 @@ public class AcmeAgreementRequiredException extends AcmeServerException {
     private static final long serialVersionUID = 7719055447283858352L;
 
     private final URI agreementUri;
-    private final URI instance;
+    private final URL instance;
 
     /**
      * Creates a new {@link AcmeAgreementRequiredException}.
@@ -36,10 +37,10 @@ public class AcmeAgreementRequiredException extends AcmeServerException {
      * @param agreementUri
      *            {@link URI} of the agreement document to accept
      * @param instance
-     *            {@link URI} to be visited by a human, showing instructions for how to
+     *            {@link URL} to be visited by a human, showing instructions for how to
      *            agree to the terms and conditions.
      */
-    public AcmeAgreementRequiredException(String type, String detail, URI agreementUri, URI instance) {
+    public AcmeAgreementRequiredException(String type, String detail, URI agreementUri, URL instance) {
         super(type, detail);
         this.agreementUri = agreementUri;
         this.instance = instance;
@@ -54,10 +55,10 @@ public class AcmeAgreementRequiredException extends AcmeServerException {
     }
 
     /**
-     * Returns the {@link URI} of a document showing a human how to agree to the terms and
+     * Returns the {@link URL} of a document showing a human how to agree to the terms and
      * conditions, or {@code null} if the server did not provide such a link.
      */
-    public URI getInstance() {
+    public URL getInstance() {
         return instance;
     }
 

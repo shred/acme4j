@@ -13,8 +13,9 @@
  */
 package org.shredzone.acme4j.provider.letsencrypt;
 
+import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.URL;
 
 import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -34,8 +35,8 @@ import org.shredzone.acme4j.provider.AcmeProvider;
  */
 public class LetsEncryptAcmeProvider extends AbstractAcmeProvider {
 
-    private static final String V01_DIRECTORY_URI = "https://acme-v01.api.letsencrypt.org/directory";
-    private static final String STAGING_DIRECTORY_URI = "https://acme-staging.api.letsencrypt.org/directory";
+    private static final String V01_DIRECTORY_URL = "https://acme-v01.api.letsencrypt.org/directory";
+    private static final String STAGING_DIRECTORY_URL = "https://acme-staging.api.letsencrypt.org/directory";
 
     @Override
     public boolean accepts(URI serverUri) {
@@ -44,21 +45,21 @@ public class LetsEncryptAcmeProvider extends AbstractAcmeProvider {
     }
 
     @Override
-    public URI resolve(URI serverUri) {
+    public URL resolve(URI serverUri) {
         String path = serverUri.getPath();
-        String directoryUri;
+        String directoryUrl;
         if (path == null || "".equals(path) || "/".equals(path) || "/v01".equals(path)) {
-            directoryUri = V01_DIRECTORY_URI;
+            directoryUrl = V01_DIRECTORY_URL;
         } else if ("/staging".equals(path)) {
-            directoryUri = STAGING_DIRECTORY_URI;
+            directoryUrl = STAGING_DIRECTORY_URL;
         } else {
             throw new IllegalArgumentException("Unknown URI " + serverUri);
         }
 
         try {
-            return new URI(directoryUri);
-        } catch (URISyntaxException ex) {
-            throw new AcmeProtocolException(directoryUri, ex);
+            return new URL(directoryUrl);
+        } catch (MalformedURLException ex) {
+            throw new AcmeProtocolException(directoryUrl, ex);
         }
     }
 

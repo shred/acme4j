@@ -56,7 +56,7 @@ import org.shredzone.acme4j.util.TestUtils;
  */
 public class DefaultConnectionTest {
 
-    private URI requestUri = URI.create("http://example.com/acme/");
+    private URL requestUrl = TestUtils.url("http://example.com/acme/");
     private URI keyIdentifierUri = URI.create(TestUtils.ACME_SERVER_URI + "/acct/1");
     private HttpURLConnection mockUrlConnection;
     private HttpConnector mockHttpConnection;
@@ -67,7 +67,7 @@ public class DefaultConnectionTest {
         mockUrlConnection = mock(HttpURLConnection.class);
 
         mockHttpConnection = mock(HttpConnector.class);
-        when(mockHttpConnection.openConnection(requestUri)).thenReturn(mockUrlConnection);
+        when(mockHttpConnection.openConnection(requestUrl)).thenReturn(mockUrlConnection);
 
         final AcmeProvider mockProvider = mock(AcmeProvider.class);
         when(mockProvider.directory(
@@ -149,7 +149,7 @@ public class DefaultConnectionTest {
     public void testResetNonce() throws AcmeException, IOException {
         byte[] nonce = "foo-nonce-foo".getBytes();
 
-        when(mockHttpConnection.openConnection(URI.create("https://example.com/acme/new-nonce")))
+        when(mockHttpConnection.openConnection(new URL("https://example.com/acme/new-nonce")))
                 .thenReturn(mockUrlConnection);
         when(mockUrlConnection.getResponseCode())
                 .thenReturn(HttpURLConnection.HTTP_NO_CONTENT);
@@ -192,8 +192,8 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            URI location = conn.getLocation();
-            assertThat(location, is(new URI("https://example.com/otherlocation")));
+            URL location = conn.getLocation();
+            assertThat(location, is(new URL("https://example.com/otherlocation")));
         }
 
         verify(mockUrlConnection).getHeaderField("Location");
@@ -211,8 +211,8 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            URI location = conn.getLocation();
-            assertThat(location, is(new URI("https://example.org/otherlocation")));
+            URL location = conn.getLocation();
+            assertThat(location, is(new URL("https://example.org/otherlocation")));
         }
 
         verify(mockUrlConnection).getHeaderField("Location");
@@ -239,9 +239,9 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getLink("next"), is(new URI("https://example.com/acme/new-authz")));
-            assertThat(conn.getLink("recover"), is(new URI("https://example.org/recover-reg")));
-            assertThat(conn.getLink("terms-of-service"), is(new URI("https://example.com/acme/terms")));
+            assertThat(conn.getLink("next"), is(new URL("https://example.com/acme/new-authz")));
+            assertThat(conn.getLink("recover"), is(new URL("https://example.org/recover-reg")));
+            assertThat(conn.getLink("terms-of-service"), is(new URL("https://example.com/acme/terms")));
             assertThat(conn.getLink("secret-stuff"), is(nullValue()));
         }
     }
@@ -251,14 +251,17 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testGetMultiLink() {
+        URL baseUrl = TestUtils.url("https://example.com/acme/request/1234");
+
         Map<String, List<String>> headers = new HashMap<>();
         headers.put("Link", Arrays.asList(
                         "<https://example.com/acme/terms1>; rel=\"terms-of-service\"",
                         "<https://example.com/acme/terms2>; rel=\"terms-of-service\"",
-                        "<https://example.com/acme/terms3>; rel=\"terms-of-service\""
+                        "<../terms3>; rel=\"terms-of-service\""
                     ));
 
         when(mockUrlConnection.getHeaderFields()).thenReturn(headers);
+        when(mockUrlConnection.getURL()).thenReturn(baseUrl);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
@@ -291,7 +294,7 @@ public class DefaultConnectionTest {
     public void testNoLocation() throws Exception {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            URI location = conn.getLocation();
+            URL location = conn.getLocation();
             assertThat(location, is(nullValue()));
         }
 
@@ -536,7 +539,7 @@ public class DefaultConnectionTest {
     @Test
     public void testSendRequest() throws Exception {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.sendRequest(requestUri, session);
+            conn.sendRequest(requestUrl, session);
         }
 
         verify(mockUrlConnection).setRequestMethod("GET");
@@ -583,7 +586,7 @@ public class DefaultConnectionTest {
             JSONBuilder cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");
             session.setKeyIdentifier(keyIdentifierUri);
-            conn.sendSignedRequest(requestUri, cb, session);
+            conn.sendSignedRequest(requestUrl, cb, session);
         }
 
         verify(mockUrlConnection).setRequestMethod("POST");
@@ -607,7 +610,7 @@ public class DefaultConnectionTest {
         StringBuilder expectedHeader = new StringBuilder();
         expectedHeader.append('{');
         expectedHeader.append("\"nonce\":\"").append(Base64Url.encode(nonce1)).append("\",");
-        expectedHeader.append("\"url\":\"").append(requestUri).append("\",");
+        expectedHeader.append("\"url\":\"").append(requestUrl).append("\",");
         expectedHeader.append("\"alg\":\"RS256\",");
         expectedHeader.append("\"kid\":\"").append(keyIdentifierUri).append('"');
         expectedHeader.append('}');
@@ -656,7 +659,7 @@ public class DefaultConnectionTest {
         }) {
             JSONBuilder cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");
-            conn.sendJwkSignedRequest(requestUri, cb, session);
+            conn.sendJwkSignedRequest(requestUrl, cb, session);
         }
 
         verify(mockUrlConnection).setRequestMethod("POST");
@@ -680,7 +683,7 @@ public class DefaultConnectionTest {
         StringBuilder expectedHeader = new StringBuilder();
         expectedHeader.append('{');
         expectedHeader.append("\"nonce\":\"").append(Base64Url.encode(nonce1)).append("\",");
-        expectedHeader.append("\"url\":\"").append(requestUri).append("\",");
+        expectedHeader.append("\"url\":\"").append(requestUrl).append("\",");
         expectedHeader.append("\"alg\":\"RS256\",");
         expectedHeader.append("\"jwk\":{");
         expectedHeader.append("\"kty\":\"").append(TestUtils.KTY).append("\",");
@@ -705,7 +708,7 @@ public class DefaultConnectionTest {
     public void testSendSignedRequestNoKidFailed() throws Exception {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             JSONBuilder cb = new JSONBuilder();
-            conn.sendSignedRequest(requestUri, cb, session);
+            conn.sendSignedRequest(requestUrl, cb, session);
         }
     }
 
@@ -714,14 +717,14 @@ public class DefaultConnectionTest {
      */
     @Test(expected = AcmeProtocolException.class)
     public void testSendSignedRequestNoNonce() throws Exception {
-        when(mockHttpConnection.openConnection(URI.create("https://example.com/acme/new-nonce")))
+        when(mockHttpConnection.openConnection(new URL("https://example.com/acme/new-nonce")))
                 .thenReturn(mockUrlConnection);
         when(mockUrlConnection.getResponseCode())
                 .thenReturn(HttpURLConnection.HTTP_NOT_FOUND);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             JSONBuilder cb = new JSONBuilder();
-            conn.sendJwkSignedRequest(requestUri, cb, DefaultConnectionTest.this.session);
+            conn.sendJwkSignedRequest(requestUrl, cb, DefaultConnectionTest.this.session);
         }
     }
 

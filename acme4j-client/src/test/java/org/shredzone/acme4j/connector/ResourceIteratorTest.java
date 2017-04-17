@@ -15,11 +15,11 @@ package org.shredzone.acme4j.connector;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.shredzone.acme4j.util.TestUtils.isIntArrayContainingInAnyOrder;
+import static org.shredzone.acme4j.util.TestUtils.*;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -43,24 +43,24 @@ public class ResourceIteratorTest {
     private final int RESOURCES_PER_PAGE = 5;
     private final String TYPE = "authorizations";
 
-    private List<URI> resourceURIs = new ArrayList<>(PAGES * RESOURCES_PER_PAGE);
-    private List<URI> pageURIs = new ArrayList<>(PAGES);
+    private List<URL> resourceURLs = new ArrayList<>(PAGES * RESOURCES_PER_PAGE);
+    private List<URL> pageURLs = new ArrayList<>(PAGES);
 
     @Before
     public void setup() {
-        resourceURIs.clear();
+        resourceURLs.clear();
         for (int ix = 0; ix < RESOURCES_PER_PAGE * PAGES; ix++) {
-            resourceURIs.add(URI.create("https://example.com/acme/auth/" + ix));
+            resourceURLs.add(url("https://example.com/acme/auth/" + ix));
         }
 
-        pageURIs.clear();
+        pageURLs.clear();
         for (int ix = 0; ix < PAGES; ix++) {
-            pageURIs.add(URI.create("https://example.com/acme/batch/" + ix));
+            pageURLs.add(url("https://example.com/acme/batch/" + ix));
         }
     }
 
     /**
-     * Test if the {@link ResourceIterator} handles a {@code null} start URI.
+     * Test if the {@link ResourceIterator} handles a {@code null} start URL.
      */
     @Test(expected = NoSuchElementException.class)
     public void nullTest() throws IOException {
@@ -76,14 +76,14 @@ public class ResourceIteratorTest {
      */
     @Test
     public void iteratorTest() throws IOException {
-        List<URI> result = new ArrayList<>();
+        List<URL> result = new ArrayList<>();
 
-        Iterator<Authorization> it = createIterator(pageURIs.get(0));
+        Iterator<Authorization> it = createIterator(pageURLs.get(0));
         while (it.hasNext()) {
             result.add(it.next().getLocation());
         }
 
-        assertThat(result, is(equalTo(resourceURIs)));
+        assertThat(result, is(equalTo(resourceURLs)));
     }
 
     /**
@@ -91,9 +91,9 @@ public class ResourceIteratorTest {
      */
     @Test
     public void nextHasNextTest() throws IOException {
-        List<URI> result = new ArrayList<>();
+        List<URL> result = new ArrayList<>();
 
-        Iterator<Authorization> it = createIterator(pageURIs.get(0));
+        Iterator<Authorization> it = createIterator(pageURLs.get(0));
         assertThat(it.hasNext(), is(true));
         assertThat(it.hasNext(), is(true));
 
@@ -107,7 +107,7 @@ public class ResourceIteratorTest {
             assertThat(it.hasNext(), is(false));
         }
 
-        assertThat(result, is(equalTo(resourceURIs)));
+        assertThat(result, is(equalTo(resourceURLs)));
     }
 
     /**
@@ -115,7 +115,7 @@ public class ResourceIteratorTest {
      */
     @Test(expected = UnsupportedOperationException.class)
     public void removeTest() throws IOException {
-        Iterator<Authorization> it = createIterator(pageURIs.get(0));
+        Iterator<Authorization> it = createIterator(pageURLs.get(0));
         it.next();
         it.remove(); // throws UnsupportedOperationException
     }
@@ -124,16 +124,16 @@ public class ResourceIteratorTest {
      * Creates a new {@link Iterator} of {@link Authorization} objects.
      *
      * @param first
-     *            URI of the first page
+     *            URL of the first page
      * @return Created {@link Iterator}
      */
-    private Iterator<Authorization> createIterator(URI first) throws IOException {
+    private Iterator<Authorization> createIterator(URL first) throws IOException {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             private int ix;
 
             @Override
-            public void sendRequest(URI uri, Session session) {
-                ix = pageURIs.indexOf(uri);
+            public void sendRequest(URL url, Session session) {
+                ix = pageURLs.indexOf(url);
                 assertThat(ix, is(greaterThanOrEqualTo(0)));
             }
 
@@ -149,15 +149,15 @@ public class ResourceIteratorTest {
                 int end = (ix + 1) * RESOURCES_PER_PAGE;
 
                 JSONBuilder cb = new JSONBuilder();
-                cb.array(TYPE, resourceURIs.subList(start, end).toArray());
+                cb.array(TYPE, resourceURLs.subList(start, end).toArray());
 
                 return JSON.parse(cb.toString());
             }
 
             @Override
-            public URI getLink(String relation) {
-                if ("next".equals(relation) && (ix + 1 < pageURIs.size())) {
-                    return pageURIs.get(ix + 1);
+            public URL getLink(String relation) {
+                if ("next".equals(relation) && (ix + 1 < pageURLs.size())) {
+                    return pageURLs.get(ix + 1);
                 }
                 return null;
             }
