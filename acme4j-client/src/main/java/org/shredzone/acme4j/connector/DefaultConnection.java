@@ -497,7 +497,7 @@ public class DefaultConnection implements Connection {
      */
     private static URL toURL(URI uri) {
         try {
-            return uri.toURL();
+            return uri != null ? uri.toURL() : null;
         } catch (MalformedURLException ex) {
             throw new AcmeProtocolException("Invalid URL: " + uri, ex);
         }
