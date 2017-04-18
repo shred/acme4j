@@ -57,7 +57,7 @@ import org.shredzone.acme4j.util.TestUtils;
 public class DefaultConnectionTest {
 
     private URL requestUrl = TestUtils.url("http://example.com/acme/");
-    private URI keyIdentifierUri = URI.create(TestUtils.ACME_SERVER_URI + "/acct/1");
+    private String keyIdentifier = TestUtils.ACME_SERVER_URI + "/acct/1";
     private HttpURLConnection mockUrlConnection;
     private HttpConnector mockHttpConnection;
     private Session session;
@@ -585,7 +585,7 @@ public class DefaultConnectionTest {
         }) {
             JSONBuilder cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");
-            session.setKeyIdentifier(keyIdentifierUri);
+            session.setKeyIdentifier(keyIdentifier);
             conn.sendSignedRequest(requestUrl, cb, session);
         }
 
@@ -612,7 +612,7 @@ public class DefaultConnectionTest {
         expectedHeader.append("\"nonce\":\"").append(Base64Url.encode(nonce1)).append("\",");
         expectedHeader.append("\"url\":\"").append(requestUrl).append("\",");
         expectedHeader.append("\"alg\":\"RS256\",");
-        expectedHeader.append("\"kid\":\"").append(keyIdentifierUri).append('"');
+        expectedHeader.append("\"kid\":\"").append(keyIdentifier).append('"');
         expectedHeader.append('}');
 
         assertThat(header, sameJSONAs(expectedHeader.toString()));

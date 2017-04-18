@@ -47,8 +47,7 @@ public class RegistrationIT extends AbstractPebbleIT {
         Registration reg = rb.create(session);
         URL location = reg.getLocation();
         assertIsPebbleUrl(location);
-        URI keyIdentifier = session.getKeyIdentifier();
-        assertThat(keyIdentifier.toString(), is(location.toString()));
+        assertThat(session.getKeyIdentifier(), is(location.toString()));
 
         // TODO: Not yet supported by Pebble
         /*

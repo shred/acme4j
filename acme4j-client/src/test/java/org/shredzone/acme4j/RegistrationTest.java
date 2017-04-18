@@ -134,7 +134,7 @@ public class RegistrationTest {
         Registration registration = new Registration(session, locationUrl);
         registration.update();
 
-        assertThat(session.getKeyIdentifier(), is(locationUrl.toURI()));
+        assertThat(session.getKeyIdentifier(), is(locationUrl.toString()));
         assertThat(registration.getLocation(), is(locationUrl));
         assertThat(registration.getTermsOfServiceAgreed(), is(true));
         assertThat(registration.getContacts(), hasSize(1));

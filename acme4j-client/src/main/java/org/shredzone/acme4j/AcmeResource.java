@@ -14,11 +14,8 @@
 package org.shredzone.acme4j;
 
 import java.io.Serializable;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Objects;
-
-import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
  * A generic ACME resource.
@@ -62,11 +59,7 @@ public abstract class AcmeResource implements Serializable {
      */
     protected void setLocation(URL location) {
         this.location = Objects.requireNonNull(location, "location");
-        try {
-            session.setKeyIdentifier(this.location.toURI());
-        } catch (URISyntaxException ex) {
-            throw new AcmeProtocolException("Location cannot be used as key identifier", ex);
-        }
+        session.setKeyIdentifier(this.location.toString());
     }
 
     /**

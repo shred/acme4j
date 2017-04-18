@@ -94,7 +94,7 @@ public class RegistrationBuilderTest {
 
         assertThat(registration.getLocation(), is(locationUrl));
         assertThat(registration.getTermsOfServiceAgreed(), is(true));
-        assertThat(session.getKeyIdentifier(), is(locationUrl.toURI()));
+        assertThat(session.getKeyIdentifier(), is(locationUrl.toString()));
 
         try {
             RegistrationBuilder builder2 = new RegistrationBuilder();

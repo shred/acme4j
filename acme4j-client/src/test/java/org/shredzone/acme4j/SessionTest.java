@@ -97,7 +97,7 @@ public class SessionTest {
         KeyPair kp1 = TestUtils.createKeyPair();
         KeyPair kp2 = TestUtils.createDomainKeyPair();
         URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
-        URI keyIdentifierUri = URI.create(TestUtils.ACME_SERVER_URI + "/acct/1");
+        String keyIdentifier = TestUtils.ACME_SERVER_URI + "/acct/1";
 
         Session session = new Session(serverUri, kp1);
 
@@ -111,8 +111,8 @@ public class SessionTest {
         assertThat(session.getKeyPair(), is(kp2));
 
         assertThat(session.getKeyIdentifier(), is(nullValue()));
-        session.setKeyIdentifier(keyIdentifierUri);
-        assertThat(session.getKeyIdentifier(), is(keyIdentifierUri));
+        session.setKeyIdentifier(keyIdentifier);
+        assertThat(session.getKeyIdentifier(), is(keyIdentifier));
 
         assertThat(session.getServerUri(), is(serverUri));
     }
