@@ -168,8 +168,6 @@ public class DefaultConnection implements Connection {
                 resetNonce(session);
             }
 
-            LOG.debug("POST {} with claims: {}", url, claims);
-
             conn = httpConnector.openConnection(url);
             conn.setRequestMethod("POST");
             conn.setRequestProperty(ACCEPT_HEADER, "application/json");
@@ -188,8 +186,16 @@ public class DefaultConnection implements Connection {
             } else {
                 jws.getHeaders().setJwkHeaderValue("jwk", jwk);
             }
+
             jws.setAlgorithmHeaderValue(keyAlgorithm(jwk));
             jws.setKey(keypair.getPrivate());
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("POST {}", url);
+                LOG.debug("  Payload: {}", claims.toString());
+                LOG.debug("  JWS Header: {}", jws.getHeaders().getFullHeaderAsJsonString());
+            }
+
             byte[] outputData = jws.getCompactSerialization().getBytes(DEFAULT_CHARSET);
 
             conn.setFixedLengthStreamingMode(outputData.length);
@@ -248,13 +254,12 @@ public class DefaultConnection implements Connection {
 
         JSON result = null;
 
-        String response = "";
         try {
             InputStream in =
                     conn.getResponseCode() < 400 ? conn.getInputStream() : conn.getErrorStream();
             if (in != null) {
                 result = JSON.parse(in);
-                LOG.debug("Result JSON: {}", response);
+                LOG.debug("Result JSON: {}", result.toString());
             }
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
