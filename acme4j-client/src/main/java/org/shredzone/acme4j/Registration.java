@@ -65,6 +65,7 @@ public class Registration extends AcmeResource {
     protected Registration(Session session, URL location) {
         super(session);
         setLocation(location);
+        session.setKeyIdentifier(location.toString());
     }
 
     /**

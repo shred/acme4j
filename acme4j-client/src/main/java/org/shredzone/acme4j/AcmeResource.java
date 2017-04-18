@@ -59,7 +59,6 @@ public abstract class AcmeResource implements Serializable {
      */
     protected void setLocation(URL location) {
         this.location = Objects.requireNonNull(location, "location");
-        session.setKeyIdentifier(this.location.toString());
     }
 
     /**
