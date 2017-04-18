@@ -41,7 +41,7 @@ public abstract class AcmeResource implements Serializable {
      */
     protected Session getSession() {
         if (session == null) {
-            throw new IllegalStateException("Use Acme.reconnect() for reconnecting this object to a session.");
+            throw new IllegalStateException("Use rebind() to bind this resource to a session.");
         }
 
         return session;
