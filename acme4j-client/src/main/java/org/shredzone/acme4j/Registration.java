@@ -154,8 +154,7 @@ public class Registration extends AcmeResource {
             conn.sendSignedRequest(getLocation(), claims, getSession());
             conn.accept(HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED);
 
-            JSON json = conn.readJsonResponse();
-            unmarshal(json, conn);
+            unmarshal(conn.readJsonResponse());
          }
     }
 
@@ -343,10 +342,8 @@ public class Registration extends AcmeResource {
      *
      * @param json
      *            JSON data
-     * @param conn
-     *            {@link Connection} with headers to be evaluated
      */
-    private void unmarshal(JSON json, Connection conn) {
+    protected void unmarshal(JSON json) {
         if (json.contains(KEY_TOS_AGREED)) {
             this.termsOfServiceAgreed = json.get(KEY_TOS_AGREED).asBoolean();
         }
@@ -363,11 +360,6 @@ public class Registration extends AcmeResource {
 
         if (json.contains(KEY_STATUS)) {
             this.status = Status.parse(json.get(KEY_STATUS).asString());
-        }
-
-        URL location = conn.getLocation();
-        if (location != null) {
-            setLocation(location);
         }
 
         loaded = true;
@@ -442,7 +434,7 @@ public class Registration extends AcmeResource {
                 conn.accept(HttpURLConnection.HTTP_ACCEPTED);
 
                 JSON json = conn.readJsonResponse();
-                unmarshal(json, conn);
+                unmarshal(json);
             }
         }
     }

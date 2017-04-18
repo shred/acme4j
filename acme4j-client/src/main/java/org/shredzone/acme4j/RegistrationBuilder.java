@@ -103,11 +103,13 @@ public class RegistrationBuilder {
             }
 
             conn.sendJwkSignedRequest(session.resourceUrl(Resource.NEW_REG), claims, session);
-            conn.accept(HttpURLConnection.HTTP_CREATED);
+            conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
             URL location = conn.getLocation();
 
-            return new Registration(session, location);
+            Registration reg = new Registration(session, location);
+            reg.unmarshal(conn.readJsonResponse());
+            return reg;
         }
     }
 

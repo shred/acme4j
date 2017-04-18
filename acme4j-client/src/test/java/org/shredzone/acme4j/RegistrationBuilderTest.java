@@ -66,7 +66,7 @@ public class RegistrationBuilderTest {
                     assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED));
                     return HttpURLConnection.HTTP_ACCEPTED;
                 } else {
-                    assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_CREATED));
+                    assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED));
                     return HttpURLConnection.HTTP_CREATED;
                 }
             }
@@ -78,7 +78,6 @@ public class RegistrationBuilderTest {
 
             @Override
             public JSON readJsonResponse() {
-                assertThat(isUpdate, is(true));
                 return getJsonAsObject("newRegistrationResponse");
             }
         };
