@@ -76,7 +76,9 @@ public class ClientTest {
      */
     public void fetchCertificate(Collection<String> domains) throws IOException, AcmeException {
         // Load the user key file. If there is no key file, create a new one.
-        KeyPair userKeyPair = loadOrCreateUserKeyPair();
+        // Keep this key pair in a safe place! In a production environment, you will not be
+        // able to access your account again if you should lose the key pair.
+        KeyPair userKeyPair = loadOrCreateKeyPair(USER_KEY_FILE);
 
         // Create a session for Let's Encrypt.
         // Use "acme://letsencrypt.org" for production server
@@ -92,7 +94,7 @@ public class ClientTest {
         }
 
         // Load or create a key pair for the domains. This should not be the userKeyPair!
-        KeyPair domainKeyPair = loadOrCreateDomainKeyPair();
+        KeyPair domainKeyPair = loadOrCreateKeyPair(DOMAIN_KEY_FILE);
 
         // Generate a CSR for all of the domains, and sign it with the domain key pair.
         CSRBuilder csrb = new CSRBuilder();
@@ -124,45 +126,19 @@ public class ClientTest {
     }
 
     /**
-     * Loads a user key pair from {@value #USER_KEY_FILE}. If the file does not exist,
-     * a new key pair is generated and saved.
-     * <p>
-     * Keep this key pair in a safe place! In a production environment, you will not be
-     * able to access your account again if you should lose the key pair.
-     *
-     * @return User's {@link KeyPair}.
-     */
-    private KeyPair loadOrCreateUserKeyPair() throws IOException {
-        if (USER_KEY_FILE.exists()) {
-            // If there is a key file, read it
-            try (FileReader fr = new FileReader(USER_KEY_FILE)) {
-                return KeyPairUtils.readKeyPair(fr);
-            }
-
-        } else {
-            // If there is none, create a new key pair and save it
-            KeyPair userKeyPair = KeyPairUtils.createKeyPair(KEY_SIZE);
-            try (FileWriter fw = new FileWriter(USER_KEY_FILE)) {
-                KeyPairUtils.writeKeyPair(userKeyPair, fw);
-            }
-            return userKeyPair;
-        }
-    }
-
-    /**
-     * Loads a domain key pair from {@value #DOMAIN_KEY_FILE}. If the file does not exist,
+     * Loads a key pair from specified file. If the file does not exist,
      * a new key pair is generated and saved.
      *
-     * @return Domain {@link KeyPair}.
+     * @return {@link KeyPair}.
      */
-    private KeyPair loadOrCreateDomainKeyPair() throws IOException {
-        if (DOMAIN_KEY_FILE.exists()) {
-            try (FileReader fr = new FileReader(DOMAIN_KEY_FILE)) {
+    private KeyPair loadOrCreateKeyPair(File file) throws IOException {
+        if (file.exists()) {
+            try (FileReader fr = new FileReader(file)) {
                 return KeyPairUtils.readKeyPair(fr);
             }
         } else {
             KeyPair domainKeyPair = KeyPairUtils.createKeyPair(KEY_SIZE);
-            try (FileWriter fw = new FileWriter(DOMAIN_KEY_FILE)) {
+            try (FileWriter fw = new FileWriter(file)) {
                 KeyPairUtils.writeKeyPair(domainKeyPair, fw);
             }
             return domainKeyPair;
