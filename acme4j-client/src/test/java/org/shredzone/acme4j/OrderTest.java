@@ -72,7 +72,7 @@ public class OrderTest {
 
         assertThat(order.getNotBefore(), is(parseTimestamp("2016-01-01T00:00:00Z")));
         assertThat(order.getNotAfter(), is(parseTimestamp("2016-01-08T00:00:00Z")));
-        assertThat(order.getCertificateLocation(), is(url("https://example.com/acme/cert/1234")));
+        assertThat(order.getCertificate().getLocation(), is(url("https://example.com/acme/cert/1234")));
         assertThat(order.getCsr(), is(csr));
 
         List<Authorization> auths = order.getAuthorizations();
@@ -117,12 +117,12 @@ public class OrderTest {
 
         // Lazy loading
         assertThat(requestWasSent.get(), is(false));
-        assertThat(order.getCertificateLocation(), is(url("https://example.com/acme/cert/1234")));
+        assertThat(order.getCertificate().getLocation(), is(url("https://example.com/acme/cert/1234")));
         assertThat(requestWasSent.get(), is(true));
 
         // Subsequent queries do not trigger another load
         requestWasSent.set(false);
-        assertThat(order.getCertificateLocation(), is(url("https://example.com/acme/cert/1234")));
+        assertThat(order.getCertificate().getLocation(), is(url("https://example.com/acme/cert/1234")));
         assertThat(order.getStatus(), is(Status.PENDING));
         assertThat(order.getExpires(), is(parseTimestamp("2015-03-01T14:09:00Z")));
         assertThat(requestWasSent.get(), is(false));

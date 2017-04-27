@@ -21,6 +21,7 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -47,6 +48,7 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.provider.AcmeProvider;
+import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
@@ -759,20 +761,23 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testReadCertificate() throws Exception {
-        X509Certificate original = TestUtils.createCertificate();
+        when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/pem-certificate-chain");
+        when(mockUrlConnection.getInputStream()).thenReturn(getClass().getResourceAsStream("/cert.pem"));
 
-        when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/pkix-cert");
-        when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(original.getEncoded()));
-
-        X509Certificate downloaded;
+        List<X509Certificate> downloaded;
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            downloaded = conn.readCertificate();
+            downloaded = conn.readCertificates();
         }
 
-        assertThat(original, not(nullValue()));
+        List<X509Certificate> original = TestUtils.createCertificate();
+        assertThat(original.size(), is(2));
+
         assertThat(downloaded, not(nullValue()));
-        assertThat(original.getEncoded(), is(equalTo(downloaded.getEncoded())));
+        assertThat(downloaded.size(), is(original.size()));
+        for (int ix = 0; ix < downloaded.size(); ix++) {
+            assertThat(downloaded.get(ix).getEncoded(), is(original.get(ix).getEncoded()));
+        };
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verify(mockUrlConnection).getInputStream();
@@ -784,16 +789,25 @@ public class DefaultConnectionTest {
      */
     @Test(expected = AcmeProtocolException.class)
     public void testReadBadCertificate() throws Exception {
-        X509Certificate original = TestUtils.createCertificate();
-        byte[] badCert = original.getEncoded();
-        Arrays.sort(badCert); // break it
+        // Build a broken certificate chain PEM file
+        byte[] brokenPem;
+        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        OutputStreamWriter w = new OutputStreamWriter(baos)) {
+            for (X509Certificate cert : TestUtils.createCertificate()) {
+                byte[] badCert = cert.getEncoded();
+                Arrays.sort(badCert); // break it
+                AcmeUtils.writeToPem(badCert, "CERTIFICATE", w);
+            }
+            w.flush();
+            brokenPem = baos.toByteArray();
+        }
 
-        when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/pkix-cert");
-        when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(badCert));
+        when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/pem-certificate-chain");
+        when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(brokenPem));
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            conn.readCertificate();
+            conn.readCertificates();
         }
     }
 

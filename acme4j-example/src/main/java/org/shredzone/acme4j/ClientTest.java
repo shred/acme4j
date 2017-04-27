@@ -106,18 +106,15 @@ public class ClientTest {
         }
 
         // Now request a signed certificate.
-        Certificate certificate = reg.requestCertificate(csrb.getEncoded());
+        Order order = reg.orderCertificate(csrb.getEncoded(), null, null);
+        Certificate certificate = order.getCertificate();
 
         LOG.info("Success! The certificate for domains " + domains + " has been generated!");
         LOG.info("Certificate URI: " + certificate.getLocation());
 
-        // Download the leaf certificate and certificate chain.
-        X509Certificate cert = certificate.download();
-        X509Certificate[] chain = certificate.downloadChain();
-
         // Write a combined file containing the certificate and chain.
         try (FileWriter fw = new FileWriter(DOMAIN_CHAIN_FILE)) {
-            CertificateUtils.writeX509CertificateChain(fw, cert, chain);
+            certificate.writeCertificate(fw);
         }
 
         // That's all! Configure your web server to use the DOMAIN_KEY_FILE and

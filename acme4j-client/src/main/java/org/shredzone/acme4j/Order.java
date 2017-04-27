@@ -40,7 +40,7 @@ public class Order extends AcmeResource {
     private Instant notBefore;
     private Instant notAfter;
     private List<URL> authorizations;
-    private URL certificate;
+    private Certificate certificate;
     private boolean loaded = false;
 
     protected Order(Session session, URL location) {
@@ -113,10 +113,9 @@ public class Order extends AcmeResource {
     }
 
     /**
-     * Gets the {@link URL} where the certificate can be downloaded from, if it is
-     * available. {@code null} otherwise.
+     * Gets the {@link Certificate} if it is available. {@code null} otherwise.
      */
-    public URL getCertificateLocation() {
+    public Certificate getCertificate() {
         load();
         return certificate;
     }
@@ -160,7 +159,10 @@ public class Order extends AcmeResource {
         this.csr = json.get("csr").asBinary();
         this.notBefore = json.get("notBefore").asInstant();
         this.notAfter = json.get("notAfter").asInstant();
-        this.certificate = json.get("certificate").asURL();
+
+        URL certUrl = json.get("certificate").asURL();
+        certificate = certUrl != null ? Certificate.bind(getSession(), certUrl) : null;
+
         this.authorizations = json.get("authorizations").asArray().stream()
                 .map(JSON.Value::asURL)
                 .collect(toList());

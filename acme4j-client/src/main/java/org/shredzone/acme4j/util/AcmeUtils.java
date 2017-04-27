@@ -13,13 +13,16 @@
  */
 package org.shredzone.acme4j.util;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.IDN;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,6 +52,9 @@ public final class AcmeUtils {
 
     private static final Pattern TZ_PATTERN = Pattern.compile(
                 "([+-])(\\d{2}):?(\\d{2})$");
+
+    private static final Base64.Encoder PEM_ENCODER = Base64.getMimeEncoder(64, "\n".getBytes());
+
 
     private AcmeUtils() {
         // Utility class without constructor
@@ -227,6 +233,22 @@ public final class AcmeUtils {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Writes an encoded key or certificate to a file in PEM format.
+     *
+     * @param encoded
+     *            Encoded data to write
+     * @param label
+     *            PEM label, e.g. "CERTIFICATE"
+     * @param out
+     *            {@link Writer} to write to. It will not be closed after use!
+     */
+    public static void writeToPem(byte[] encoded, String label, Writer out) throws IOException {
+        out.append("-----BEGIN ").append(label).append("-----\n");
+        out.append(new String(PEM_ENCODER.encode(encoded)));
+        out.append("\n-----END ").append(label).append("-----\n");
     }
 
 }

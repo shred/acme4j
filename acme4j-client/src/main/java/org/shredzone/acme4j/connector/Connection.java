@@ -17,6 +17,7 @@ import java.net.URI;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.List;
 
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -91,11 +92,11 @@ public interface Connection extends AutoCloseable {
     JSON readJsonResponse() throws AcmeException;
 
     /**
-     * Reads a certificate.
+     * Reads a certificate and its issuers.
      *
-     * @return {@link X509Certificate} that was read.
+     * @return List of X.509 certificate and chain that was read.
      */
-    X509Certificate readCertificate() throws AcmeException;
+    List<X509Certificate> readCertificates() throws AcmeException;
 
     /**
      * Throws an {@link AcmeRetryAfterException} if the last status was HTTP Accepted and

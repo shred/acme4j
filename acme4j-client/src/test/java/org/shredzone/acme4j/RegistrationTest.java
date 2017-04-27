@@ -15,7 +15,6 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.shredzone.acme4j.util.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.util.TestUtils.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -25,14 +24,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyPair;
-import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jose4j.jws.JsonWebSignature;
@@ -45,7 +39,6 @@ import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.util.JSON;
@@ -60,11 +53,9 @@ public class RegistrationTest {
     private URL resourceUrl  = url("http://example.com/acme/resource");
     private URL locationUrl  = url("http://example.com/acme/registration");
     private URI agreementUri = URI.create("http://example.com/agreement.pdf");
-    private URL chainUrl     = url("http://example.com/acme/chain");
 
     /**
      * Test that a registration can be updated.
-     * @throws URISyntaxException
      */
     @Test
     public void testUpdateRegistration() throws AcmeException, IOException, URISyntaxException {
@@ -294,232 +285,6 @@ public class RegistrationTest {
         } catch (IllegalArgumentException ex) {
             // expected
         }
-
-        provider.close();
-    }
-
-    /**
-     * Test that a order can be requested.
-     */
-    @Test
-    public void testOrder() throws AcmeException, IOException {
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
-            @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
-                assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("requestOrderRequest").toString()));
-                assertThat(session, is(notNullValue()));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_CREATED));
-                return HttpURLConnection.HTTP_CREATED;
-            }
-
-            @Override
-            public JSON readJsonResponse() {
-                return getJSON("requestOrderResponse");
-            }
-
-            @Override
-            public URL getLocation() {
-                return locationUrl;
-            }
-        };
-
-        provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
-
-        byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
-        ZoneId utc = ZoneId.of("UTC");
-        Instant notBefore = LocalDate.of(2016, 1, 1).atStartOfDay(utc).toInstant();
-        Instant notAfter = LocalDate.of(2016, 1, 8).atStartOfDay(utc).toInstant();
-
-        Registration registration = new Registration(provider.createSession(), locationUrl);
-
-        Order order = registration.orderCertificate(csr, notBefore, notAfter);
-
-        assertThat(order.getLocation(), is(locationUrl));
-        assertThat(order.getCsr(), is(csr));
-        assertThat(order.getStatus(), is(Status.PENDING));
-        assertThat(order.getExpires(), is(parseTimestamp("2016-01-01T00:00:00Z")));
-        assertThat(order.getLocation(), is(locationUrl));
-        assertThat(order.getNotBefore(), is(notBefore));
-        assertThat(order.getNotAfter(), is(notAfter));
-        assertThat(order.getCertificateLocation(), is(nullValue()));
-
-        List<Authorization> auths = order.getAuthorizations();
-        assertThat(auths.size(), is(2));
-        assertThat(auths.stream().map(Authorization::getLocation)::iterator,
-                containsInAnyOrder(
-                    url("https://example.com/acme/authz/1234"),
-                    url("https://example.com/acme/authz/2345")));
-
-        provider.close();
-    }
-
-    /**
-     * Test that a certificate can be requested and is delivered synchronously.
-     */
-    @Test
-    public void testRequestCertificateSync() throws AcmeException, IOException {
-        final X509Certificate originalCert = TestUtils.createCertificate();
-
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
-            @Override
-            public void sendRequest(URL url, Session session) {
-                fail("Attempted to download the certificate. Should be downloaded already!");
-            }
-
-            @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
-                assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("requestCertificateRequestWithDate").toString()));
-                assertThat(session, is(notNullValue()));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
-                        HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED));
-                return HttpURLConnection.HTTP_CREATED;
-            }
-
-            @Override
-            public X509Certificate readCertificate() {
-                return originalCert;
-            }
-
-            @Override
-            public URL getLocation() {
-                return locationUrl;
-            }
-
-            @Override
-            public URL getLink(String relation) {
-                switch(relation) {
-                    case "up": return chainUrl;
-                    default: return null;
-                }
-            }
-        };
-
-        provider.putTestResource(Resource.NEW_CERT, resourceUrl);
-
-        byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
-        ZoneId utc = ZoneId.of("UTC");
-        Instant notBefore = LocalDate.of(2016, 1, 1).atStartOfDay(utc).toInstant();
-        Instant notAfter = LocalDate.of(2016, 1, 8).atStartOfDay(utc).toInstant();
-
-        Registration registration = new Registration(provider.createSession(), locationUrl);
-        Certificate cert = registration.requestCertificate(csr, notBefore, notAfter);
-
-        assertThat(cert.download(), is(originalCert));
-        assertThat(cert.getLocation(), is(locationUrl));
-        assertThat(cert.getChainLocation(), is(chainUrl));
-
-        provider.close();
-    }
-
-    /**
-     * Test that a certificate can be requested and is delivered asynchronously.
-     */
-    @Test
-    public void testRequestCertificateAsync() throws AcmeException, IOException {
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
-            @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
-                assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("requestCertificateRequest").toString()));
-                assertThat(session, is(notNullValue()));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
-                        HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED));
-                return HttpURLConnection.HTTP_ACCEPTED;
-            }
-
-            @Override
-            public URL getLink(String relation) {
-                switch(relation) {
-                    case "up": return chainUrl;
-                    default: return null;
-                }
-            }
-
-            @Override
-            public URL getLocation() {
-                return locationUrl;
-            }
-        };
-
-        provider.putTestResource(Resource.NEW_CERT, resourceUrl);
-
-        byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
-
-        Registration registration = new Registration(provider.createSession(), locationUrl);
-        Certificate cert = registration.requestCertificate(csr);
-
-        assertThat(cert.getLocation(), is(locationUrl));
-        assertThat(cert.getChainLocation(), is(chainUrl));
-
-        provider.close();
-    }
-
-    /**
-     * Test that an unparseable certificate can be requested, and at least its location
-     * is made available.
-     */
-    @Test
-    public void testRequestCertificateBrokenSync() throws AcmeException, IOException {
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
-            @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
-                assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("requestCertificateRequestWithDate").toString()));
-                assertThat(session, is(notNullValue()));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
-                        HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED));
-                return HttpURLConnection.HTTP_CREATED;
-            }
-
-            @Override
-            public X509Certificate readCertificate() {
-                throw new AcmeProtocolException("Failed to read certificate");
-            }
-
-            @Override
-            public URL getLink(String relation) {
-                switch(relation) {
-                    case "up": return chainUrl;
-                    default: return null;
-                }
-            }
-
-            @Override
-            public URL getLocation() {
-                return locationUrl;
-            }
-        };
-
-        provider.putTestResource(Resource.NEW_CERT, resourceUrl);
-
-        byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
-        ZoneId utc = ZoneId.of("UTC");
-        Instant notBefore = LocalDate.of(2016, 1, 1).atStartOfDay(utc).toInstant();
-        Instant notAfter = LocalDate.of(2016, 1, 8).atStartOfDay(utc).toInstant();
-
-        Registration registration = new Registration(provider.createSession(), locationUrl);
-        Certificate cert = registration.requestCertificate(csr, notBefore, notAfter);
-
-        assertThat(cert.getLocation(), is(locationUrl));
-        assertThat(cert.getChainLocation(), is(chainUrl));
 
         provider.close();
     }

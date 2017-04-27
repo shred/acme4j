@@ -13,6 +13,10 @@
  */
 package org.shredzone.acme4j;
 
+import static java.util.Collections.unmodifiableList;
+
+import java.io.IOException;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.cert.CertificateEncodingException;
@@ -24,7 +28,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
-import org.shredzone.acme4j.exception.AcmeRetryAfterException;
+import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,22 +39,12 @@ import org.slf4j.LoggerFactory;
 public class Certificate extends AcmeResource {
     private static final long serialVersionUID = 7381527770159084201L;
     private static final Logger LOG = LoggerFactory.getLogger(Certificate.class);
-    private static final int MAX_CHAIN_LENGTH = 10;
 
-    private URL chainCertUrl;
-    private X509Certificate cert = null;
-    private X509Certificate[] chain = null;
+    private ArrayList<X509Certificate> certChain = null;
 
     protected Certificate(Session session, URL certUrl) {
         super(session);
         setLocation(certUrl);
-    }
-
-    protected Certificate(Session session, URL certUrl, URL chainUrl, X509Certificate cert) {
-        super(session);
-        setLocation(certUrl);
-        this.chainCertUrl = chainUrl;
-        this.cert = cert;
     }
 
     /**
@@ -67,79 +61,65 @@ public class Certificate extends AcmeResource {
     }
 
     /**
-     * Returns the URL of the certificate chain. {@code null} if not known or not
-     * available.
-     */
-    public URL getChainLocation() {
-        return chainCertUrl;
-    }
-
-    /**
-     * Downloads the certificate. The result is cached.
+     * Downloads the certificate chain.
      *
-     * @return {@link X509Certificate} that was downloaded
-     * @throws AcmeRetryAfterException
-     *             the certificate is still being created, and the server returned an
-     *             estimated date when it will be ready for download. You should wait for
-     *             the date given in {@link AcmeRetryAfterException#getRetryAfter()}
-     *             before trying again.
+     * @throws AcmeException
+     *             if the certificate could not be downloaded
      */
-    public X509Certificate download() throws AcmeException {
-        if (cert == null) {
+    public void download() throws AcmeException {
+        if (certChain == null) {
             LOG.debug("download");
             try (Connection conn = getSession().provider().connect()) {
                 conn.sendRequest(getLocation(), getSession());
-                conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
-                conn.handleRetryAfter("certificate is not available for download yet");
-
-                chainCertUrl = conn.getLink("up");
-                cert = conn.readCertificate();
+                conn.accept(HttpURLConnection.HTTP_OK);
+                certChain = new ArrayList<>(conn.readCertificates());
             }
         }
-        return cert;
     }
 
     /**
-     * Downloads the certificate chain. The result is cached.
+     * Returns the created certificate.
      *
-     * @return Chain of {@link X509Certificate}s
-     * @throws AcmeRetryAfterException
-     *             the certificate is still being created, and the server returned an
-     *             estimated date when it will be ready for download. You should wait for
-     *             the date given in {@link AcmeRetryAfterException#getRetryAfter()}
-     *             before trying again.
+     * @return The created end-entity {@link X509Certificate} without issuer chain.
+     * @throws AcmeProtocolException
+     *             if lazy downloading failed
      */
-    public X509Certificate[] downloadChain() throws AcmeException {
-        if (chain == null) {
-            if (chainCertUrl == null) {
-                download();
+    public X509Certificate getCertificate() {
+        lazyDownload();
+        return certChain.get(0);
+    }
+
+    /**
+     * Returns the created certificate and issuer chain.
+     *
+     * @return The created end-entity {@link X509Certificate} and issuer chain. The first
+     *         certificate is always the end-entity certificate, followed by the
+     *         intermediate certificates required to build a path to a trusted root.
+     * @throws AcmeProtocolException
+     *             if lazy downloading failed
+     */
+    public List<X509Certificate> getCertificateChain() {
+        lazyDownload();
+        return unmodifiableList(certChain);
+    }
+
+    /**
+     * Writes the certificate to the given writer. It is written in PEM format, with the
+     * end-entity cert coming first, followed by the intermediate ceritificates.
+     *
+     * @param out
+     *            {@link Writer} to write to. The writer is not closed after use.
+     * @throws AcmeProtocolException
+     *             if lazy downloading failed
+     */
+    public void writeCertificate(Writer out) throws IOException {
+        try {
+            for (X509Certificate cert : getCertificateChain()) {
+                AcmeUtils.writeToPem(cert.getEncoded(), "CERTIFICATE", out);
             }
-
-            if (chainCertUrl == null) {
-                throw new AcmeProtocolException("No certificate chain provided");
-            }
-
-            LOG.debug("downloadChain");
-
-            List<X509Certificate> certChain = new ArrayList<>();
-            URL link = chainCertUrl;
-            while (link != null && certChain.size() < MAX_CHAIN_LENGTH) {
-                try (Connection conn = getSession().provider().connect()) {
-                    conn.sendRequest(chainCertUrl, getSession());
-                    conn.accept(HttpURLConnection.HTTP_OK);
-
-                    certChain.add(conn.readCertificate());
-                    link = conn.getLink("up");
-                }
-            }
-            if (link != null) {
-                throw new AcmeProtocolException("Recursion limit reached (" + MAX_CHAIN_LENGTH
-                    + "). Didn't get " + link);
-            }
-
-            chain = certChain.toArray(new X509Certificate[certChain.size()]);
+        } catch (CertificateEncodingException ex) {
+            throw new IOException("Encoding error", ex);
         }
-        return chain;
     }
 
     /**
@@ -164,14 +144,10 @@ public class Certificate extends AcmeResource {
             throw new AcmeProtocolException("CA does not support certificate revocation");
         }
 
-        if (cert == null) {
-            download();
-        }
-
         try (Connection conn = getSession().provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.putResource(Resource.REVOKE_CERT);
-            claims.putBase64("certificate", cert.getEncoded());
+            claims.putBase64("certificate", getCertificate().getEncoded());
             if (reason != null) {
                 claims.put("reason", reason.getReasonCode());
             }
@@ -180,6 +156,18 @@ public class Certificate extends AcmeResource {
             conn.accept(HttpURLConnection.HTTP_OK);
         } catch (CertificateEncodingException ex) {
             throw new AcmeProtocolException("Invalid certificate", ex);
+        }
+    }
+
+    /**
+     * Lazily downloads the certificate. Throws a runtime {@link AcmeProtocolException} if
+     * the download failed.
+     */
+    private void lazyDownload() {
+        try {
+            download();
+        } catch (AcmeException ex) {
+            throw new AcmeProtocolException("Could not lazily download certificate", ex);
         }
     }
 

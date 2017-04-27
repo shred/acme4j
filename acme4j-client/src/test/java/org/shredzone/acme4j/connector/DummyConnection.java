@@ -17,6 +17,7 @@ import java.net.URI;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.List;
 
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -60,7 +61,7 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public X509Certificate readCertificate() {
+    public List<X509Certificate> readCertificates() throws AcmeException {
         throw new UnsupportedOperationException();
     }
 

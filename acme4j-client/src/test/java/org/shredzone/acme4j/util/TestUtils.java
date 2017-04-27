@@ -13,6 +13,9 @@
  */
 package org.shredzone.acme4j.util;
 
+import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.toList;
+
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,6 +41,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -218,15 +222,17 @@ public final class TestUtils {
     }
 
     /**
-     * Creates a standard certificate for testing. This certificate is read from a test
-     * resource and is guaranteed not to change between test runs.
+     * Creates a standard certificate chain for testing. This certificate is read from a
+     * test resource and is guaranteed not to change between test runs.
      *
-     * @return {@link X509Certificate} for testing
+     * @return List of {@link X509Certificate} for testing
      */
-    public static X509Certificate createCertificate() throws IOException {
-        try (InputStream cert = TestUtils.class.getResourceAsStream("/cert.pem")) {
-            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-            return (X509Certificate) certificateFactory.generateCertificate(cert);
+    public static List<X509Certificate> createCertificate() throws IOException {
+        try (InputStream in = TestUtils.class.getResourceAsStream("/cert.pem")) {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            return unmodifiableList(cf.generateCertificates(in).stream()
+                       .map(c -> (X509Certificate) c)
+                       .collect(toList()));
         } catch (CertificateException ex) {
             throw new IOException(ex);
         }

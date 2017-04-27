@@ -19,7 +19,6 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
-import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -225,68 +224,6 @@ public class Registration extends AcmeResource {
             Authorization auth = new Authorization(getSession(), conn.getLocation());
             auth.unmarshalAuthorization(json);
             return auth;
-        }
-    }
-
-    /**
-     * Requests a certificate for the given CSR.
-     * <p>
-     * All domains given in the CSR must be authorized before.
-     *
-     * @param csr
-     *            PKCS#10 Certificate Signing Request to be sent to the server
-     * @return The {@link Certificate}
-     */
-    public Certificate requestCertificate(byte[] csr) throws AcmeException {
-        return requestCertificate(csr, null, null);
-    }
-
-    /**
-     * Requests a certificate for the given CSR.
-     * <p>
-     * All domains given in the CSR must be authorized before.
-     *
-     * @param csr
-     *            PKCS#10 Certificate Signing Request to be sent to the server
-     * @param notBefore
-     *            requested value of the notBefore field in the certificate, {@code null}
-     *            for default. May be ignored by the server.
-     * @param notAfter
-     *            requested value of the notAfter field in the certificate, {@code null}
-     *            for default. May be ignored by the server.
-     * @return The {@link Certificate}
-     */
-    public Certificate requestCertificate(byte[] csr, Instant notBefore, Instant notAfter)
-                throws AcmeException {
-        Objects.requireNonNull(csr, "csr");
-
-        LOG.debug("requestCertificate");
-        try (Connection conn = getSession().provider().connect()) {
-            JSONBuilder claims = new JSONBuilder();
-            claims.putResource(Resource.NEW_CERT);
-            claims.putBase64("csr", csr);
-            if (notBefore != null) {
-                claims.put("notBefore", notBefore);
-            }
-            if (notAfter != null) {
-                claims.put("notAfter", notAfter);
-            }
-
-            conn.sendSignedRequest(getSession().resourceUrl(Resource.NEW_CERT), claims, getSession());
-            int rc = conn.accept(HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED);
-
-            X509Certificate cert = null;
-            if (rc == HttpURLConnection.HTTP_CREATED) {
-                try {
-                    cert = conn.readCertificate();
-                } catch (AcmeProtocolException ex) {
-                    LOG.warn("Could not parse attached certificate", ex);
-                }
-            }
-
-            URL chainCertUrl = conn.getLink("up");
-
-            return new Certificate(getSession(), conn.getLocation(), chainCertUrl, cert);
         }
     }
 

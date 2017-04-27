@@ -17,14 +17,22 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.shredzone.acme4j.util.AcmeUtils.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.security.KeyPair;
 import java.security.Security;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -249,6 +257,33 @@ public class AcmeUtilsTest {
         assertThat(stripErrorPrefix("urn:ietf:params:acme:error:unauthorized"), is("unauthorized"));
         assertThat(stripErrorPrefix("urn:somethingelse:error:message"), is(nullValue()));
         assertThat(stripErrorPrefix(null), is(nullValue()));
+    }
+
+    /**
+     * Test that {@link AcmeUtils#writeToPem(byte[], String, Writer)} writes a correct PEM
+     * file.
+     */
+    @Test
+    public void testWriteToPem() throws IOException, CertificateEncodingException {
+        List<X509Certificate> certChain = TestUtils.createCertificate();
+
+        ByteArrayOutputStream pemFile = new ByteArrayOutputStream();
+        try (Writer w = new OutputStreamWriter(pemFile)) {
+            for (X509Certificate cert : certChain) {
+                AcmeUtils.writeToPem(cert.getEncoded(), "CERTIFICATE", w);
+            }
+        }
+
+        ByteArrayOutputStream originalFile = new ByteArrayOutputStream();
+        try (InputStream in = getClass().getResourceAsStream("/cert.pem")) {
+            byte[] buffer = new byte[2048];
+            int len;
+            while ((len = in.read(buffer)) >= 0) {
+                originalFile.write(buffer, 0, len);
+            }
+        }
+
+        assertThat(pemFile.toByteArray(), is(originalFile.toByteArray()));
     }
 
     /**

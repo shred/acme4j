@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.connector;
 
+import static java.util.stream.Collectors.toList;
 import static org.shredzone.acme4j.util.AcmeUtils.keyAlgorithm;
 
 import java.io.IOException;
@@ -272,17 +273,19 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public X509Certificate readCertificate() throws AcmeException {
+    public List<X509Certificate> readCertificates() throws AcmeException {
         assertConnectionIsOpen();
 
         String contentType = conn.getHeaderField(CONTENT_TYPE_HEADER);
-        if (!("application/pkix-cert".equals(contentType))) {
+        if (!("application/pem-certificate-chain".equals(contentType))) {
             throw new AcmeProtocolException("Unexpected content type: " + contentType);
         }
 
         try (InputStream in = conn.getInputStream()) {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            return (X509Certificate) cf.generateCertificate(in);
+            return cf.generateCertificates(in).stream()
+                    .map(c -> (X509Certificate) c)
+                    .collect(toList());
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         } catch (CertificateException ex) {
