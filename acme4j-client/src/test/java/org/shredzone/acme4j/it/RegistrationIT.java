@@ -49,15 +49,13 @@ public class RegistrationIT extends AbstractPebbleIT {
         assertIsPebbleUrl(location);
         assertThat(session.getKeyIdentifier(), is(location.toString()));
 
-        // TODO: Not yet supported by Pebble
-        /*
         // Check registered data
         assertThat(reg.getContacts(), contains(URI.create("mailto:acme@example.com")));
-        assertThat(reg.getStatus(), is(Status.GOOD));
+        // TODO PEBBLE: Sends UNKNOWN instead of GOOD
+        // assertThat(reg.getStatus(), is(Status.GOOD));
         assertThat(reg.getTermsOfServiceAgreed(), is(true));
-        */
 
-        // TODO: Not yet supported by Pebble
+        // TODO PEBBLE: missing
         /*
         // Bind another Registration object
         Session session2 = new Session(pebbleURI(), keyPair);
@@ -70,7 +68,7 @@ public class RegistrationIT extends AbstractPebbleIT {
     }
 
     @Test
-    @Ignore // TODO: Not yet supported by Pebble
+    @Ignore // TODO PEBBLE: missing
     public void testModify() throws AcmeException {
         KeyPair keyPair = createKeyPair();
         Session session = new Session(pebbleURI(), keyPair);
@@ -97,7 +95,7 @@ public class RegistrationIT extends AbstractPebbleIT {
     }
 
     @Test
-    @Ignore // TODO: Not yet supported by Pebble
+    @Ignore // TODO PEBBLE: missing
     public void testKeyChange() throws AcmeException {
         KeyPair keyPair = createKeyPair();
         Session session = new Session(pebbleURI(), keyPair);
@@ -122,7 +120,7 @@ public class RegistrationIT extends AbstractPebbleIT {
     }
 
     @Test
-    @Ignore // TODO: Not yet supported by Pebble
+    @Ignore // TODO PEBBLE: missing
     public void testDeactivate() throws AcmeException {
         KeyPair keyPair = createKeyPair();
         Session session = new Session(pebbleURI(), keyPair);
