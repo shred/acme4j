@@ -19,9 +19,6 @@ import static org.shredzone.acme4j.util.AcmeUtils.parseTimestamp;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -46,7 +43,6 @@ public class Authorization extends AcmeResource {
     private Status status;
     private Instant expires;
     private List<Challenge> challenges;
-    private List<List<Challenge>> combinations;
     private boolean loaded = false;
 
     protected Authorization(Session session, URL location) {
@@ -101,17 +97,8 @@ public class Authorization extends AcmeResource {
     }
 
     /**
-     * Gets all combinations of challenges supported by the server.
-     */
-    public List<List<Challenge>> getCombinations() {
-        load();
-        return combinations;
-    }
-
-    /**
-     * Finds a single {@link Challenge} of the given type. Responding to this
-     * {@link Challenge} is sufficient for authorization. This is a convenience call to
-     * {@link #findCombination(String...)}.
+     * Finds a {@link Challenge} of the given type. Responding to this {@link Challenge}
+     * is sufficient for authorization.
      *
      * @param type
      *            Challenge name (e.g. "http-01")
@@ -121,45 +108,11 @@ public class Authorization extends AcmeResource {
      *             if the type does not match the expected Challenge class type
      */
     @SuppressWarnings("unchecked")
-    public <T extends Challenge> T findChallenge(String type) {
-        return (T) findCombination(type).stream().findFirst().orElse(null);
-    }
-
-    /**
-     * Finds a combination of {@link Challenge} types that the client supports. The client
-     * has to respond to <em>all</em> of the {@link Challenge}s returned. However, this
-     * method attempts to find the combination with the smallest number of
-     * {@link Challenge}s.
-     *
-     * @param types
-     *            Challenge name or names (e.g. "http-01"), in no particular order.
-     *            Basically this is a collection of all challenge types supported by your
-     *            implementation.
-     * @return Matching {@link Challenge} combination, or an empty collection if the ACME
-     *         server does not support any of your challenges. The challenges are returned
-     *         in no particular order. The result may be a subset of the types you have
-     *         provided, if fewer challenges are actually required for a successful
-     *         validation.
-     */
-    public Collection<Challenge> findCombination(String... types) {
-        Collection<String> available = Arrays.asList(types);
-        Collection<String> combinationTypes = new ArrayList<>();
-
-        Collection<Challenge> result = Collections.emptyList();
-
-        for (List<Challenge> combination : getCombinations()) {
-            combinationTypes.clear();
-            for (Challenge c : combination) {
-                combinationTypes.add(c.getType());
-            }
-
-            if (available.containsAll(combinationTypes) &&
-                    (result.isEmpty() || result.size() > combination.size())) {
-                result = combination;
-            }
-        }
-
-        return Collections.unmodifiableCollection(result);
+    public <T extends Challenge> T findChallenge(final String type) {
+        return (T) getChallenges().stream()
+                .filter(ch -> type.equals(ch.getType()))
+                .reduce((a, b) -> {throw new AcmeProtocolException("Found more than one challenge of type " + type);})
+                .orElse(null);
     }
 
     /**
@@ -240,7 +193,6 @@ public class Authorization extends AcmeResource {
         }
 
         challenges = fetchChallenges(json);
-        combinations = fetchCombinations(json, challenges);
 
         loaded = true;
     }
@@ -259,41 +211,6 @@ public class Authorization extends AcmeResource {
                 .map(JSON.Value::asObject)
                 .map(session::createChallenge)
                 .collect(toList()));
-    }
-
-    /**
-     * Fetches all possible combination of {@link Challenge} that are defined in the JSON.
-     *
-     * @param json
-     *            {@link JSON} to read
-     * @param challenges
-     *            List of available {@link Challenge}
-     * @return List of {@link Challenge} combinations
-     */
-    private List<List<Challenge>> fetchCombinations(JSON json, List<Challenge> challenges) {
-        JSON.Array jsonCombinations = json.get("combinations").asArray();
-        if (jsonCombinations.isEmpty()) {
-            return Arrays.asList(challenges);
-        }
-
-        return Collections.unmodifiableList(jsonCombinations.stream()
-                .map(JSON.Value::asArray)
-                .map(this::findChallenges)
-                .collect(toList()));
-    }
-
-    /**
-     * Converts an array of challenge indexes to a list of matching {@link Challenge}.
-     *
-     * @param combination
-     *            {@link Array} of the challenge indexes
-     * @return List of matching {@link Challenge}
-     */
-    private List<Challenge> findChallenges(JSON.Array combination) {
-        return combination.stream()
-               .mapToInt(JSON.Value::asInt)
-               .mapToObj(challenges::get)
-               .collect(toList());
     }
 
 }

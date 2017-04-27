@@ -57,6 +57,7 @@ public class SessionIT extends AbstractPebbleIT {
 
         assertIsPebbleUrl(session.resourceUrl(Resource.NEW_NONCE));
         assertIsPebbleUrl(session.resourceUrl(Resource.NEW_REG));
+        assertIsPebbleUrl(session.resourceUrl(Resource.NEW_ORDER));
     }
 
     @Test

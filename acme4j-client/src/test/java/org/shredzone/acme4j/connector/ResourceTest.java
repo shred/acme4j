@@ -32,11 +32,12 @@ public class ResourceTest {
         assertThat(Resource.NEW_AUTHZ.path(), is("new-authz"));
         assertThat(Resource.NEW_CERT.path(), is("new-cert"));
         assertThat(Resource.NEW_NONCE.path(), is("new-nonce"));
+        assertThat(Resource.NEW_ORDER.path(), is("new-order"));
         assertThat(Resource.NEW_REG.path(), is("new-reg"));
         assertThat(Resource.REVOKE_CERT.path(), is("revoke-cert"));
 
         // fails if there are untested future Resource values
-        assertThat(Resource.values().length, is(6));
+        assertThat(Resource.values().length, is(7));
     }
 
 }

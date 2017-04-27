@@ -159,6 +159,42 @@ public class Registration extends AcmeResource {
     }
 
     /**
+     * Orders a certificate. The certificate will be associated with this registration.
+     *
+     * @param csr
+     *            CSR containing the parameters for the certificate being requested
+     * @param notBefore
+     *            Requested "notBefore" date in the certificate, or {@code null}
+     * @param notAfter
+     *            Requested "notAfter" date in the certificate, or {@code null}
+     * @return {@link Order} object for this domain
+     */
+    public Order orderCertificate(byte[] csr, Instant notBefore, Instant notAfter) throws AcmeException {
+        Objects.requireNonNull(csr, "csr");
+
+        LOG.debug("orderCertificate");
+        try (Connection conn = getSession().provider().connect()) {
+            JSONBuilder claims = new JSONBuilder();
+            claims.putBase64("csr", csr);
+            if (notBefore != null) {
+                claims.put("notBefore", notBefore);
+            }
+            if (notAfter != null) {
+                claims.put("notAfter", notAfter);
+            }
+
+            conn.sendSignedRequest(getSession().resourceUrl(Resource.NEW_ORDER), claims, getSession());
+            conn.accept(HttpURLConnection.HTTP_CREATED);
+
+            JSON json = conn.readJsonResponse();
+
+            Order order = new Order(getSession(), conn.getLocation());
+            order.unmarshal(json);
+            return order;
+        }
+    }
+
+    /**
      * Authorizes a domain. The domain is associated with this registration.
      * <p>
      * IDN domain names will be ACE encoded automatically.
