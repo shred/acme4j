@@ -27,6 +27,7 @@ import java.util.List;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.JSONBuilder;
@@ -81,8 +82,6 @@ public class Certificate extends AcmeResource {
      * Returns the created certificate.
      *
      * @return The created end-entity {@link X509Certificate} without issuer chain.
-     * @throws AcmeProtocolException
-     *             if lazy downloading failed
      */
     public X509Certificate getCertificate() {
         lazyDownload();
@@ -95,8 +94,6 @@ public class Certificate extends AcmeResource {
      * @return The created end-entity {@link X509Certificate} and issuer chain. The first
      *         certificate is always the end-entity certificate, followed by the
      *         intermediate certificates required to build a path to a trusted root.
-     * @throws AcmeProtocolException
-     *             if lazy downloading failed
      */
     public List<X509Certificate> getCertificateChain() {
         lazyDownload();
@@ -109,8 +106,6 @@ public class Certificate extends AcmeResource {
      *
      * @param out
      *            {@link Writer} to write to. The writer is not closed after use.
-     * @throws AcmeProtocolException
-     *             if lazy downloading failed
      */
     public void writeCertificate(Writer out) throws IOException {
         try {
@@ -160,14 +155,14 @@ public class Certificate extends AcmeResource {
     }
 
     /**
-     * Lazily downloads the certificate. Throws a runtime {@link AcmeProtocolException} if
-     * the download failed.
+     * Lazily downloads the certificate. Throws a runtime {@link AcmeLazyLoadingException}
+     * if the download failed.
      */
     private void lazyDownload() {
         try {
             download();
         } catch (AcmeException ex) {
-            throw new AcmeProtocolException("Could not lazily download certificate", ex);
+            throw new AcmeLazyLoadingException(this, ex);
         }
     }
 

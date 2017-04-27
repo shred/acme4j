@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeProtocolException;
+import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.util.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,7 +142,7 @@ public class Order extends AcmeResource {
             try {
                 update();
             } catch (AcmeException ex) {
-                throw new AcmeProtocolException("Could not load lazily", ex);
+                throw new AcmeLazyLoadingException(this, ex);
             }
         }
     }

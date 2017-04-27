@@ -34,6 +34,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.ResourceIterator;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.JSON;
@@ -305,7 +306,7 @@ public class Registration extends AcmeResource {
                 // ignore... The object was still updated.
                 LOG.debug("Retry-After", ex);
             } catch (AcmeException ex) {
-                throw new AcmeProtocolException("Could not load lazily", ex);
+                throw new AcmeLazyLoadingException(this, ex);
             }
         }
     }
