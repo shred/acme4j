@@ -17,9 +17,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.CertificateException;
@@ -35,7 +32,6 @@ import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.openssl.PEMParser;
-import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -50,103 +46,6 @@ public final class CertificateUtils {
 
     private CertificateUtils() {
         // utility class without constructor
-    }
-
-    /**
-     * Reads an {@link X509Certificate} PEM file from an {@link InputStream}.
-     *
-     * @param in
-     *            {@link InputStream} to read the certificate from. The
-     *            {@link InputStream} is closed after use.
-     * @return {@link X509Certificate} that was read
-     */
-    public static X509Certificate readX509Certificate(InputStream in) throws IOException {
-        try (InputStream uin = in) {
-            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-            return (X509Certificate) certificateFactory.generateCertificate(uin);
-        } catch (CertificateException ex) {
-            throw new IOException(ex);
-        }
-    }
-
-    /**
-     * Writes an X.509 certificate PEM file.
-     *
-     * @param cert
-     *            {@link X509Certificate} to write
-     * @param out
-     *            {@link OutputStream} to write the PEM file to. The {@link OutputStream}
-     *            is closed after use.
-     */
-    public static void writeX509Certificate(X509Certificate cert, OutputStream out) throws IOException {
-        writeX509Certificate(cert, new OutputStreamWriter(out, "utf-8"));
-    }
-
-    /**
-     * Writes an X.509 certificate PEM file.
-     *
-     * @param cert
-     *            {@link X509Certificate} to write
-     * @param w
-     *            {@link Writer} to write the PEM file to. The {@link Writer} is closed
-     *            after use.
-     */
-    public static void writeX509Certificate(X509Certificate cert, Writer w) throws IOException {
-        try (JcaPEMWriter jw = new JcaPEMWriter(w)) {
-            writeCertIfNotNull(jw, cert);
-        }
-    }
-
-    /**
-     * Writes a X.509 certificate chain to a PEM file.
-     *
-     * @param w
-     *            {@link Writer} to write the certificate chain to. The {@link Writer} is
-     *            closed after use.
-     * @param cert
-     *            {@link X509Certificate} to write, {@code null} to skip this certificate
-     * @param chain
-     *            {@link X509Certificate} chain to add to the certificate. {@code null}
-     *            values are ignored, array may be empty.
-     */
-    public static void writeX509CertificateChain(Writer w, X509Certificate cert, X509Certificate... chain)
-                throws IOException {
-        try (JcaPEMWriter jw = new JcaPEMWriter(w)) {
-            writeCertIfNotNull(jw, cert);
-            for (X509Certificate c : chain) {
-                writeCertIfNotNull(jw, c);
-            }
-        }
-    }
-
-    /**
-     * Writes an {@link X509Certificate} unless it is {@code null}.
-     *
-     * @param jw
-     *            {@link JcaPEMWriter} to write to
-     * @param cert
-     *            {@link X509Certificate} to write, or {@code null}
-     */
-    private static void writeCertIfNotNull(JcaPEMWriter jw, X509Certificate cert) throws IOException {
-        if (cert != null) {
-            jw.writeObject(cert);
-        }
-    }
-
-    /**
-     * Writes an X.509 certificate chain PEM file.
-     *
-     * @param chain
-     *            {@link X509Certificate[]} to write
-     * @param w
-     *            {@link Writer} to write the PEM file to. The {@link Writer} is closed
-     *            after use.
-     * @deprecated Use
-     *             {@link #writeX509CertificateChain(Writer, X509Certificate, X509Certificate...)}
-     */
-    @Deprecated
-    public static void writeX509CertificateChain(X509Certificate[] chain, Writer w) throws IOException {
-        writeX509CertificateChain(w, null, chain);
     }
 
     /**

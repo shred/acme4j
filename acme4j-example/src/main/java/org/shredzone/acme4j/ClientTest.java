@@ -21,6 +21,7 @@ import java.io.Writer;
 import java.net.URI;
 import java.security.KeyPair;
 import java.security.Security;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
@@ -34,6 +35,7 @@ import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.CSRBuilder;
 import org.shredzone.acme4j.util.CertificateUtils;
 import org.shredzone.acme4j.util.KeyPairUtils;
@@ -389,8 +391,8 @@ public class ClientTest {
         // Create a validation certificate
         try (FileWriter fw = new FileWriter("tlssni.crt")) {
             X509Certificate cert = CertificateUtils.createTlsSni02Certificate(domainKeyPair, subject, sanB);
-            CertificateUtils.writeX509Certificate(cert, fw);
-        } catch (IOException ex) {
+            AcmeUtils.writeToPem(cert.getEncoded(), "CERTIFICATE", fw);
+        } catch (IOException | CertificateEncodingException ex) {
             throw new AcmeException("Could not write certificate", ex);
         }
 
