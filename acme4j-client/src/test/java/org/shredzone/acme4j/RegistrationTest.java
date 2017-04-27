@@ -75,9 +75,9 @@ public class RegistrationTest {
             @Override
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(locationUrl));
-                assertThat(claims.toString(), sameJSONAs(getJson("updateRegistration")));
+                assertThat(claims.toString(), sameJSONAs(getJSON("updateRegistration").toString()));
                 assertThat(session, is(notNullValue()));
-                jsonResponse = getJsonAsObject("updateRegistrationResponse");
+                jsonResponse = getJSON("updateRegistrationResponse");
                 response = HttpURLConnection.HTTP_ACCEPTED;
             }
 
@@ -179,7 +179,7 @@ public class RegistrationTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJsonAsObject("updateRegistrationResponse");
+                return getJSON("updateRegistrationResponse");
             }
 
             @Override
@@ -226,7 +226,7 @@ public class RegistrationTest {
             @Override
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJson("newAuthorizationRequest")));
+                assertThat(claims.toString(), sameJSONAs(getJSON("newAuthorizationRequest").toString()));
                 assertThat(session, is(notNullValue()));
             }
 
@@ -238,7 +238,7 @@ public class RegistrationTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJsonAsObject("newAuthorizationResponse");
+                return getJSON("newAuthorizationResponse");
             }
 
             @Override
@@ -307,7 +307,7 @@ public class RegistrationTest {
             @Override
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJson("requestOrderRequest")));
+                assertThat(claims.toString(), sameJSONAs(getJSON("requestOrderRequest").toString()));
                 assertThat(session, is(notNullValue()));
             }
 
@@ -319,7 +319,7 @@ public class RegistrationTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJsonAsObject("requestOrderResponse");
+                return getJSON("requestOrderResponse");
             }
 
             @Override
@@ -374,7 +374,7 @@ public class RegistrationTest {
             @Override
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequestWithDate")));
+                assertThat(claims.toString(), sameJSONAs(getJSON("requestCertificateRequestWithDate").toString()));
                 assertThat(session, is(notNullValue()));
             }
 
@@ -430,7 +430,7 @@ public class RegistrationTest {
             @Override
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequest")));
+                assertThat(claims.toString(), sameJSONAs(getJSON("requestCertificateRequest").toString()));
                 assertThat(session, is(notNullValue()));
             }
 
@@ -478,7 +478,7 @@ public class RegistrationTest {
             @Override
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJson("requestCertificateRequestWithDate")));
+                assertThat(claims.toString(), sameJSONAs(getJSON("requestCertificateRequestWithDate").toString()));
                 assertThat(session, is(notNullValue()));
             }
 
@@ -650,7 +650,7 @@ public class RegistrationTest {
             @Override
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(locationUrl));
-                assertThat(claims.toString(), sameJSONAs(getJson("modifyRegistration")));
+                assertThat(claims.toString(), sameJSONAs(getJSON("modifyRegistration").toString()));
                 assertThat(session, is(notNullValue()));
             }
 
@@ -662,7 +662,7 @@ public class RegistrationTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJsonAsObject("modifyRegistrationResponse");
+                return getJSON("modifyRegistrationResponse");
             }
 
             @Override

@@ -164,7 +164,7 @@ public class SessionTest {
         when(mockProvider.directory(
                         ArgumentMatchers.any(Session.class),
                         ArgumentMatchers.eq(serverUri)))
-                .thenReturn(getJsonAsObject("directory"));
+                .thenReturn(getJSON("directory"));
 
         Session session = new Session(serverUri, keyPair) {
             @Override
@@ -202,7 +202,7 @@ public class SessionTest {
         when(mockProvider.directory(
                         ArgumentMatchers.any(Session.class),
                         ArgumentMatchers.eq(serverUri)))
-                .thenReturn(getJsonAsObject("directoryNoMeta"));
+                .thenReturn(getJSON("directoryNoMeta"));
 
         Session session = new Session(serverUri, keyPair) {
             @Override

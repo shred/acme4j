@@ -15,7 +15,7 @@ package org.shredzone.acme4j.challenge;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.shredzone.acme4j.util.TestUtils.getJsonAsObject;
+import static org.shredzone.acme4j.util.TestUtils.getJSON;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.IOException;
@@ -50,7 +50,7 @@ public class HttpChallengeTest {
     @Test
     public void testHttpChallenge() throws IOException {
         Http01Challenge challenge = new Http01Challenge(session);
-        challenge.unmarshall(getJsonAsObject("httpChallenge"));
+        challenge.unmarshall(getJSON("httpChallenge"));
 
         assertThat(challenge.getType(), is(Http01Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));
@@ -70,7 +70,7 @@ public class HttpChallengeTest {
     @Test(expected = AcmeProtocolException.class)
     public void testNoTokenSet() {
         Http01Challenge challenge = new Http01Challenge(session);
-        challenge.unmarshall(getJsonAsObject("httpNoTokenChallenge"));
+        challenge.unmarshall(getJSON("httpNoTokenChallenge"));
         challenge.getToken();
     }
 

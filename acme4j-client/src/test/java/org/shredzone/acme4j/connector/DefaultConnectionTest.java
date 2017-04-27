@@ -73,7 +73,7 @@ public class DefaultConnectionTest {
         when(mockProvider.directory(
                         ArgumentMatchers.any(Session.class),
                         ArgumentMatchers.eq(URI.create(TestUtils.ACME_SERVER_URI))))
-            .thenReturn(TestUtils.getJsonAsObject("directory"));
+            .thenReturn(TestUtils.getJSON("directory"));
 
         session = TestUtils.session(mockProvider);
         session.setLocale(Locale.JAPAN);

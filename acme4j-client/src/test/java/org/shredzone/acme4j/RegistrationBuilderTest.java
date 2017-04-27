@@ -56,7 +56,7 @@ public class RegistrationBuilderTest {
             public void sendJwkSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(session, is(notNullValue()));
                 assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJson("newRegistration")));
+                assertThat(claims.toString(), sameJSONAs(getJSON("newRegistration").toString()));
                 isUpdate = false;
             }
 
@@ -78,7 +78,7 @@ public class RegistrationBuilderTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJsonAsObject("newRegistrationResponse");
+                return getJSON("newRegistrationResponse");
             }
         };
 

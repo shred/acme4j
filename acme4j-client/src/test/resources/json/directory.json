@@ -1,0 +1,20 @@
+{
+  "new-reg": "https://example.com/acme/new-reg",
+  "new-authz": "https://example.com/acme/new-authz",
+  "new-cert": "https://example.com/acme/new-cert",
+  "new-nonce": "https://example.com/acme/new-nonce",
+  "meta": {
+    "terms-of-service": "https://example.com/acme/terms",
+    "website": "https://www.example.com/",
+    "caa-identities": [
+      "example.com"
+    ],
+    "x-test-string": "foobar",
+    "x-test-uri": "https://www.example.org",
+    "x-test-array": [
+      "foo",
+      "bar",
+      "barfoo"
+    ]
+  }
+}

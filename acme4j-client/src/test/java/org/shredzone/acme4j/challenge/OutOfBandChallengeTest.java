@@ -15,7 +15,7 @@ package org.shredzone.acme4j.challenge;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.shredzone.acme4j.util.TestUtils.getJsonAsObject;
+import static org.shredzone.acme4j.util.TestUtils.getJSON;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.IOException;
@@ -45,7 +45,7 @@ public class OutOfBandChallengeTest {
     @Test
     public void testHttpChallenge() throws IOException {
         OutOfBand01Challenge challenge = new OutOfBand01Challenge(session);
-        challenge.unmarshall(getJsonAsObject("oobChallenge"));
+        challenge.unmarshall(getJSON("oobChallenge"));
 
         assertThat(challenge.getType(), is(OutOfBand01Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));

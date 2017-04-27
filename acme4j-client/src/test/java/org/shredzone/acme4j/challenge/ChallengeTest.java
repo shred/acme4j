@@ -73,7 +73,7 @@ public class ChallengeTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJsonAsObject("updateHttpChallengeResponse");
+                return getJSON("updateHttpChallengeResponse");
             }
         };
 
@@ -105,7 +105,7 @@ public class ChallengeTest {
         assertThat(challenge.getValidated(), is(nullValue()));
 
         // Unmarshall a challenge JSON
-        challenge.unmarshall(getJsonAsObject("genericChallenge"));
+        challenge.unmarshall(getJSON("genericChallenge"));
 
         // Test unmarshalled values
         assertThat(challenge.getType(), is("generic-01"));
@@ -123,10 +123,8 @@ public class ChallengeTest {
      */
     @Test
     public void testRespond() throws JoseException {
-        String json = TestUtils.getJson("genericChallenge");
-
         Challenge challenge = new Challenge(session);
-        challenge.unmarshall(JSON.parse(json));
+        challenge.unmarshall(getJSON("genericChallenge"));
 
         JSONBuilder cb = new JSONBuilder();
         challenge.respond(cb);
@@ -140,7 +138,7 @@ public class ChallengeTest {
     @Test(expected = AcmeProtocolException.class)
     public void testNotAcceptable() throws URISyntaxException {
         Http01Challenge challenge = new Http01Challenge(session);
-        challenge.unmarshall(getJsonAsObject("dnsChallenge"));
+        challenge.unmarshall(getJSON("dnsChallenge"));
     }
 
     /**
@@ -152,7 +150,7 @@ public class ChallengeTest {
             @Override
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJson("triggerHttpChallengeRequest")));
+                assertThat(claims.toString(), sameJSONAs(getJSON("triggerHttpChallengeRequest").toString()));
                 assertThat(session, is(notNullValue()));
             }
 
@@ -165,14 +163,14 @@ public class ChallengeTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJsonAsObject("triggerHttpChallengeResponse");
+                return getJSON("triggerHttpChallengeResponse");
             }
         };
 
         Session session = provider.createSession();
 
         Http01Challenge challenge = new Http01Challenge(session);
-        challenge.unmarshall(getJsonAsObject("triggerHttpChallenge"));
+        challenge.unmarshall(getJSON("triggerHttpChallenge"));
 
         challenge.trigger();
 
@@ -202,7 +200,7 @@ public class ChallengeTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJsonAsObject("updateHttpChallengeResponse");
+                return getJSON("updateHttpChallengeResponse");
             }
 
             @Override
@@ -214,7 +212,7 @@ public class ChallengeTest {
         Session session = provider.createSession();
 
         Challenge challenge = new Http01Challenge(session);
-        challenge.unmarshall(getJsonAsObject("triggerHttpChallengeResponse"));
+        challenge.unmarshall(getJSON("triggerHttpChallengeResponse"));
 
         challenge.update();
 
@@ -246,7 +244,7 @@ public class ChallengeTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJsonAsObject("updateHttpChallengeResponse");
+                return getJSON("updateHttpChallengeResponse");
             }
 
 
@@ -259,7 +257,7 @@ public class ChallengeTest {
         Session session = provider.createSession();
 
         Challenge challenge = new Http01Challenge(session);
-        challenge.unmarshall(getJsonAsObject("triggerHttpChallengeResponse"));
+        challenge.unmarshall(getJSON("triggerHttpChallengeResponse"));
 
         try {
             challenge.update();
@@ -314,7 +312,7 @@ public class ChallengeTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJsonAsObject("updateRegistrationResponse");
+                return getJSON("updateRegistrationResponse");
             }
         };
 
@@ -330,7 +328,7 @@ public class ChallengeTest {
     @Test(expected = IllegalArgumentException.class)
     public void testBadUnmarshall() {
         Challenge challenge = new Challenge(session);
-        challenge.unmarshall(getJsonAsObject("updateRegistrationResponse"));
+        challenge.unmarshall(getJSON("updateRegistrationResponse"));
     }
 
 }

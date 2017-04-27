@@ -1,0 +1,7 @@
+{
+  "resource": "new-authz",
+  "identifier": {
+    "type": "dns",
+    "value": "example.org"
+  }
+}

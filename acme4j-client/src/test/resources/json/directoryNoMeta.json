@@ -1,0 +1,5 @@
+{
+  "new-reg": "https://example.com/acme/new-reg",
+  "new-authz": "https://example.com/acme/new-authz",
+  "new-cert": "https://example.com/acme/new-cert"
+}

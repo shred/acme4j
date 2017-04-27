@@ -1,0 +1,7 @@
+{
+  "resource": "reg",
+  "contact": [
+    "mailto:foo2@example.com",
+    "mailto:foo3@example.com"
+  ]
+}

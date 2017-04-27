@@ -1,0 +1,7 @@
+{
+  "resource": "new-reg",
+  "terms-of-service-agreed": true,
+  "contact": [
+    "mailto:foo@example.com"
+  ]
+}

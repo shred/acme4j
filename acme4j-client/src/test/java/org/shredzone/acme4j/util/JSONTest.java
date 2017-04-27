@@ -82,7 +82,7 @@ public class JSONTest {
      */
     @Test
     public void testObject() {
-        JSON json = TestUtils.getJsonAsObject("json");
+        JSON json = TestUtils.getJSON("datatypes");
 
         assertThat(json.keySet(), containsInAnyOrder(
                     "text", "number", "boolean", "uri", "url", "date", "array",
@@ -98,7 +98,7 @@ public class JSONTest {
      */
     @Test
     public void testArray() {
-        JSON json = TestUtils.getJsonAsObject("json");
+        JSON json = TestUtils.getJSON("datatypes");
         JSON.Array array = json.get("array").asArray();
 
         assertThat(array.size(), is(4));
@@ -114,7 +114,7 @@ public class JSONTest {
      */
     @Test
     public void testEmptyArray() {
-        JSON json = TestUtils.getJsonAsObject("json");
+        JSON json = TestUtils.getJSON("datatypes");
         JSON.Array array = json.get("missingArray").asArray();
 
         assertThat(array.size(), is(0));
@@ -127,7 +127,7 @@ public class JSONTest {
      */
     @Test
     public void testArrayIterator() {
-        JSON json = TestUtils.getJsonAsObject("json");
+        JSON json = TestUtils.getJSON("datatypes");
         JSON.Array array = json.get("array").asArray();
 
         Iterator<JSON.Value> it = array.iterator();
@@ -165,7 +165,7 @@ public class JSONTest {
      */
     @Test
     public void testArrayStream() {
-        JSON json = TestUtils.getJsonAsObject("json");
+        JSON json = TestUtils.getJSON("datatypes");
         JSON.Array array = json.get("array").asArray();
 
         List<JSON.Value> streamValues = array.stream().collect(Collectors.toList());
@@ -186,7 +186,7 @@ public class JSONTest {
     public void testGetter() {
         Instant date = LocalDate.of(2016, 1, 8).atStartOfDay(ZoneId.of("UTC")).toInstant();
 
-        JSON json = TestUtils.getJsonAsObject("json");
+        JSON json = TestUtils.getJSON("datatypes");
 
         assertThat(json.get("text").asString(), is("lorem ipsum"));
         assertThat(json.get("number").asInt(), is(123));
@@ -215,7 +215,7 @@ public class JSONTest {
      */
     @Test
     public void testNullGetter() throws MalformedURLException {
-        JSON json = TestUtils.getJsonAsObject("json");
+        JSON json = TestUtils.getJSON("datatypes");
 
         assertThat(json.get("none"), is(notNullValue()));
         assertThat(json.get("none").asString(), is(nullValue()));
@@ -256,7 +256,7 @@ public class JSONTest {
      */
     @Test
     public void testWrongGetter() throws MalformedURLException {
-        JSON json = TestUtils.getJsonAsObject("json");
+        JSON json = TestUtils.getJSON("datatypes");
 
         try {
             json.get("text").asObject();
@@ -306,7 +306,7 @@ public class JSONTest {
      */
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
-        JSON originalJson = TestUtils.getJsonAsObject("newAuthorizationResponse");
+        JSON originalJson = TestUtils.getJSON("newAuthorizationResponse");
 
         // Serialize
         byte[] data;

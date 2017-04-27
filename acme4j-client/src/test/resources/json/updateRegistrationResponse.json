@@ -1,0 +1,9 @@
+{
+  "contact": [
+    "mailto:foo2@example.com"
+  ],
+  "status": "good",
+  "terms-of-service-agreed": true,
+  "authorizations": "https://example.com/acme/reg/1/authz",
+  "certificates": "https://example.com/acme/reg/1/cert"
+}

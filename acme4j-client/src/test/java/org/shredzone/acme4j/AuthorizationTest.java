@@ -104,7 +104,7 @@ public class AuthorizationTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJsonAsObject("updateAuthorizationResponse");
+                return getJSON("updateAuthorizationResponse");
             }
 
             @Override
@@ -157,7 +157,7 @@ public class AuthorizationTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJsonAsObject("updateAuthorizationResponse");
+                return getJSON("updateAuthorizationResponse");
             }
 
             @Override
@@ -210,7 +210,7 @@ public class AuthorizationTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJsonAsObject("updateAuthorizationResponse");
+                return getJSON("updateAuthorizationResponse");
             }
 
             @Override
@@ -288,7 +288,7 @@ public class AuthorizationTest {
             provider.putTestChallenge(DUPLICATE_TYPE, new Challenge(session));
 
             Authorization authorization = new Authorization(session, locationUrl);
-            authorization.unmarshalAuthorization(getJsonAsObject("authorizationChallenges"));
+            authorization.unmarshalAuthorization(getJSON("authorizationChallenges"));
             return authorization;
         }
     }

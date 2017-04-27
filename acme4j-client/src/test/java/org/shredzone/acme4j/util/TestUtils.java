@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -38,7 +39,6 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.ResourceBundle;
 import java.util.TreeMap;
 
 import org.hamcrest.BaseMatcher;
@@ -67,8 +67,6 @@ public final class TestUtils {
 
     public static final String ACME_SERVER_URI = "https://example.com/acme";
 
-    private static final ResourceBundle JSON_RESOURCE = ResourceBundle.getBundle("json");
-
     private TestUtils() {
         // utility class without constructor
     }
@@ -93,25 +91,18 @@ public final class TestUtils {
     }
 
     /**
-     * Reads a JSON string from {@code json.properties}.
-     *
-     * @param key
-     *            JSON resource
-     * @return Resource contents as string
-     */
-    public static String getJson(String key) {
-        return JSON_RESOURCE.getString(key);
-    }
-
-    /**
-     * Reads a JSON string from {@code json.properties} and parses it.
+     * Reads a JSON string from json test files and parses it.
      *
      * @param key
      *            JSON resource
      * @return Parsed JSON resource
      */
-    public static JSON getJsonAsObject(String key) {
-        return JSON.parse(getJson(key));
+    public static JSON getJSON(String key) {
+        try {
+            return JSON.parse(TestUtils.class.getResourceAsStream("/json/" + key + ".json"));
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
     }
 
     /**

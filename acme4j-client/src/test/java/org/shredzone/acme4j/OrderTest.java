@@ -57,7 +57,7 @@ public class OrderTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJsonAsObject("updateOrderResponse");
+                return getJSON("updateOrderResponse");
             }
         };
 
@@ -107,7 +107,7 @@ public class OrderTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJsonAsObject("updateOrderResponse");
+                return getJSON("updateOrderResponse");
             }
         };
 

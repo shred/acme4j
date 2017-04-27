@@ -1,0 +1,27 @@
+{
+  "challenges": [
+    {
+      "type": "http-01",
+      "uri": "https://example.com/authz/asdf/0",
+      "token": "IlirfxKKXAsHtmzK29Pj8A"
+    },
+    {
+      "type": "dns-01",
+      "uri": "https://example.com/authz/asdf/1",
+      "token": "DGyRejmCefe7v4NfDGDKfA"
+    },
+    {
+      "type": "tls-sni-02",
+      "uri": "https://example.com/authz/asdf/2",
+      "token": "VNLBdSiZ3LppU2CRG8bilqlwq4DuApJMg3ZJowU6JhQ"
+    },
+    {
+      "type": "duplicate-01",
+      "uri": "https://example.com/authz/asdf/3"
+    },
+    {
+      "type": "duplicate-01",
+      "uri": "https://example.com/authz/asdf/4"
+    }
+  ]
+}

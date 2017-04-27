@@ -153,7 +153,7 @@ public class CertificateTest {
             @Override
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJson("revokeCertificateRequest")));
+                assertThat(claims.toString(), sameJSONAs(getJSON("revokeCertificateRequest").toString()));
                 assertThat(session, is(notNullValue()));
             }
 
@@ -183,7 +183,7 @@ public class CertificateTest {
             @Override
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJson("revokeCertificateWithReasonRequest")));
+                assertThat(claims.toString(), sameJSONAs(getJSON("revokeCertificateWithReasonRequest").toString()));
                 assertThat(session, is(notNullValue()));
             }
 
