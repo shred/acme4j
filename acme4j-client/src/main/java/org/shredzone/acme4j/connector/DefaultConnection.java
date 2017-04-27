@@ -182,7 +182,10 @@ public class DefaultConnection implements Connection {
             jws.getHeaders().setObjectHeaderValue("nonce", Base64Url.encode(session.getNonce()));
             jws.getHeaders().setObjectHeaderValue("url", url);
             if (session.getKeyIdentifier() != null) {
-                jws.getHeaders().setObjectHeaderValue("kid", session.getKeyIdentifier());
+                // TODO PEBBLE: cannot process "kid" yet, send "jwk" instead
+                // https://github.com/letsencrypt/pebble/issues/23
+                // jws.getHeaders().setObjectHeaderValue("kid", session.getKeyIdentifier());
+                jws.getHeaders().setJwkHeaderValue("jwk", jwk);
             } else {
                 jws.getHeaders().setJwkHeaderValue("jwk", jwk);
             }
