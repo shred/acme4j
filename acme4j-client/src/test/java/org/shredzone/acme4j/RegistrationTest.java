@@ -132,7 +132,7 @@ public class RegistrationTest {
         assertThat(registration.getTermsOfServiceAgreed(), is(true));
         assertThat(registration.getContacts(), hasSize(1));
         assertThat(registration.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
-        assertThat(registration.getStatus(), is(Status.GOOD));
+        assertThat(registration.getStatus(), is(Status.VALID));
 
         Iterator<Authorization> authIt = registration.getAuthorizations();
         assertThat(authIt, not(nullValue()));
@@ -202,7 +202,7 @@ public class RegistrationTest {
         // Subsequent queries do not trigger another load
         requestWasSent.set(false);
         assertThat(registration.getTermsOfServiceAgreed(), is(true));
-        assertThat(registration.getStatus(), is(Status.GOOD));
+        assertThat(registration.getStatus(), is(Status.VALID));
         assertThat(requestWasSent.get(), is(false));
 
         provider.close();

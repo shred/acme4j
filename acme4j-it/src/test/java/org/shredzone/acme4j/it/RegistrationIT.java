@@ -51,8 +51,8 @@ public class RegistrationIT extends PebbleITBase {
 
         // Check registered data
         assertThat(reg.getContacts(), contains(URI.create("mailto:acme@example.com")));
-        // TODO PEBBLE: Sends UNKNOWN instead of GOOD
-        // assertThat(reg.getStatus(), is(Status.GOOD));
+        // TODO PEBBLE: Sends UNKNOWN instead of VALID
+        // assertThat(reg.getStatus(), is(Status.VALID));
         assertThat(reg.getTermsOfServiceAgreed(), is(true));
 
         // Bind another Registration object
@@ -61,7 +61,7 @@ public class RegistrationIT extends PebbleITBase {
         // Registration reg2 = Registration.bind(session2, location);
         // assertThat(reg2.getLocation(), is(location));
         // assertThat(reg2.getContacts(), contains(URI.create("mailto:acme@example.com")));
-        // assertThat(reg2.getStatus(), is(Status.GOOD));
+        // assertThat(reg2.getStatus(), is(Status.VALID));
         // assertThat(reg2.getTermsOfServiceAgreed(), is(true));
     }
 
@@ -114,7 +114,7 @@ public class RegistrationIT extends PebbleITBase {
 
         Session sessionNewKey = new Session(pebbleURI(), newKeyPair);
         Registration newRegistration = Registration.bind(sessionNewKey, location);
-        assertThat(newRegistration.getStatus(), is(Status.GOOD));
+        assertThat(newRegistration.getStatus(), is(Status.VALID));
     }
 
     @Test

@@ -20,7 +20,7 @@ import java.util.Arrays;
  */
 public enum Status {
 
-    PENDING, PROCESSING, VALID, INVALID, REVOKED, DEACTIVATED, GOOD, UNKNOWN;
+    PENDING, PROCESSING, VALID, INVALID, REVOKED, DEACTIVATED, UNKNOWN;
 
     /**
      * Parses the string and returns a corresponding Status object.
