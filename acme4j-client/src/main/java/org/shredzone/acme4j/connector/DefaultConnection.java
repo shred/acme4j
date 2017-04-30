@@ -44,7 +44,7 @@ import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Session;
-import org.shredzone.acme4j.exception.AcmeAgreementRequiredException;
+import org.shredzone.acme4j.exception.AcmeUserActionRequiredException;
 import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
@@ -431,10 +431,10 @@ public class DefaultConnection implements Connection {
             return new AcmeUnauthorizedException(type, detail);
         }
 
-        if ("agreementRequired".equals(error)) {
+        if ("userActionRequired".equals(error)) {
             URI instance = resolveRelative(json.get("instance").asString());
             URI tos = getLinks("terms-of-service").stream().findFirst().orElse(null);
-            return new AcmeAgreementRequiredException(type, detail, tos, toURL(instance));
+            return new AcmeUserActionRequiredException(type, detail, tos, toURL(instance));
         }
 
         if ("rateLimited".equals(error)) {

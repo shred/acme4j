@@ -17,46 +17,45 @@ import java.net.URI;
 import java.net.URL;
 
 /**
- * An exception that is thrown when the client needs to accept the terms of service in
- * order to continue.
+ * An exception that is thrown when the user is required to take action as indicated.
  */
-public class AcmeAgreementRequiredException extends AcmeServerException {
+public class AcmeUserActionRequiredException extends AcmeServerException {
     private static final long serialVersionUID = 7719055447283858352L;
 
-    private final URI agreementUri;
+    private final URI tosUri;
     private final URL instance;
 
     /**
-     * Creates a new {@link AcmeAgreementRequiredException}.
+     * Creates a new {@link AcmeUserActionRequiredException}.
      *
      * @param type
      *            System readable error type (here
-     *            {@code "urn:ietf:params:acme:error:agreementRequired"})
+     *            {@code "urn:ietf:params:acme:error:userActionRequired"})
      * @param detail
      *            Human readable error message
-     * @param agreementUri
-     *            {@link URI} of the agreement document to accept
+     * @param tosUri
+     *            {@link URI} of the terms-of-service document to accept
      * @param instance
      *            {@link URL} to be visited by a human, showing instructions for how to
      *            agree to the terms and conditions.
      */
-    public AcmeAgreementRequiredException(String type, String detail, URI agreementUri, URL instance) {
+    public AcmeUserActionRequiredException(String type, String detail, URI tosUri, URL instance) {
         super(type, detail);
-        this.agreementUri = agreementUri;
+        this.tosUri = tosUri;
         this.instance = instance;
     }
 
     /**
-     * Returns the {@link URI} of the agreement document to accept, or {@code null} if
-     * the server did not provide a link to such a document.
+     * Returns the {@link URI} of the terms-of-service document to accept, or {@code null}
+     * if the server did not provide a link to such a document.
      */
-    public URI getAgreementUri() {
-        return agreementUri;
+    public URI getTermsOfServiceUri() {
+        return tosUri;
     }
 
     /**
-     * Returns the {@link URL} of a document showing a human how to agree to the terms and
-     * conditions, or {@code null} if the server did not provide such a link.
+     * Returns the {@link URL} of a document indicating the action required by the user,
+     * or {@code null} if the server did not provide such a link.
      */
     public URL getInstance() {
         return instance;
