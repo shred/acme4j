@@ -1,0 +1,56 @@
+acme4j Integration Tests
+========================
+
+This module contains an Integration Test of _acme4j_.
+
+It builds a [Pebble](https://github.com/letsencrypt/pebble) docker image and runs it. After that, a number of integration tests are performed.
+
+How to Use
+----------
+
+Integration tests are disabled by default, to ensure that _acme4j_ can be build on systems with not much more than a _maven_ installation. For running the integration tests, _Docker_ must be available.
+
+To enable the integration tests, use the `ci` profile when building the _acme4j_ project:
+
+```
+mvn -P ci clean install
+```
+
+It will build and run a Pebble server, perform the integration tests, and stop the Pebble server after that.
+
+The Pebble server needs to connect to servers that are provided by the maven integration tests. For this reason, the Pebble server must run on the same machine where maven is running, so the servers are available via `localhost`.
+
+Starting Pebble manually
+------------------------
+
+You can also run Pebble on your machine, to run the integration tests inside your IDE.
+
+To do so, change to the `acme4j-it` module, then run `docker:build` to download and build the Pebble image, and `docker:start` to start the Pebble server:
+
+```
+cd acme4j-it
+mvn docker:build
+mvn docker:start
+```
+
+To stop the server:
+
+```
+mvn docker:stop
+```
+
+GitLab CI
+---------
+
+_acme4j_ contains a GitLab CI configuration file.
+
+The CI runner should be set up with a `shell` executor. Maven and Docker should be installed on the CI runner, and the shell executor user should be able to use both.
+
+The tags `maven` and `docker` are used to select the executor.
+
+`acme4j-it` API
+---------------
+
+The `acme4j-it` module provides test servers for the `http-01`, `dns-01` and `tls-sni-02` challenges. You can use these classes for your own projects. However, they are not part of the official _acme4j_ API and subject to change without notice.
+
+Note that these servers are very simple implementations without any security measures. They are tailor-made for integration tests. Do not use them in production code!

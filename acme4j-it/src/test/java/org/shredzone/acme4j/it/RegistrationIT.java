@@ -32,7 +32,7 @@ import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 /**
  * Registration related integration tests.
  */
-public class RegistrationIT extends AbstractPebbleIT {
+public class RegistrationIT extends PebbleITBase {
 
     @Test
     public void testCreate() throws AcmeException {
@@ -55,16 +55,14 @@ public class RegistrationIT extends AbstractPebbleIT {
         // assertThat(reg.getStatus(), is(Status.GOOD));
         assertThat(reg.getTermsOfServiceAgreed(), is(true));
 
-        // TODO PEBBLE: missing
-        /*
         // Bind another Registration object
-        Session session2 = new Session(pebbleURI(), keyPair);
-        Registration reg2 = Registration.bind(session2, location);
-        assertThat(reg2.getLocation(), is(location));
-        assertThat(reg2.getContacts(), contains(URI.create("mailto:acme@example.com")));
-        assertThat(reg2.getStatus(), is(Status.GOOD));
-        assertThat(reg2.getTermsOfServiceAgreed(), is(true));
-        */
+        // TODO PEBBLE: Not supported yet
+        // Session session2 = new Session(pebbleURI(), keyPair);
+        // Registration reg2 = Registration.bind(session2, location);
+        // assertThat(reg2.getLocation(), is(location));
+        // assertThat(reg2.getContacts(), contains(URI.create("mailto:acme@example.com")));
+        // assertThat(reg2.getStatus(), is(Status.GOOD));
+        // assertThat(reg2.getTermsOfServiceAgreed(), is(true));
     }
 
     @Test

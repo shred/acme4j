@@ -52,16 +52,19 @@
 
     <properties>
         <bouncycastle.version>1.56</bouncycastle.version>
+        <dnsjava.version>2.1.7</dnsjava.version>
         <jose4j.version>0.5.5</jose4j.version>
+        <nanohttpd.version>2.3.1</nanohttpd.version>
         <slf4j.version>1.7.25</slf4j.version>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
-        <skipITs>true</skipITs>
+        <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
     </properties>
 
     <modules>
         <module>acme4j-client</module>
         <module>acme4j-utils</module>
         <module>acme4j-example</module>
+        <module>acme4j-it</module>
     </modules>
 
     <build>
@@ -137,7 +140,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-		<version>3.0.1</version>
+                <version>3.0.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -220,6 +223,12 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <version>[2.0,)</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>3.0.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

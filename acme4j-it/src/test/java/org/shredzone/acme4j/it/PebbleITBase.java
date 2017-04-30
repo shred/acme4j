@@ -19,17 +19,18 @@ import static org.junit.Assert.assertThat;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.NoSuchAlgorithmException;
+
+import org.shredzone.acme4j.util.KeyPairUtils;
 
 /**
  * Superclass for all Pebble related integration tests.
  * <p>
  * These tests require a running
  * <a href="https://github.com/letsencrypt/pebble">Pebble</a> ACME test server at
- * localhost port 14000.
+ * localhost port 14000. The host and port can be changed via the system property
+ * {@code pebbleHost} and {@code pebblePort} respectively.
  */
-public abstract class AbstractPebbleIT {
+public abstract class PebbleITBase {
 
     private final String pebbleHost = System.getProperty("pebbleHost", "localhost");
     private final int pebblePort = Integer.parseInt(System.getProperty("pebblePort", "14000"));
@@ -47,13 +48,7 @@ public abstract class AbstractPebbleIT {
      * @return Created {@link KeyPair}, guaranteed to be unknown to the Pebble server
      */
     protected KeyPair createKeyPair() {
-        try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-            keyGen.initialize(2048);
-            return keyGen.generateKeyPair();
-        } catch (NoSuchAlgorithmException ex) {
-            throw new InternalError(ex);
-        }
+        return KeyPairUtils.createKeyPair(2048);
     }
 
     /**

@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ *
+ * acme4j - ACME Java client
+ *
+ * Copyright (C) 2017 Richard "Shred" Körber
+ *   http://acme4j.shredzone.org
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.shredzone.acme4j</groupId>
+        <artifactId>acme4j</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>acme4j-it</artifactId>
+
+    <name>acme4j IT</name>
+    <description>acme4j Integration Tests</description>
+
+    <properties>
+        <skipITs>true</skipITs>
+    </properties>
+
+    <profiles>
+        <profile>
+            <!-- Profile with integration tests. Requires docker! -->
+            <!-- mvn -P ci clean install -->
+            <id>ci</id>
+            <properties>
+                <skipITs>false</skipITs>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>io.fabric8</groupId>
+                        <artifactId>docker-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>start</id>
+                                <phase>pre-integration-test</phase>
+                                <goals>
+                                    <goal>build</goal>
+                                    <goal>start</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>stop</id>
+                                <phase>post-integration-test</phase>
+                                <goals>
+                                    <goal>stop</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.fabric8</groupId>
+                <artifactId>docker-maven-plugin</artifactId>
+                <version>0.20.1</version>
+
+                <configuration>
+                    <logStdout>true</logStdout>
+                    <verbose>true</verbose>
+
+                    <images>
+                        <image>
+                            <alias>pebble</alias>
+                            <name>acme4j/pebble:${project.version}</name>
+
+                            <build>
+                                <from>golang:1.7</from>
+                                <optimise>true</optimise>
+                                <runCmds>
+                                    <run>go get -u -v -d gopkg.in/square/go-jose.v2</run>
+                                    <run>go get -u -v -d github.com/jmhodges/clock</run>
+                                    <run>go get -u -v -d github.com/letsencrypt/pebble || true</run>
+                                    <run>go test github.com/letsencrypt/pebble/...</run>
+                                    <run>go install github.com/letsencrypt/pebble/...</run>
+                                </runCmds>
+                                <ports>
+                                    <port>14000</port>
+                                </ports>
+                                <cmd>
+                                    <shell>pebble -config /etc/pebble/pebble-config.json</shell>
+                                </cmd>
+                                <assembly>
+                                    <mode>dir</mode>
+                                    <targetDir>/etc/pebble</targetDir>
+                                    <inline>
+                                        <fileSet>
+                                            <directory>src/test/pebble</directory>
+                                            <outputDirectory>.</outputDirectory>
+                                        </fileSet>
+                                    </inline>
+                                </assembly>
+                            </build>
+
+                            <run>
+                                <network>
+                                    <mode>host</mode>
+                                </network>
+                                <extraHosts>
+                                    <host>example.com:127.0.0.1</host>
+                                </extraHosts>
+                            </run>
+                        </image>
+                    </images>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.shredzone.acme4j</groupId>
+            <artifactId>acme4j-client</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.shredzone.acme4j</groupId>
+            <artifactId>acme4j-utils</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.nanohttpd</groupId>
+            <artifactId>nanohttpd</artifactId>
+            <version>${nanohttpd.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>dnsjava</groupId>
+            <artifactId>dnsjava</artifactId>
+            <version>${dnsjava.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+    </dependencies>
+</project>

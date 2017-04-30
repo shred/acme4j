@@ -29,7 +29,7 @@ import org.shredzone.acme4j.exception.AcmeException;
 /**
  * Session related integration tests.
  */
-public class SessionIT extends AbstractPebbleIT {
+public class SessionIT extends PebbleITBase {
 
     private final KeyPair keyPair = createKeyPair();
 
@@ -52,9 +52,6 @@ public class SessionIT extends AbstractPebbleIT {
     public void testResources() throws AcmeException {
         Session session = new Session(pebbleURI(), keyPair);
 
-        // TODO: Not yet supported by Pebble
-        // assertIsPebbleUrl(session.resourceUrl(Resource.KEY_CHANGE));
-
         assertIsPebbleUrl(session.resourceUrl(Resource.NEW_NONCE));
         assertIsPebbleUrl(session.resourceUrl(Resource.NEW_REG));
         assertIsPebbleUrl(session.resourceUrl(Resource.NEW_ORDER));
@@ -67,7 +64,6 @@ public class SessionIT extends AbstractPebbleIT {
         Metadata meta = session.getMetadata();
         assertThat(meta, not(nullValue()));
 
-        // Pebble does not currently deliver any metadata
         assertThat(meta.getTermsOfService(), is(URI.create("data:text/plain,Do%20what%20thou%20wilt")));
         assertThat(meta.getWebsite(), is(nullValue()));
         assertThat(meta.getCaaIdentities(), is(empty()));
