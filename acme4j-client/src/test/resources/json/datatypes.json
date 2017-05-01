@@ -8,5 +8,9 @@
   "array": ["foo", 987, [1, 2, 3], {"test": "ok"}],
   "collect": ["foo", "bar", "barfoo"],
   "status": "VALID",
-  "binary": "Q2hhaW5zYXc"
+  "binary": "Q2hhaW5zYXc",
+  "problem": {
+    "type": "urn:ietf:params:acme:error:rateLimited",
+    "detail": "too many requests"
+  }
 }
