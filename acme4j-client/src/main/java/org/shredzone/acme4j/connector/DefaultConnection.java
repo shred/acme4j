@@ -427,7 +427,8 @@ public class DefaultConnection implements Connection {
         }
 
         if ("userActionRequired".equals(error)) {
-            URI tos = getLinks("terms-of-service").stream().findFirst().orElse(null);
+            Collection<URI> links = getLinks("terms-of-service");
+            URI tos = links != null ? links.stream().findFirst().orElse(null) : null;
             return new AcmeUserActionRequiredException(problem, tos);
         }
 
