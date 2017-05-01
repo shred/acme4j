@@ -46,8 +46,11 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
+import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
+import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
+import org.shredzone.acme4j.exception.AcmeUserActionRequiredException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.JSON;
@@ -432,17 +435,98 @@ public class DefaultConnectionTest {
             conn.conn = mockUrlConnection;
             conn.accept(HttpURLConnection.HTTP_OK);
             fail("Expected to fail");
-        } catch (AcmeServerException ex) {
+        } catch (AcmeUnauthorizedException ex) {
             assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:unauthorized")));
             assertThat(ex.getMessage(), is("Invalid response: 404"));
         } catch (AcmeException ex) {
-            fail("Expected an AcmeServerException");
+            fail("Expected an AcmeUnauthorizedException");
         }
 
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verify(mockUrlConnection).getErrorStream();
         verify(mockUrlConnection).getURL();
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    /**
+     * Test if an {@link AcmeUserActionRequiredException} is thrown on an acme problem.
+     */
+    @Test
+    public void testAcceptThrowsUserActionRequiredException() throws Exception {
+        String jsonData = "{\"type\":\"urn:ietf:params:acme:error:userActionRequired\",\"detail\":\"Accept the TOS\"}";
+
+        Map<String, List<String>> linkHeader = new HashMap<>();
+        linkHeader.put("Link", Arrays.asList("<https://example.com/tos.pdf>; rel=\"terms-of-service\""));
+
+        when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/problem+json");
+        when(mockUrlConnection.getHeaderFields()).thenReturn(linkHeader);
+        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
+        when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
+        when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            conn.accept(HttpURLConnection.HTTP_OK);
+            fail("Expected to fail");
+        } catch (AcmeUserActionRequiredException ex) {
+            assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:userActionRequired")));
+            assertThat(ex.getMessage(), is("Accept the TOS"));
+            assertThat(ex.getTermsOfServiceUri(), is(URI.create("https://example.com/tos.pdf")));
+        } catch (AcmeException ex) {
+            fail("Expected an AcmeUserActionRequiredException");
+        }
+
+        verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");
+        verify(mockUrlConnection, atLeastOnce()).getHeaderFields();
+        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
+        verify(mockUrlConnection).getErrorStream();
+        verify(mockUrlConnection, atLeastOnce()).getURL();
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    /**
+     * Test if an {@link AcmeRateLimitExceededException} is thrown on an acme problem.
+     */
+    @Test
+    public void testAcceptThrowsRateLimitExceededException() throws Exception {
+        String jsonData = "{\"type\":\"urn:ietf:params:acme:error:rateLimited\",\"detail\":\"Too many invocations\"}";
+
+        Map<String, List<String>> linkHeader = new HashMap<>();
+        linkHeader.put("Link", Arrays.asList("<https://example.com/rates.pdf>; rel=\"urn:ietf:params:acme:documentation\""));
+
+        Instant retryAfter = Instant.now().plusSeconds(30L);
+
+        when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/problem+json");
+        when(mockUrlConnection.getHeaderField("Retry-After")).thenReturn(retryAfter.toString());
+        when(mockUrlConnection.getHeaderFieldDate("Retry-After", 0L)).thenReturn(retryAfter.toEpochMilli());
+        when(mockUrlConnection.getHeaderFields()).thenReturn(linkHeader);
+        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
+        when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
+        when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            conn.accept(HttpURLConnection.HTTP_OK);
+            fail("Expected to fail");
+        } catch (AcmeRateLimitExceededException ex) {
+            assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:rateLimited")));
+            assertThat(ex.getMessage(), is("Too many invocations"));
+            assertThat(ex.getRetryAfter(), is(retryAfter));
+            assertThat(ex.getDocuments(), is(notNullValue()));
+            assertThat(ex.getDocuments().size(), is(1));
+            assertThat(ex.getDocuments().iterator().next(), is(URI.create("https://example.com/rates.pdf")));
+        } catch (AcmeException ex) {
+            fail("Expected an AcmeRateLimitExceededException");
+        }
+
+        verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");
+        verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
+        verify(mockUrlConnection).getHeaderFieldDate("Retry-After", 0L);
+        verify(mockUrlConnection, atLeastOnce()).getHeaderFields();
+        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
+        verify(mockUrlConnection).getErrorStream();
+        verify(mockUrlConnection, atLeastOnce()).getURL();
         verifyNoMoreInteractions(mockUrlConnection);
     }
 
