@@ -8,5 +8,9 @@
     "https://example.com/acme/authz/1234",
     "https://example.com/acme/authz/2345"
   ],
-  "certificate": "https://example.com/acme/cert/1234"
+  "certificate": "https://example.com/acme/cert/1234",
+  "error": {
+    "type": "urn:ietf:params:acme:error:connection",
+    "detail": "connection refused"
+  }
 }

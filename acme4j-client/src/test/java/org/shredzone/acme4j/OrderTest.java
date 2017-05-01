@@ -75,6 +75,10 @@ public class OrderTest {
         assertThat(order.getCertificate().getLocation(), is(url("https://example.com/acme/cert/1234")));
         assertThat(order.getCsr(), is(csr));
 
+        assertThat(order.getError(), is(notNullValue()));
+        assertThat(order.getError().getType(), is("urn:ietf:params:acme:error:connection"));
+        assertThat(order.getError().getDetail(), is("connection refused"));
+
         List<Authorization> auths = order.getAuthorizations();
         assertThat(auths.size(), is(2));
         assertThat(auths.stream().map(Authorization::getLocation)::iterator,

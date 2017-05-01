@@ -39,6 +39,7 @@ public class Order extends AcmeResource {
     private byte[] csr;
     private Instant notBefore;
     private Instant notAfter;
+    private Problem error;
     private List<URL> authorizations;
     private Certificate certificate;
     private boolean loaded = false;
@@ -67,6 +68,14 @@ public class Order extends AcmeResource {
     public Status getStatus() {
         load();
         return status;
+    }
+
+    /**
+     * Returns a {@link Problem} document if the order failed.
+     */
+    public Problem getError() {
+        load();
+        return error;
     }
 
     /**
@@ -162,6 +171,8 @@ public class Order extends AcmeResource {
 
         URL certUrl = json.get("certificate").asURL();
         certificate = certUrl != null ? Certificate.bind(getSession(), certUrl) : null;
+
+        this.error = json.get("error").asProblem();
 
         this.authorizations = json.get("authorizations").asArray().stream()
                 .map(JSON.Value::asURL)
