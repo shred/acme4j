@@ -1,4 +1,5 @@
 {
   "type": "urn:ietf:params:acme:error:connection",
-  "detail": "connection refused"
+  "detail": "connection refused",
+  "instance": "/documents/error.html"
 }

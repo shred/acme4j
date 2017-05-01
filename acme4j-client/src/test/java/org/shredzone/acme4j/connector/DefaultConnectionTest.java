@@ -16,6 +16,7 @@ package org.shredzone.acme4j.connector;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.shredzone.acme4j.util.TestUtils.url;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.ByteArrayInputStream;
@@ -425,13 +426,14 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/problem+json");
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
         when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
+        when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             conn.accept(HttpURLConnection.HTTP_OK);
             fail("Expected to fail");
         } catch (AcmeServerException ex) {
-            assertThat(ex.getType(), is("urn:ietf:params:acme:error:unauthorized"));
+            assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:unauthorized")));
             assertThat(ex.getMessage(), is("Invalid response: 404"));
         } catch (AcmeException ex) {
             fail("Expected an AcmeServerException");
@@ -440,6 +442,7 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verify(mockUrlConnection).getErrorStream();
+        verify(mockUrlConnection).getURL();
         verifyNoMoreInteractions(mockUrlConnection);
     }
 
@@ -452,6 +455,8 @@ public class DefaultConnectionTest {
                 .thenReturn("application/problem+json");
         when(mockUrlConnection.getResponseCode())
                 .thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
+        when(mockUrlConnection.getURL())
+                .thenReturn(url("https://example.com/acme/1"));
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
@@ -466,7 +471,7 @@ public class DefaultConnectionTest {
             conn.accept(HttpURLConnection.HTTP_OK);
             fail("Expected to fail");
         } catch (AcmeServerException ex) {
-            assertThat(ex.getType(), is("urn:zombie:error:apocalypse"));
+            assertThat(ex.getType(), is(URI.create("urn:zombie:error:apocalypse")));
             assertThat(ex.getMessage(), is("Zombie apocalypse in progress"));
         } catch (AcmeException ex) {
             fail("Expected an AcmeServerException");
@@ -474,6 +479,7 @@ public class DefaultConnectionTest {
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
+        verify(mockUrlConnection).getURL();
         verifyNoMoreInteractions(mockUrlConnection);
     }
 
@@ -486,6 +492,8 @@ public class DefaultConnectionTest {
                 .thenReturn("application/problem+json");
         when(mockUrlConnection.getResponseCode())
                 .thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
+        when(mockUrlConnection.getURL())
+                .thenReturn(url("https://example.com/acme/1"));
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
@@ -504,6 +512,7 @@ public class DefaultConnectionTest {
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
+        verify(mockUrlConnection).getURL();
         verifyNoMoreInteractions(mockUrlConnection);
     }
 

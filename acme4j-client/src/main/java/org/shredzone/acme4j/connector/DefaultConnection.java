@@ -43,6 +43,7 @@ import org.jose4j.base64url.Base64Url;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
+import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
@@ -237,7 +238,10 @@ public class DefaultConnection implements Connection {
                 throw new AcmeException("HTTP " + rc + ": " + conn.getResponseMessage());
             }
 
-            throw createAcmeException(readJsonResponse());
+            Problem problem = new Problem(readJsonResponse(), conn.getURL().toURI());
+            throw createAcmeException(problem);
+        } catch (URISyntaxException ex) {
+            throw new AcmeProtocolException("Bad request URI: " + conn.getURL(), ex);
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         }
@@ -411,32 +415,29 @@ public class DefaultConnection implements Connection {
      * {@link AcmeServerException} or subtype will be thrown. Otherwise a generic
      * {@link AcmeException} is thrown.
      */
-    private AcmeException createAcmeException(JSON json) {
-        String type = json.get("type").asString();
-        String detail = json.get("detail").asString();
-        String error = AcmeUtils.stripErrorPrefix(type);
-
-        if (type == null) {
-            return new AcmeException(detail);
+    private AcmeException createAcmeException(Problem problem) {
+        if (problem.getType() == null) {
+            return new AcmeException(problem.getDetail());
         }
 
+        String error = AcmeUtils.stripErrorPrefix(problem.getType().toString());
+
         if ("unauthorized".equals(error)) {
-            return new AcmeUnauthorizedException(type, detail);
+            return new AcmeUnauthorizedException(problem);
         }
 
         if ("userActionRequired".equals(error)) {
-            URI instance = resolveRelative(json.get("instance").asString());
             URI tos = getLinks("terms-of-service").stream().findFirst().orElse(null);
-            return new AcmeUserActionRequiredException(type, detail, tos, toURL(instance));
+            return new AcmeUserActionRequiredException(problem, tos);
         }
 
         if ("rateLimited".equals(error)) {
             Optional<Instant> retryAfter = getRetryAfterHeader();
             Collection<URI> rateLimits = getLinks("urn:ietf:params:acme:documentation");
-            return new AcmeRateLimitExceededException(type, detail, retryAfter.orElse(null), rateLimits);
+            return new AcmeRateLimitExceededException(problem, retryAfter.orElse(null), rateLimits);
         }
 
-        return new AcmeServerException(type, detail);
+        return new AcmeServerException(problem);
     }
 
     /**

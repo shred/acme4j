@@ -13,7 +13,10 @@
  */
 package org.shredzone.acme4j.exception;
 
+import java.net.URI;
 import java.util.Objects;
+
+import org.shredzone.acme4j.Problem;
 
 /**
  * An exception that is thrown when the ACME server returned an error. It contains
@@ -22,27 +25,31 @@ import java.util.Objects;
 public class AcmeServerException extends AcmeException {
     private static final long serialVersionUID = 5971622508467042792L;
 
-    private final String type;
+    private final Problem problem;
 
     /**
      * Creates a new {@link AcmeServerException}.
      *
-     * @param type
-     *            System readable error type (e.g.
-     *            {@code "urn:ietf:params:acme:error:malformed"})
-     * @param detail
-     *            Human readable error message
+     * @param problem
+     *            {@link Problem} that caused the exception
      */
-    public AcmeServerException(String type, String detail) {
-        super(detail);
-        this.type = Objects.requireNonNull(type, "type");
+    public AcmeServerException(Problem problem) {
+        super(Objects.requireNonNull(problem).getDetail());
+        this.problem = problem;
     }
 
     /**
      * Returns the error type.
      */
-    public String getType() {
-        return type;
+    public URI getType() {
+        return problem.getType();
+    }
+
+    /**
+     * Returns the {@link Problem} that caused the exception
+     */
+    public Problem getProblem() {
+        return problem;
     }
 
 }

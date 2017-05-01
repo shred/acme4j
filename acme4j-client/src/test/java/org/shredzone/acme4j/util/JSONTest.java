@@ -26,6 +26,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -44,6 +45,8 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
  * Unit test for {@link JSON}.
  */
 public class JSONTest {
+
+    private static final URL BASE_URL = url("https://example.com/acme/1");
 
     /**
      * Test that an empty {@link JSON} is empty.
@@ -210,10 +213,11 @@ public class JSONTest {
         JSON sub = array.get(3).asObject();
         assertThat(sub.get("test").asString(), is("ok"));
 
-        Problem problem = json.get("problem").asProblem();
+        Problem problem = json.get("problem").asProblem(BASE_URL);
         assertThat(problem, is(notNullValue()));
-        assertThat(problem.getType(), is("urn:ietf:params:acme:error:rateLimited"));
+        assertThat(problem.getType(), is(URI.create("urn:ietf:params:acme:error:rateLimited")));
         assertThat(problem.getDetail(), is("too many requests"));
+        assertThat(problem.getInstance(), is(URI.create("https://example.com/documents/errors.html")));
     }
 
     /**
@@ -231,7 +235,7 @@ public class JSONTest {
         assertThat(json.get("none").asObject(), is(nullValue()));
         assertThat(json.get("none").asStatusOrElse(Status.INVALID), is(Status.INVALID));
         assertThat(json.get("none").asBinary(), is(nullValue()));
-        assertThat(json.get("none").asProblem(), is(nullValue()));
+        assertThat(json.get("none").asProblem(BASE_URL), is(nullValue()));
 
         try {
             json.get("none").asInt();
@@ -308,7 +312,7 @@ public class JSONTest {
         }
 
         try {
-            json.get("text").asProblem();
+            json.get("text").asProblem(BASE_URL);
             fail("no exception was thrown");
         } catch (AcmeProtocolException ex) {
             // expected

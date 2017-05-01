@@ -172,7 +172,7 @@ public class Order extends AcmeResource {
         URL certUrl = json.get("certificate").asURL();
         certificate = certUrl != null ? Certificate.bind(getSession(), certUrl) : null;
 
-        this.error = json.get("error").asProblem();
+        this.error = json.get("error").asProblem(getLocation());
 
         this.authorizations = json.get("authorizations").asArray().stream()
                 .map(JSON.Value::asURL)

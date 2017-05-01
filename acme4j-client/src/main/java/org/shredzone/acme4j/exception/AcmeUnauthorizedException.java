@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j.exception;
 
+import org.shredzone.acme4j.Problem;
+
 /**
  * An exception that is thrown when the client is not authorized. The details will give
  * an explanation for the reasons (e.g. "client not on a whitelist").
@@ -23,14 +25,11 @@ public class AcmeUnauthorizedException extends AcmeServerException {
     /**
      * Creates a new {@link AcmeUnauthorizedException}.
      *
-     * @param type
-     *            System readable error type (here
-     *            {@code "urn:ietf:params:acme:error:unauthorized"})
-     * @param detail
-     *            Human readable error message
+     * @param problem
+     *            {@link Problem} that caused the exception
      */
-    public AcmeUnauthorizedException(String type, String detail) {
-        super(type, detail);
+    public AcmeUnauthorizedException(Problem problem) {
+        super(problem);
     }
 
 }

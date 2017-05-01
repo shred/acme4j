@@ -14,6 +14,7 @@
 package org.shredzone.acme4j;
 
 import java.io.Serializable;
+import java.net.URI;
 
 import org.shredzone.acme4j.util.JSON;
 
@@ -25,6 +26,7 @@ import org.shredzone.acme4j.util.JSON;
 public class Problem implements Serializable {
     private static final long serialVersionUID = -8418248862966754214L;
 
+    private final URI baseUri;
     private final JSON problem;
 
     /**
@@ -32,16 +34,20 @@ public class Problem implements Serializable {
      *
      * @param problem
      *            Problem as JSON structure
+     * @param baseUri
+     *            Document's base {@link URI} to resolve relative URIs against
      */
-    public Problem(JSON problem) {
+    public Problem(JSON problem, URI baseUri) {
         this.problem = problem;
+        this.baseUri = baseUri;
     }
 
     /**
-     * Returns the problem type.
+     * Returns the problem type. It is always an absolute URI.
      */
-    public String getType() {
-        return problem.get("type").asString();
+    public URI getType() {
+        String type = problem.get("type").asString();
+        return type != null ? baseUri.resolve(type) : null;
     }
 
     /**
@@ -49,6 +55,15 @@ public class Problem implements Serializable {
      */
     public String getDetail() {
         return problem.get("detail").asString();
+    }
+
+    /**
+     * Returns an URI that identifies the specific occurence of the problem. It is always
+     * an absolute URI.
+     */
+    public URI getInstance() {
+        String instance = problem.get("instance").asString();
+        return instance != null ? baseUri.resolve(instance) : null;
     }
 
     /**

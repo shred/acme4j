@@ -15,6 +15,7 @@ package org.shredzone.acme4j.exception;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.shredzone.acme4j.util.TestUtils.createProblem;
 
 import java.net.URI;
 import java.time.Duration;
@@ -23,6 +24,7 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import org.junit.Test;
+import org.shredzone.acme4j.Problem;
 
 /**
  * Unit tests for {@link AcmeRateLimitExceededException}.
@@ -34,15 +36,17 @@ public class AcmeRateLimitExceededExceptionTest {
      */
     @Test
     public void testAcmeRateLimitExceededException() {
-        String type = "urn:ietf:params:acme:error:rateLimited";
+        URI type = URI.create("urn:ietf:params:acme:error:rateLimited");
         String detail = "Too many requests per minute";
         Instant retryAfter = Instant.now().plus(Duration.ofMinutes(1));
         Collection<URI> documents = Arrays.asList(
                         URI.create("http://example.com/doc1.html"),
                         URI.create("http://example.com/doc2.html"));
 
+        Problem problem = createProblem(type, detail, null);
+
         AcmeRateLimitExceededException ex
-                = new AcmeRateLimitExceededException(type, detail, retryAfter, documents);
+                = new AcmeRateLimitExceededException(problem, retryAfter, documents);
 
         assertThat(ex.getType(), is(type));
         assertThat(ex.getMessage(), is(detail));
@@ -55,11 +59,13 @@ public class AcmeRateLimitExceededExceptionTest {
      */
     @Test
     public void testNullAcmeRateLimitExceededException() {
-        String type = "urn:ietf:params:acme:error:rateLimited";
+        URI type = URI.create("urn:ietf:params:acme:error:rateLimited");
         String detail = "Too many requests per minute";
 
+        Problem problem = createProblem(type, detail, null);
+
         AcmeRateLimitExceededException ex
-                = new AcmeRateLimitExceededException(type, detail, null, null);
+                = new AcmeRateLimitExceededException(problem, null, null);
 
         assertThat(ex.getType(), is(type));
         assertThat(ex.getMessage(), is(detail));

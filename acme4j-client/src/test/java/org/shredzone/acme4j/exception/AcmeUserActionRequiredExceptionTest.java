@@ -15,12 +15,14 @@ package org.shredzone.acme4j.exception;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.shredzone.acme4j.util.TestUtils.createProblem;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
 import org.junit.Test;
+import org.shredzone.acme4j.Problem;
 
 /**
  * Unit tests for {@link AcmeUserActionRequiredException}.
@@ -32,13 +34,15 @@ public class AcmeUserActionRequiredExceptionTest {
      */
     @Test
     public void testAcmeUserActionRequiredException() throws MalformedURLException {
-        String type = "urn:ietf:params:acme:error:userActionRequired";
+        URI type = URI.create("urn:ietf:params:acme:error:userActionRequired");
         String detail = "Accept new TOS";
         URI tosUri = URI.create("http://example.com/agreement.pdf");
         URL instanceUrl = new URL("http://example.com/howToAgree.html");
 
+        Problem problem = createProblem(type, detail, instanceUrl);
+
         AcmeUserActionRequiredException ex
-            = new AcmeUserActionRequiredException(type, detail, tosUri, instanceUrl);
+            = new AcmeUserActionRequiredException(problem, tosUri);
 
         assertThat(ex.getType(), is(type));
         assertThat(ex.getMessage(), is(detail));
@@ -51,11 +55,13 @@ public class AcmeUserActionRequiredExceptionTest {
      */
     @Test
     public void testNullAcmeUserActionRequiredException() {
-        String type = "urn:ietf:params:acme:error:userActionRequired";
+        URI type = URI.create("urn:ietf:params:acme:error:userActionRequired");
         String detail = "Call our service";
 
+        Problem problem = createProblem(type, detail, null);
+
         AcmeUserActionRequiredException ex
-            = new AcmeUserActionRequiredException(type, detail, null, null);
+            = new AcmeUserActionRequiredException(problem, null);
 
         assertThat(ex.getType(), is(type));
         assertThat(ex.getMessage(), is(detail));

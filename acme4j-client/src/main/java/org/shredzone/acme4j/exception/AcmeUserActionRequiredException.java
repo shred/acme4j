@@ -13,8 +13,11 @@
  */
 package org.shredzone.acme4j.exception;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+
+import org.shredzone.acme4j.Problem;
 
 /**
  * An exception that is thrown when the user is required to take action as indicated.
@@ -23,26 +26,18 @@ public class AcmeUserActionRequiredException extends AcmeServerException {
     private static final long serialVersionUID = 7719055447283858352L;
 
     private final URI tosUri;
-    private final URL instance;
 
     /**
      * Creates a new {@link AcmeUserActionRequiredException}.
      *
-     * @param type
-     *            System readable error type (here
-     *            {@code "urn:ietf:params:acme:error:userActionRequired"})
-     * @param detail
-     *            Human readable error message
+     * @param problem
+     *            {@link Problem} that caused the exception
      * @param tosUri
      *            {@link URI} of the terms-of-service document to accept
-     * @param instance
-     *            {@link URL} to be visited by a human, showing instructions for how to
-     *            agree to the terms and conditions.
      */
-    public AcmeUserActionRequiredException(String type, String detail, URI tosUri, URL instance) {
-        super(type, detail);
+    public AcmeUserActionRequiredException(Problem problem, URI tosUri) {
+        super(problem);
         this.tosUri = tosUri;
-        this.instance = instance;
     }
 
     /**
@@ -58,7 +53,13 @@ public class AcmeUserActionRequiredException extends AcmeServerException {
      * or {@code null} if the server did not provide such a link.
      */
     public URL getInstance() {
-        return instance;
+        try {
+            URI instance = getProblem().getInstance();
+            return instance != null ? instance.toURL() : null;
+        } catch (MalformedURLException ex) {
+            throw new AcmeProtocolException(
+                    "Bad instance URL: " + getProblem().getInstance().toString(), ex);
+        }
     }
 
 }

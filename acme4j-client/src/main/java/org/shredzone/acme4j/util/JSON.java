@@ -306,14 +306,20 @@ public final class JSON implements Serializable {
         /**
          * Returns the value as {@link Problem}.
          *
+         * @param baseUrl
+         *            Base {@link URL} to resolve relative links against
          * @return {@link Problem}, or {@code null} if the value was not set.
          */
-        public Problem asProblem() {
+        public Problem asProblem(URL baseUrl) {
             if (val == null) {
                 return null;
             }
 
-            return new Problem(asObject());
+            try {
+                return new Problem(asObject(), baseUrl.toURI());
+            } catch (URISyntaxException ex) {
+                throw new IllegalArgumentException("Bad base URL", ex);
+            }
         }
 
         /**

@@ -18,6 +18,8 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.shredzone.acme4j.Problem;
+
 /**
  * An exception that is thrown when a rate limit was exceeded.
  */
@@ -30,19 +32,16 @@ public class AcmeRateLimitExceededException extends AcmeServerException {
     /**
      * Creates a new {@link AcmeRateLimitExceededException}.
      *
-     * @param type
-     *            System readable error type (here
-     *            {@code "urn:ietf:params:acme:error:rateLimited"})
-     * @param detail
-     *            Human readable error message
+     * @param problem
+     *            {@link Problem} that caused the exception
      * @param retryAfter
      *            The moment the request is expected to succeed again, may be {@code null}
      *            if not known
      * @param documents
      *            URIs pointing to documents about the rate limit that was hit
      */
-    public AcmeRateLimitExceededException(String type, String detail, Instant retryAfter, Collection<URI> documents) {
-        super(type, detail);
+    public AcmeRateLimitExceededException(Problem problem, Instant retryAfter, Collection<URI> documents) {
+        super(problem);
         this.retryAfter = retryAfter;
         this.documents =
                 documents != null ? Collections.unmodifiableCollection(documents) : null;

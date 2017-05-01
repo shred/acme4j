@@ -19,6 +19,7 @@ import static org.shredzone.acme4j.util.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.util.TestUtils.*;
 
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -76,7 +77,7 @@ public class OrderTest {
         assertThat(order.getCsr(), is(csr));
 
         assertThat(order.getError(), is(notNullValue()));
-        assertThat(order.getError().getType(), is("urn:ietf:params:acme:error:connection"));
+        assertThat(order.getError().getType(), is(URI.create("urn:ietf:params:acme:error:connection")));
         assertThat(order.getError().getDetail(), is("connection refused"));
 
         List<Authorization> auths = order.getAuthorizations();

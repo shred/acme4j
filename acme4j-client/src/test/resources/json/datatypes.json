@@ -11,6 +11,7 @@
   "binary": "Q2hhaW5zYXc",
   "problem": {
     "type": "urn:ietf:params:acme:error:rateLimited",
-    "detail": "too many requests"
+    "detail": "too many requests",
+    "instance": "/documents/errors.html"
   }
 }

@@ -52,6 +52,7 @@ import org.jose4j.base64url.Base64Url;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
+import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.provider.AcmeProvider;
 
@@ -266,6 +267,30 @@ public final class TestUtils {
                 description.appendValue(Arrays.toString(reference));
             }
         };
+    }
+
+    /**
+     * Creates a {@link Problem} with the given type and details.
+     *
+     * @param type
+     *            Problem type
+     * @param detail
+     *            Problem details
+     * @param instance
+     *            Instance, or {@code null}
+     * @return Created {@link Problem} object
+     */
+    public static Problem createProblem(URI type, String detail, URL instance) {
+        URI baseUri = URI.create("https://example.com/acme/1");
+
+        JSONBuilder jb = new JSONBuilder();
+        jb.put("type", type);
+        jb.put("detail", detail);
+        if (instance != null) {
+            jb.put("instance", instance);
+        }
+
+        return new Problem(jb.toJSON(), baseUri);
     }
 
     /**
