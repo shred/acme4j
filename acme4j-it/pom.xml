@@ -124,6 +124,19 @@
                     </images>
                 </configuration>
             </plugin>
+
+            <!-- TODO PEBBLE: remove -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>2.20</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <pebble>true</pebble>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 

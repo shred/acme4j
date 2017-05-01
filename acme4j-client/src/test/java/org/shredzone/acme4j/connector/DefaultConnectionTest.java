@@ -617,8 +617,7 @@ public class DefaultConnectionTest {
         expectedHeader.append("\"kid\":\"").append(keyIdentifier).append('"');
         expectedHeader.append('}');
 
-        // TODO PEBBLE: cannot process "kid" yet, send "jwk" instead
-        // assertThat(header, sameJSONAs(expectedHeader.toString()));
+        assertThat(header, sameJSONAs(expectedHeader.toString()));
         assertThat(claims, sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
         assertThat(signature, not(isEmptyOrNullString()));
 

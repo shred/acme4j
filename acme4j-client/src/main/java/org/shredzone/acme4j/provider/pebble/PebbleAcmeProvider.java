@@ -77,7 +77,10 @@ public class PebbleAcmeProvider extends AbstractAcmeProvider {
     @Override
     public JSON directory(Session session, URI serverUri) throws AcmeException {
         JSON json = super.directory(session, serverUri);
-        return JSON.parse(json.toString().replace("\"new-reg\"", "\"new-account\""));
+        if (Pebble.workaround()) {
+            json = JSON.parse(json.toString().replace("\"new-reg\"", "\"new-account\""));
+        }
+        return json;
     }
 
 }
