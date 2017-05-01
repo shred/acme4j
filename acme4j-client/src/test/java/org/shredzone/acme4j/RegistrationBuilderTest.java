@@ -82,7 +82,7 @@ public class RegistrationBuilderTest {
             }
         };
 
-        provider.putTestResource(Resource.NEW_REG, resourceUrl);
+        provider.putTestResource(Resource.NEW_ACCOUNT, resourceUrl);
 
         RegistrationBuilder builder = new RegistrationBuilder();
         builder.addContact("mailto:foo@example.com");

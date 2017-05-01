@@ -1,5 +1,5 @@
 {
-  "new-reg": "https://example.com/acme/new-reg",
+  "new-account": "https://example.com/acme/new-account",
   "new-authz": "https://example.com/acme/new-authz",
-  "new-cert": "https://example.com/acme/new-cert"
+  "new-order": "https://example.com/acme/new-order"
 }

@@ -94,7 +94,7 @@ public class RegistrationBuilder {
 
         try (Connection conn = session.provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
-            claims.putResource(Resource.NEW_REG);
+            claims.putResource(Resource.NEW_ACCOUNT);
             if (!contacts.isEmpty()) {
                 claims.put("contact", contacts);
             }
@@ -102,7 +102,7 @@ public class RegistrationBuilder {
                 claims.put("terms-of-service-agreed", termsOfServiceAgreed);
             }
 
-            conn.sendJwkSignedRequest(session.resourceUrl(Resource.NEW_REG), claims, session);
+            conn.sendJwkSignedRequest(session.resourceUrl(Resource.NEW_ACCOUNT), claims, session);
             conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
             URL location = conn.getLocation();

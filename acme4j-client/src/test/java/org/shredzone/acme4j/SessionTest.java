@@ -211,12 +211,12 @@ public class SessionTest {
             };
         };
 
-        assertThat(session.resourceUrl(Resource.NEW_REG),
-                        is(new URL("https://example.com/acme/new-reg")));
+        assertThat(session.resourceUrl(Resource.NEW_ACCOUNT),
+                        is(new URL("https://example.com/acme/new-account")));
         assertThat(session.resourceUrl(Resource.NEW_AUTHZ),
                         is(new URL("https://example.com/acme/new-authz")));
-        assertThat(session.resourceUrl(Resource.NEW_CERT),
-                        is(new URL("https://example.com/acme/new-cert")));
+        assertThat(session.resourceUrl(Resource.NEW_ORDER),
+                        is(new URL("https://example.com/acme/new-order")));
         assertThat(session.resourceUrl(Resource.REVOKE_CERT),
                         is(nullValue()));
 
@@ -235,12 +235,12 @@ public class SessionTest {
      *            {@link Session} to assert
      */
     private void assertSession(Session session) throws AcmeException, IOException {
-        assertThat(session.resourceUrl(Resource.NEW_REG),
-                        is(new URL("https://example.com/acme/new-reg")));
+        assertThat(session.resourceUrl(Resource.NEW_ACCOUNT),
+                        is(new URL("https://example.com/acme/new-account")));
         assertThat(session.resourceUrl(Resource.NEW_AUTHZ),
                         is(new URL("https://example.com/acme/new-authz")));
-        assertThat(session.resourceUrl(Resource.NEW_CERT),
-                        is(new URL("https://example.com/acme/new-cert")));
+        assertThat(session.resourceUrl(Resource.NEW_ORDER),
+                        is(new URL("https://example.com/acme/new-order")));
         assertThat(session.resourceUrl(Resource.REVOKE_CERT),
                         is(nullValue()));
 

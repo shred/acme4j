@@ -242,6 +242,7 @@ public class Session {
                 map.put(res, url);
             }
         }
+
         resourceMap.set(map);
     }
 

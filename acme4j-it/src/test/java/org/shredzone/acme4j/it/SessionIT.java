@@ -52,8 +52,8 @@ public class SessionIT extends PebbleITBase {
     public void testResources() throws AcmeException {
         Session session = new Session(pebbleURI(), keyPair);
 
+        assertIsPebbleUrl(session.resourceUrl(Resource.NEW_ACCOUNT));
         assertIsPebbleUrl(session.resourceUrl(Resource.NEW_NONCE));
-        assertIsPebbleUrl(session.resourceUrl(Resource.NEW_REG));
         assertIsPebbleUrl(session.resourceUrl(Resource.NEW_ORDER));
     }
 
