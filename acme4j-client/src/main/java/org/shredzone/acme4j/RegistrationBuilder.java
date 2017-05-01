@@ -21,7 +21,6 @@ import java.util.List;
 
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
-import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
@@ -80,10 +79,6 @@ public class RegistrationBuilder {
      * @param session
      *            {@link Session} to be used for registration
      * @return {@link Registration} referring to the new account
-     * @throws AcmeConflictException
-     *             if there is already an account for the connection's key pair.
-     *             {@link AcmeConflictException#getLocation()} contains the registration's
-     *             location URI.
      */
     public Registration create(Session session) throws AcmeException {
         LOG.debug("create");

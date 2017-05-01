@@ -221,7 +221,8 @@ public final class AcmeUtils {
     /**
      * Strips the acme error prefix from the error string.
      * <p>
-     * For example, for "urn:ietf:params:acme:error:conflict", "conflict" is returned.
+     * For example, for "urn:ietf:params:acme:error:unauthorized", "unauthorized" is
+     * returned.
      *
      * @param type
      *            Error type to strip the prefix from. {@code null} is safe.

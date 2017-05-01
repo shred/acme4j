@@ -33,7 +33,6 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsSni02Challenge;
-import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.CSRBuilder;
@@ -190,19 +189,8 @@ public class ClientTest {
             acceptAgreement(tos);
         }
 
-        Registration reg;
-
-        try {
-            // Try to create a new Registration.
-            reg = new RegistrationBuilder().agreeToTermsOfService().create(session);
-            LOG.info("Registered a new user, URI: " + reg.getLocation());
-
-        } catch (AcmeConflictException ex) {
-            // The Key Pair is already registered. getLocation() contains the
-            // URL of the existing registration's location. Bind it to the session.
-            reg = Registration.bind(session, ex.getLocation());
-            LOG.info("Account does already exist, URI: " + reg.getLocation(), ex);
-        }
+        Registration reg = new RegistrationBuilder().agreeToTermsOfService().create(session);
+        LOG.info("Registered a new user, URI: " + reg.getLocation());
 
         return reg;
     }

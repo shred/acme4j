@@ -14,19 +14,6 @@ Registration registration = builder.create(session);
 URL accountLocationUrl = registration.getLocation();
 ```
 
-`create()` will fail and throw an `AcmeConflictException` if your key was already registered with the CA. The `AcmeConflictException` contains the location of the registration. This may be helpful if you forgot your account URL and need to recover it.
-
-The following example will create a new `Registration` and restore an existing `Registration`.
-
-```java
-Registration registration;
-try {
-  registration = new RegistrationBuilder().agreeToTermsOfService().create(session);
-} catch (AcmeConflictException ex) {
-  registration = Registration.bind(session, ex.getLocation());
-}
-```
-
 ## Update your Registration
 
 At some point, you may want to update your registration. For example your contact address might have changed. To do so, invoke `Registration.modify()`, perform the changes, and invoke `commit()` to make them permanent.

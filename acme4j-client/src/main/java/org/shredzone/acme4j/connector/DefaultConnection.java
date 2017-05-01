@@ -44,8 +44,6 @@ import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Session;
-import org.shredzone.acme4j.exception.AcmeUserActionRequiredException;
-import org.shredzone.acme4j.exception.AcmeConflictException;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -53,6 +51,7 @@ import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
+import org.shredzone.acme4j.exception.AcmeUserActionRequiredException;
 import org.shredzone.acme4j.provider.pebble.Pebble;
 import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.JSON;
@@ -238,13 +237,7 @@ public class DefaultConnection implements Connection {
                 throw new AcmeException("HTTP " + rc + ": " + conn.getResponseMessage());
             }
 
-            JSON json = readJsonResponse();
-
-            if (rc == HttpURLConnection.HTTP_CONFLICT) {
-                throw new AcmeConflictException(json.get("detail").asString(), getLocation());
-            }
-
-            throw createAcmeException(json);
+            throw createAcmeException(readJsonResponse());
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         }
