@@ -427,7 +427,7 @@ public final class JSON implements Serializable {
          */
         public byte[] asBinary() {
             if (val == null) {
-                return null;
+                return null; //NOSONAR: we want to return null here
             }
 
             return AcmeUtils.base64UrlDecode(val.toString());

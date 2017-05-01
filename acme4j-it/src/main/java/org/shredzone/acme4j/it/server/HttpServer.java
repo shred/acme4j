@@ -39,6 +39,7 @@ public class HttpServer {
 
     private static final String TOKEN_PATH = "/.well-known/acme-challenge/";
     private static final Pattern TOKEN_PATTERN = Pattern.compile("^" + Pattern.quote(TOKEN_PATH) + "([^/]+)$");
+    private static final String TYPE_TEXT_PLAIN = "text/plain";
 
     private final Map<String, String> tokenMap = synchronizedMap(new HashMap<>());
     private NanoHTTPD server;
@@ -84,7 +85,7 @@ public class HttpServer {
 
                 Matcher m = TOKEN_PATTERN.matcher(path);
                 if (!m.matches()) {
-                    return newFixedLengthResponse(Status.NOT_FOUND, "text/plain", "not found: "+ path + "\n");
+                    return newFixedLengthResponse(Status.NOT_FOUND, TYPE_TEXT_PLAIN, "not found: "+ path + "\n");
                 }
 
                 String token = m.group(1);
@@ -92,11 +93,11 @@ public class HttpServer {
 
                 if (content == null) {
                     LOG.warn("http-01: unknown token " + token);
-                    return newFixedLengthResponse(Status.NOT_FOUND, "text/plain", "unknown token: "+ token + "\n");
+                    return newFixedLengthResponse(Status.NOT_FOUND, TYPE_TEXT_PLAIN, "unknown token: "+ token + "\n");
                 }
 
                 LOG.info("http-01: " + token + " -> " + content);
-                return newFixedLengthResponse(Status.OK, "text/plain", content);
+                return newFixedLengthResponse(Status.OK, TYPE_TEXT_PLAIN, content);
             }
         };
 

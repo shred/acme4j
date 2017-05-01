@@ -27,7 +27,7 @@ public class Problem implements Serializable {
     private static final long serialVersionUID = -8418248862966754214L;
 
     private final URI baseUri;
-    private final JSON problem;
+    private final JSON problemJson;
 
     /**
      * Creates a new {@link Problem} object.
@@ -38,7 +38,7 @@ public class Problem implements Serializable {
      *            Document's base {@link URI} to resolve relative URIs against
      */
     public Problem(JSON problem, URI baseUri) {
-        this.problem = problem;
+        this.problemJson = problem;
         this.baseUri = baseUri;
     }
 
@@ -46,7 +46,7 @@ public class Problem implements Serializable {
      * Returns the problem type. It is always an absolute URI.
      */
     public URI getType() {
-        String type = problem.get("type").asString();
+        String type = problemJson.get("type").asString();
         return type != null ? baseUri.resolve(type) : null;
     }
 
@@ -54,7 +54,7 @@ public class Problem implements Serializable {
      * Returns a human-readable description of the problem.
      */
     public String getDetail() {
-        return problem.get("detail").asString();
+        return problemJson.get("detail").asString();
     }
 
     /**
@@ -62,15 +62,17 @@ public class Problem implements Serializable {
      * an absolute URI.
      */
     public URI getInstance() {
-        String instance = problem.get("instance").asString();
+        String instance = problemJson.get("instance").asString();
         return instance != null ? baseUri.resolve(instance) : null;
     }
 
     /**
      * Returns the problem as {@link JSON} object, to access other fields.
+     *
+     * @return Problem as {@link JSON} object
      */
     public JSON asJSON() {
-        return problem;
+        return problemJson;
     }
 
     /**
@@ -78,7 +80,7 @@ public class Problem implements Serializable {
      */
     @Override
     public String toString() {
-        return problem.toString();
+        return problemJson.toString();
     }
 
 }

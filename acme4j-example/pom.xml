@@ -28,6 +28,10 @@
     <name>acme4j Example</name>
     <description>Example for using acme4j</description>
 
+    <properties>
+        <sonar.exclusions>src/main/java/org/shredzone/acme4j/**</sonar.exclusions>
+    </properties>
+
     <build>
         <plugins>
             <plugin>

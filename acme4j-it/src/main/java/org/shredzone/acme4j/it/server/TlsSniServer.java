@@ -172,7 +172,7 @@ public class TlsSniServer {
             LOG.info("tls-sni: {}", domainsToString(cert));
 
             try (InputStream in = sslSocket.getInputStream()) {
-                while (in.read() >= 0);
+                while (in.read() >= 0); //NOSONAR: intentional empty statement
             }
         }
     }

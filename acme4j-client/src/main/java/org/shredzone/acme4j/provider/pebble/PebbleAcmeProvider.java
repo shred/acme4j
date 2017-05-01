@@ -53,22 +53,33 @@ public class PebbleAcmeProvider extends AbstractAcmeProvider {
             URL baseUrl = new URL("http://localhost:14000/dir");
 
             if (path != null && !path.isEmpty() && !"/".equals(path)) {
-                Matcher m = HOST_PATTERN.matcher(path);
-                if (m.matches()) {
-                    String host = m.group(1);
-                    int port = 14000;
-                    if (m.group(2) != null) {
-                        port = Integer.parseInt(m.group(2));
-                    }
-                    baseUrl = new URL("http", host, port, "/dir");
-                } else {
-                    throw new IllegalArgumentException("Invalid Pebble host/port: " + path);
-                }
+                baseUrl = parsePath(path);
             }
 
             return baseUrl;
         } catch (MalformedURLException ex) {
             throw new IllegalArgumentException("Bad server URI " + serverUri, ex);
+        }
+    }
+
+    /**
+     * Parses the server URI path and returns the server's base URL.
+     *
+     * @param path
+     *            server URI path
+     * @return URL of the server's base
+     */
+    private URL parsePath(String path) throws MalformedURLException {
+        Matcher m = HOST_PATTERN.matcher(path);
+        if (m.matches()) {
+            String host = m.group(1);
+            int port = 14000;
+            if (m.group(2) != null) {
+                port = Integer.parseInt(m.group(2));
+            }
+            return new URL("http", host, port, "/dir");
+        } else {
+            throw new IllegalArgumentException("Invalid Pebble host/port: " + path);
         }
     }
 

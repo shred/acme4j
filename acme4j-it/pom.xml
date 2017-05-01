@@ -30,6 +30,7 @@
 
     <properties>
         <skipITs>true</skipITs>
+        <sonar.coverage.exclusions>src/main/java/org/shredzone/acme4j/**</sonar.coverage.exclusions>
     </properties>
 
     <profiles>

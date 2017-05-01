@@ -24,10 +24,10 @@ import org.slf4j.LoggerFactory;
  */
 public final class Pebble {
 
-    private static final boolean PEBBLE = Boolean.getBoolean("pebble");
+    private static final boolean PEBBLE_PROPERTY = Boolean.getBoolean("pebble");
 
     static {
-        if (PEBBLE) {
+        if (PEBBLE_PROPERTY) {
             LoggerFactory.getLogger(Pebble.class).warn("Pebble workarounds enabled!");
         }
     }
@@ -37,11 +37,11 @@ public final class Pebble {
     }
 
     /**
-     * Returns {@code true} to enable Pebble workarounds, {@code false} for strict
-     * ACME specifications.
+     * @return {@code true} to enable Pebble workarounds, {@code false} for strict ACME
+     *         specifications.
      */
     public static boolean workaround() {
-        return PEBBLE;
+        return PEBBLE_PROPERTY;
     }
 
 }
