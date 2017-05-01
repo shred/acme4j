@@ -433,7 +433,6 @@ public class DefaultConnectionTest {
         } catch (AcmeServerException ex) {
             assertThat(ex.getType(), is("urn:ietf:params:acme:error:unauthorized"));
             assertThat(ex.getMessage(), is("Invalid response: 404"));
-            assertThat(ex.getAcmeErrorType(), is("unauthorized"));
         } catch (AcmeException ex) {
             fail("Expected an AcmeServerException");
         }
@@ -469,7 +468,6 @@ public class DefaultConnectionTest {
         } catch (AcmeServerException ex) {
             assertThat(ex.getType(), is("urn:zombie:error:apocalypse"));
             assertThat(ex.getMessage(), is("Zombie apocalypse in progress"));
-            assertThat(ex.getAcmeErrorType(), is(nullValue()));
         } catch (AcmeException ex) {
             fail("Expected an AcmeServerException");
         }

@@ -15,8 +15,6 @@ package org.shredzone.acme4j.exception;
 
 import java.util.Objects;
 
-import org.shredzone.acme4j.util.AcmeUtils;
-
 /**
  * An exception that is thrown when the ACME server returned an error. It contains
  * further details of the cause.
@@ -45,17 +43,6 @@ public class AcmeServerException extends AcmeException {
      */
     public String getType() {
         return type;
-    }
-
-    /**
-     * Returns the ACME error type. This is the last part of the type URN, e.g.
-     * {@code "malformed"} on {@code "urn:ietf:params:acme:error:malformed"}.
-     *
-     * @return ACME error type, or {@code null} if this is not an
-     *         {@code "urn:ietf:params:acme:error"}
-     */
-    public String getAcmeErrorType() {
-        return AcmeUtils.stripErrorPrefix(type);
     }
 
 }
