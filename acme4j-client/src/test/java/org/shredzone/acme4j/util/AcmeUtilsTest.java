@@ -270,7 +270,7 @@ public class AcmeUtilsTest {
         ByteArrayOutputStream pemFile = new ByteArrayOutputStream();
         try (Writer w = new OutputStreamWriter(pemFile)) {
             for (X509Certificate cert : certChain) {
-                AcmeUtils.writeToPem(cert.getEncoded(), "CERTIFICATE", w);
+                AcmeUtils.writeToPem(cert.getEncoded(), AcmeUtils.PemLabel.CERTIFICATE, w);
             }
         }
 

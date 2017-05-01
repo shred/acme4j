@@ -379,7 +379,7 @@ public class ClientTest {
         // Create a validation certificate
         try (FileWriter fw = new FileWriter("tlssni.crt")) {
             X509Certificate cert = CertificateUtils.createTlsSni02Certificate(domainKeyPair, subject, sanB);
-            AcmeUtils.writeToPem(cert.getEncoded(), "CERTIFICATE", fw);
+            AcmeUtils.writeToPem(cert.getEncoded(), AcmeUtils.PemLabel.CERTIFICATE, fw);
         } catch (IOException | CertificateEncodingException ex) {
             throw new AcmeException("Could not write certificate", ex);
         }

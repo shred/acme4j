@@ -55,6 +55,27 @@ public final class AcmeUtils {
 
     private static final Base64.Encoder PEM_ENCODER = Base64.getMimeEncoder(64, "\n".getBytes());
 
+    /**
+     * Enumeration of PEM labels.
+     */
+    public enum PemLabel {
+        CERTIFICATE("CERTIFICATE"),
+        CERTIFICATE_REQUEST("CERTIFICATE REQUEST"),
+        PRIVATE_KEY("PRIVATE KEY"),
+        PUBLIC_KEY("PUBLIC KEY");
+
+        private final String label;
+
+        PemLabel(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+    }
+
 
     private AcmeUtils() {
         // Utility class without constructor
@@ -242,14 +263,14 @@ public final class AcmeUtils {
      * @param encoded
      *            Encoded data to write
      * @param label
-     *            PEM label, e.g. "CERTIFICATE"
+     *            {@link PemLabel} to be used
      * @param out
      *            {@link Writer} to write to. It will not be closed after use!
      */
-    public static void writeToPem(byte[] encoded, String label, Writer out) throws IOException {
-        out.append("-----BEGIN ").append(label).append("-----\n");
+    public static void writeToPem(byte[] encoded, PemLabel label, Writer out) throws IOException {
+        out.append("-----BEGIN ").append(label.toString()).append("-----\n");
         out.append(new String(PEM_ENCODER.encode(encoded)));
-        out.append("\n-----END ").append(label).append("-----\n");
+        out.append("\n-----END ").append(label.toString()).append("-----\n");
     }
 
 }

@@ -110,7 +110,7 @@ public class Certificate extends AcmeResource {
     public void writeCertificate(Writer out) throws IOException {
         try {
             for (X509Certificate cert : getCertificateChain()) {
-                AcmeUtils.writeToPem(cert.getEncoded(), "CERTIFICATE", out);
+                AcmeUtils.writeToPem(cert.getEncoded(), AcmeUtils.PemLabel.CERTIFICATE, out);
             }
         } catch (CertificateEncodingException ex) {
             throw new IOException("Encoding error", ex);

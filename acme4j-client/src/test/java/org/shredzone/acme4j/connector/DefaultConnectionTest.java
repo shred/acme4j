@@ -802,7 +802,7 @@ public class DefaultConnectionTest {
             for (X509Certificate cert : TestUtils.createCertificate()) {
                 byte[] badCert = cert.getEncoded();
                 Arrays.sort(badCert); // break it
-                AcmeUtils.writeToPem(badCert, "CERTIFICATE", w);
+                AcmeUtils.writeToPem(badCert, AcmeUtils.PemLabel.CERTIFICATE, w);
             }
             w.flush();
             brokenPem = baos.toByteArray();
