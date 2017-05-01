@@ -74,17 +74,9 @@ public class RegistrationTest {
 
             @Override
             public void sendRequest(URL url, Session session) {
-                if (url("https://example.com/acme/reg/1/authz").equals(url)) {
+                if (url("https://example.com/acme/acct/1/orders").equals(url)) {
                     jsonResponse = new JSONBuilder()
-                                .array("authorizations", "https://example.com/acme/auth/1")
-                                .toJSON();
-                    response = HttpURLConnection.HTTP_OK;
-                    return;
-                }
-
-                if (url("https://example.com/acme/reg/1/cert").equals(url)) {
-                    jsonResponse = new JSONBuilder()
-                                .array("certificates", "https://example.com/acme/cert/1")
+                                .array("orders", "https://example.com/acme/order/1")
                                 .toJSON();
                     response = HttpURLConnection.HTTP_OK;
                     return;
@@ -134,15 +126,10 @@ public class RegistrationTest {
         assertThat(registration.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
         assertThat(registration.getStatus(), is(Status.VALID));
 
-        Iterator<Authorization> authIt = registration.getAuthorizations();
-        assertThat(authIt, not(nullValue()));
-        assertThat(authIt.next().getLocation(), is(url("https://example.com/acme/auth/1")));
-        assertThat(authIt.hasNext(), is(false));
-
-        Iterator<Certificate> certIt = registration.getCertificates();
-        assertThat(certIt, not(nullValue()));
-        assertThat(certIt.next().getLocation(), is(url("https://example.com/acme/cert/1")));
-        assertThat(certIt.hasNext(), is(false));
+        Iterator<Order> orderIt = registration.getOrders();
+        assertThat(orderIt, not(nullValue()));
+        assertThat(orderIt.next().getLocation(), is(url("https://example.com/acme/order/1")));
+        assertThat(orderIt.hasNext(), is(false));
 
         provider.close();
     }

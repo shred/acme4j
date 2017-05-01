@@ -37,6 +37,7 @@ import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
+import org.shredzone.acme4j.provider.pebble.Pebble;
 import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
@@ -50,16 +51,14 @@ public class Registration extends AcmeResource {
     private static final Logger LOG = LoggerFactory.getLogger(Registration.class);
 
     private static final String KEY_TOS_AGREED = "terms-of-service-agreed";
-    private static final String KEY_AUTHORIZATIONS = "authorizations";
-    private static final String KEY_CERTIFICATES = "certificates";
+    private static final String KEY_ORDERS = "orders";
     private static final String KEY_CONTACT = "contact";
     private static final String KEY_STATUS = "status";
 
     private final List<URI> contacts = new ArrayList<>();
     private Status status;
     private Boolean termsOfServiceAgreed;
-    private URL authorizations;
-    private URL certificates;
+    private URL orders;
     private boolean loaded = false;
 
     protected Registration(Session session, URL location) {
@@ -109,37 +108,20 @@ public class Registration extends AcmeResource {
     }
 
     /**
-     * Returns an {@link Iterator} of all {@link Authorization} belonging to this
+     * Returns an {@link Iterator} of all {@link Order} belonging to this
      * {@link Registration}.
      * <p>
      * Using the iterator will initiate one or more requests to the ACME server.
      *
-     * @return {@link Iterator} instance that returns {@link Authorization} objects.
+     * @return {@link Iterator} instance that returns {@link Order} objects.
      *         {@link Iterator#hasNext()} and {@link Iterator#next()} may throw
      *         {@link AcmeProtocolException} if a batch of authorization URIs could not be
      *         fetched from the server.
      */
-    public Iterator<Authorization> getAuthorizations() throws AcmeException {
-        LOG.debug("getAuthorizations");
+    public Iterator<Order> getOrders() throws AcmeException {
+        LOG.debug("getOrders");
         load();
-        return new ResourceIterator<>(getSession(), KEY_AUTHORIZATIONS, authorizations, Authorization::bind);
-    }
-
-    /**
-     * Returns an {@link Iterator} of all {@link Certificate} belonging to this
-     * {@link Registration}.
-     * <p>
-     * Using the iterator will initiate one or more requests to the ACME server.
-     *
-     * @return {@link Iterator} instance that returns {@link Certificate} objects.
-     *         {@link Iterator#hasNext()} and {@link Iterator#next()} may throw
-     *         {@link AcmeProtocolException} if a batch of certificate URIs could not be
-     *         fetched from the server.
-     */
-    public Iterator<Certificate> getCertificates() throws AcmeException {
-        LOG.debug("getCertificates");
-        load();
-        return new ResourceIterator<>(getSession(), KEY_CERTIFICATES, certificates, Certificate::bind);
+        return new ResourceIterator<>(getSession(), KEY_ORDERS, orders, Order::bind);
     }
 
     /**
@@ -329,8 +311,10 @@ public class Registration extends AcmeResource {
                     .forEach(contacts::add);
         }
 
-        this.authorizations = json.get(KEY_AUTHORIZATIONS).asURL();
-        this.certificates = json.get(KEY_CERTIFICATES).asURL();
+        // TODO PEBBLE: returns an empty string as URL
+        if (!Pebble.workaround()) {
+            this.orders = json.get(KEY_ORDERS).asURL();
+        }
 
         if (json.contains(KEY_STATUS)) {
             this.status = Status.parse(json.get(KEY_STATUS).asString());
