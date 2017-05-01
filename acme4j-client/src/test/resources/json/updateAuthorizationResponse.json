@@ -18,5 +18,6 @@
       "uri": "https://example.com/authz/asdf/1",
       "token": "DGyRejmCefe7v4NfDGDKfA"
     }
-  ]
+  ],
+  "scope": "https://example.com/order/123"
 }

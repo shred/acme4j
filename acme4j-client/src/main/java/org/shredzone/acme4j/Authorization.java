@@ -43,6 +43,7 @@ public class Authorization extends AcmeResource {
     private String domain;
     private Status status;
     private Instant expires;
+    private Order scope;
     private List<Challenge> challenges;
     private boolean loaded = false;
 
@@ -87,6 +88,15 @@ public class Authorization extends AcmeResource {
     public Instant getExpires() {
         load();
         return expires;
+    }
+
+    /**
+     * Gets the scope of the {@link Authorization}. If not {@code null}, this
+     * {@link Authorization} is only valid for the returned {@link Order}.
+     */
+    public Order getScope() {
+        load();
+        return scope;
     }
 
     /**
@@ -191,6 +201,11 @@ public class Authorization extends AcmeResource {
                 throw new AcmeProtocolException("Unknown authorization type: " + type);
             }
             domain = jsonIdentifier.get("value").asString();
+        }
+
+        URL scopeUrl = json.get("scope").asURL();
+        if (scopeUrl != null) {
+            scope = Order.bind(getSession(), scopeUrl);
         }
 
         challenges = fetchChallenges(json);
