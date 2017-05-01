@@ -432,7 +432,7 @@ public class DefaultConnection implements Connection {
 
         if ("rateLimited".equals(error)) {
             Optional<Instant> retryAfter = getRetryAfterHeader();
-            Collection<URI> rateLimits = getLinks("rate-limit");
+            Collection<URI> rateLimits = getLinks("urn:ietf:params:acme:documentation");
             return new AcmeRateLimitExceededException(type, detail, retryAfter.orElse(null), rateLimits);
         }
 
