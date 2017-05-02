@@ -14,14 +14,18 @@
 package org.shredzone.acme4j;
 
 import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.toCollection;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.shredzone.acme4j.connector.Connection;
@@ -36,12 +40,16 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Represents a certificate and its certificate chain.
+ * <p>
+ * Note that a certificate is immutable once it is issued. For renewal, a new certificate
+ * must be ordered.
  */
 public class Certificate extends AcmeResource {
     private static final long serialVersionUID = 7381527770159084201L;
     private static final Logger LOG = LoggerFactory.getLogger(Certificate.class);
 
     private ArrayList<X509Certificate> certChain = null;
+    private ArrayList<URL> alternates = null;
 
     protected Certificate(Session session, URL certUrl) {
         super(session);
@@ -73,6 +81,14 @@ public class Certificate extends AcmeResource {
             try (Connection conn = getSession().provider().connect()) {
                 conn.sendRequest(getLocation(), getSession());
                 conn.accept(HttpURLConnection.HTTP_OK);
+
+                Collection<URI> alternateList = conn.getLinks("alternate");
+                if (alternateList != null) {
+                    alternates = alternateList.stream()
+                             .map(AcmeUtils::toURL)
+                             .collect(toCollection(ArrayList::new));
+                }
+
                 certChain = new ArrayList<>(conn.readCertificates());
             }
         }
@@ -98,6 +114,20 @@ public class Certificate extends AcmeResource {
     public List<X509Certificate> getCertificateChain() {
         lazyDownload();
         return unmodifiableList(certChain);
+    }
+
+    /**
+     * Returns URLs to alternate certificate chains.
+     *
+     * @return Alternate certificate chains, or empty if there are none.
+     */
+    public List<URL> getAlternates() {
+        lazyDownload();
+        if (alternates != null) {
+            return unmodifiableList(alternates);
+        } else {
+            return Collections.emptyList();
+        }
     }
 
     /**

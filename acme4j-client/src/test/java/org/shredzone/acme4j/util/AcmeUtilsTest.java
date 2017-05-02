@@ -24,6 +24,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.security.KeyPair;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
@@ -284,6 +287,18 @@ public class AcmeUtilsTest {
         }
 
         assertThat(pemFile.toByteArray(), is(originalFile.toByteArray()));
+    }
+
+    /**
+     * Test {@link AcmeUtils#toURL(URI)}.
+     */
+    @Test
+    public void testToURL() throws MalformedURLException {
+        URI testUri = URI.create("https://example.com/foo/123");
+        URL testUrl = testUri.toURL();
+
+        assertThat(AcmeUtils.toURL(testUri), is(testUrl));
+        assertThat(AcmeUtils.toURL(null), is(nullValue()));
     }
 
     /**

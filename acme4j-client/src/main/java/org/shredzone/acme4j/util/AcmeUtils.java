@@ -17,6 +17,9 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.IDN;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -271,6 +274,23 @@ public final class AcmeUtils {
         out.append("-----BEGIN ").append(label.toString()).append("-----\n");
         out.append(new String(PEM_ENCODER.encode(encoded)));
         out.append("\n-----END ").append(label.toString()).append("-----\n");
+    }
+
+    /**
+     * Converts {@link URI} to {@link URL}.
+     *
+     * @param uri
+     *            {@link URI} to convert
+     * @return {@link URL}
+     * @throws AcmeProtocolException
+     *             if the URI could not be converted to URL
+     */
+    public static URL toURL(URI uri) {
+        try {
+            return uri != null ? uri.toURL() : null;
+        } catch (MalformedURLException ex) {
+            throw new AcmeProtocolException("Invalid URL: " + uri, ex);
+        }
     }
 
 }

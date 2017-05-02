@@ -14,13 +14,12 @@
 package org.shredzone.acme4j.connector;
 
 import static java.util.stream.Collectors.toList;
-import static org.shredzone.acme4j.util.AcmeUtils.keyAlgorithm;
+import static org.shredzone.acme4j.util.AcmeUtils.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -493,23 +492,6 @@ public class DefaultConnection implements Connection {
             return conn.getURL().toURI().resolve(link);
         } catch (URISyntaxException ex) {
             throw new AcmeProtocolException("Cannot resolve relative link: " + link, ex);
-        }
-    }
-
-    /**
-     * Converts {@link URI} to {@link URL}.
-     *
-     * @param uri
-     *            {@link URI} to convert
-     * @return {@link URL}
-     * @throws AcmeProtocolException
-     *             if the URI could not be converted to URL
-     */
-    private static URL toURL(URI uri) {
-        try {
-            return uri != null ? uri.toURL() : null;
-        } catch (MalformedURLException ex) {
-            throw new AcmeProtocolException("Invalid URL: " + uri, ex);
         }
     }
 

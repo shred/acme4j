@@ -23,8 +23,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 import org.junit.Test;
@@ -66,6 +69,14 @@ public class CertificateTest {
             public List<X509Certificate> readCertificates() throws AcmeException {
                 return originalCert;
             }
+
+            @Override
+            public Collection<URI> getLinks(String relation) {
+                assertThat(relation, is("alternate"));
+                return Arrays.asList(
+                        URI.create("https://example.com/acme/alt-cert/1"),
+                        URI.create("https://example.com/acme/alt-cert/2"));
+            }
         };
 
         Certificate cert = new Certificate(provider.createSession(), locationUrl);
@@ -98,6 +109,11 @@ public class CertificateTest {
             originalPem = baos.toByteArray();
         }
         assertThat(writtenPem, is(originalPem));
+
+        assertThat(cert.getAlternates(), is(notNullValue()));
+        assertThat(cert.getAlternates().size(), is(2));
+        assertThat(cert.getAlternates().get(0), is(url("https://example.com/acme/alt-cert/1")));
+        assertThat(cert.getAlternates().get(1), is(url("https://example.com/acme/alt-cert/2")));
 
         provider.close();
     }
@@ -137,6 +153,12 @@ public class CertificateTest {
             public List<X509Certificate> readCertificates() throws AcmeException {
                 assertThat(certRequested, is(true));
                 return originalCert;
+            }
+
+            @Override
+            public Collection<URI> getLinks(String relation) {
+                assertThat(relation, is("alternate"));
+                return null;
             }
         };
 
@@ -183,6 +205,12 @@ public class CertificateTest {
             public List<X509Certificate> readCertificates() throws AcmeException {
                 assertThat(certRequested, is(true));
                 return originalCert;
+            }
+
+            @Override
+            public Collection<URI> getLinks(String relation) {
+                assertThat(relation, is("alternate"));
+                return null;
             }
         };
 
