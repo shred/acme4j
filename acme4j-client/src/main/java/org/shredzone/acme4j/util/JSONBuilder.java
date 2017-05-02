@@ -28,7 +28,6 @@ import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.lang.JoseException;
-import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
@@ -78,28 +77,6 @@ public class JSONBuilder {
 
         put(key, DateTimeFormatter.ISO_INSTANT.format(value));
         return this;
-    }
-
-    /**
-     * Puts a resource.
-     *
-     * @param resource
-     *            Resource name
-     * @return {@code this}
-     */
-    public JSONBuilder putResource(String resource) {
-        return put("resource", resource);
-    }
-
-    /**
-     * Puts a resource.
-     *
-     * @param resource
-     *            {@link Resource}
-     * @return {@code this}
-     */
-    public JSONBuilder putResource(Resource resource) {
-        return putResource(resource.path());
     }
 
     /**

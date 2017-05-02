@@ -141,7 +141,6 @@ public class Certificate extends AcmeResource {
 
         try (Connection conn = getSession().provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
-            claims.putResource(Resource.REVOKE_CERT);
             claims.putBase64("certificate", getCertificate().getEncoded());
             if (reason != null) {
                 claims.put("reason", reason.getReasonCode());

@@ -27,7 +27,6 @@ import java.util.Map;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
 import org.junit.Test;
-import org.shredzone.acme4j.connector.Resource;
 
 /**
  * Unit test for {@link JSONBuilder}.
@@ -88,23 +87,6 @@ public class JSONBuilderTest {
         cb.put("fooNull", (Instant) null);
 
         assertThat(cb.toString(), is("{\"fooDate\":\"2016-06-01T03:13:46Z\",\"fooNull\":null}"));
-    }
-
-    /**
-     * Test resources.
-     */
-    @Test
-    public void testResource() {
-        JSONBuilder res;
-
-        JSONBuilder cb = new JSONBuilder();
-        res = cb.putResource("new-reg");
-        assertThat(res, is(sameInstance(cb)));
-        assertThat(cb.toString(), is("{\"resource\":\"new-reg\"}"));
-
-        res = cb.putResource(Resource.NEW_AUTHZ);
-        assertThat(res, is(sameInstance(cb)));
-        assertThat(cb.toString(), is("{\"resource\":\"new-authz\"}"));
     }
 
     /**

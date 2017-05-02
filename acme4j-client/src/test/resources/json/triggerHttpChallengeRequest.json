@@ -1,5 +1,4 @@
 {
-  "resource": "challenge",
   "type": "http-01",
   "token": "IlirfxKKXAsHtmzK29Pj8A",
   "keyAuthorization": "IlirfxKKXAsHtmzK29Pj8A.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0"

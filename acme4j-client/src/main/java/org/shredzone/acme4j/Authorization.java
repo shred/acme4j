@@ -156,7 +156,6 @@ public class Authorization extends AcmeResource {
         LOG.debug("deactivate");
         try (Connection conn = getSession().provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
-            claims.putResource("authz");
             claims.put("status", "deactivated");
 
             conn.sendSignedRequest(getLocation(), claims, getSession());

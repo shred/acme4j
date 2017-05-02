@@ -131,7 +131,6 @@ public class Registration extends AcmeResource {
         LOG.debug("update");
         try (Connection conn = getSession().provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
-            claims.putResource("reg");
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
             conn.accept(HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED);
@@ -194,7 +193,6 @@ public class Registration extends AcmeResource {
         LOG.debug("authorizeDomain {}", domain);
         try (Connection conn = getSession().provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
-            claims.putResource(Resource.NEW_AUTHZ);
             claims.object("identifier")
                     .put("type", "dns")
                     .put("value", toAce(domain));
@@ -245,7 +243,6 @@ public class Registration extends AcmeResource {
             innerJws.sign();
 
             JSONBuilder outerClaim = new JSONBuilder();
-            outerClaim.putResource(Resource.KEY_CHANGE); // Let's Encrypt needs the resource here
             outerClaim.put("protected", innerJws.getHeaders().getEncodedHeader());
             outerClaim.put("signature", innerJws.getEncodedSignature());
             outerClaim.put("payload", innerJws.getEncodedPayload());
@@ -269,7 +266,6 @@ public class Registration extends AcmeResource {
         LOG.debug("deactivate");
         try (Connection conn = getSession().provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
-            claims.putResource("reg");
             claims.put(KEY_STATUS, "deactivated");
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
@@ -383,7 +379,6 @@ public class Registration extends AcmeResource {
             LOG.debug("modify/commit");
             try (Connection conn = getSession().provider().connect()) {
                 JSONBuilder claims = new JSONBuilder();
-                claims.putResource("reg");
                 if (!editContacts.isEmpty()) {
                     claims.put(KEY_CONTACT, editContacts);
                 }

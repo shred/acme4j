@@ -348,8 +348,6 @@ public class RegistrationTest {
                     assertThat(session.getKeyPair(), is(sameInstance(oldKeyPair)));
 
                     JSON json = payload.toJSON();
-                    assertThat(json.get("resource").asString(), is("key-change")); // Required by Let's Encrypt
-
                     String encodedHeader = json.get("protected").asString();
                     String encodedSignature = json.get("signature").asString();
                     String encodedPayload = json.get("payload").asString();
@@ -428,7 +426,6 @@ public class RegistrationTest {
             @Override
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 JSON json = claims.toJSON();
-                assertThat(json.get("resource").asString(), is("reg"));
                 assertThat(json.get("status").asString(), is("deactivated"));
                 assertThat(url, is(locationUrl));
                 assertThat(session, is(notNullValue()));

@@ -89,7 +89,6 @@ public class RegistrationBuilder {
 
         try (Connection conn = session.provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
-            claims.putResource(Resource.NEW_ACCOUNT);
             if (!contacts.isEmpty()) {
                 claims.put("contact", contacts);
             }

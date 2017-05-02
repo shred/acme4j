@@ -256,7 +256,6 @@ public class AuthorizationTest {
             @Override
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 JSON json = claims.toJSON();
-                assertThat(json.get("resource").asString(), is("authz"));
                 assertThat(json.get("status").asString(), is("deactivated"));
                 assertThat(url, is(locationUrl));
                 assertThat(session, is(notNullValue()));

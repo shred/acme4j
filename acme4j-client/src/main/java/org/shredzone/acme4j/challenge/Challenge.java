@@ -180,7 +180,6 @@ public class Challenge extends AcmeResource {
         LOG.debug("trigger");
         try (Connection conn = getSession().provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
-            claims.putResource("challenge");
             respond(claims);
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
