@@ -269,7 +269,9 @@ public class Registration extends AcmeResource {
             claims.put(KEY_STATUS, "deactivated");
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
-            conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
+            conn.accept(HttpURLConnection.HTTP_OK);
+
+            unmarshal(conn.readJsonResponse());
         }
     }
 

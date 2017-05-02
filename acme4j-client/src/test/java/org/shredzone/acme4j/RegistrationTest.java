@@ -433,14 +433,20 @@ public class RegistrationTest {
 
             @Override
             public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
-                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
-                return HttpURLConnection.HTTP_ACCEPTED;
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                return HttpURLConnection.HTTP_OK;
+            }
+
+            @Override
+            public JSON readJsonResponse() {
+                return getJSON("deactivateRegistrationResponse");
             }
         };
 
         Registration registration = new Registration(provider.createSession(), locationUrl);
         registration.deactivate();
+
+        assertThat(registration.getStatus(), is(Status.DEACTIVATED));
 
         provider.close();
     }
