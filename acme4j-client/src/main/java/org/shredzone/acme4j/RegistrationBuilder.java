@@ -13,12 +13,19 @@
  */
 package org.shredzone.acme4j;
 
+import static org.shredzone.acme4j.util.AcmeUtils.keyAlgorithm;
+
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
+import org.jose4j.jwk.PublicJsonWebKey;
+import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -34,6 +41,7 @@ public class RegistrationBuilder {
 
     private List<URI> contacts = new ArrayList<>();
     private Boolean termsOfServiceAgreed;
+    private String keyIdentifier;
 
     /**
      * Add a contact URI to the list of contacts.
@@ -74,6 +82,22 @@ public class RegistrationBuilder {
     }
 
     /**
+     * Sets a Key Identifier provided by the CA. Use this if your CA requires an
+     * individual account identification, e.g. your customer number.
+     *
+     * @param kid
+     *            Key Identifier
+     * @return itself
+     */
+    public RegistrationBuilder useKeyIdentifier(String kid) {
+        if (kid != null && kid.isEmpty()) {
+            throw new IllegalArgumentException("kid must not be empty");
+        }
+        this.keyIdentifier = kid;
+        return this;
+    }
+
+    /**
      * Creates a new account.
      *
      * @param session
@@ -88,6 +112,8 @@ public class RegistrationBuilder {
         }
 
         try (Connection conn = session.provider().connect()) {
+            URL resourceUrl = session.resourceUrl(Resource.NEW_ACCOUNT);
+
             JSONBuilder claims = new JSONBuilder();
             if (!contacts.isEmpty()) {
                 claims.put("contact", contacts);
@@ -95,15 +121,56 @@ public class RegistrationBuilder {
             if (termsOfServiceAgreed != null) {
                 claims.put("terms-of-service-agreed", termsOfServiceAgreed);
             }
+            if (keyIdentifier != null) {
+                claims.put("external-account-binding",
+                        createExternalAccountBinding(keyIdentifier, session.getKeyPair(), resourceUrl));
+            }
 
-            conn.sendJwkSignedRequest(session.resourceUrl(Resource.NEW_ACCOUNT), claims, session);
+            conn.sendJwkSignedRequest(resourceUrl, claims, session);
             conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
             URL location = conn.getLocation();
 
             Registration reg = new Registration(session, location);
+            if (keyIdentifier != null) {
+                session.setKeyIdentifier(keyIdentifier);
+            }
             reg.unmarshal(conn.readJsonResponse());
             return reg;
+        }
+    }
+
+    /**
+     * Creates a JSON structure for external account binding.
+     *
+     * @param kid
+     *            Key Identifier provided by the CA
+     * @param keyPair
+     *            {@link KeyPair} of the account to be created
+     * @param resource
+     *            "new-account" resource URL
+     * @return Created JSON structure
+     */
+    private Map<String, Object> createExternalAccountBinding(String kid, KeyPair keyPair, URL resource)
+                throws AcmeException {
+        try {
+            PublicJsonWebKey keyJwk = PublicJsonWebKey.Factory.newPublicJwk(keyPair.getPublic());
+
+            JsonWebSignature innerJws = new JsonWebSignature();
+            innerJws.setPayload(keyJwk.toJson());
+            innerJws.getHeaders().setObjectHeaderValue("url", resource);
+            innerJws.getHeaders().setObjectHeaderValue("kid", kid);
+            innerJws.setAlgorithmHeaderValue(keyAlgorithm(keyJwk));
+            innerJws.setKey(keyPair.getPrivate());
+            innerJws.sign();
+
+            JSONBuilder outerClaim = new JSONBuilder();
+            outerClaim.put("protected", innerJws.getHeaders().getEncodedHeader());
+            outerClaim.put("signature", innerJws.getEncodedSignature());
+            outerClaim.put("payload", innerJws.getEncodedPayload());
+            return outerClaim.toMap();
+        } catch (JoseException ex) {
+            throw new AcmeException("Could not create external account binding", ex);
         }
     }
 
