@@ -37,6 +37,7 @@ import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
+import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.provider.pebble.Pebble;
 import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
@@ -176,28 +177,40 @@ public class Registration extends AcmeResource {
     }
 
     /**
-     * Authorizes a domain. The domain is associated with this registration.
+     * Pre-authorizes a domain. The CA will check if it accepts the domain for
+     * certification, and returns the necessary challenges.
      * <p>
-     * IDN domain names will be ACE encoded automatically.
+     * Some servers may not allow pre-authorization.
      *
      * @param domain
-     *            Domain name to be authorized
+     *            Domain name to be pre-authorized. IDN names are accepted and will be ACE
+     *            encoded automatically.
      * @return {@link Authorization} object for this domain
+     * @throws AcmeException
+     *             if the server does not allow pre-authorization
+     * @throws AcmeServerException
+     *             if the server allows pre-authorization, but will refuse to issue a
+     *             certificate for this domain
      */
-    public Authorization authorizeDomain(String domain) throws AcmeException {
+    public Authorization preAuthorizeDomain(String domain) throws AcmeException {
         Objects.requireNonNull(domain, "domain");
         if (domain.isEmpty()) {
             throw new IllegalArgumentException("domain must not be empty");
         }
 
-        LOG.debug("authorizeDomain {}", domain);
+        URL newAuthzUrl = getSession().resourceUrl(Resource.NEW_AUTHZ);
+        if (newAuthzUrl == null) {
+            throw new AcmeException("Server does not allow pre-authorization");
+        }
+
+        LOG.debug("preAuthorizeDomain {}", domain);
         try (Connection conn = getSession().provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.object("identifier")
                     .put("type", "dns")
                     .put("value", toAce(domain));
 
-            conn.sendSignedRequest(getSession().resourceUrl(Resource.NEW_AUTHZ), claims, getSession());
+            conn.sendSignedRequest(newAuthzUrl, claims, getSession());
             conn.accept(HttpURLConnection.HTTP_CREATED);
 
             JSON json = conn.readJsonResponse();

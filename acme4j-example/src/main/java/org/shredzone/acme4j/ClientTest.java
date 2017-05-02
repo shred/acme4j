@@ -209,7 +209,7 @@ public class ClientTest {
      */
     private void authorize(Registration reg, String domain) throws AcmeException {
         // Authorize the domain.
-        Authorization auth = reg.authorizeDomain(domain);
+        Authorization auth = reg.preAuthorizeDomain(domain);
         LOG.info("Authorization for domain " + domain);
 
         // Find the desired challenge and prepare it.

@@ -41,6 +41,7 @@ import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.util.JSON;
@@ -251,10 +252,10 @@ public class RegistrationTest {
     }
 
     /**
-     * Test that a new {@link Authorization} can be created.
+     * Test that a domain can be pre-authorized.
      */
     @Test
-    public void testAuthorizeDomain() throws Exception {
+    public void testPreAuthorizeDomain() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
@@ -292,7 +293,7 @@ public class RegistrationTest {
         String domainName = "example.org";
 
         Registration registration = new Registration(session, locationUrl);
-        Authorization auth = registration.authorizeDomain(domainName);
+        Authorization auth = registration.preAuthorizeDomain(domainName);
 
         assertThat(auth.getDomain(), is(domainName));
         assertThat(auth.getStatus(), is(Status.PENDING));
@@ -306,26 +307,77 @@ public class RegistrationTest {
     }
 
     /**
+     * Test that a domain pre-authorization can fail.
+     */
+    @Test
+    public void testNoPreAuthorizeDomain() throws Exception {
+        URI problemType = URI.create("urn:ietf:params:acme:error:rejectedIdentifier");
+        String problemDetail = "example.org is blacklisted";
+
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+                assertThat(url, is(resourceUrl));
+                assertThat(claims.toString(), sameJSONAs(getJSON("newAuthorizationRequest").toString()));
+                assertThat(session, is(notNullValue()));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                Problem problem = TestUtils.createProblem(problemType, problemDetail, resourceUrl);
+                throw new AcmeServerException(problem);
+            }
+        };
+
+        Session session = provider.createSession();
+
+        provider.putTestResource(Resource.NEW_AUTHZ, resourceUrl);
+
+        Registration registration = new Registration(session, locationUrl);
+
+        try {
+            registration.preAuthorizeDomain("example.org");
+            fail("preauthorization was accepted");
+        } catch (AcmeServerException ex) {
+            assertThat(ex.getType(), is(problemType));
+            assertThat(ex.getMessage(), is(problemDetail));
+        }
+
+        provider.close();
+    }
+
+    /**
      * Test that a bad domain parameter is not accepted.
      */
     @Test
     public void testAuthorizeBadDomain() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider();
+        // just provide a resource record so the provider returns a directory
+        provider.putTestResource(Resource.NEW_NONCE, resourceUrl);
+
         Session session = provider.createSession();
         Registration registration = Registration.bind(session, locationUrl);
 
         try {
-            registration.authorizeDomain(null);
+            registration.preAuthorizeDomain(null);
             fail("null domain was accepted");
         } catch (NullPointerException ex) {
             // expected
         }
 
         try {
-            registration.authorizeDomain("");
+            registration.preAuthorizeDomain("");
             fail("empty domain string was accepted");
         } catch (IllegalArgumentException ex) {
             // expected
+        }
+
+        try {
+            registration.preAuthorizeDomain("example.com");
+            fail("preauthorization was accepted");
+        } catch (AcmeException ex) {
+            // expected
+            assertThat(ex.getMessage(), is("Server does not allow pre-authorization"));
         }
 
         provider.close();
