@@ -127,7 +127,7 @@ public class OrderIT extends PebbleITBase {
             Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
             assertThat(challenge, is(notNullValue()));
 
-            dnsServer.addTxtRecord(TEST_DOMAIN, challenge.getDigest());
+            dnsServer.addTxtRecord("_acme-challenge." + TEST_DOMAIN, challenge.getDigest());
             return challenge;
         });
     }

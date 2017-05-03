@@ -43,7 +43,7 @@ import org.xbill.DNS.Type;
 public class DnsServer {
     private static final Logger LOG = LoggerFactory.getLogger(DnsServer.class);
     private static final int UDP_SIZE = 512;
-    private static final long TTL = 86321L;
+    private static final long TTL = 300L;
 
     private final Map<String, String> txtRecords = synchronizedMap(new HashMap<>());
     private Thread thread = null;
