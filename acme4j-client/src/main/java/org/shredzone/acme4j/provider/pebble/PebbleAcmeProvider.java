@@ -19,11 +19,8 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.shredzone.acme4j.Session;
-import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AbstractAcmeProvider;
 import org.shredzone.acme4j.provider.AcmeProvider;
-import org.shredzone.acme4j.util.JSON;
 
 /**
  * An {@link AcmeProvider} for <em>Pebble</em>.
@@ -81,17 +78,6 @@ public class PebbleAcmeProvider extends AbstractAcmeProvider {
         } else {
             throw new IllegalArgumentException("Invalid Pebble host/port: " + path);
         }
-    }
-
-    // TODO PEBBLE: new-reg
-    // https://github.com/letsencrypt/pebble/pull/24
-    @Override
-    public JSON directory(Session session, URI serverUri) throws AcmeException {
-        JSON json = super.directory(session, serverUri);
-        if (Pebble.workaround()) {
-            json = JSON.parse(json.toString().replace("\"new-reg\"", "\"new-account\""));
-        }
-        return json;
     }
 
 }
