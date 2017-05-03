@@ -31,7 +31,7 @@ try (FileWriter fw = new FileWriter("example.csr")) {
 Now all you need to do is to pass in a binary representation of the CSR and request the certificate:
 
 ```java
-Certificate cert = registration.requestCertificate(csr);
+Certificate cert = account.requestCertificate(csr);
 ```
 
 `cert.getLocation()` returns an URL where the signed certificate can be downloaded from. Optionally (if delivered by the ACME server) `cert.getChainLocation()` returns the URL of the first part of the CA chain.
@@ -114,13 +114,13 @@ For renewal, just request a new certificate using the original CSR:
 PKCS10CertificationRequest csr = CertificateUtils.readCSR(
     new FileInputStream("example.csr"));
 
-Certificate cert = registration.requestCertificate(csr);
+Certificate cert = account.requestCertificate(csr);
 X509Certificate cert = cert.download();
 ```
 
 Instead of loading the original CSR, you can also generate a new one. So renewing a certificate is basically the same as requesting a new certificate.
 
-If `registration.requestCertificate(csr)` throws an `AcmeUnauthorizedException`, the authorizations of some or all involved domains have expired. In this case, you need to go through the [authorization](./authorization.html) process again, before requesting the renewed certificate.
+If `account.requestCertificate(csr)` throws an `AcmeUnauthorizedException`, the authorizations of some or all involved domains have expired. In this case, you need to go through the [authorization](./authorization.html) process again, before requesting the renewed certificate.
 
 ## Revocation
 

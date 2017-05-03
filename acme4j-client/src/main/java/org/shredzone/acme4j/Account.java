@@ -45,11 +45,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Represents a registration at the ACME server.
+ * Represents an account at the ACME server.
  */
-public class Registration extends AcmeResource {
-    private static final long serialVersionUID = -8177333806740391140L;
-    private static final Logger LOG = LoggerFactory.getLogger(Registration.class);
+public class Account extends AcmeResource {
+    private static final long serialVersionUID = 7042863483428051319L;
+    private static final Logger LOG = LoggerFactory.getLogger(Account.class);
 
     private static final String KEY_TOS_AGREED = "terms-of-service-agreed";
     private static final String KEY_ORDERS = "orders";
@@ -62,23 +62,23 @@ public class Registration extends AcmeResource {
     private URL orders;
     private boolean loaded = false;
 
-    protected Registration(Session session, URL location) {
+    protected Account(Session session, URL location) {
         super(session);
         setLocation(location);
         session.setKeyIdentifier(location.toString());
     }
 
     /**
-     * Creates a new instance of {@link Registration} and binds it to the {@link Session}.
+     * Creates a new instance of {@link Account} and binds it to the {@link Session}.
      *
      * @param session
      *            {@link Session} to be used
      * @param location
-     *            Location URI of the registration
-     * @return {@link Registration} bound to the session and location
+     *            Location URI of the account
+     * @return {@link Account} bound to the session and location
      */
-    public static Registration bind(Session session, URL location) {
-        return new Registration(session, location);
+    public static Account bind(Session session, URL location) {
+        return new Account(session, location);
     }
 
     /**
@@ -101,7 +101,7 @@ public class Registration extends AcmeResource {
     }
 
     /**
-     * Returns the current status of the registration.
+     * Returns the current status of the account.
      */
     public Status getStatus() {
         load();
@@ -109,8 +109,7 @@ public class Registration extends AcmeResource {
     }
 
     /**
-     * Returns an {@link Iterator} of all {@link Order} belonging to this
-     * {@link Registration}.
+     * Returns an {@link Iterator} of all {@link Order} belonging to this {@link Account}.
      * <p>
      * Using the iterator will initiate one or more requests to the ACME server.
      *
@@ -126,7 +125,7 @@ public class Registration extends AcmeResource {
     }
 
     /**
-     * Updates the registration to the current account status.
+     * Updates the account to the current account status.
      */
     public void update() throws AcmeException {
         LOG.debug("update");
@@ -141,7 +140,7 @@ public class Registration extends AcmeResource {
     }
 
     /**
-     * Orders a certificate. The certificate will be associated with this registration.
+     * Orders a certificate. The certificate will be associated with this account.
      *
      * @param csr
      *            CSR containing the parameters for the certificate being requested
@@ -222,7 +221,7 @@ public class Registration extends AcmeResource {
     }
 
     /**
-     * Changes the {@link KeyPair} associated with the registration.
+     * Changes the {@link KeyPair} associated with the account.
      * <p>
      * After a successful call, the new key pair is used in the bound {@link Session},
      * and the old key pair can be disposed of.
@@ -305,7 +304,7 @@ public class Registration extends AcmeResource {
     }
 
     /**
-     * Sets registration properties according to the given JSON data.
+     * Sets account properties according to the given JSON data.
      *
      * @param json
      *            JSON data
@@ -335,22 +334,22 @@ public class Registration extends AcmeResource {
     }
 
     /**
-     * Modifies the registration data of the account.
+     * Modifies the account data of the account.
      *
-     * @return {@link EditableRegistration} where the account can be modified
+     * @return {@link EditableAccount} where the account can be modified
      */
-    public EditableRegistration modify() {
-        return new EditableRegistration();
+    public EditableAccount modify() {
+        return new EditableAccount();
     }
 
     /**
-     * Editable {@link Registration}.
+     * Editable {@link Account}.
      */
-    public class EditableRegistration {
+    public class EditableAccount {
         private final List<URI> editContacts = new ArrayList<>();
 
-        private EditableRegistration() {
-            editContacts.addAll(Registration.this.contacts);
+        private EditableAccount() {
+            editContacts.addAll(Account.this.contacts);
         }
 
         /**
@@ -362,19 +361,19 @@ public class Registration extends AcmeResource {
         }
 
         /**
-         * Adds a new Contact to the registration.
+         * Adds a new Contact to the account.
          *
          * @param contact
          *            Contact URI
          * @return itself
          */
-        public EditableRegistration addContact(URI contact) {
+        public EditableAccount addContact(URI contact) {
             editContacts.add(contact);
             return this;
         }
 
         /**
-         * Adds a new Contact to the registration.
+         * Adds a new Contact to the account.
          * <p>
          * This is a convenience call for {@link #addContact(URI)}.
          *
@@ -382,7 +381,7 @@ public class Registration extends AcmeResource {
          *            Contact URI as string
          * @return itself
          */
-        public EditableRegistration addContact(String contact) {
+        public EditableAccount addContact(String contact) {
             addContact(URI.create(contact));
             return this;
         }

@@ -33,15 +33,15 @@ import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
- * Unit tests for {@link RegistrationBuilder}.
+ * Unit tests for {@link AccountBuilder}.
  */
-public class RegistrationBuilderTest {
+public class AccountBuilderTest {
 
     private URL resourceUrl = url("http://example.com/acme/resource");
-    private URL locationUrl = url("http://example.com/acme/registration");;
+    private URL locationUrl = url("http://example.com/acme/account");;
 
     /**
-     * Test if a new registration can be created.
+     * Test if a new account can be created.
      */
     @Test
     public void testRegistration() throws Exception {
@@ -60,7 +60,7 @@ public class RegistrationBuilderTest {
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
                 assertThat(session, is(notNullValue()));
                 assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("newRegistration").toString()));
+                assertThat(claims.toString(), sameJSONAs(getJSON("newAccount").toString()));
                 assertThat(enforceJwk, is(true));
                 isUpdate = false;
             }
@@ -83,25 +83,25 @@ public class RegistrationBuilderTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJSON("newRegistrationResponse");
+                return getJSON("newAccountResponse");
             }
         };
 
         provider.putTestResource(Resource.NEW_ACCOUNT, resourceUrl);
 
-        RegistrationBuilder builder = new RegistrationBuilder();
+        AccountBuilder builder = new AccountBuilder();
         builder.addContact("mailto:foo@example.com");
         builder.agreeToTermsOfService();
 
         Session session = provider.createSession();
-        Registration registration = builder.create(session);
+        Account account = builder.create(session);
 
-        assertThat(registration.getLocation(), is(locationUrl));
-        assertThat(registration.getTermsOfServiceAgreed(), is(true));
+        assertThat(account.getLocation(), is(locationUrl));
+        assertThat(account.getTermsOfServiceAgreed(), is(true));
         assertThat(session.getKeyIdentifier(), is(locationUrl.toString()));
 
         try {
-            RegistrationBuilder builder2 = new RegistrationBuilder();
+            AccountBuilder builder2 = new AccountBuilder();
             builder2.agreeToTermsOfService();
             builder2.create(session);
             fail("registered twice on same session");
@@ -113,7 +113,7 @@ public class RegistrationBuilderTest {
     }
 
     /**
-     * Test if a new registration with Key Identifier can be created.
+     * Test if a new account with Key Identifier can be created.
      */
     @Test
     public void testRegistrationWithKid() throws Exception {
@@ -179,13 +179,13 @@ public class RegistrationBuilderTest {
 
         provider.putTestResource(Resource.NEW_ACCOUNT, resourceUrl);
 
-        RegistrationBuilder builder = new RegistrationBuilder();
+        AccountBuilder builder = new AccountBuilder();
         builder.useKeyIdentifier(keyIdentifier);
 
         Session session = provider.createSession();
-        Registration registration = builder.create(session);
+        Account account = builder.create(session);
 
-        assertThat(registration.getLocation(), is(locationUrl));
+        assertThat(account.getLocation(), is(locationUrl));
         assertThat(session.getKeyIdentifier(), is(keyIdentifier));
 
         provider.close();

@@ -233,10 +233,10 @@ public class DefaultConnectionTest {
     public void testGetLink() throws Exception {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put("Content-Type", Arrays.asList("application/json"));
-        headers.put("Location", Arrays.asList("https://example.com/acme/reg/asdf"));
+        headers.put("Location", Arrays.asList("https://example.com/acme/acct/asdf"));
         headers.put("Link", Arrays.asList(
                         "<https://example.com/acme/new-authz>;rel=\"next\"",
-                        "</recover-reg>;rel=recover",
+                        "</recover-acct>;rel=recover",
                         "<https://example.com/acme/terms>; rel=\"terms-of-service\""
                     ));
 
@@ -246,7 +246,7 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             assertThat(conn.getLink("next"), is(new URL("https://example.com/acme/new-authz")));
-            assertThat(conn.getLink("recover"), is(new URL("https://example.org/recover-reg")));
+            assertThat(conn.getLink("recover"), is(new URL("https://example.org/recover-acct")));
             assertThat(conn.getLink("terms-of-service"), is(new URL("https://example.com/acme/terms")));
             assertThat(conn.getLink("secret-stuff"), is(nullValue()));
         }

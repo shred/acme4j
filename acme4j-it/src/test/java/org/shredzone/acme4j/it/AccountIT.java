@@ -22,17 +22,17 @@ import java.security.KeyPair;
 
 import org.junit.Ignore;
 import org.junit.Test;
-import org.shredzone.acme4j.Registration;
-import org.shredzone.acme4j.RegistrationBuilder;
+import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 
 /**
- * Registration related integration tests.
+ * Account related integration tests.
  */
-public class RegistrationIT extends PebbleITBase {
+public class AccountIT extends PebbleITBase {
 
     @Test
     public void testCreate() throws AcmeException {
@@ -40,29 +40,29 @@ public class RegistrationIT extends PebbleITBase {
         Session session = new Session(pebbleURI(), keyPair);
 
         // Register a new user
-        RegistrationBuilder rb = new RegistrationBuilder();
-        rb.addContact("mailto:acme@example.com");
-        rb.agreeToTermsOfService();
+        AccountBuilder ab = new AccountBuilder();
+        ab.addContact("mailto:acme@example.com");
+        ab.agreeToTermsOfService();
 
-        Registration reg = rb.create(session);
-        URL location = reg.getLocation();
+        Account acct = ab.create(session);
+        URL location = acct.getLocation();
         assertIsPebbleUrl(location);
         assertThat(session.getKeyIdentifier(), is(location.toString()));
 
         // Check registered data
-        assertThat(reg.getContacts(), contains(URI.create("mailto:acme@example.com")));
+        assertThat(acct.getContacts(), contains(URI.create("mailto:acme@example.com")));
         // TODO PEBBLE: Sends UNKNOWN instead of VALID
-        // assertThat(reg.getStatus(), is(Status.VALID));
-        assertThat(reg.getTermsOfServiceAgreed(), is(true));
+        // assertThat(acct.getStatus(), is(Status.VALID));
+        assertThat(acct.getTermsOfServiceAgreed(), is(true));
 
-        // Bind another Registration object
+        // Bind another Account object
         // TODO PEBBLE: Not supported yet
         // Session session2 = new Session(pebbleURI(), keyPair);
-        // Registration reg2 = Registration.bind(session2, location);
-        // assertThat(reg2.getLocation(), is(location));
-        // assertThat(reg2.getContacts(), contains(URI.create("mailto:acme@example.com")));
-        // assertThat(reg2.getStatus(), is(Status.VALID));
-        // assertThat(reg2.getTermsOfServiceAgreed(), is(true));
+        // Account acct2 = Account.bind(session2, location);
+        // assertThat(acct2.getLocation(), is(location));
+        // assertThat(acct2.getContacts(), contains(URI.create("mailto:acme@example.com")));
+        // assertThat(acct2.getStatus(), is(Status.VALID));
+        // assertThat(acct2.getTermsOfServiceAgreed(), is(true));
     }
 
     @Test
@@ -71,23 +71,23 @@ public class RegistrationIT extends PebbleITBase {
         KeyPair keyPair = createKeyPair();
         Session session = new Session(pebbleURI(), keyPair);
 
-        RegistrationBuilder rb = new RegistrationBuilder();
-        rb.addContact("mailto:acme@example.com");
-        rb.agreeToTermsOfService();
+        AccountBuilder ab = new AccountBuilder();
+        ab.addContact("mailto:acme@example.com");
+        ab.agreeToTermsOfService();
 
-        Registration reg = rb.create(session);
-        URL location = reg.getLocation();
+        Account acct = ab.create(session);
+        URL location = acct.getLocation();
         assertIsPebbleUrl(location);
 
-        reg.modify().addContact("mailto:acme2@example.com").commit();
+        acct.modify().addContact("mailto:acme2@example.com").commit();
 
-        assertThat(reg.getContacts(), contains(
+        assertThat(acct.getContacts(), contains(
                         URI.create("mailto:acme@example.com"),
                         URI.create("mailto:acme2@example.com")));
 
         // Still the same after updating
-        reg.update();
-        assertThat(reg.getContacts(), contains(
+        acct.update();
+        assertThat(acct.getContacts(), contains(
                         URI.create("mailto:acme@example.com"),
                         URI.create("mailto:acme2@example.com")));
     }
@@ -98,23 +98,23 @@ public class RegistrationIT extends PebbleITBase {
         KeyPair keyPair = createKeyPair();
         Session session = new Session(pebbleURI(), keyPair);
 
-        Registration reg = new RegistrationBuilder().agreeToTermsOfService().create(session);
-        URL location = reg.getLocation();
+        Account acct = new AccountBuilder().agreeToTermsOfService().create(session);
+        URL location = acct.getLocation();
 
         KeyPair newKeyPair = createKeyPair();
-        reg.changeKey(newKeyPair);
+        acct.changeKey(newKeyPair);
 
         try {
             Session sessionOldKey = new Session(pebbleURI(), keyPair);
-            Registration oldRegistration = Registration.bind(sessionOldKey, location);
-            oldRegistration.update();
+            Account oldAccount = Account.bind(sessionOldKey, location);
+            oldAccount.update();
         } catch (AcmeUnauthorizedException ex) {
             // Expected
         }
 
         Session sessionNewKey = new Session(pebbleURI(), newKeyPair);
-        Registration newRegistration = Registration.bind(sessionNewKey, location);
-        assertThat(newRegistration.getStatus(), is(Status.VALID));
+        Account newAccount = Account.bind(sessionNewKey, location);
+        assertThat(newAccount.getStatus(), is(Status.VALID));
     }
 
     @Test
@@ -123,15 +123,15 @@ public class RegistrationIT extends PebbleITBase {
         KeyPair keyPair = createKeyPair();
         Session session = new Session(pebbleURI(), keyPair);
 
-        Registration reg = new RegistrationBuilder().agreeToTermsOfService().create(session);
-        URL location = reg.getLocation();
+        Account acct = new AccountBuilder().agreeToTermsOfService().create(session);
+        URL location = acct.getLocation();
 
-        reg.deactivate();
+        acct.deactivate();
 
         Session session2 = new Session(pebbleURI(), keyPair);
-        Registration reg2 = Registration.bind(session2, location);
-        assertThat(reg2.getLocation(), is(location));
-        assertThat(reg2.getStatus(), is(Status.DEACTIVATED));
+        Account acct2 = Account.bind(session2, location);
+        assertThat(acct2.getLocation(), is(location));
+        assertThat(acct2.getStatus(), is(Status.DEACTIVATED));
     }
 
 }

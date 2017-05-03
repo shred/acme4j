@@ -30,8 +30,8 @@ import org.junit.Test;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Certificate;
 import org.shredzone.acme4j.Order;
-import org.shredzone.acme4j.Registration;
-import org.shredzone.acme4j.RegistrationBuilder;
+import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -145,7 +145,7 @@ public class OrderIT extends PebbleITBase {
         KeyPair keyPair = createKeyPair();
         Session session = new Session(pebbleURI(), keyPair);
 
-        Registration registration = new RegistrationBuilder()
+        Account account = new AccountBuilder()
                     .agreeToTermsOfService()
                     .create(session);
 
@@ -159,7 +159,7 @@ public class OrderIT extends PebbleITBase {
         Instant notBefore = Instant.now();
         Instant notAfter = notBefore.plus(Duration.ofDays(20L));
 
-        Order order = registration.orderCertificate(encodedCsr, notBefore, notAfter);
+        Order order = account.orderCertificate(encodedCsr, notBefore, notAfter);
         assertThat(order.getCsr(), is(encodedCsr));
         assertThat(order.getNotBefore(), is(notBefore));
         assertThat(order.getNotAfter(), is(notAfter));

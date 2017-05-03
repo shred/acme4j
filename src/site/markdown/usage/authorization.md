@@ -3,9 +3,9 @@
 Once you have your account set up, you need to associate your domains with it. This is done by creating an `Authorization` object:
 
 ```java
-Registration registration = ... // your Registration object
+Account account = ... // your Account object
 
-Authorization auth = registration.authorizeDomain("example.org");
+Authorization auth = account.authorizeDomain("example.org");
 ```
 
 The `Authorization` instance contains further details about how you can prove ownership of your domain. An ACME server offers combinations of different authorization methods, called `Challenge`s.

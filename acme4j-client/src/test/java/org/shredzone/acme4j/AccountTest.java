@@ -35,7 +35,7 @@ import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.CompactSerializer;
 import org.jose4j.lang.JoseException;
 import org.junit.Test;
-import org.shredzone.acme4j.Registration.EditableRegistration;
+import org.shredzone.acme4j.Account.EditableAccount;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
@@ -49,19 +49,19 @@ import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
 
 /**
- * Unit tests for {@link Registration}.
+ * Unit tests for {@link Account}.
  */
-public class RegistrationTest {
+public class AccountTest {
 
     private URL resourceUrl  = url("http://example.com/acme/resource");
-    private URL locationUrl  = url("http://example.com/acme/registration");
+    private URL locationUrl  = url("http://example.com/acme/account");
     private URI agreementUri = URI.create("http://example.com/agreement.pdf");
 
     /**
-     * Test that a registration can be updated.
+     * Test that a account can be updated.
      */
     @Test
-    public void testUpdateRegistration() throws AcmeException, IOException, URISyntaxException {
+    public void testUpdateAccount() throws AcmeException, IOException, URISyntaxException {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             private JSON jsonResponse;
             private Integer response;
@@ -69,9 +69,9 @@ public class RegistrationTest {
             @Override
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(locationUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("updateRegistration").toString()));
+                assertThat(claims.toString(), sameJSONAs(getJSON("updateAccount").toString()));
                 assertThat(session, is(notNullValue()));
-                jsonResponse = getJSON("updateRegistrationResponse");
+                jsonResponse = getJSON("updateAccountResponse");
                 response = HttpURLConnection.HTTP_OK;
             }
 
@@ -119,17 +119,17 @@ public class RegistrationTest {
         };
 
         Session session = provider.createSession();
-        Registration registration = new Registration(session, locationUrl);
-        registration.update();
+        Account account = new Account(session, locationUrl);
+        account.update();
 
         assertThat(session.getKeyIdentifier(), is(locationUrl.toString()));
-        assertThat(registration.getLocation(), is(locationUrl));
-        assertThat(registration.getTermsOfServiceAgreed(), is(true));
-        assertThat(registration.getContacts(), hasSize(1));
-        assertThat(registration.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
-        assertThat(registration.getStatus(), is(Status.VALID));
+        assertThat(account.getLocation(), is(locationUrl));
+        assertThat(account.getTermsOfServiceAgreed(), is(true));
+        assertThat(account.getContacts(), hasSize(1));
+        assertThat(account.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
+        assertThat(account.getStatus(), is(Status.VALID));
 
-        Iterator<Order> orderIt = registration.getOrders();
+        Iterator<Order> orderIt = account.getOrders();
         assertThat(orderIt, not(nullValue()));
         assertThat(orderIt.next().getLocation(), is(url("https://example.com/acme/order/1")));
         assertThat(orderIt.hasNext(), is(false));
@@ -159,7 +159,7 @@ public class RegistrationTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJSON("updateRegistrationResponse");
+                return getJSON("updateAccountResponse");
             }
 
             @Override
@@ -181,17 +181,17 @@ public class RegistrationTest {
             }
         };
 
-        Registration registration = new Registration(provider.createSession(), locationUrl);
+        Account account = new Account(provider.createSession(), locationUrl);
 
         // Lazy loading
         assertThat(requestWasSent.get(), is(false));
-        assertThat(registration.getTermsOfServiceAgreed(), is(true));
+        assertThat(account.getTermsOfServiceAgreed(), is(true));
         assertThat(requestWasSent.get(), is(true));
 
         // Subsequent queries do not trigger another load
         requestWasSent.set(false);
-        assertThat(registration.getTermsOfServiceAgreed(), is(true));
-        assertThat(registration.getStatus(), is(Status.VALID));
+        assertThat(account.getTermsOfServiceAgreed(), is(true));
+        assertThat(account.getStatus(), is(Status.VALID));
         assertThat(requestWasSent.get(), is(false));
 
         provider.close();
@@ -235,8 +235,8 @@ public class RegistrationTest {
 
         provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
 
-        Registration registration = new Registration(session, locationUrl);
-        Order order = registration.orderCertificate(csr, notBefore, notAfter);
+        Account account = new Account(session, locationUrl);
+        Order order = account.orderCertificate(csr, notBefore, notAfter);
 
         assertThat(order.getCsr(), is(csr));
         assertThat(order.getNotBefore(), is(parseTimestamp("2016-01-01T00:10:00Z")));
@@ -291,8 +291,8 @@ public class RegistrationTest {
 
         String domainName = "example.org";
 
-        Registration registration = new Registration(session, locationUrl);
-        Authorization auth = registration.preAuthorizeDomain(domainName);
+        Account account = new Account(session, locationUrl);
+        Authorization auth = account.preAuthorizeDomain(domainName);
 
         assertThat(auth.getDomain(), is(domainName));
         assertThat(auth.getStatus(), is(Status.PENDING));
@@ -332,10 +332,10 @@ public class RegistrationTest {
 
         provider.putTestResource(Resource.NEW_AUTHZ, resourceUrl);
 
-        Registration registration = new Registration(session, locationUrl);
+        Account account = new Account(session, locationUrl);
 
         try {
-            registration.preAuthorizeDomain("example.org");
+            account.preAuthorizeDomain("example.org");
             fail("preauthorization was accepted");
         } catch (AcmeServerException ex) {
             assertThat(ex.getType(), is(problemType));
@@ -355,24 +355,24 @@ public class RegistrationTest {
         provider.putTestResource(Resource.NEW_NONCE, resourceUrl);
 
         Session session = provider.createSession();
-        Registration registration = Registration.bind(session, locationUrl);
+        Account account = Account.bind(session, locationUrl);
 
         try {
-            registration.preAuthorizeDomain(null);
+            account.preAuthorizeDomain(null);
             fail("null domain was accepted");
         } catch (NullPointerException ex) {
             // expected
         }
 
         try {
-            registration.preAuthorizeDomain("");
+            account.preAuthorizeDomain("");
             fail("empty domain string was accepted");
         } catch (IllegalArgumentException ex) {
             // expected
         }
 
         try {
-            registration.preAuthorizeDomain("example.com");
+            account.preAuthorizeDomain("example.com");
             fail("preauthorization was accepted");
         } catch (AcmeException ex) {
             // expected
@@ -448,8 +448,8 @@ public class RegistrationTest {
 
         assertThat(session.getKeyPair(), is(sameInstance(oldKeyPair)));
 
-        Registration registration = new Registration(session, resourceUrl);
-        registration.changeKey(newKeyPair);
+        Account account = new Account(session, resourceUrl);
+        account.changeKey(newKeyPair);
 
         assertThat(session.getKeyPair(), is(sameInstance(newKeyPair)));
     }
@@ -462,14 +462,14 @@ public class RegistrationTest {
         TestableConnectionProvider provider = new TestableConnectionProvider();
         Session session = provider.createSession();
 
-        Registration registration = new Registration(session, locationUrl);
-        registration.changeKey(session.getKeyPair());
+        Account account = new Account(session, locationUrl);
+        account.changeKey(session.getKeyPair());
 
         provider.close();
     }
 
     /**
-     * Test that a registration can be deactivated.
+     * Test that an account can be deactivated.
      */
     @Test
     public void testDeactivate() throws Exception {
@@ -490,20 +490,20 @@ public class RegistrationTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJSON("deactivateRegistrationResponse");
+                return getJSON("deactivateAccountResponse");
             }
         };
 
-        Registration registration = new Registration(provider.createSession(), locationUrl);
-        registration.deactivate();
+        Account account = new Account(provider.createSession(), locationUrl);
+        account.deactivate();
 
-        assertThat(registration.getStatus(), is(Status.DEACTIVATED));
+        assertThat(account.getStatus(), is(Status.DEACTIVATED));
 
         provider.close();
     }
 
     /**
-     * Test that a registration can be modified.
+     * Test that an account can be modified.
      */
     @Test
     public void testModify() throws Exception {
@@ -511,7 +511,7 @@ public class RegistrationTest {
             @Override
             public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(locationUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("modifyRegistration").toString()));
+                assertThat(claims.toString(), sameJSONAs(getJSON("modifyAccount").toString()));
                 assertThat(session, is(notNullValue()));
             }
 
@@ -523,7 +523,7 @@ public class RegistrationTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJSON("modifyRegistrationResponse");
+                return getJSON("modifyAccountResponse");
             }
 
             @Override
@@ -532,19 +532,19 @@ public class RegistrationTest {
             }
         };
 
-        Registration registration = new Registration(provider.createSession(), locationUrl);
+        Account account = new Account(provider.createSession(), locationUrl);
 
-        EditableRegistration editable = registration.modify();
+        EditableAccount editable = account.modify();
         assertThat(editable, notNullValue());
 
         editable.addContact("mailto:foo2@example.com");
         editable.getContacts().add(URI.create("mailto:foo3@example.com"));
         editable.commit();
 
-        assertThat(registration.getLocation(), is(locationUrl));
-        assertThat(registration.getContacts().size(), is(2));
-        assertThat(registration.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
-        assertThat(registration.getContacts().get(1), is(URI.create("mailto:foo3@example.com")));
+        assertThat(account.getLocation(), is(locationUrl));
+        assertThat(account.getContacts().size(), is(2));
+        assertThat(account.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
+        assertThat(account.getContacts().get(1), is(URI.create("mailto:foo3@example.com")));
 
         provider.close();
     }

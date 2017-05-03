@@ -32,7 +32,7 @@
       <item name="Migration Guide" href="migration.html"/>
       <item name="How to Use" href="usage/index.html">
         <item name="Session" href="usage/session.html"/>
-        <item name="Registration" href="usage/register.html"/>
+        <item name="Account" href="usage/account.html"/>
         <item name="Authorization" href="usage/authorization.html"/>
         <item name="Certificate" href="usage/certificate.html"/>
       </item>

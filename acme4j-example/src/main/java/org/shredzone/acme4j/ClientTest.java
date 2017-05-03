@@ -84,13 +84,13 @@ public class ClientTest {
         // Use "acme://letsencrypt.org" for production server
         Session session = new Session("acme://letsencrypt.org/staging", userKeyPair);
 
-        // Get the Registration to the account.
+        // Get the Account.
         // If there is no account yet, create a new one.
-        Registration reg = findOrRegisterAccount(session);
+        Account acct = findOrRegisterAccount(session);
 
         // Separately authorize every requested domain.
         for (String domain : domains) {
-            authorize(reg, domain);
+            authorize(acct, domain);
         }
 
         // Load or create a key pair for the domains. This should not be the userKeyPair!
@@ -107,7 +107,7 @@ public class ClientTest {
         }
 
         // Now request a signed certificate.
-        Order order = reg.orderCertificate(csrb.getEncoded(), null, null);
+        Order order = acct.orderCertificate(csrb.getEncoded(), null, null);
         Certificate certificate = order.getCertificate();
 
         LOG.info("Success! The certificate for domains " + domains + " has been generated!");
@@ -169,30 +169,30 @@ public class ClientTest {
     }
 
     /**
-     * Finds your {@link Registration} at the ACME server. It will be found by your user's
-     * public key. If your key is not known to the server yet, a new registration will be
+     * Finds your {@link Account} at the ACME server. It will be found by your user's
+     * public key. If your key is not known to the server yet, a new account will be
      * created.
      * <p>
-     * This is a simple way of finding your {@link Registration}. A better way is to get
-     * the URI of your new registration with {@link Registration#getLocation()} and store
+     * This is a simple way of finding your {@link Account}. A better way is to get
+     * the URI of your new account with {@link Account#getLocation()} and store
      * it somewhere. If you need to get access to your account later, reconnect to it via
-     * {@link Registration#bind(Session, URI)} by using the stored location.
+     * {@link Account#bind(Session, URI)} by using the stored location.
      *
      * @param session
      *            {@link Session} to bind with
-     * @return {@link Registration} connected to your account
+     * @return {@link Account} connected to your account
      */
-    private Registration findOrRegisterAccount(Session session) throws AcmeException {
+    private Account findOrRegisterAccount(Session session) throws AcmeException {
         // Ask the user to accept the TOS, if server provides us with a link.
         URI tos = session.getMetadata().getTermsOfService();
         if (tos != null) {
             acceptAgreement(tos);
         }
 
-        Registration reg = new RegistrationBuilder().agreeToTermsOfService().create(session);
-        LOG.info("Registered a new user, URI: " + reg.getLocation());
+        Account acct = new AccountBuilder().agreeToTermsOfService().create(session);
+        LOG.info("Registered a new user, URI: " + acct.getLocation());
 
-        return reg;
+        return acct;
     }
 
     /**
@@ -202,14 +202,14 @@ public class ClientTest {
      * You need separate authorizations for subdomains (e.g. "www" subdomain). Wildcard
      * certificates are not currently supported.
      *
-     * @param reg
-     *            {@link Registration} of your account
+     * @param acct
+     *            {@link Account} of your account
      * @param domain
      *            Name of the domain to authorize
      */
-    private void authorize(Registration reg, String domain) throws AcmeException {
+    private void authorize(Account acct, String domain) throws AcmeException {
         // Authorize the domain.
-        Authorization auth = reg.preAuthorizeDomain(domain);
+        Authorization auth = acct.preAuthorizeDomain(domain);
         LOG.info("Authorization for domain " + domain);
 
         // Find the desired challenge and prepare it.

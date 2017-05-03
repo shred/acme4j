@@ -311,7 +311,7 @@ public class ChallengeTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJSON("updateRegistrationResponse");
+                return getJSON("updateAccountResponse");
             }
         };
 
@@ -327,7 +327,7 @@ public class ChallengeTest {
     @Test(expected = IllegalArgumentException.class)
     public void testBadUnmarshall() {
         Challenge challenge = new Challenge(session);
-        challenge.unmarshall(getJSON("updateRegistrationResponse"));
+        challenge.unmarshall(getJSON("updateAccountResponse"));
     }
 
 }

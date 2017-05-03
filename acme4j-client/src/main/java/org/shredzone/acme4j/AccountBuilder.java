@@ -34,10 +34,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A builder for a new account registration.
+ * A builder for registering a new account.
  */
-public class RegistrationBuilder {
-    private static final Logger LOG = LoggerFactory.getLogger(RegistrationBuilder.class);
+public class AccountBuilder {
+    private static final Logger LOG = LoggerFactory.getLogger(AccountBuilder.class);
 
     private List<URI> contacts = new ArrayList<>();
     private Boolean termsOfServiceAgreed;
@@ -50,7 +50,7 @@ public class RegistrationBuilder {
      *            Contact URI
      * @return itself
      */
-    public RegistrationBuilder addContact(URI contact) {
+    public AccountBuilder addContact(URI contact) {
         contacts.add(contact);
         return this;
     }
@@ -66,7 +66,7 @@ public class RegistrationBuilder {
      *             if there is a syntax error in the URI string
      * @return itself
      */
-    public RegistrationBuilder addContact(String contact) {
+    public AccountBuilder addContact(String contact) {
         addContact(URI.create(contact));
         return this;
     }
@@ -76,7 +76,7 @@ public class RegistrationBuilder {
      *
      * @return itself
      */
-    public RegistrationBuilder agreeToTermsOfService() {
+    public AccountBuilder agreeToTermsOfService() {
         this.termsOfServiceAgreed = true;
         return this;
     }
@@ -89,7 +89,7 @@ public class RegistrationBuilder {
      *            Key Identifier
      * @return itself
      */
-    public RegistrationBuilder useKeyIdentifier(String kid) {
+    public AccountBuilder useKeyIdentifier(String kid) {
         if (kid != null && kid.isEmpty()) {
             throw new IllegalArgumentException("kid must not be empty");
         }
@@ -102,13 +102,13 @@ public class RegistrationBuilder {
      *
      * @param session
      *            {@link Session} to be used for registration
-     * @return {@link Registration} referring to the new account
+     * @return {@link Account} referring to the new account
      */
-    public Registration create(Session session) throws AcmeException {
+    public Account create(Session session) throws AcmeException {
         LOG.debug("create");
 
         if (session.getKeyIdentifier() != null) {
-            throw new IllegalArgumentException("session already seems to have a Registration");
+            throw new IllegalArgumentException("session already seems to have an Account");
         }
 
         try (Connection conn = session.provider().connect()) {
@@ -131,12 +131,12 @@ public class RegistrationBuilder {
 
             URL location = conn.getLocation();
 
-            Registration reg = new Registration(session, location);
+            Account account = new Account(session, location);
             if (keyIdentifier != null) {
                 session.setKeyIdentifier(keyIdentifier);
             }
-            reg.unmarshal(conn.readJsonResponse());
-            return reg;
+            account.unmarshal(conn.readJsonResponse());
+            return account;
         }
     }
 
