@@ -152,11 +152,12 @@ public class DefaultConnection implements Connection {
             throw new IllegalStateException("session has no KeyIdentifier set");
         }
 
-        sendJwkSignedRequest(url, claims, session);
+        sendSignedRequest(url, claims, session, false);
     }
 
     @Override
-    public void sendJwkSignedRequest(URL url, JSONBuilder claims, Session session) throws AcmeException {
+    public void sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
+                throws AcmeException {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(claims, "claims");
         Objects.requireNonNull(session, "session");
@@ -182,7 +183,9 @@ public class DefaultConnection implements Connection {
             jws.setPayload(claims.toString());
             jws.getHeaders().setObjectHeaderValue("nonce", Base64Url.encode(session.getNonce()));
             jws.getHeaders().setObjectHeaderValue("url", url);
-            if (session.getKeyIdentifier() != null) {
+            if (enforceJwk || session.getKeyIdentifier() == null) {
+                jws.getHeaders().setJwkHeaderValue("jwk", jwk);
+            } else {
                 // TODO PEBBLE: cannot process "kid" yet, send "jwk" instead
                 // https://github.com/letsencrypt/pebble/issues/23
                 if (Pebble.workaround()) {
@@ -190,8 +193,6 @@ public class DefaultConnection implements Connection {
                 } else {
                     jws.getHeaders().setObjectHeaderValue("kid", session.getKeyIdentifier());
                 }
-            } else {
-                jws.getHeaders().setJwkHeaderValue("jwk", jwk);
             }
 
             jws.setAlgorithmHeaderValue(keyAlgorithm(jwk));

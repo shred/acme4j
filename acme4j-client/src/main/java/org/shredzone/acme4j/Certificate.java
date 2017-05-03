@@ -166,7 +166,7 @@ public class Certificate extends AcmeResource {
         LOG.debug("revoke");
         URL resUrl = getSession().resourceUrl(Resource.REVOKE_CERT);
         if (resUrl == null) {
-            throw new AcmeProtocolException("CA does not support certificate revocation");
+            throw new AcmeException("Server does not allow certificate revocation");
         }
 
         try (Connection conn = getSession().provider().connect()) {
@@ -176,7 +176,7 @@ public class Certificate extends AcmeResource {
                 claims.put("reason", reason.getReasonCode());
             }
 
-            conn.sendSignedRequest(resUrl, claims, getSession());
+            conn.sendSignedRequest(resUrl, claims, getSession(), true);
             conn.accept(HttpURLConnection.HTTP_OK);
         } catch (CertificateEncodingException ex) {
             throw new AcmeProtocolException("Invalid certificate", ex);

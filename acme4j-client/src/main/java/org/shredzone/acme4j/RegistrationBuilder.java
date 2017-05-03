@@ -126,7 +126,7 @@ public class RegistrationBuilder {
                         createExternalAccountBinding(keyIdentifier, session.getKeyPair(), resourceUrl));
             }
 
-            conn.sendJwkSignedRequest(resourceUrl, claims, session);
+            conn.sendSignedRequest(resourceUrl, claims, session, true);
             conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
             URL location = conn.getLocation();

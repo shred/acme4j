@@ -57,10 +57,11 @@ public class RegistrationBuilderTest {
             }
 
             @Override
-            public void sendJwkSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
                 assertThat(session, is(notNullValue()));
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("newRegistration").toString()));
+                assertThat(enforceJwk, is(true));
                 isUpdate = false;
             }
 
@@ -120,10 +121,11 @@ public class RegistrationBuilderTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendJwkSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
                 try {
                     assertThat(session, is(notNullValue()));
                     assertThat(url, is(resourceUrl));
+                    assertThat(enforceJwk, is(true));
 
                     JSON binding = claims.toJSON()
                                     .get("external-account-binding")

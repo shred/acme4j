@@ -46,7 +46,8 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public void sendJwkSignedRequest(URL url, JSONBuilder claims, Session session) {
+    public void sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
+                throws AcmeException {
         throw new UnsupportedOperationException();
     }
 

@@ -747,7 +747,7 @@ public class DefaultConnectionTest {
         }) {
             JSONBuilder cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");
-            conn.sendJwkSignedRequest(requestUrl, cb, session);
+            conn.sendSignedRequest(requestUrl, cb, session, true);
         }
 
         verify(mockUrlConnection).setRequestMethod("POST");
@@ -812,7 +812,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             JSONBuilder cb = new JSONBuilder();
-            conn.sendJwkSignedRequest(requestUrl, cb, DefaultConnectionTest.this.session);
+            conn.sendSignedRequest(requestUrl, cb, DefaultConnectionTest.this.session, true);
         }
     }
 

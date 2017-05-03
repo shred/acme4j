@@ -49,8 +49,8 @@ public interface Connection extends AutoCloseable {
     void sendRequest(URL url, Session session) throws AcmeException;
 
     /**
-     * Sends a signed POST request. Ensures that the session has a KeyIdentifier set that
-     * is used in the "kid" protected header.
+     * Sends a signed POST request. Ensures that the session has a KeyIdentifier set, and
+     * that the "kid" protected header field is used.
      *
      * @param url
      *            {@link URL} to send the request to.
@@ -63,7 +63,7 @@ public interface Connection extends AutoCloseable {
 
     /**
      * Sends a signed POST request. If the session's KeyIdentifier is set, a "kid"
-     * protected header is sent. If not, a "jwk" protected header is sent.
+     * protected header field is sent. If not, a "jwk" protected header field is sent.
      *
      * @param url
      *            {@link URL} to send the request to.
@@ -71,8 +71,13 @@ public interface Connection extends AutoCloseable {
      *            {@link JSONBuilder} containing claims. Must not be {@code null}.
      * @param session
      *            {@link Session} instance to be used for signing and tracking
+     * @param enforceJwk
+     *            {@code true} to enforce a "jwk" header field even if a KeyIdentifier is
+     *            set, {@code false} to choose between "kid" and "jwk" header field
+     *            automatically
      */
-    void sendJwkSignedRequest(URL url, JSONBuilder claims, Session session) throws AcmeException;
+    void sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
+                throws AcmeException;
 
     /**
      * Checks if the HTTP response status is in the given list of acceptable HTTP states,

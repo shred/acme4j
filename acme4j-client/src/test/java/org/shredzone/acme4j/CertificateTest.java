@@ -136,10 +136,12 @@ public class CertificateTest {
             }
 
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("revokeCertificateRequest").toString()));
                 assertThat(session, is(notNullValue()));
+                assertThat(session.getKeyIdentifier(), is(nullValue()));
+                assertThat(enforceJwk, is(true));
                 certRequested = false;
             }
 
@@ -188,10 +190,11 @@ public class CertificateTest {
             }
 
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("revokeCertificateWithReasonRequest").toString()));
                 assertThat(session, is(notNullValue()));
+                assertThat(enforceJwk, is(true));
                 certRequested = false;
             }
 
