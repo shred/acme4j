@@ -19,12 +19,14 @@ import java.time.Instant;
 import java.util.Objects;
 
 import org.shredzone.acme4j.AcmeResource;
+import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
+import org.shredzone.acme4j.provider.pebble.Pebble;
 import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
@@ -44,9 +46,10 @@ public class Challenge extends AcmeResource {
     private static final Logger LOG = LoggerFactory.getLogger(Challenge.class);
 
     protected static final String KEY_TYPE = "type";
+    protected static final String KEY_URL = "url";
     protected static final String KEY_STATUS = "status";
-    protected static final String KEY_URI = "uri";
     protected static final String KEY_VALIDATED = "validated";
+    protected static final String KEY_ERROR = "error";
 
     private JSON data = JSON.empty();
 
@@ -80,8 +83,8 @@ public class Challenge extends AcmeResource {
             conn.accept(HttpURLConnection.HTTP_OK);
 
             JSON json = conn.readJsonResponse();
-            if (!(json.contains("type"))) {
-                throw new IllegalArgumentException("Provided URI is not a challenge URI");
+            if (!(json.contains(KEY_TYPE))) {
+                throw new IllegalArgumentException("Provided URL is not a challenge URL");
             }
 
             return (T) session.createChallenge(json);
@@ -96,18 +99,24 @@ public class Challenge extends AcmeResource {
     }
 
     /**
-     * Returns the current status of the challenge.
-     */
-    public Status getStatus() {
-        return data.get(KEY_STATUS).asStatusOrElse(Status.PENDING);
-    }
-
-    /**
      * Returns the location {@link URL} of the challenge.
      */
     @Override
     public URL getLocation() {
-        return data.get(KEY_URI).asURL();
+        // TODO PEBBLE: uses "uri" instead of "url"
+        // https://github.com/letsencrypt/pebble/pull/25
+        if (Pebble.workaround()) {
+            return data.get("uri").asURL();
+        } else {
+            return data.get(KEY_URL).asURL();
+        }
+    }
+
+    /**
+     * Returns the current status of the challenge.
+     */
+    public Status getStatus() {
+        return data.get(KEY_STATUS).asStatusOrElse(Status.UNKNOWN);
     }
 
     /**
@@ -115,6 +124,13 @@ public class Challenge extends AcmeResource {
      */
     public Instant getValidated() {
         return data.get(KEY_VALIDATED).asInstant();
+    }
+
+    /**
+     * Returns the reason why the challenge failed, if returned by the server.
+     */
+    public Problem getError() {
+        return data.get(KEY_ERROR).asProblem(getLocation());
     }
 
     /**

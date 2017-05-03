@@ -21,7 +21,7 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
@@ -94,12 +94,12 @@ public class ChallengeTest {
      * Test that after unmarshalling, the challenge properties are set correctly.
      */
     @Test
-    public void testUnmarshall() throws URISyntaxException, MalformedURLException {
+    public void testUnmarshall() throws URISyntaxException {
         Challenge challenge = new Challenge(session);
 
         // Test default values
         assertThat(challenge.getType(), is(nullValue()));
-        assertThat(challenge.getStatus(), is(Status.PENDING));
+        assertThat(challenge.getStatus(), is(Status.UNKNOWN));
         assertThat(challenge.getLocation(), is(nullValue()));
         assertThat(challenge.getValidated(), is(nullValue()));
 
@@ -108,11 +108,15 @@ public class ChallengeTest {
 
         // Test unmarshalled values
         assertThat(challenge.getType(), is("generic-01"));
-        assertThat(challenge.getStatus(), is(Status.VALID));
+        assertThat(challenge.getStatus(), is(Status.INVALID));
         assertThat(challenge.getLocation(), is(url("http://example.com/challenge/123")));
         assertThat(challenge.getValidated(), is(parseTimestamp("2015-12-12T17:19:36.336785823Z")));
+        assertThat(challenge.getError(), is(notNullValue()));
+        assertThat(challenge.getError().getType(), is(URI.create("urn:ietf:params:acme:error:connection")));
+        assertThat(challenge.getError().getDetail(), is("connection refused"));
+        assertThat(challenge.getError().getInstance(), is(URI.create("http://example.com/documents/error.html")));
         assertThat(challenge.getJSON().get("type").asString(), is("generic-01"));
-        assertThat(challenge.getJSON().get("uri").asURL(), is(new URL("http://example.com/challenge/123")));
+        assertThat(challenge.getJSON().get("url").asURL(), is(url("http://example.com/challenge/123")));
         assertThat(challenge.getJSON().get("not-present").asString(), is(nullValue()));
         assertThat(challenge.getJSON().get("not-present-url").asURL(), is(nullValue()));
     }

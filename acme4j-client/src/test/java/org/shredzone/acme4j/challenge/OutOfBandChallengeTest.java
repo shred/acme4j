@@ -48,7 +48,7 @@ public class OutOfBandChallengeTest {
         challenge.unmarshall(getJSON("oobChallenge"));
 
         assertThat(challenge.getType(), is(OutOfBand01Challenge.TYPE));
-        assertThat(challenge.getStatus(), is(Status.PENDING));
+        assertThat(challenge.getStatus(), is(Status.UNKNOWN));
         assertThat(challenge.getValidationUrl(),
                 is(new URL("https://example.com/validate/evaGxfADs6pSRb2LAv9IZ")));
 
