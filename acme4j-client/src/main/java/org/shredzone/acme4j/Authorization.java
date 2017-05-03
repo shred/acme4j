@@ -160,6 +160,8 @@ public class Authorization extends AcmeResource {
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
             conn.accept(HttpURLConnection.HTTP_OK);
+
+            unmarshalAuthorization(conn.readJsonResponse());
         }
     }
 

@@ -263,9 +263,21 @@ public class AuthorizationTest {
                 assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
                 return HttpURLConnection.HTTP_OK;
             }
+
+            @Override
+            public JSON readJsonResponse() {
+                return getJSON("updateAuthorizationResponse");
+            }
         };
 
-        Authorization auth = new Authorization(provider.createSession(), locationUrl);
+        Session session = provider.createSession();
+
+        Http01Challenge httpChallenge = new Http01Challenge(session);
+        Dns01Challenge dnsChallenge = new Dns01Challenge(session);
+        provider.putTestChallenge("http-01", httpChallenge);
+        provider.putTestChallenge("dns-01", dnsChallenge);
+
+        Authorization auth = new Authorization(session, locationUrl);
         auth.deactivate();
 
         provider.close();
