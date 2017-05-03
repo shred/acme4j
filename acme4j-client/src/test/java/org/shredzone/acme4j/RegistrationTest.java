@@ -72,7 +72,7 @@ public class RegistrationTest {
                 assertThat(claims.toString(), sameJSONAs(getJSON("updateRegistration").toString()));
                 assertThat(session, is(notNullValue()));
                 jsonResponse = getJSON("updateRegistrationResponse");
-                response = HttpURLConnection.HTTP_ACCEPTED;
+                response = HttpURLConnection.HTTP_OK;
             }
 
             @Override
@@ -153,9 +153,8 @@ public class RegistrationTest {
 
             @Override
             public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
-                        HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED));
-                return HttpURLConnection.HTTP_ACCEPTED;
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
@@ -518,8 +517,8 @@ public class RegistrationTest {
 
             @Override
             public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_ACCEPTED));
-                return HttpURLConnection.HTTP_ACCEPTED;
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override

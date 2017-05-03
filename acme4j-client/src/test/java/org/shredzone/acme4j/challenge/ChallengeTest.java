@@ -66,9 +66,8 @@ public class ChallengeTest {
 
             @Override
             public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
-                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
-                return HttpURLConnection.HTTP_ACCEPTED;
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
@@ -156,9 +155,8 @@ public class ChallengeTest {
 
             @Override
             public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
-                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
-                return HttpURLConnection.HTTP_ACCEPTED;
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
@@ -193,8 +191,7 @@ public class ChallengeTest {
 
             @Override
             public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
-                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -237,9 +234,8 @@ public class ChallengeTest {
 
             @Override
             public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
-                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
-                return HttpURLConnection.HTTP_ACCEPTED;
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
@@ -305,9 +301,8 @@ public class ChallengeTest {
 
             @Override
             public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(
-                        HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED));
-                return HttpURLConnection.HTTP_ACCEPTED;
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override

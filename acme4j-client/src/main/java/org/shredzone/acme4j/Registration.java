@@ -134,7 +134,7 @@ public class Registration extends AcmeResource {
             JSONBuilder claims = new JSONBuilder();
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
-            conn.accept(HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED);
+            conn.accept(HttpURLConnection.HTTP_OK);
 
             unmarshal(conn.readJsonResponse());
          }
@@ -399,7 +399,7 @@ public class Registration extends AcmeResource {
                 }
 
                 conn.sendSignedRequest(getLocation(), claims, getSession());
-                conn.accept(HttpURLConnection.HTTP_ACCEPTED);
+                conn.accept(HttpURLConnection.HTTP_OK);
 
                 JSON json = conn.readJsonResponse();
                 unmarshal(json);

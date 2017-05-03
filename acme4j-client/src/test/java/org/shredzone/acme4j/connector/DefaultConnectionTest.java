@@ -316,7 +316,7 @@ public class DefaultConnectionTest {
         Instant retryDate = Instant.now().plus(Duration.ofHours(10));
         String retryMsg = "absolute date";
 
-        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_ACCEPTED);
+        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
         when(mockUrlConnection.getHeaderField("Retry-After")).thenReturn(retryDate.toString());
         when(mockUrlConnection.getHeaderFieldDate("Retry-After", 0L)).thenReturn(retryDate.toEpochMilli());
 
@@ -329,7 +329,6 @@ public class DefaultConnectionTest {
             assertThat(ex.getMessage(), is(retryMsg));
         }
 
-        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
     }
 
@@ -343,7 +342,7 @@ public class DefaultConnectionTest {
         String retryMsg = "relative time";
 
         when(mockUrlConnection.getResponseCode())
-                .thenReturn(HttpURLConnection.HTTP_ACCEPTED);
+                .thenReturn(HttpURLConnection.HTTP_OK);
         when(mockUrlConnection.getHeaderField("Retry-After"))
                 .thenReturn(String.valueOf(delta));
         when(mockUrlConnection.getHeaderFieldDate(
@@ -360,7 +359,6 @@ public class DefaultConnectionTest {
             assertThat(ex.getMessage(), is(retryMsg));
         }
 
-        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
     }
 
@@ -370,7 +368,7 @@ public class DefaultConnectionTest {
     @Test
     public void testHandleRetryAfterHeaderNull() throws AcmeException, IOException {
         when(mockUrlConnection.getResponseCode())
-                .thenReturn(HttpURLConnection.HTTP_ACCEPTED);
+                .thenReturn(HttpURLConnection.HTTP_OK);
         when(mockUrlConnection.getHeaderField("Retry-After"))
                 .thenReturn(null);
 
@@ -381,12 +379,11 @@ public class DefaultConnectionTest {
             fail("an AcmeRetryAfterException was thrown");
         }
 
-        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
     }
 
     /**
-     * Test if no HTTP_ACCEPTED status is correctly handled.
+     * Test if missing retry-after header is correctly handled.
      */
     @Test
     public void testHandleRetryAfterNotAccepted() throws AcmeException, IOException {
@@ -398,8 +395,6 @@ public class DefaultConnectionTest {
         } catch (AcmeRetryAfterException ex) {
             fail("an AcmeRetryAfterException was thrown");
         }
-
-        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
     }
 
     /**
@@ -411,7 +406,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            int rc = conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
+            int rc = conn.accept(HttpURLConnection.HTTP_OK);
             assertThat(rc, is(HttpURLConnection.HTTP_OK));
         }
 

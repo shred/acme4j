@@ -77,7 +77,7 @@ public class Challenge extends AcmeResource {
         LOG.debug("bind");
         try (Connection conn = session.provider().connect()) {
             conn.sendRequest(location, session);
-            conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
+            conn.accept(HttpURLConnection.HTTP_OK);
 
             JSON json = conn.readJsonResponse();
             if (!(json.contains("type"))) {
@@ -183,7 +183,7 @@ public class Challenge extends AcmeResource {
             respond(claims);
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
-            conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
+            conn.accept(HttpURLConnection.HTTP_OK);
 
             unmarshall(conn.readJsonResponse());
         }
@@ -203,7 +203,7 @@ public class Challenge extends AcmeResource {
         LOG.debug("update");
         try (Connection conn = getSession().provider().connect()) {
             conn.sendRequest(getLocation(), getSession());
-            conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
+            conn.accept(HttpURLConnection.HTTP_OK);
 
             unmarshall(conn.readJsonResponse());
 

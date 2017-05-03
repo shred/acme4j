@@ -297,15 +297,9 @@ public class DefaultConnection implements Connection {
     public void handleRetryAfter(String message) throws AcmeException {
         assertConnectionIsOpen();
 
-        try {
-            if (conn.getResponseCode() == HttpURLConnection.HTTP_ACCEPTED) {
-                Optional<Instant> retryAfter = getRetryAfterHeader();
-                if (retryAfter.isPresent()) {
-                    throw new AcmeRetryAfterException(message, retryAfter.get());
-                }
-            }
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
+        Optional<Instant> retryAfter = getRetryAfterHeader();
+        if (retryAfter.isPresent()) {
+            throw new AcmeRetryAfterException(message, retryAfter.get());
         }
     }
 

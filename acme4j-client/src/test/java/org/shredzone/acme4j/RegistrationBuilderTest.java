@@ -67,8 +67,8 @@ public class RegistrationBuilderTest {
             @Override
             public int accept(int... httpStatus) throws AcmeException {
                 if (isUpdate) {
-                    assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED));
-                    return HttpURLConnection.HTTP_ACCEPTED;
+                    assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                    return HttpURLConnection.HTTP_OK;
                 } else {
                     assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED));
                     return HttpURLConnection.HTTP_CREATED;

@@ -141,7 +141,7 @@ public class Authorization extends AcmeResource {
         LOG.debug("update");
         try (Connection conn = getSession().provider().connect()) {
             conn.sendRequest(getLocation(), getSession());
-            conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
+            conn.accept(HttpURLConnection.HTTP_OK);
 
             unmarshalAuthorization(conn.readJsonResponse());
 
@@ -159,7 +159,7 @@ public class Authorization extends AcmeResource {
             claims.put("status", "deactivated");
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
-            conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_ACCEPTED);
+            conn.accept(HttpURLConnection.HTTP_OK);
         }
     }
 
