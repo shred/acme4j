@@ -10,23 +10,25 @@ It is an independent open source implementation that is not affiliated with or e
 
 ## Features
 
-* Supports ACME protocol up to [draft 06](https://tools.ietf.org/html/draft-ietf-acme-acme-06)
+* Fully supports the ACME protocol up to [draft 06](https://tools.ietf.org/html/draft-ietf-acme-acme-06)
 * Easy to use Java API
 * Requires JRE 8 or higher
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
 * Small, only requires [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home) and [slf4j](http://www.slf4j.org/) as dependencies
-* Extensive unit tests
+* Extensive unit and integration tests
 
 ## Current Status
 
-In this branch, the latest draft of the ACME protocol is being implemented. It is not meant for production. There are no servers that fully support this draft at the moment.
+This branch implements the latest draft of the ACME protocol.
+
+It is not meant for production yet! There are no servers that fully cover this draft at the moment. For this reason, some of the functions are also untested.
 
 Use the [master branch](https://github.com/shred/acme4j/tree/master) for production purposes.
 
 Known issues:
 
 * Documentation is incomplete and partially outdated
-* The API is subject to change
+* The API is still subject to change
 * The example is not functional at the moment
 * Integration tests do not fully cover all functions
 
