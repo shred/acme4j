@@ -26,7 +26,6 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
-import org.shredzone.acme4j.provider.pebble.Pebble;
 import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
@@ -103,13 +102,7 @@ public class Challenge extends AcmeResource {
      */
     @Override
     public URL getLocation() {
-        // TODO PEBBLE: uses "uri" instead of "url"
-        // https://github.com/letsencrypt/pebble/pull/25
-        if (Pebble.workaround()) {
-            return data.get("uri").asURL();
-        } else {
-            return data.get(KEY_URL).asURL();
-        }
+        return data.get(KEY_URL).asURL();
     }
 
     /**
