@@ -52,7 +52,6 @@ import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.exception.AcmeUserActionRequiredException;
-import org.shredzone.acme4j.provider.pebble.Pebble;
 import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
@@ -186,13 +185,7 @@ public class DefaultConnection implements Connection {
             if (enforceJwk || session.getKeyIdentifier() == null) {
                 jws.getHeaders().setJwkHeaderValue("jwk", jwk);
             } else {
-                // TODO PEBBLE: cannot process "kid" yet, send "jwk" instead
-                // https://github.com/letsencrypt/pebble/issues/23
-                if (Pebble.workaround()) {
-                    jws.getHeaders().setJwkHeaderValue("jwk", jwk);
-                } else {
-                    jws.getHeaders().setObjectHeaderValue("kid", session.getKeyIdentifier());
-                }
+                jws.getHeaders().setObjectHeaderValue("kid", session.getKeyIdentifier());
             }
 
             jws.setAlgorithmHeaderValue(keyAlgorithm(jwk));
