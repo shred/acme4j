@@ -10,7 +10,7 @@ It is an independent open source implementation that is not affiliated with or e
 
 ## Features
 
-* Supports ACME protocol up to [draft 02](https://tools.ietf.org/html/draft-ietf-acme-acme-02), with a few parts of [draft 03](https://tools.ietf.org/html/draft-ietf-acme-acme-03) and [draft 04](https://tools.ietf.org/html/draft-ietf-acme-acme-04)
+* Supports the "ACME v1" protocol that is used by _Let's Encrypt_
 * Easy to use Java API
 * Requires JRE 8 or higher
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
@@ -24,9 +24,9 @@ It is an independent open source implementation that is not affiliated with or e
 
 ## Compatibility
 
-This version of _acme4j_ is tailor-made for _Let's Encrypt_ and other CAs that use the [Boulder](https://github.com/letsencrypt/boulder) server. Boulder [diverges from the ACME specifications](https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md), so _acme4j_ cannot yet be used against other servers that fully comply to the ACME specifications.
+This version of _acme4j_ is tailor-made for _Let's Encrypt_ and other CAs that use the [Boulder](https://github.com/letsencrypt/boulder) server and the "ACME v1" protocol.
 
-The latest [ACME specifications](https://github.com/ietf-wg-acme/acme) are being implemented in the ["draft" branch](https://github.com/shred/acme4j/tree/draft) of _acme4j_.
+Support for the latest [ACME v2](https://letsencrypt.org/2017/06/14/acme-v2-api.html) protocol is currently being implemented in the ["draft" branch](https://github.com/shred/acme4j/tree/draft) of _acme4j_. _Let's Encrypt_ will offer an ACME v2 API endpoint by January 2018.
 
 ## Contribute
 
