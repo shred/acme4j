@@ -21,6 +21,7 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
@@ -198,6 +199,40 @@ public class CertificateTest {
 
         Certificate cert = new Certificate(provider.createSession(), locationUri, null, originalCert);
         cert.revoke(RevocationReason.KEY_COMPROMISE);
+
+        provider.close();
+    }
+
+    /**
+     * Test that a certificate can be revoked by its domain key pair.
+     */
+    @Test
+    public void testRevokeCertificateByKeyPair() throws AcmeException, IOException {
+        final X509Certificate originalCert = TestUtils.createCertificate();
+        final KeyPair certKeyPair = TestUtils.createDomainKeyPair();
+
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
+                assertThat(uri, is(resourceUri));
+                assertThat(claims.toString(), sameJSONAs(getJson("revokeCertificateWithReasonRequest")));
+                assertThat(session, is(notNullValue()));
+                assertThat(session.getKeyPair(), is(certKeyPair));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                return HttpURLConnection.HTTP_OK;
+            }
+        };
+
+        provider.putTestResource(Resource.REVOKE_CERT, resourceUri);
+
+        Session session = provider.createSession();
+        session.setKeyPair(certKeyPair);
+
+        Certificate.revoke(session, originalCert, RevocationReason.KEY_COMPROMISE);
 
         provider.close();
     }

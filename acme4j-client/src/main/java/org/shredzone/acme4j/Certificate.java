@@ -183,4 +183,23 @@ public class Certificate extends AcmeResource {
         }
     }
 
+    /**
+     * Revoke a certificate. This call is meant to be used for revoking certificates if
+     * the account's key pair was lost.
+     *
+     * @param session
+     *            {@link Session} to be used. Here you can also generate a session by
+     *            using the key pair that was used for signing the CSR.
+     * @param cert
+     *            {@link X509Certificate} to be revoked
+     * @param reason
+     *            {@link RevocationReason} stating the reason of the revocation that is
+     *            used when generating OCSP responses and CRLs. {@code null} to give no
+     *            reason.
+     */
+    public static void revoke(Session session, X509Certificate cert,
+            RevocationReason reason) throws AcmeException {
+        new Certificate(session, URI.create(""), null, cert).revoke(reason);
+    }
+
 }
