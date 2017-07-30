@@ -14,7 +14,7 @@
 package org.shredzone.acme4j.it;
 
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 import java.net.URI;
 import java.net.URL;
@@ -27,6 +27,7 @@ import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 
 /**
@@ -63,6 +64,41 @@ public class AccountIT extends PebbleITBase {
         // assertThat(acct2.getContacts(), contains(URI.create("mailto:acme@example.com")));
         // assertThat(acct2.getStatus(), is(Status.VALID));
         // assertThat(acct2.getTermsOfServiceAgreed(), is(true));
+    }
+
+    @Test
+    public void testCreateOnlyExisting() throws AcmeException {
+        KeyPair keyPair = createKeyPair();
+
+        Session session1 = new Session(pebbleURI(), keyPair);
+        Account acct1 = new AccountBuilder()
+                        .agreeToTermsOfService()
+                        .create(session1);
+        URL location1 = acct1.getLocation();
+        assertIsPebbleUrl(location1);
+        assertThat(session1.getKeyIdentifier(), is(location1.toString()));
+
+        Session session2 = new Session(pebbleURI(), keyPair);
+        Account acct2 = new AccountBuilder()
+                        .onlyExisting()
+                        .create(session2);
+        URL location2 = acct2.getLocation();
+        assertIsPebbleUrl(location2);
+        assertThat(session2.getKeyIdentifier(), is(location2.toString()));
+
+        assertThat(location1, is(location2));
+    }
+
+    @Test
+    public void testNotExisting() throws AcmeException {
+        try {
+            KeyPair keyPair = createKeyPair();
+            Session session = new Session(pebbleURI(), keyPair);
+            new AccountBuilder().onlyExisting().create(session);
+            fail("Expected an error");
+        } catch (AcmeServerException ex) {
+            assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:accountDoesNotExist")));
+        }
     }
 
     @Test
