@@ -23,15 +23,12 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.shredzone.acme4j.Account;
+import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Certificate;
 import org.shredzone.acme4j.Order;
-import org.shredzone.acme4j.Account;
-import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -40,9 +37,6 @@ import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
-import org.shredzone.acme4j.it.server.DnsServer;
-import org.shredzone.acme4j.it.server.HttpServer;
-import org.shredzone.acme4j.it.server.TlsSniServer;
 import org.shredzone.acme4j.util.CSRBuilder;
 import org.shredzone.acme4j.util.CertificateUtils;
 
@@ -51,38 +45,12 @@ import org.shredzone.acme4j.util.CertificateUtils;
  */
 public class OrderIT extends PebbleITBase {
 
-    private static final int TLS_SNI_PORT = 5001;
-    private static final int HTTP_PORT = 5002;
-    private static final int DNS_PORT = 5003;
-
     private static final String TEST_DOMAIN = "example.com";
 
-    private static TlsSniServer tlsSniServer;
-    private static HttpServer httpServer;
-    private static DnsServer dnsServer;
+    private final String bammbammUrl = System.getProperty("bammbammUrl", "http://localhost:14001");
+    private final String bammbammHostname = System.getProperty("bammbammHostname", "bammbamm");
 
-    @BeforeClass
-    public static void setup() {
-        tlsSniServer = new TlsSniServer();
-        tlsSniServer.start(TLS_SNI_PORT);
-
-        httpServer = new HttpServer();
-        httpServer.start(HTTP_PORT);
-
-        dnsServer = new DnsServer();
-        dnsServer.start(DNS_PORT);
-
-        await().until(() -> tlsSniServer.isListening()
-                        && httpServer.isListening()
-                        && dnsServer.isListening());
-    }
-
-    @AfterClass
-    public static void shutdown() {
-        tlsSniServer.stop();
-        httpServer.stop();
-        dnsServer.stop();
-    }
+    private BammBammClient client = new BammBammClient(bammbammUrl);
 
     /**
      * Test if a certificate can be ordered via tns-sni-02 challenge.
@@ -98,7 +66,12 @@ public class OrderIT extends PebbleITBase {
             X509Certificate cert = CertificateUtils.createTlsSni02Certificate(
                             challengeKey, challenge.getSubject(), challenge.getSanB());
 
-            tlsSniServer.addCertificate(challenge.getSubject(), challengeKey.getPrivate(), cert);
+            client.dnsAddARecord(TEST_DOMAIN, bammbammHostname);
+            client.tlsSniAddCertificate(challenge.getSubject(), challengeKey.getPrivate(), cert);
+
+            cleanup(() -> client.dnsRemoveARecord(TEST_DOMAIN));
+            cleanup(() -> client.tlsSniRemoveCertificate(challenge.getSubject()));
+
             return challenge;
         });
     }
@@ -112,7 +85,12 @@ public class OrderIT extends PebbleITBase {
             Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
             assertThat(challenge, is(notNullValue()));
 
-            httpServer.addToken(challenge.getToken(), challenge.getAuthorization());
+            client.dnsAddARecord(TEST_DOMAIN, bammbammHostname);
+            client.httpAddToken(challenge.getToken(), challenge.getAuthorization());
+
+            cleanup(() -> client.dnsRemoveARecord(TEST_DOMAIN));
+            cleanup(() -> client.httpRemoveToken(challenge.getToken()));
+
             return challenge;
         });
     }
@@ -121,13 +99,19 @@ public class OrderIT extends PebbleITBase {
      * Test if a certificate can be ordered via dns-01 challenge.
      */
     @Test
-    @Ignore // TODO PEBBLE: cannot query our dnsServer yet...
     public void testDnsValidation() throws Exception {
         orderCertificate(TEST_DOMAIN, auth -> {
             Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
             assertThat(challenge, is(notNullValue()));
 
-            dnsServer.addTxtRecord("_acme-challenge." + TEST_DOMAIN, challenge.getDigest());
+            String challengeDomainName = "_acme-challenge." + TEST_DOMAIN;
+
+            client.dnsAddARecord(TEST_DOMAIN, bammbammHostname);
+            client.dnsAddTxtRecord(challengeDomainName, challenge.getDigest());
+
+            cleanup(() -> client.dnsRemoveARecord(TEST_DOMAIN));
+            cleanup(() -> client.dnsRemoveTxtRecord(challengeDomainName));
+
             return challenge;
         });
     }
@@ -173,7 +157,7 @@ public class OrderIT extends PebbleITBase {
             challenge.trigger();
 
             await()
-                .pollInterval(3, SECONDS)
+                .pollInterval(1, SECONDS)
                 .timeout(30, SECONDS)
                 .conditionEvaluationListener(cond -> updateAuth(auth))
                 .until(auth::getStatus, not(Status.PENDING));

@@ -39,8 +39,10 @@ Now just have a look at [this source code](https://github.com/shred/acme4j/blob/
 Running Integration Tests
 -------------------------
 
-_acme4j-client_ contains a number of integration tests. These tests are _not_ executed by maven by default, as they require a [Pebble ACME test server](https://github.com/letsencrypt/pebble).
+_acme4j_ provides a number of integration tests. These tests are _not_ executed by maven by default, as they require Docker on the build machine.
 
-To run them, install and run a Pebble server instance on your build machine. Then invoke maven with the `-DskipITs=false` option set, to enable the integration tests at `verify` phase.
+To run them, install Docker and make it available to your user. Then invoke `mvn -Pci verify` to run the integration tests. The tests build images of the current [Pebble ACME test server](https://github.com/letsencrypt/pebble), and an internal test server that provides a configurable HTTP and DNS server for Pebble.
 
-If you are running a Pebble server on a different host and/or port, invoke maven with the `pebbleHost` and `pebblePort` system properties set to the appropriate host and port, respectively. For example, to connect to `acme.example.com` port 12345, use `-DpebbleHost=acme.example.com -DpebblePort=12345`.
+If you change into the `acme-it` project directory, you can also build, start and stop the test servers with `mvn docker:build`, `mvn docker:start` and `mvn docker:stop`, respectively. While the test servers are running, you can execute the integration tests in your IDE.
+
+The Pebble server requires a few workarounds in _acme4j_ at the moment. To enable them, pass `-Dpebble=true` as VM parameter when running the integration tests.

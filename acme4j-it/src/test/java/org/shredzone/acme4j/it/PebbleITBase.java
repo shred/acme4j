@@ -19,7 +19,10 @@ import static org.junit.Assert.assertThat;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.junit.After;
 import org.shredzone.acme4j.util.KeyPairUtils;
 
 /**
@@ -31,9 +34,22 @@ import org.shredzone.acme4j.util.KeyPairUtils;
  * {@code pebbleHost} and {@code pebblePort} respectively.
  */
 public abstract class PebbleITBase {
-
     private final String pebbleHost = System.getProperty("pebbleHost", "localhost");
     private final int pebblePort = Integer.parseInt(System.getProperty("pebblePort", "14000"));
+
+    private final List<CleanupCallback> cleanup = new ArrayList<>();
+
+    @After
+    public void performCleanup() throws Exception {
+        for (CleanupCallback callback : cleanup) {
+            callback.cleanup();
+        }
+        cleanup.clear();
+    }
+
+    protected void cleanup(CleanupCallback callback) {
+        cleanup.add(callback);
+    }
 
     /**
      * @return The {@link URI} of the pebble server to test against.
@@ -64,6 +80,11 @@ public abstract class PebbleITBase {
         assertThat(url.getHost(), is(pebbleHost));
         assertThat(url.getPort(), is(pebblePort));
         assertThat(url.getPath(), not(isEmptyOrNullString()));
+    }
+
+    @FunctionalInterface
+    public static interface CleanupCallback {
+        void cleanup() throws Exception;
     }
 
 }

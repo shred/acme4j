@@ -74,7 +74,7 @@
             <plugin>
                 <groupId>io.fabric8</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-                <version>0.20.1</version>
+                <version>0.21.0</version>
 
                 <configuration>
                     <logStdout>true</logStdout>
@@ -87,7 +87,7 @@
                             <name>acme4j/pebble:${project.version}</name>
 
                             <build>
-                                <from>golang:1.7</from>
+                                <from>golang:latest</from>
                                 <optimise>true</optimise>
                                 <runCmds>
                                     <run>go get -u -v -d gopkg.in/square/go-jose.v2</run>
@@ -100,7 +100,10 @@
                                     <port>14000</port>
                                 </ports>
                                 <cmd>
-                                    <shell>pebble -config /etc/pebble/pebble-config.json</shell>
+                                    <shell>
+                                        echo "nameserver $(grep 'bammbamm' /etc/hosts|cut -f1)">/etc/resolv.conf; \
+                                        pebble -config /etc/pebble/pebble-config.json
+                                    </shell>
                                 </cmd>
                                 <assembly>
                                     <mode>dir</mode>
@@ -115,12 +118,58 @@
                             </build>
 
                             <run>
-                                <network>
-                                    <mode>host</mode>
-                                </network>
-                                <extraHosts>
-                                    <host>example.com:127.0.0.1</host>
-                                </extraHosts>
+                                <ports>
+                                    <port>14000:14000</port>
+                                </ports>
+                                <links>
+                                    <link>bammbamm</link>
+                                </links>
+                                <wait>
+                                    <log>Pebble running</log>
+                                </wait>
+                                <!-- DNS must point to bammbamm, but we need the IP here...
+                                     See the "echo" line in the build/cmd above.
+                                <dns>
+                                    <host>bammbamm</host>
+                                </dns>
+                                -->
+                                <!-- See https://github.com/letsencrypt/pebble/issues/36
+                                <env>
+                                    <PEBBLE_VA_NOSLEEP>1</PEBBLE_VA_NOSLEEP>
+                                </env>
+                                -->
+                            </run>
+                        </image>
+                        <image>
+                            <alias>bammbamm</alias>
+                            <name>acme4j/bammbamm:${project.version}</name>
+
+                            <build>
+                                <from>openjdk:8-jre</from>
+                                <ports>
+                                    <port>53/udp</port>
+                                    <port>5001</port>
+                                    <port>5002</port>
+                                    <port>14001</port>
+                                </ports>
+                                <cmd>
+                                    <shell>
+                                        java -cp "/maven/*" org.shredzone.acme4j.it.BammBamm
+                                    </shell>
+                                </cmd>
+                                <assembly>
+                                    <descriptorRef>artifact-with-dependencies</descriptorRef>
+                                </assembly>
+                            </build>
+
+                            <run>
+                                <hostname>bammbamm</hostname>
+                                <ports>
+                                    <port>14001:14001</port>
+                                </ports>
+                                <wait>
+                                    <log>Bammbamm running</log>
+                                </wait>
                             </run>
                         </image>
                     </images>
@@ -160,9 +209,19 @@
             <version>${nanohttpd.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.nanohttpd</groupId>
+            <artifactId>nanohttpd-nanolets</artifactId>
+            <version>${nanohttpd.version}</version>
+        </dependency>
+        <dependency>
             <groupId>dnsjava</groupId>
             <artifactId>dnsjava</artifactId>
             <version>${dnsjava.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>${httpclient.version}</version>
         </dependency>
 
         <dependency>
