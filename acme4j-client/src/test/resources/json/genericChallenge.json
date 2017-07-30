@@ -3,9 +3,16 @@
   "status": "invalid",
   "url": "http://example.com/challenge/123",
   "validated": "2015-12-12T17:19:36.336785823Z",
-  "error": {
-    "type": "urn:ietf:params:acme:error:connection",
-    "detail": "connection refused",
-    "instance": "/documents/error.html"
-  }
+  "errors": [
+    {
+      "type": "urn:ietf:params:acme:error:connection",
+      "detail": "connection refused",
+      "instance": "/documents/error.html"
+    },
+    {
+      "type": "urn:ietf:params:acme:error:incorrectResponse",
+      "detail": "bad token",
+      "instance": "/documents/faq.html"
+    }
+  ]
 }

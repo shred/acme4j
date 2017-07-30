@@ -13,9 +13,13 @@
  */
 package org.shredzone.acme4j.challenge;
 
+import static java.util.stream.Collectors.toList;
+
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import org.shredzone.acme4j.AcmeResource;
@@ -27,6 +31,7 @@ import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.JSON;
+import org.shredzone.acme4j.util.JSON.Array;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +53,7 @@ public class Challenge extends AcmeResource {
     protected static final String KEY_URL = "url";
     protected static final String KEY_STATUS = "status";
     protected static final String KEY_VALIDATED = "validated";
-    protected static final String KEY_ERROR = "error";
+    protected static final String KEY_ERRORS = "errors";
 
     private JSON data = JSON.empty();
 
@@ -120,10 +125,27 @@ public class Challenge extends AcmeResource {
     }
 
     /**
-     * Returns the reason why the challenge failed, if returned by the server.
+     * Returns a list of reasons why the challenge has failed in the past, if returned by
+     * the server. New errors are always appended to the end of the list.
      */
-    public Problem getError() {
-        return data.get(KEY_ERROR).asProblem(getLocation());
+    public List<Problem> getErrors() {
+        URL location = getLocation();
+        return Collections.unmodifiableList(data.get(KEY_ERRORS).asArray().stream()
+                        .map(it -> it.asProblem(location))
+                        .collect(toList()));
+    }
+
+    /**
+     * Returns the last reason why the challenge has failed, if returned by the server.
+     * {@code null} if there are no errors.
+     */
+    public Problem getLastError() {
+        Array errors = data.get(KEY_ERRORS).asArray();
+        if (!errors.isEmpty()) {
+            return errors.get(errors.size() - 1).asProblem(getLocation());
+        } else {
+            return null;
+        }
     }
 
     /**

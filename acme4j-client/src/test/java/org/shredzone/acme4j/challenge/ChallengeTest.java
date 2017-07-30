@@ -26,10 +26,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 
 import org.jose4j.lang.JoseException;
 import org.junit.Before;
 import org.junit.Test;
+import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -111,14 +113,26 @@ public class ChallengeTest {
         assertThat(challenge.getStatus(), is(Status.INVALID));
         assertThat(challenge.getLocation(), is(url("http://example.com/challenge/123")));
         assertThat(challenge.getValidated(), is(parseTimestamp("2015-12-12T17:19:36.336785823Z")));
-        assertThat(challenge.getError(), is(notNullValue()));
-        assertThat(challenge.getError().getType(), is(URI.create("urn:ietf:params:acme:error:connection")));
-        assertThat(challenge.getError().getDetail(), is("connection refused"));
-        assertThat(challenge.getError().getInstance(), is(URI.create("http://example.com/documents/error.html")));
         assertThat(challenge.getJSON().get("type").asString(), is("generic-01"));
         assertThat(challenge.getJSON().get("url").asURL(), is(url("http://example.com/challenge/123")));
         assertThat(challenge.getJSON().get("not-present").asString(), is(nullValue()));
         assertThat(challenge.getJSON().get("not-present-url").asURL(), is(nullValue()));
+
+        List<Problem> errors = challenge.getErrors();
+        assertThat(errors, is(notNullValue()));
+        assertThat(errors, hasSize(2));
+        assertThat(errors.get(0).getType(), is(URI.create("urn:ietf:params:acme:error:connection")));
+        assertThat(errors.get(0).getDetail(), is("connection refused"));
+        assertThat(errors.get(0).getInstance(), is(URI.create("http://example.com/documents/error.html")));
+        assertThat(errors.get(1).getType(), is(URI.create("urn:ietf:params:acme:error:incorrectResponse")));
+        assertThat(errors.get(1).getDetail(), is("bad token"));
+        assertThat(errors.get(1).getInstance(), is(URI.create("http://example.com/documents/faq.html")));
+
+        Problem lastError = challenge.getLastError();
+        assertThat(lastError, is(notNullValue()));
+        assertThat(lastError.getType(), is(URI.create("urn:ietf:params:acme:error:incorrectResponse")));
+        assertThat(lastError.getDetail(), is("bad token"));
+        assertThat(lastError.getInstance(), is(URI.create("http://example.com/documents/faq.html")));
     }
 
     /**
