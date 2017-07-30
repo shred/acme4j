@@ -18,11 +18,14 @@ import static java.util.Collections.synchronizedMap;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.Inet4Address;
+import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xbill.DNS.ARecord;
 import org.xbill.DNS.DClass;
 import org.xbill.DNS.Flags;
 import org.xbill.DNS.Header;
@@ -35,10 +38,11 @@ import org.xbill.DNS.TXTRecord;
 import org.xbill.DNS.Type;
 
 /**
- * A very simple and very stupid DNS server. It just responds to TXT queries of the
+ * A very simple and very stupid DNS server. It just responds to TXT and A queries of the
  * given domains, and refuses to answer anything else.
  * <p>
- * This server can be used to validate {@code dns-01} challenges.
+ * This server can be used to validate {@code dns-01} challenges, and to direct other
+ * challenges to the mock servers.
  */
 public class DnsServer {
     private static final Logger LOG = LoggerFactory.getLogger(DnsServer.class);
@@ -46,6 +50,7 @@ public class DnsServer {
     private static final long TTL = 300L;
 
     private final Map<String, String> txtRecords = synchronizedMap(new HashMap<>());
+    private final Map<String, InetAddress> aRecords = synchronizedMap(new HashMap<>());
     private Thread thread = null;
     private volatile boolean running = false;
     private volatile boolean listening = false;
@@ -71,6 +76,32 @@ public class DnsServer {
      */
     public void removeTxtRecord(String domain) {
         txtRecords.remove(domain);
+    }
+
+    /**
+     * Adds an A record to the DNS server. If the domain already has an A record attached,
+     * it will be replaced.
+     *
+     * @param domain
+     *            Domain to attach the A record to
+     * @param ip
+     *            Target IP address
+     */
+    public void addARecord(String domain, InetAddress ip) {
+        if (!(ip instanceof Inet4Address)) {
+            throw new IllegalArgumentException("must be an IPv4 address");
+        }
+        aRecords.put(domain.replaceAll("\\.$", ""), ip);
+    }
+
+    /**
+     * Removes an A record from the domain.
+     *
+     * @param domain
+     *            Domain to remove the A record from
+     */
+    public void removeARecord(String domain) {
+        aRecords.remove(domain);
     }
 
     /**
@@ -152,11 +183,23 @@ public class DnsServer {
             response.addRecord(question, Section.QUESTION);
 
             Name name = question.getName();
+            boolean hasRecords = false;
+
             String txt = txtRecords.get(name.toString(true));
             if (question.getType() == Type.TXT && txt != null) {
                 response.addRecord(new TXTRecord(name, DClass.IN, TTL, txt), Section.ANSWER);
+                hasRecords = true;
                 LOG.info("dns-01: {} {} IN TXT \"{}\"", name, TTL, txt);
-            } else {
+            }
+
+            InetAddress a = aRecords.get(name.toString(true));
+            if (question.getType() == Type.A && a != null) {
+                response.addRecord(new ARecord(name, DClass.IN, TTL, a), Section.ANSWER);
+                hasRecords = true;
+                LOG.info("dns-01: {} {} IN A {}", name, TTL, a.getHostAddress());
+            }
+
+            if (!hasRecords) {
                 response.getHeader().setRcode(Rcode.NXDOMAIN);
                 LOG.warn("dns-01: Cannot answer: {}", question);
             }
