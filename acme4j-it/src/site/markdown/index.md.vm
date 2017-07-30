@@ -39,6 +39,12 @@ To stop the server:
 mvn docker:stop
 ```
 
+To remove the docker image (recommended if you want to rebuild Pebble after an update):
+
+```
+mvn docker:remove
+```
+
 GitLab CI
 ---------
 

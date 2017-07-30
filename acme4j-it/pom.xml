@@ -79,6 +79,7 @@
                 <configuration>
                     <logStdout>true</logStdout>
                     <verbose>true</verbose>
+                    <removeAll>true</removeAll>
 
                     <images>
                         <image>
