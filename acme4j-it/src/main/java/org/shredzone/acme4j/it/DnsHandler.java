@@ -23,13 +23,20 @@ import fi.iki.elonen.NanoHTTPD.IHTTPSession;
 /**
  * Request handler for all {@code dns-01} related requests.
  */
-public class DnsHandler {
+public final class DnsHandler {
 
     public static final String ADD_A_RECORD = "/dns/add/a/:domain";
     public static final String REMOVE_A_RECORD = "/dns/remove/a/:domain";
     public static final String ADD_TXT_RECORD = "/dns/add/txt/:domain";
     public static final String REMOVE_TXT_RECORD = "/dns/remove/txt/:domain";
 
+    private DnsHandler() {
+        // this class cannot be instanciated.
+    }
+
+    /**
+     * Adds an A Record.
+     */
     public static class AddARecord extends AbstractResponder {
         @Override
         public void handle(Map<String, String> urlParams, IHTTPSession session) throws Exception {
@@ -41,6 +48,9 @@ public class DnsHandler {
         }
     }
 
+    /**
+     * Removes an A Record.
+     */
     public static class RemoveARecord extends AbstractResponder {
         @Override
         public void handle(Map<String, String> urlParams, IHTTPSession session) throws Exception {
@@ -51,6 +61,9 @@ public class DnsHandler {
         }
     }
 
+    /**
+     * Adds a TXT Record.
+     */
     public static class AddTxtRecord extends AbstractResponder {
         @Override
         public void handle(Map<String, String> urlParams, IHTTPSession session) throws Exception {
@@ -62,6 +75,9 @@ public class DnsHandler {
         }
     }
 
+    /**
+     * Removes a TXT Record.
+     */
     public static class RemoveTxtRecord extends AbstractResponder {
         @Override
         public void handle(Map<String, String> urlParams, IHTTPSession session) throws Exception {

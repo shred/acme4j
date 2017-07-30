@@ -30,11 +30,18 @@ import fi.iki.elonen.NanoHTTPD.IHTTPSession;
 /**
  * Request handler for all {@code tls-sni-02} related requests.
  */
-public class TlsSniHandler {
+public final class TlsSniHandler {
 
     public static final String ADD = "/tlssni/add/:alias";
     public static final String REMOVE = "/tlssni/remove/:alias";
 
+    private TlsSniHandler() {
+        // this class cannot be instanciated.
+    }
+
+    /**
+     * Adds an TLS-SNI certificate.
+     */
     public static class Add extends AbstractResponder {
         @Override
         public void handle(Map<String, String> urlParams, IHTTPSession session) throws Exception {
@@ -57,6 +64,9 @@ public class TlsSniHandler {
         }
     }
 
+    /**
+     * Removes an TLS-SNI certificate.
+     */
     public static class Remove extends AbstractResponder {
         @Override
         public void handle(Map<String, String> urlParams, IHTTPSession session) throws Exception {

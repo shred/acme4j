@@ -47,13 +47,6 @@ public class BammBamm {
     private final HttpServer httpServer;
     private final TlsSniServer tlsSniServer;
 
-    /**
-     * Retrieves the singleton instance of {@link BammBamm}.
-     */
-    public static BammBamm instance() {
-        return INSTANCE;
-    }
-
     private BammBamm() {
         ResourceBundle bundle = ResourceBundle.getBundle("bammbamm");
         appPort = Integer.parseInt(bundle.getString("app.port"));
@@ -65,6 +58,15 @@ public class BammBamm {
         httpServer = new HttpServer();
         tlsSniServer = new TlsSniServer();
         appServer = new AppServer(appPort);
+    }
+
+    /**
+     * Retrieves the singleton instance of {@link BammBamm}.
+     *
+     * @return {@link BammBamm} singleton instance
+     */
+    public static BammBamm instance() {
+        return INSTANCE;
     }
 
     /**
@@ -140,6 +142,9 @@ public class BammBamm {
 
     /**
      * Start bammbamm. It runs until the Java process is stopped.
+     *
+     * @param args
+     *            Command line arguments
      */
     public static void main(String[] args) {
         BammBamm.instance().start();

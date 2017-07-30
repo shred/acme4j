@@ -39,7 +39,8 @@ public abstract class AbstractResponder implements UriResponder {
      * @param session
      *            {@link IHTTPSession} containing the decoding body parameters
      */
-    public abstract void handle(Map<String, String> urlParams, IHTTPSession session) throws Exception;
+    public abstract void handle(Map<String, String> urlParams, IHTTPSession session)
+            throws Exception; //NOSONAR: the request fails on any exception
 
     @Override
     public Response post(UriResource uriResource, Map<String, String> urlParams, IHTTPSession session) {

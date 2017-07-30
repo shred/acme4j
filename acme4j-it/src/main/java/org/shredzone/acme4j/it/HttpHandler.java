@@ -22,11 +22,18 @@ import fi.iki.elonen.NanoHTTPD.IHTTPSession;
 /**
  * Request handler for all {@code http-01} related requests.
  */
-public class HttpHandler {
+public final class HttpHandler {
 
     public static final String ADD = "/http/add/:token";
     public static final String REMOVE = "/http/remove/:token";
 
+    private HttpHandler() {
+        // this class cannot be instanciated.
+    }
+
+    /**
+     * Adds a HTTP challenge.
+     */
     public static class Add extends AbstractResponder {
         @Override
         public void handle(Map<String, String> urlParams, IHTTPSession session) throws Exception {
@@ -38,6 +45,9 @@ public class HttpHandler {
         }
     }
 
+    /**
+     * Removes a HTTP challenge.
+     */
     public static class Remove extends AbstractResponder {
         @Override
         public void handle(Map<String, String> urlParams, IHTTPSession session) throws Exception {
