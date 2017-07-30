@@ -14,6 +14,17 @@ Account account = builder.create(session);
 URL accountLocationUrl = account.getLocation();
 ```
 
+## Find out your account's location URL
+
+You can also use the `AccountBuilder` to find out the location URL of your existing account:
+
+```java
+Account account = new AccountBuilder().onlyExisting().create(session);
+URL accountLocationUrl = account.getLocation();
+```
+
+If you do not have an account yet, an exception is raised instead, and no new account is created.
+
 ## Update your Account
 
 At some point, you may want to update your account. For example your contact address might have changed. To do so, invoke `Account.modify()`, perform the changes, and invoke `commit()` to make them permanent.

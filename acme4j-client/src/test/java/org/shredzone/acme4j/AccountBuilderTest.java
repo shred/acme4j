@@ -191,4 +191,49 @@ public class AccountBuilderTest {
         provider.close();
     }
 
+    /**
+     * Test if an existing account is properly returned.
+     */
+    @Test
+    public void testOnlyExistingRegistration() throws Exception {
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
+                assertThat(session, is(notNullValue()));
+                assertThat(url, is(resourceUrl));
+                assertThat(claims.toString(), sameJSONAs(getJSON("newAccountOnlyExisting").toString()));
+                assertThat(enforceJwk, is(true));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED));
+                return HttpURLConnection.HTTP_OK;
+            }
+
+            @Override
+            public URL getLocation() {
+                return locationUrl;
+            }
+
+            @Override
+            public JSON readJsonResponse() {
+                return getJSON("newAccountResponse");
+            }
+        };
+
+        provider.putTestResource(Resource.NEW_ACCOUNT, resourceUrl);
+
+        AccountBuilder builder = new AccountBuilder();
+        builder.onlyExisting();
+
+        Session session = provider.createSession();
+        Account account = builder.create(session);
+
+        assertThat(account.getLocation(), is(locationUrl));
+        assertThat(session.getKeyIdentifier(), is(locationUrl.toString()));
+
+        provider.close();
+    }
+
 }

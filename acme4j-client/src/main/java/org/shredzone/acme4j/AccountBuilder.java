@@ -41,6 +41,7 @@ public class AccountBuilder {
 
     private List<URI> contacts = new ArrayList<>();
     private Boolean termsOfServiceAgreed;
+    private Boolean onlyExisting;
     private String keyIdentifier;
 
     /**
@@ -78,6 +79,18 @@ public class AccountBuilder {
      */
     public AccountBuilder agreeToTermsOfService() {
         this.termsOfServiceAgreed = true;
+        return this;
+    }
+
+    /**
+     * Signals that only an existing account should be returned. The server will not
+     * create a new account if the key is not known. This is useful if you only have your
+     * account's key pair available, but not your account's location URL.
+     *
+     * @return itself
+     */
+    public AccountBuilder onlyExisting() {
+        this.onlyExisting = true;
         return this;
     }
 
@@ -124,6 +137,9 @@ public class AccountBuilder {
             if (keyIdentifier != null) {
                 claims.put("external-account-binding",
                         createExternalAccountBinding(keyIdentifier, session.getKeyPair(), resourceUrl));
+            }
+            if (onlyExisting != null) {
+                claims.put("only-return-existing", onlyExisting);
             }
 
             conn.sendSignedRequest(resourceUrl, claims, session, true);
