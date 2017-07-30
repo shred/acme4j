@@ -143,7 +143,7 @@ public class AccountBuilder {
             }
 
             conn.sendSignedRequest(resourceUrl, claims, session, true);
-            conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+            int resp = conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
             URL location = conn.getLocation();
 
@@ -151,7 +151,10 @@ public class AccountBuilder {
             if (keyIdentifier != null) {
                 session.setKeyIdentifier(keyIdentifier);
             }
-            account.unmarshal(conn.readJsonResponse());
+
+            if (resp == HttpURLConnection.HTTP_CREATED) {
+                account.unmarshal(conn.readJsonResponse());
+            }
             return account;
         }
     }
