@@ -106,10 +106,8 @@ public class OrderIT extends PebbleITBase {
 
             String challengeDomainName = "_acme-challenge." + TEST_DOMAIN;
 
-            client.dnsAddARecord(TEST_DOMAIN, bammbammHostname);
             client.dnsAddTxtRecord(challengeDomainName, challenge.getDigest());
 
-            cleanup(() -> client.dnsRemoveARecord(TEST_DOMAIN));
             cleanup(() -> client.dnsRemoveTxtRecord(challengeDomainName));
 
             return challenge;
