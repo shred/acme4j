@@ -206,6 +206,10 @@ public class Challenge extends AcmeResource {
     /**
      * Triggers this {@link Challenge}. The ACME server is requested to validate the
      * response. Note that the validation is performed asynchronously by the ACME server.
+     * <p>
+     * If this method is invoked a second time, the ACME server is requested to retry the
+     * validation. This can be useful if the client state has changed, for example after a
+     * firewall rule has been updated.
      */
     public void trigger() throws AcmeException {
         LOG.debug("trigger");
