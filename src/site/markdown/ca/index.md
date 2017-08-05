@@ -2,7 +2,7 @@
 
 _acme4j_ should support any CA providing an ACME server.
 
-It is always possible to connect to an ACME server by passing in the CA's resource directory URI:
+It is always possible to connect to an ACME server by passing in the CA's resource directory URL:
 
 ```java
 Session session =

@@ -234,7 +234,7 @@ public class DefaultConnection implements Connection {
             Problem problem = new Problem(readJsonResponse(), conn.getURL().toURI());
             throw createAcmeException(problem);
         } catch (URISyntaxException ex) {
-            throw new AcmeProtocolException("Bad request URI: " + conn.getURL(), ex);
+            throw new AcmeProtocolException("Bad request URL: " + conn.getURL(), ex);
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         }

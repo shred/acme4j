@@ -1,6 +1,6 @@
 # ACME Provider
 
-Basically, it is possible to connect to any kind of ACME server just by connecting to the URI of its directory resource:
+Basically, it is possible to connect to any kind of ACME server just by connecting to the URL of its directory resource:
 
 ```java
 Session session = new Session("https://acme-v02.api.letsencrypt.org/directory", accountKeyPair);
@@ -43,4 +43,4 @@ In your `AcmeProvider` implementation, override the `createChallenge(Session, St
 
 ## No directory service
 
-To modify the directory of an ACME server, or use a static directory, override the `directory(Session, URI)` method, and return a `JSON` of all available resources and their respective URI.
+To modify the directory of an ACME server, or use a static directory, override the `directory(Session, URI)` method, and return a `JSON` of all available resources and their respective URL.

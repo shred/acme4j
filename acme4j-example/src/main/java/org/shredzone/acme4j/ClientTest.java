@@ -111,7 +111,7 @@ public class ClientTest {
         Certificate certificate = order.getCertificate();
 
         LOG.info("Success! The certificate for domains " + domains + " has been generated!");
-        LOG.info("Certificate URI: " + certificate.getLocation());
+        LOG.info("Certificate URL: " + certificate.getLocation());
 
         // Write a combined file containing the certificate and chain.
         try (FileWriter fw = new FileWriter(DOMAIN_CHAIN_FILE)) {
@@ -174,7 +174,7 @@ public class ClientTest {
      * created.
      * <p>
      * This is a simple way of finding your {@link Account}. A better way is to get
-     * the URI of your new account with {@link Account#getLocation()} and store
+     * the URL of your new account with {@link Account#getLocation()} and store
      * it somewhere. If you need to get access to your account later, reconnect to it via
      * {@link Account#bind(Session, URI)} by using the stored location.
      *
@@ -190,7 +190,7 @@ public class ClientTest {
         }
 
         Account acct = new AccountBuilder().agreeToTermsOfService().create(session);
-        LOG.info("Registered a new user, URI: " + acct.getLocation());
+        LOG.info("Registered a new user, URL: " + acct.getLocation());
 
         return acct;
     }

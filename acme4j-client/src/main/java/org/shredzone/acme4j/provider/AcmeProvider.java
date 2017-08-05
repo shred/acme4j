@@ -60,7 +60,7 @@ public interface AcmeProvider {
     Connection connect();
 
     /**
-     * Returns the provider's directory. The structure must contain resource URIs, and may
+     * Returns the provider's directory. The structure must contain resource URLs, and may
      * optionally contain metadata.
      * <p>
      * The default implementation resolves the server URI and fetches the directory via

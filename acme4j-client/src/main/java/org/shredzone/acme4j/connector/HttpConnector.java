@@ -22,7 +22,7 @@ import java.util.Properties;
 import org.slf4j.LoggerFactory;
 
 /**
- * A generic HTTP connector. It connects to the given URI with a 10 seconds connection and
+ * A generic HTTP connector. It connects to the given URL with a 10 seconds connection and
  * read timeout.
  * <p>
  * Subclasses may reconfigure the {@link HttpURLConnection} and pin it to a concrete SSL

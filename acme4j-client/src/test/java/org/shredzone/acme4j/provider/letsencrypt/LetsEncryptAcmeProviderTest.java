@@ -27,8 +27,8 @@ import org.junit.Test;
  */
 public class LetsEncryptAcmeProviderTest {
 
-    private static final String V01_DIRECTORY_URI = "https://acme-v01.api.letsencrypt.org/directory";
-    private static final String STAGING_DIRECTORY_URI = "https://acme-staging.api.letsencrypt.org/directory";
+    private static final String V01_DIRECTORY_URL = "https://acme-v01.api.letsencrypt.org/directory";
+    private static final String STAGING_DIRECTORY_URL = "https://acme-staging.api.letsencrypt.org/directory";
 
     /**
      * Tests if the provider accepts the correct URIs.
@@ -53,10 +53,10 @@ public class LetsEncryptAcmeProviderTest {
     public void testResolve() throws URISyntaxException {
         LetsEncryptAcmeProvider provider = new LetsEncryptAcmeProvider();
 
-        assertThat(provider.resolve(new URI("acme://letsencrypt.org")), is(url(V01_DIRECTORY_URI)));
-        assertThat(provider.resolve(new URI("acme://letsencrypt.org/")), is(url(V01_DIRECTORY_URI)));
-        assertThat(provider.resolve(new URI("acme://letsencrypt.org/v01")), is(url(V01_DIRECTORY_URI)));
-        assertThat(provider.resolve(new URI("acme://letsencrypt.org/staging")), is(url(STAGING_DIRECTORY_URI)));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org")), is(url(V01_DIRECTORY_URL)));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org/")), is(url(V01_DIRECTORY_URL)));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org/v01")), is(url(V01_DIRECTORY_URL)));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org/staging")), is(url(STAGING_DIRECTORY_URL)));
 
         try {
             provider.resolve(new URI("acme://letsencrypt.org/v99"));
