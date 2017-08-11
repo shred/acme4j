@@ -214,13 +214,12 @@ public class DefaultConnection implements Connection {
 
         JSON result = null;
 
-        String response = "";
         try {
             InputStream in =
                     conn.getResponseCode() < 400 ? conn.getInputStream() : conn.getErrorStream();
             if (in != null) {
                 result = JSON.parse(in);
-                LOG.debug("Result JSON: {}", response);
+                LOG.debug("Result JSON: {}", result);
             }
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
