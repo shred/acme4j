@@ -88,11 +88,6 @@ public class ClientTest {
         // If there is no account yet, create a new one.
         Account acct = findOrRegisterAccount(session);
 
-        // Separately authorize every requested domain.
-        for (String domain : domains) {
-            authorize(acct, domain);
-        }
-
         // Load or create a key pair for the domains. This should not be the userKeyPair!
         KeyPair domainKeyPair = loadOrCreateDomainKeyPair();
 
@@ -106,8 +101,16 @@ public class ClientTest {
             csrb.write(out);
         }
 
-        // Now request a signed certificate.
+        // Order the certificate
         Order order = acct.orderCertificate(csrb.getEncoded(), null, null);
+
+        // Perform all required authorizations
+        for (Authorization auth : order.getAuthorizations()) {
+            authorize(auth);
+        }
+
+        // Get the certificate
+        order.update();
         Certificate certificate = order.getCertificate();
 
         LOG.info("Success! The certificate for domains " + domains + " has been generated!");
@@ -173,9 +176,10 @@ public class ClientTest {
      * public key. If your key is not known to the server yet, a new account will be
      * created.
      * <p>
-     * This is a simple way of finding your {@link Account}. A better way is to get
-     * the URL of your new account with {@link Account#getLocation()} and store
-     * it somewhere. If you need to get access to your account later, reconnect to it via
+     * This is a simple way of finding your {@link Account}. A better way is to get the
+     * URL and KeyIdentifier of your new account with {@link Account#getLocation()}
+     * {@link Session#getKeyIdentifier()} and store it somewhere. If you need to get
+     * access to your account later, reconnect to it via
      * {@link Account#bind(Session, URI)} by using the stored location.
      *
      * @param session
@@ -198,33 +202,26 @@ public class ClientTest {
     /**
      * Authorize a domain. It will be associated with your account, so you will be able to
      * retrieve a signed certificate for the domain later.
-     * <p>
-     * You need separate authorizations for subdomains (e.g. "www" subdomain). Wildcard
-     * certificates are not currently supported.
      *
-     * @param acct
-     *            {@link Account} of your account
-     * @param domain
-     *            Name of the domain to authorize
+     * @param auth
+     *            {@link Authorization} to perform
      */
-    private void authorize(Account acct, String domain) throws AcmeException {
-        // Authorize the domain.
-        Authorization auth = acct.preAuthorizeDomain(domain);
-        LOG.info("Authorization for domain " + domain);
+    private void authorize(Authorization auth) throws AcmeException {
+        LOG.info("Authorization for domain " + auth.getDomain());
 
         // Find the desired challenge and prepare it.
         Challenge challenge = null;
         switch (CHALLENGE_TYPE) {
             case HTTP:
-                challenge = httpChallenge(auth, domain);
+                challenge = httpChallenge(auth);
                 break;
 
             case DNS:
-                challenge = dnsChallenge(auth, domain);
+                challenge = dnsChallenge(auth);
                 break;
 
             case TLSSNI:
-                challenge = tlsSniChallenge(auth, domain);
+                challenge = tlsSniChallenge(auth);
                 break;
         }
 
@@ -262,7 +259,8 @@ public class ClientTest {
 
         // All reattempts are used up and there is still no valid authorization?
         if (challenge.getStatus() != Status.VALID) {
-            throw new AcmeException("Failed to pass the challenge for domain " + domain + ", ... Giving up.");
+            throw new AcmeException("Failed to pass the challenge for domain "
+                    + auth.getDomain() + ", ... Giving up.");
         }
     }
 
@@ -278,11 +276,9 @@ public class ClientTest {
      *
      * @param auth
      *            {@link Authorization} to find the challenge in
-     * @param domain
-     *            Domain name to be authorized
      * @return {@link Challenge} to verify
      */
-    public Challenge httpChallenge(Authorization auth, String domain) throws AcmeException {
+    public Challenge httpChallenge(Authorization auth) throws AcmeException {
         // Find a single http-01 challenge
         Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
         if (challenge == null) {
@@ -291,7 +287,7 @@ public class ClientTest {
 
         // Output the challenge, wait for acknowledge...
         LOG.info("Please create a file in your web server's base directory.");
-        LOG.info("It must be reachable at: http://" + domain + "/.well-known/acme-challenge/" + challenge.getToken());
+        LOG.info("It must be reachable at: http://" + auth.getDomain() + "/.well-known/acme-challenge/" + challenge.getToken());
         LOG.info("File name: " + challenge.getToken());
         LOG.info("Content: " + challenge.getAuthorization());
         LOG.info("The file must not contain any leading or trailing whitespaces or line breaks!");
@@ -299,7 +295,7 @@ public class ClientTest {
 
         StringBuilder message = new StringBuilder();
         message.append("Please create a file in your web server's base directory.\n\n");
-        message.append("http://").append(domain).append("/.well-known/acme-challenge/").append(challenge.getToken()).append("\n\n");
+        message.append("http://").append(auth.getDomain()).append("/.well-known/acme-challenge/").append(challenge.getToken()).append("\n\n");
         message.append("Content:\n\n");
         message.append(challenge.getAuthorization());
         acceptChallenge(message.toString());
@@ -317,11 +313,9 @@ public class ClientTest {
      *
      * @param auth
      *            {@link Authorization} to find the challenge in
-     * @param domain
-     *            Domain name to be authorized
      * @return {@link Challenge} to verify
      */
-    public Challenge dnsChallenge(Authorization auth, String domain) throws AcmeException {
+    public Challenge dnsChallenge(Authorization auth) throws AcmeException {
         // Find a single dns-01 challenge
         Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
         if (challenge == null) {
@@ -330,12 +324,12 @@ public class ClientTest {
 
         // Output the challenge, wait for acknowledge...
         LOG.info("Please create a TXT record:");
-        LOG.info("_acme-challenge." + domain + ". IN TXT " + challenge.getDigest());
+        LOG.info("_acme-challenge." + auth.getDomain() + ". IN TXT " + challenge.getDigest());
         LOG.info("If you're ready, dismiss the dialog...");
 
         StringBuilder message = new StringBuilder();
         message.append("Please create a TXT record:\n\n");
-        message.append("_acme-challenge." + domain + ". IN TXT " + challenge.getDigest());
+        message.append("_acme-challenge." + auth.getDomain() + ". IN TXT " + challenge.getDigest());
         acceptChallenge(message.toString());
 
         return challenge;
@@ -352,11 +346,9 @@ public class ClientTest {
      *
      * @param auth
      *            {@link Authorization} to find the challenge in
-     * @param domain
-     *            Domain name to be authorized
      * @return {@link Challenge} to verify
      */
-    public Challenge tlsSniChallenge(Authorization auth, String domain) throws AcmeException {
+    public Challenge tlsSniChallenge(Authorization auth) throws AcmeException {
         // Find a single tls-sni-02 challenge
         TlsSni02Challenge challenge = auth.findChallenge(TlsSni02Challenge.TYPE);
         if (challenge == null) {
