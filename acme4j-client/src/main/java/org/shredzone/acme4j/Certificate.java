@@ -21,12 +21,14 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiFunction;
 
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
@@ -47,6 +49,8 @@ import org.slf4j.LoggerFactory;
 public class Certificate extends AcmeResource {
     private static final long serialVersionUID = 7381527770159084201L;
     private static final Logger LOG = LoggerFactory.getLogger(Certificate.class);
+
+    protected static BiFunction<URI, KeyPair, Session> revokeSessionFactory = Session::new;
 
     private ArrayList<X509Certificate> certChain = null;
     private ArrayList<URL> alternates = null;
@@ -177,6 +181,45 @@ public class Certificate extends AcmeResource {
             }
 
             conn.sendSignedRequest(resUrl, claims, getSession(), true);
+            conn.accept(HttpURLConnection.HTTP_OK);
+        } catch (CertificateEncodingException ex) {
+            throw new AcmeProtocolException("Invalid certificate", ex);
+        }
+    }
+
+    /**
+     * Revoke a certificate. This call is meant to be used for revoking certificates if
+     * the account's key pair was lost.
+     *
+     * @param serverUri
+     *            {@link URI} of the ACME server
+     * @param domainKeyPair
+     *            Key pair the CSR was signed with
+     * @param cert
+     *            The {@link X509Certificate} to be revoked
+     * @param reason
+     *            {@link RevocationReason} stating the reason of the revocation that is
+     *            used when generating OCSP responses and CRLs. {@code null} to give no
+     *            reason.
+     */
+    public static void revoke(URI serverUri, KeyPair domainKeyPair, X509Certificate cert,
+            RevocationReason reason) throws AcmeException {
+        LOG.debug("revoke immediately");
+        Session session = revokeSessionFactory.apply(serverUri, domainKeyPair);
+
+        URL resUrl = session.resourceUrl(Resource.REVOKE_CERT);
+        if (resUrl == null) {
+            throw new AcmeException("Server does not allow certificate revocation");
+        }
+
+        try (Connection conn = session.provider().connect()) {
+            JSONBuilder claims = new JSONBuilder();
+            claims.putBase64("certificate", cert.getEncoded());
+            if (reason != null) {
+                claims.put("reason", reason.getReasonCode());
+            }
+
+            conn.sendSignedRequest(resUrl, claims, session, true);
             conn.accept(HttpURLConnection.HTTP_OK);
         } catch (CertificateEncodingException ex) {
             throw new AcmeProtocolException("Invalid certificate", ex);

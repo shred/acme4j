@@ -25,6 +25,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
@@ -231,6 +232,48 @@ public class CertificateTest {
     @Test
     public void testRevocationReason() {
         assertThat(RevocationReason.code(1), is(RevocationReason.KEY_COMPROMISE));
+    }
+
+    /**
+     * Test that a certificate can be revoked by its domain key pair.
+     */
+    @Test
+    public void testRevokeCertificateByKeyPair() throws AcmeException, IOException {
+        final List<X509Certificate> originalCert = TestUtils.createCertificate();
+        final KeyPair certKeyPair = TestUtils.createDomainKeyPair();
+
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
+                    throws AcmeException {
+                assertThat(url, is(resourceUrl));
+                assertThat(claims.toString(), sameJSONAs(getJSON("revokeCertificateWithReasonRequest").toString()));
+                assertThat(session, is(notNullValue()));
+                assertThat(session.getKeyPair(), is(certKeyPair));
+                assertThat(enforceJwk, is(true));
+            }
+
+            @Override
+            public int accept(int... httpStatus) throws AcmeException {
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                return HttpURLConnection.HTTP_OK;
+            }
+        };
+
+        provider.putTestResource(Resource.REVOKE_CERT, resourceUrl);
+
+        Session session = provider.createSession();
+        URI serverUri = session.getServerUri();
+
+        Certificate.revokeSessionFactory = (uri, keyPair) -> {
+            assertThat(uri, is(serverUri));
+            session.setKeyPair(keyPair);
+            return session;
+        };
+
+        Certificate.revoke(serverUri, certKeyPair, originalCert.get(0), RevocationReason.KEY_COMPROMISE);
+
+        provider.close();
     }
 
 }
