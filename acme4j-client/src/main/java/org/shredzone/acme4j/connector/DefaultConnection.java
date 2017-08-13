@@ -47,7 +47,7 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
-import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
+import org.shredzone.acme4j.exception.AcmeRateLimitedException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
@@ -422,7 +422,7 @@ public class DefaultConnection implements Connection {
         if ("rateLimited".equals(error)) {
             Optional<Instant> retryAfter = getRetryAfterHeader();
             Collection<URI> rateLimits = getLinks("urn:ietf:params:acme:documentation");
-            return new AcmeRateLimitExceededException(problem, retryAfter.orElse(null), rateLimits);
+            return new AcmeRateLimitedException(problem, retryAfter.orElse(null), rateLimits);
         }
 
         return new AcmeServerException(problem);

@@ -46,7 +46,7 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
-import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
+import org.shredzone.acme4j.exception.AcmeRateLimitedException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
@@ -481,10 +481,10 @@ public class DefaultConnectionTest {
     }
 
     /**
-     * Test if an {@link AcmeRateLimitExceededException} is thrown on an acme problem.
+     * Test if an {@link AcmeRateLimitedException} is thrown on an acme problem.
      */
     @Test
-    public void testAcceptThrowsRateLimitExceededException() throws Exception {
+    public void testAcceptThrowsRateLimitedException() throws Exception {
         String jsonData = "{\"type\":\"urn:ietf:params:acme:error:rateLimited\",\"detail\":\"Too many invocations\"}";
 
         Map<String, List<String>> linkHeader = new HashMap<>();
@@ -504,7 +504,7 @@ public class DefaultConnectionTest {
             conn.conn = mockUrlConnection;
             conn.accept(HttpURLConnection.HTTP_OK);
             fail("Expected to fail");
-        } catch (AcmeRateLimitExceededException ex) {
+        } catch (AcmeRateLimitedException ex) {
             assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:rateLimited")));
             assertThat(ex.getMessage(), is("Too many invocations"));
             assertThat(ex.getRetryAfter(), is(retryAfter));
@@ -512,7 +512,7 @@ public class DefaultConnectionTest {
             assertThat(ex.getDocuments().size(), is(1));
             assertThat(ex.getDocuments().iterator().next(), is(URI.create("https://example.com/rates.pdf")));
         } catch (AcmeException ex) {
-            fail("Expected an AcmeRateLimitExceededException");
+            fail("Expected an AcmeRateLimitedException");
         }
 
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");

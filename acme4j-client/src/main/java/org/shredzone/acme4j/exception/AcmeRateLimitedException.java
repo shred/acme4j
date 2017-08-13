@@ -23,14 +23,14 @@ import org.shredzone.acme4j.Problem;
 /**
  * An exception that is thrown when a rate limit was exceeded.
  */
-public class AcmeRateLimitExceededException extends AcmeServerException {
+public class AcmeRateLimitedException extends AcmeServerException {
     private static final long serialVersionUID = 4150484059796413069L;
 
     private final Instant retryAfter;
     private final Collection<URI> documents;
 
     /**
-     * Creates a new {@link AcmeRateLimitExceededException}.
+     * Creates a new {@link AcmeRateLimitedException}.
      *
      * @param problem
      *            {@link Problem} that caused the exception
@@ -40,7 +40,7 @@ public class AcmeRateLimitExceededException extends AcmeServerException {
      * @param documents
      *            URIs pointing to documents about the rate limit that was hit
      */
-    public AcmeRateLimitExceededException(Problem problem, Instant retryAfter, Collection<URI> documents) {
+    public AcmeRateLimitedException(Problem problem, Instant retryAfter, Collection<URI> documents) {
         super(problem);
         this.retryAfter = retryAfter;
         this.documents =

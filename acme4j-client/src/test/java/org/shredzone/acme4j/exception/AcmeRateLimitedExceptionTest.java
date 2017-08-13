@@ -27,15 +27,15 @@ import org.junit.Test;
 import org.shredzone.acme4j.Problem;
 
 /**
- * Unit tests for {@link AcmeRateLimitExceededException}.
+ * Unit tests for {@link AcmeRateLimitedException}.
  */
-public class AcmeRateLimitExceededExceptionTest {
+public class AcmeRateLimitedExceptionTest {
 
     /**
      * Test that parameters are correctly returned.
      */
     @Test
-    public void testAcmeRateLimitExceededException() {
+    public void testAcmeRateLimitedException() {
         URI type = URI.create("urn:ietf:params:acme:error:rateLimited");
         String detail = "Too many requests per minute";
         Instant retryAfter = Instant.now().plus(Duration.ofMinutes(1));
@@ -45,8 +45,8 @@ public class AcmeRateLimitExceededExceptionTest {
 
         Problem problem = createProblem(type, detail, null);
 
-        AcmeRateLimitExceededException ex
-                = new AcmeRateLimitExceededException(problem, retryAfter, documents);
+        AcmeRateLimitedException ex
+                = new AcmeRateLimitedException(problem, retryAfter, documents);
 
         assertThat(ex.getType(), is(type));
         assertThat(ex.getMessage(), is(detail));
@@ -58,14 +58,14 @@ public class AcmeRateLimitExceededExceptionTest {
      * Test that optional parameters are null-safe.
      */
     @Test
-    public void testNullAcmeRateLimitExceededException() {
+    public void testNullAcmeRateLimitedException() {
         URI type = URI.create("urn:ietf:params:acme:error:rateLimited");
         String detail = "Too many requests per minute";
 
         Problem problem = createProblem(type, detail, null);
 
-        AcmeRateLimitExceededException ex
-                = new AcmeRateLimitExceededException(problem, null, null);
+        AcmeRateLimitedException ex
+                = new AcmeRateLimitedException(problem, null, null);
 
         assertThat(ex.getType(), is(type));
         assertThat(ex.getMessage(), is(detail));
