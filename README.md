@@ -1,4 +1,4 @@
-# ACME Java Client ![build status](https://shredzone.org/badge/draft/acme4j.svg)
+# ACME Java Client ![build status](https://shredzone.org/badge/draft/acme4j.svg) ![maven central](https://maven-badges.herokuapp.com/maven-central/org.shredzone.acme4j/acme4j/badge.svg)
 
 This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-07) protocol.
 
@@ -27,11 +27,9 @@ Use the [master branch](https://github.com/shred/acme4j/tree/master) for product
 
 Known issues:
 
-* Only implements ACME v2 up to [draft 07](https://tools.ietf.org/html/draft-ietf-acme-acme-07)
-* Documentation is incomplete and partially outdated
-* The API is still subject to change
-* The example is not functional at the moment
-* Integration tests do not fully cover all functions
+* Only implements ACME v2 up to [draft 07](https://tools.ietf.org/html/draft-ietf-acme-acme-07).
+* The API is still subject to change, if required by future drafts.
+* Integration tests do not fully cover all functions. The standard methods for creating an account, ordering, and downloading a certificate are tested. Other methods are not tested yet, and may not work as expected.
 
 ## Usage
 
