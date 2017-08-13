@@ -51,8 +51,8 @@
     </developers>
 
     <properties>
-        <bouncycastle.version>1.56</bouncycastle.version>
-        <jose4j.version>0.5.5</jose4j.version>
+        <bouncycastle.version>1.57</bouncycastle.version>
+        <jose4j.version>0.6.0</jose4j.version>
         <slf4j.version>1.7.25</slf4j.version>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
     </properties>
