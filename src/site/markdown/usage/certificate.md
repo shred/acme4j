@@ -1,52 +1,36 @@
 # Certificates
 
-Once you completed all the previous steps, it's time to request the signed certificate.
-
-## Request a Certificate
-
-To do so, prepare a PKCS#10 CSR file. A single domain may be set as _Common Name_. Multiple domains must be provided as _Subject Alternative Name_. Other properties (_Organization_, _Organization Unit_ etc.) depend on the CA. Some may require these properties to be set, while others may ignore them when generating the certificate.
-
-CSR files can be generated with command line tools like `openssl`. Unfortunately the standard Java does not offer classes for that, so you'd have to resort to [Bouncy Castle](http://www.bouncycastle.org/java.html) if you want to create a CSR programmatically. In the `acme4j-utils` module, there is a [`CSRBuilder`](../apidocs/org/shredzone/acme4j/util/CSRBuilder.html) for your convenience. You can also use [`KeyPairUtils`](../apidocs/org/shredzone/acme4j/util/KeyPairUtils.html) for generating the domain key pair.
-
-Do not just use your account key pair as domain key pair, but always generate a separate pair of keys!
+Once you completed all the previous steps, it's time to download the signed certificate.
 
 ```java
-KeyPair domainKeyPair = ... // KeyPair to be used for HTTPS encryption
+Order order = ... // your Order object from the previous step
 
-CSRBuilder csrb = new CSRBuilder();
-csrb.addDomain("example.org");
-csrb.setOrganization("The Example Organization")
-csrb.sign(domainKeyPair);
-byte[] csr = csrb.getEncoded();
+order.update(); // make sure we have the current state
+Certificate cert = order.getCertificate();
 ```
 
-It is a good idea to store the generated CSR somewhere, as you will need it again for renewal:
+The `Certificate` object offers methods to get the certificate or the certificate chain.
 
 ```java
-try (FileWriter fw = new FileWriter("example.csr")) {
-    csrb.write(fw);
-}
+X509Certificate cert = cert.getCertificate();
+List<X509Certificate> chain = cert.getCertificateChain();
 ```
 
-Now all you need to do is to pass in a binary representation of the CSR and request the certificate:
-
-```java
-Certificate cert = account.requestCertificate(csr);
-```
-
-`cert.getLocation()` returns an URL where the signed certificate can be downloaded from. Optionally (if delivered by the ACME server) `cert.getChainLocation()` returns the URL of the first part of the CA chain.
-
-The `Certificate` object offers methods to download the certificate and the certificate chain.
-
-```java
-X509Certificate cert = cert.download();
-X509Certificate[] chain = cert.downloadChain();
-```
+`cert` only contains the plain certificate. However, most servers require the certificate `chain` that also contains all intermediate certificates up to the root CA.
 
 Congratulations! You have just created your first certificate via _acme4j_.
 
-`download()` may throw an `AcmeRetryAfterException`, giving an estimated time in `getRetryAfter()` for when the certificate is ready for download. You should then wait until that moment has been reached, before trying again.
+## Save the Certificate
 
+The `Certificate` object provides a method to write a certificate file that can be used for most web servers, like _Apache_, _nginx_, but also other servers like _postfix_ or _dovecot_:
+
+```java
+try (FileWriter fw = new FileWriter("cert-chain.crt");) {
+  cert.writeCertificate(fw)
+}
+```
+
+## Recreate a Certificate object
 To recreate a `Certificate` object from the location, just bind it:
 
 ```java
@@ -54,73 +38,11 @@ URL locationUrl = ... // location URL from cert.getLocation()
 Certificate cert = Certificate.bind(session, locationUrl);
 ```
 
-### Saving Certificates
-
-Most web servers, like _Apache_, _nginx_, but also other servers like _postfix_ or _dovecot_, need a combined certificate file that contains the leaf certificate itself, and the certificate chain up to the root certificate. `acme4j-utils` offers a method that helps to write the necessary file:
-
-```java
-try (FileWriter fw = new FileWriter("cert-chain.crt")) {
-    CertificateUtils.writeX509CertificateChain(fw, cert, chain);
-}
-```
-
-Some older servers may need the leaf certificate and the certificate chain in different files. Use this snippet to write both files:
-
-```java
-try (FileWriter fw = new FileWriter("cert.pem")) {
-    CertificateUtils.writeX509Certificate(cert, fw);
-}
-try (FileWriter fw = new FileWriter("chain.pem")) {
-    CertificateUtils.writeX509CertificateChain(fw, null, chain);
-}
-```
-
-These utility methods should be sufficient for most use cases. If you need the certificate written in a different format, see the [source code of `CertificateUtils`](https://github.com/shred/acme4j/blob/master/acme4j-utils/src/main/java/org/shredzone/acme4j/util/CertificateUtils.java) to find out how certificates are written using _Bouncy Castle_.
-
-### Multiple Domains
-
-The example above generates a certificate per domain. However, you would usually prefer to use a single certificate for multiple domains (for example, the domain itself and the `www.` subdomain).
-
-You first need to [authorize](./authorization.html) each (sub)domain separately.
-
-After all the domains are authorized, generate a single CSR with all the domains provided as _Subject Alternative Name_ (SAN). If you use the `CSRBuilder`, just add all of the domains to the builder:
-
-```java
-KeyPair domainKeyPair = ... // KeyPair to be used for HTTPS encryption
-
-CSRBuilder csrb = new CSRBuilder();
-csrb.addDomain("example.org");
-csrb.addDomain("www.example.org");
-csrb.addDomain("m.example.org");
-// add more domains if necessary...
-
-csrb.sign(domainKeyPair);
-byte[] csr = csrb.getEncoded();
-```
-
-The generated certificate will be valid for all of the domains.
-
-Note that wildcard certificates are currently not supported by the ACME protocol.
-
-The number of domains per certificate may also be limited. See your CA's documentation for the limits.
-
 ## Renewal
 
 Certificates are only valid for a limited time, and need to be renewed before expiry. To find out the expiry date of a `X509Certificate`, invoke its `getNotAfter()` method.
 
-For renewal, just request a new certificate using the original CSR:
-
-```java
-PKCS10CertificationRequest csr = CertificateUtils.readCSR(
-    new FileInputStream("example.csr"));
-
-Certificate cert = account.requestCertificate(csr);
-X509Certificate cert = cert.download();
-```
-
-Instead of loading the original CSR, you can also generate a new one. So renewing a certificate is basically the same as requesting a new certificate.
-
-If `account.requestCertificate(csr)` throws an `AcmeUnauthorizedException`, the authorizations of some or all involved domains have expired. In this case, you need to go through the [authorization](./authorization.html) process again, before requesting the renewed certificate.
+A certificate can be renewed a few days before its expiry. There is no explicit method for certificate renewal. To renew it, just [order](./order.html) the certificate again.
 
 ## Revocation
 
@@ -140,15 +62,12 @@ cert.revoke(RevocationReason.KEY_COMPROMISE);
 
 If you have lost your account key, you can still revoke a certificate as long as you still own the key pair that was used for signing the CSR. `Certificate` provides a special method for this case.
 
-First, create a new `Session` object, but use _the key pair that was used for siging the CSR_. Now invoke the `revoke()` method and pass the `Session`, the certificate to be revoked, and (optionally) a revocation reason.
-
 ```java
+URI acmeServerUri = ...     // uri of the ACME server
 KeyPair domainKeyPair = ... // the key pair that was used for signing the CSR
-URI acmeServerUri = ... // uri of the ACME server
-X509Certificate cert = ... // certificate to revoke
+X509Certificate cert = ...  // certificate to revoke
 
-Session session = new Session(acmeServerUri, domainKeyPair);
-Certificate.revoke(session, cert, RevocationReason.KEY_COMPROMISE);
+Certificate.revoke(acmeServerUri, domainKeyPair, cert, RevocationReason.KEY_COMPROMISE);
 ```
 
-Note that there is no way to revoke a certificate if you should lose both your account's key pair and your domain's key pair.
+Note that there is no way to revoke a certificate if you have lost both your account's key pair and your domain's key pair.

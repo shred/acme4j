@@ -16,7 +16,7 @@ You can also create an elliptic curve key pair:
 KeyPair keyPair = KeyPairUtils.createECKeyPair("secp256r1");
 ```
 
-> **CAUTION**: Your KeyPair is the only key to your account. If you should lose it, you will be locked out from your account and certificates. The API does currently not offer a way to recover access after a key loss. The only way is to contact the CA and ask for assistance. **It is strongly recommended to keep your key pair in a safe place!**
+> **CAUTION**: Your KeyPair is the only key to your account. If you should lose it, you will be locked out from your account and certificates. The API does not offer a way to recover access after a key loss. The only way is to contact the CA and ask for assistance. **It is strongly recommended to keep your key pair in a safe place!**
 
 To save a `KeyPair` (actually, the private key of the key pair) to a pem file, use this snippet:
 
@@ -37,6 +37,6 @@ try (FileReader fr = New FileReader("keypair.pem")) {
 Now that you have created (and saved) your account's key pair, you can start with registering an account and getting your first certificate. These steps need to be performed:
 
 * [Create a Session object](./session.html)
-* [Register and Create an Account](./register.html)
-* [Authorize your Domains](./authorization.html)
-* [Request and Download a Certificate](./certificate.html)
+* [Register and Create an Account](./account.html)
+* [Order a Certifiate](./order.html)
+* [Download a Certificate](./certificate.html)

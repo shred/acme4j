@@ -31,7 +31,7 @@ URL website = meta.getWebsite();
 
 ## Available Providers
 
-In _acme4j_ these providers are available:
+The _acme4j_ package contains these providers:
 
 * [Let's Encrypt](./letsencrypt.html)
 * [Pebble](./pebble.html)

@@ -36,7 +36,7 @@ URL accountLocationUrl = ... // your account's URL, as returned by Account.getLo
 Account account = Account.bind(session, accountLocationUrl);
 ```
 
-You can create any of the resource objects `Account`, `Authorization`, `Challenge` and `Certificate` like that, as long as you know the corresponding resource URL. To get the resource URL, use the `getLocation()` method.
+You can create any of the resource objects `Account`, `Authorization`, `Challenge`, `Certificate` and `Order` like that, as long as you know the corresponding resource URL. To get the resource URL, use the `getLocation()` method.
 
 ## Serialization
 

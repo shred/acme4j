@@ -33,7 +33,7 @@
       <item name="How to Use" href="usage/index.html">
         <item name="Session" href="usage/session.html"/>
         <item name="Account" href="usage/account.html"/>
-        <item name="Authorization" href="usage/authorization.html"/>
+        <item name="Order and Authorization" href="usage/order.html"/>
         <item name="Certificate" href="usage/certificate.html"/>
       </item>
       <item name="Challenges" href="challenge/index.html">
