@@ -185,6 +185,16 @@ public class AcmeUtilsTest {
     }
 
     /**
+     * Test if MAC key algorithms are properly detected.
+     */
+    @Test
+    public void testMacKey() throws Exception {
+        assertThat(macKeyAlgorithm(TestUtils.createSecretKey("SHA-256")), is("HS256"));
+        assertThat(macKeyAlgorithm(TestUtils.createSecretKey("SHA-384")), is("HS384"));
+        assertThat(macKeyAlgorithm(TestUtils.createSecretKey("SHA-512")), is("HS512"));
+    }
+
+    /**
      * Test valid strings.
      */
     @Test

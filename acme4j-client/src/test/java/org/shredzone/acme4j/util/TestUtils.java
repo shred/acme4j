@@ -45,6 +45,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.crypto.SecretKey;
+
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -52,6 +54,7 @@ import org.jose4j.base64url.Base64Url;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
+import org.jose4j.keys.HmacKey;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.provider.AcmeProvider;
@@ -218,6 +221,24 @@ public final class TestUtils {
             keyGen.initialize(ecSpec, new SecureRandom());
             return keyGen.generateKeyPair();
         } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    /**
+     * Creates a HMAC key using the given hash algorithm.
+     *
+     * @param algorithm
+     *            Name of the hash algorithm to be used
+     * @return {@link SecretKey} for testing
+     */
+    public static SecretKey createSecretKey(String algorithm) throws IOException {
+        try {
+            MessageDigest md = MessageDigest.getInstance(algorithm);
+            md.update("Turpentine".getBytes()); // A random password
+            byte[] macKey = md.digest();
+            return new HmacKey(macKey);
+        } catch (NoSuchAlgorithmException ex) {
             throw new IOException(ex);
         }
     }

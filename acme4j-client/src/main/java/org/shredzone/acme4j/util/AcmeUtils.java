@@ -29,6 +29,8 @@ import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.crypto.SecretKey;
+
 import org.jose4j.base64url.Base64Url;
 import org.jose4j.jwk.EllipticCurveJsonWebKey;
 import org.jose4j.jwk.JsonWebKey;
@@ -195,6 +197,37 @@ public final class AcmeUtils {
 
         } else {
             throw new IllegalArgumentException("Unknown algorithm " + jwk.getAlgorithm());
+        }
+    }
+
+    /**
+     * Analyzes the {@link SecretKey}, and returns the key algorithm
+     * identifier for {@link JsonWebSignature}.
+     *
+     * @param macKey
+     *            {@link SecretKey} to analyze
+     * @return algorithm identifier
+     * @throws IllegalArgumentException
+     *             there is no corresponding algorithm identifier for the key
+     */
+    public static String macKeyAlgorithm(SecretKey macKey) {
+        if (!"HMAC".equals(macKey.getAlgorithm())) {
+            throw new IllegalArgumentException("Bad algorithm: " + macKey.getAlgorithm());
+        }
+
+        int size = macKey.getEncoded().length * 8;
+        switch (size) {
+            case 256:
+                return AlgorithmIdentifiers.HMAC_SHA256;
+
+            case 384:
+                return AlgorithmIdentifiers.HMAC_SHA384;
+
+            case 512:
+                return AlgorithmIdentifiers.HMAC_SHA512;
+
+            default:
+                throw new IllegalArgumentException("Bad key size: " + size);
         }
     }
 

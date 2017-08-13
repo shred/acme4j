@@ -21,6 +21,8 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import javax.crypto.SecretKey;
+
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.CompactSerializer;
 import org.jose4j.lang.JoseException;
@@ -28,6 +30,7 @@ import org.junit.Test;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
+import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.shredzone.acme4j.util.TestUtils;
@@ -38,7 +41,7 @@ import org.shredzone.acme4j.util.TestUtils;
 public class AccountBuilderTest {
 
     private URL resourceUrl = url("http://example.com/acme/resource");
-    private URL locationUrl = url("http://example.com/acme/account");;
+    private URL locationUrl = url("http://example.com/acme/account");
 
     /**
      * Test if a new account can be created.
@@ -118,6 +121,7 @@ public class AccountBuilderTest {
     @Test
     public void testRegistrationWithKid() throws Exception {
         String keyIdentifier = "NCC-1701";
+        SecretKey macKey = TestUtils.createSecretKey("SHA-256");
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
@@ -139,12 +143,12 @@ public class AccountBuilderTest {
                     String serialized = CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature);
                     JsonWebSignature jws = new JsonWebSignature();
                     jws.setCompactSerialization(serialized);
-                    jws.setKey(session.getKeyPair().getPublic());
+                    jws.setKey(macKey);
                     assertThat(jws.verifySignature(), is(true));
 
                     assertThat(jws.getHeader("url"), is(resourceUrl.toString()));
                     assertThat(jws.getHeader("kid"), is(keyIdentifier));
-                    assertThat(jws.getHeader("alg"), is("RS256"));
+                    assertThat(jws.getHeader("alg"), is("HS256"));
 
                     String decodedPayload = jws.getPayload();
                     StringBuilder expectedPayload = new StringBuilder();
@@ -180,7 +184,7 @@ public class AccountBuilderTest {
         provider.putTestResource(Resource.NEW_ACCOUNT, resourceUrl);
 
         AccountBuilder builder = new AccountBuilder();
-        builder.useKeyIdentifier(keyIdentifier);
+        builder.useKeyIdentifier(keyIdentifier, AcmeUtils.base64UrlEncode(macKey.getEncoded()));
 
         Session session = provider.createSession();
         Account account = builder.create(session);

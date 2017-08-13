@@ -13,22 +13,27 @@
  */
 package org.shredzone.acme4j;
 
-import static org.shredzone.acme4j.util.AcmeUtils.keyAlgorithm;
+import static java.util.Objects.requireNonNull;
+import static org.shredzone.acme4j.util.AcmeUtils.macKeyAlgorithm;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
-import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.crypto.SecretKey;
+
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
+import org.jose4j.keys.HmacKey;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +48,7 @@ public class AccountBuilder {
     private Boolean termsOfServiceAgreed;
     private Boolean onlyExisting;
     private String keyIdentifier;
+    private SecretKey macKey;
 
     /**
      * Add a contact URI to the list of contacts.
@@ -95,19 +101,37 @@ public class AccountBuilder {
     }
 
     /**
-     * Sets a Key Identifier provided by the CA. Use this if your CA requires an
-     * individual account identification, e.g. your customer number.
+     * Sets a Key Identifier and MAC key provided by the CA. Use this if your CA requires
+     * an individual account identification, e.g. your customer number.
      *
      * @param kid
      *            Key Identifier
+     * @param macKey
+     *            MAC key
      * @return itself
      */
-    public AccountBuilder useKeyIdentifier(String kid) {
+    public AccountBuilder useKeyIdentifier(String kid, SecretKey macKey) {
         if (kid != null && kid.isEmpty()) {
             throw new IllegalArgumentException("kid must not be empty");
         }
+        this.macKey = requireNonNull(macKey, "macKey");
         this.keyIdentifier = kid;
         return this;
+    }
+
+    /**
+     * Sets a Key Identifier and MAC key provided by the CA. Use this if your CA requires
+     * an individual account identification, e.g. your customer number.
+     *
+     * @param kid
+     *            Key Identifier
+     * @param encodedMacKey
+     *            Base64url encoded MAC key. It will be decoded for your convenience.
+     * @return itself
+     */
+    public AccountBuilder useKeyIdentifier(String kid, String encodedMacKey) {
+        byte[] encodedKey = AcmeUtils.base64UrlDecode(requireNonNull(encodedMacKey, "encodedMacKey"));
+        return useKeyIdentifier(kid, new HmacKey(encodedKey));
     }
 
     /**
@@ -135,8 +159,8 @@ public class AccountBuilder {
                 claims.put("terms-of-service-agreed", termsOfServiceAgreed);
             }
             if (keyIdentifier != null) {
-                claims.put("external-account-binding",
-                        createExternalAccountBinding(keyIdentifier, session.getKeyPair(), resourceUrl));
+                claims.put("external-account-binding", createExternalAccountBinding(
+                        keyIdentifier, session.getKeyPair().getPublic(), macKey, resourceUrl));
             }
             if (onlyExisting != null) {
                 claims.put("only-return-existing", onlyExisting);
@@ -164,23 +188,27 @@ public class AccountBuilder {
      *
      * @param kid
      *            Key Identifier provided by the CA
-     * @param keyPair
-     *            {@link KeyPair} of the account to be created
+     * @param accountKey
+     *            {@link PublicKey} of the account to register
+     * @param macKey
+     *            {@link SecretKey} to sign the key identifier with
      * @param resource
      *            "new-account" resource URL
      * @return Created JSON structure
      */
-    private Map<String, Object> createExternalAccountBinding(String kid, KeyPair keyPair, URL resource)
+    private Map<String, Object> createExternalAccountBinding(String kid,
+                PublicKey accountKey, SecretKey macKey, URL resource)
                 throws AcmeException {
         try {
-            PublicJsonWebKey keyJwk = PublicJsonWebKey.Factory.newPublicJwk(keyPair.getPublic());
+            PublicJsonWebKey keyJwk = PublicJsonWebKey.Factory.newPublicJwk(accountKey);
 
             JsonWebSignature innerJws = new JsonWebSignature();
             innerJws.setPayload(keyJwk.toJson());
             innerJws.getHeaders().setObjectHeaderValue("url", resource);
             innerJws.getHeaders().setObjectHeaderValue("kid", kid);
-            innerJws.setAlgorithmHeaderValue(keyAlgorithm(keyJwk));
-            innerJws.setKey(keyPair.getPrivate());
+            innerJws.setAlgorithmHeaderValue(macKeyAlgorithm(macKey));
+            innerJws.setKey(macKey);
+            innerJws.setDoKeyValidation(false);
             innerJws.sign();
 
             JSONBuilder outerClaim = new JSONBuilder();
