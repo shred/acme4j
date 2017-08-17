@@ -190,6 +190,7 @@ public class DefaultConnection implements Connection {
 
             jws.setAlgorithmHeaderValue(keyAlgorithm(jwk));
             jws.setKey(keypair.getPrivate());
+            jws.sign();
 
             if (LOG.isDebugEnabled()) {
                 LOG.debug("POST {}", url);
@@ -197,7 +198,11 @@ public class DefaultConnection implements Connection {
                 LOG.debug("  JWS Header: {}", jws.getHeaders().getFullHeaderAsJsonString());
             }
 
-            byte[] outputData = jws.getCompactSerialization().getBytes(DEFAULT_CHARSET);
+            JSONBuilder jb = new JSONBuilder();
+            jb.put("protected", jws.getHeaders().getEncodedHeader());
+            jb.put("payload", jws.getEncodedPayload());
+            jb.put("signature", jws.getEncodedSignature());
+            byte[] outputData = jb.toString().getBytes(DEFAULT_CHARSET);
 
             conn.setFixedLengthStreamingMode(outputData.length);
             conn.connect();

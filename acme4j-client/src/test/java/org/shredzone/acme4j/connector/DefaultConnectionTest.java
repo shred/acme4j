@@ -689,11 +689,10 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection, atLeast(0)).getHeaderFields();
         verifyNoMoreInteractions(mockUrlConnection);
 
-        String serialized = new String(outputStream.toByteArray(), "utf-8");
-        String[] written = CompactSerializer.deserialize(serialized);
-        String header = Base64Url.decodeToUtf8String(written[0]);
-        String claims = Base64Url.decodeToUtf8String(written[1]);
-        String signature = written[2];
+        JSON data = JSON.parse(new String(outputStream.toByteArray(), "utf-8"));
+        String encodedHeader = data.get("protected").asString();
+        String encodedSignature = data.get("signature").asString();
+        String encodedPayload = data.get("payload").asString();
 
         StringBuilder expectedHeader = new StringBuilder();
         expectedHeader.append('{');
@@ -703,12 +702,12 @@ public class DefaultConnectionTest {
         expectedHeader.append("\"kid\":\"").append(keyIdentifier).append('"');
         expectedHeader.append('}');
 
-        assertThat(header, sameJSONAs(expectedHeader.toString()));
-        assertThat(claims, sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
-        assertThat(signature, not(isEmptyOrNullString()));
+        assertThat(Base64Url.decodeToUtf8String(encodedHeader), sameJSONAs(expectedHeader.toString()));
+        assertThat(Base64Url.decodeToUtf8String(encodedPayload), sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
+        assertThat(encodedSignature, not(isEmptyOrNullString()));
 
         JsonWebSignature jws = new JsonWebSignature();
-        jws.setCompactSerialization(serialized);
+        jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
         jws.setKey(session.getKeyPair().getPublic());
         assertThat(jws.verifySignature(), is(true));
     }
@@ -762,11 +761,10 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection, atLeast(0)).getHeaderFields();
         verifyNoMoreInteractions(mockUrlConnection);
 
-        String serialized = new String(outputStream.toByteArray(), "utf-8");
-        String[] written = CompactSerializer.deserialize(serialized);
-        String header = Base64Url.decodeToUtf8String(written[0]);
-        String claims = Base64Url.decodeToUtf8String(written[1]);
-        String signature = written[2];
+        JSON data = JSON.parse(new String(outputStream.toByteArray(), "utf-8"));
+        String encodedHeader = data.get("protected").asString();
+        String encodedSignature = data.get("signature").asString();
+        String encodedPayload = data.get("payload").asString();
 
         StringBuilder expectedHeader = new StringBuilder();
         expectedHeader.append('{');
@@ -779,12 +777,12 @@ public class DefaultConnectionTest {
         expectedHeader.append("\"n\":\"").append(TestUtils.N).append("\"");
         expectedHeader.append("}}");
 
-        assertThat(header, sameJSONAs(expectedHeader.toString()));
-        assertThat(claims, sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
-        assertThat(signature, not(isEmptyOrNullString()));
+        assertThat(Base64Url.decodeToUtf8String(encodedHeader), sameJSONAs(expectedHeader.toString()));
+        assertThat(Base64Url.decodeToUtf8String(encodedPayload), sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
+        assertThat(encodedSignature, not(isEmptyOrNullString()));
 
         JsonWebSignature jws = new JsonWebSignature();
-        jws.setCompactSerialization(serialized);
+        jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
         jws.setKey(session.getKeyPair().getPublic());
         assertThat(jws.verifySignature(), is(true));
     }
