@@ -20,9 +20,9 @@ import java.security.PublicKey;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.TreeMap;
 
 import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
@@ -43,7 +43,7 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
  */
 public class JSONBuilder {
 
-    private final Map<String, Object> data = new TreeMap<>();
+    private final Map<String, Object> data = new LinkedHashMap<>();
 
     /**
      * Puts a property. If a property with the key exists, it will be replaced.

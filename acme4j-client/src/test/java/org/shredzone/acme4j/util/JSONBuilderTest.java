@@ -43,8 +43,8 @@ public class JSONBuilderTest {
     }
 
     /**
-     * Test basic data types. Also test that methods return {@code this}, that existing
-     * keys are replaced, and that the output keys are in lexicographical order.
+     * Test basic data types. Also test that methods return {@code this}, and that
+     * existing keys are replaced.
      */
     @Test
     public void testBasics() {
@@ -60,7 +60,7 @@ public class JSONBuilderTest {
         res = cb.put("fooInt", 456);
         assertThat(res, is(sameInstance(cb)));
 
-        assertThat(cb.toString(), is("{\"fooInt\":456,\"fooStr\":\"String\"}"));
+        assertThat(cb.toString(), is("{\"fooStr\":\"String\",\"fooInt\":456}"));
 
         Map<String, Object> map = cb.toMap();
         assertThat(map.keySet(), hasSize(2));
@@ -142,7 +142,7 @@ public class JSONBuilderTest {
         cb.put("foo", 123);
         sub.put("foo", 456);
 
-        assertThat(cb.toString(), is("{\"foo\":123,\"sub\":{\"foo\":456}}"));
+        assertThat(cb.toString(), is("{\"sub\":{\"foo\":456},\"foo\":123}"));
     }
 
     /**
