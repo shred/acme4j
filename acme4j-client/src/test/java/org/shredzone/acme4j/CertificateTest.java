@@ -238,6 +238,7 @@ public class CertificateTest {
      * Test that a certificate can be revoked by its domain key pair.
      */
     @Test
+    @SuppressWarnings("resource")
     public void testRevokeCertificateByKeyPair() throws AcmeException, IOException {
         final List<X509Certificate> originalCert = TestUtils.createCertificate();
         final KeyPair certKeyPair = TestUtils.createDomainKeyPair();
