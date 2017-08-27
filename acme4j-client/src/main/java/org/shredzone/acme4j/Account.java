@@ -38,7 +38,6 @@ import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
-import org.shredzone.acme4j.provider.pebble.Pebble;
 import org.shredzone.acme4j.util.JSON;
 import org.shredzone.acme4j.util.JSONBuilder;
 import org.slf4j.Logger;
@@ -321,10 +320,7 @@ public class Account extends AcmeResource {
                     .forEach(contacts::add);
         }
 
-        // TODO PEBBLE: returns an empty string as URL
-        if (!Pebble.workaround()) {
-            this.orders = json.get(KEY_ORDERS).asURL();
-        }
+        this.orders = json.get(KEY_ORDERS).asURL();
 
         if (json.contains(KEY_STATUS)) {
             this.status = Status.parse(json.get(KEY_STATUS).asString());

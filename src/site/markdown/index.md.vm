@@ -44,5 +44,3 @@ _acme4j_ provides a number of integration tests. These tests are _not_ executed 
 To run them, install Docker and make it available to your user. Then invoke `mvn -Pci verify` to run the integration tests. The tests build images of the current [Pebble ACME test server](https://github.com/letsencrypt/pebble), and an internal test server that provides a configurable HTTP and DNS server for Pebble.
 
 If you change into the `acme-it` project directory, you can also build, start and stop the test servers with `mvn docker:build`, `mvn docker:start` and `mvn docker:stop`, respectively. While the test servers are running, you can execute the integration tests in your IDE.
-
-The Pebble server requires a few workarounds in _acme4j_ at the moment. To enable them, pass `-Dpebble=true` as VM parameter when running the integration tests.
