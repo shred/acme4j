@@ -133,11 +133,10 @@
                                     <host>bammbamm</host>
                                 </dns>
                                 -->
-                                <!-- See https://github.com/letsencrypt/pebble/issues/36
+                                <!-- Comment out to perform tests with validation delays. -->
                                 <env>
                                     <PEBBLE_VA_NOSLEEP>1</PEBBLE_VA_NOSLEEP>
                                 </env>
-                                -->
                             </run>
                         </image>
                         <image>

@@ -140,14 +140,14 @@ public class TlsSniServer {
         SSLContext sslContext = createSSLContext();
         SSLServerSocketFactory sslServerSocketFactory = sslContext.getServerSocketFactory();
 
-        while (running) {
-            try (SSLServerSocket sslServerSocket = (SSLServerSocket)
-                            sslServerSocketFactory.createServerSocket(port)){
-                listening = true;
+        try (SSLServerSocket sslServerSocket = (SSLServerSocket)
+                        sslServerSocketFactory.createServerSocket(port)){
+            listening = true;
+            while (running) {
                 process(sslServerSocket);
-            } catch (Exception ex) {
-                LOG.error("Failed to process query", ex);
             }
+        } catch (IOException ex) {
+            LOG.error("Failed to create socket on port {}", port, ex);
         }
 
         listening = false;
@@ -159,10 +159,8 @@ public class TlsSniServer {
      *
      * @param sslServerSocket
      *            {@link SSLServerSocket} to accept connections from
-     * @throws IOException
-     *             if the request could not be processed
      */
-    private void process(SSLServerSocket sslServerSocket) throws IOException {
+    private void process(SSLServerSocket sslServerSocket) {
         try (SSLSocket sslSocket = (SSLSocket) sslServerSocket.accept()) {
             sslSocket.setEnabledCipherSuites(sslSocket.getSupportedCipherSuites());
             sslSocket.startHandshake();
@@ -174,6 +172,8 @@ public class TlsSniServer {
             try (InputStream in = sslSocket.getInputStream()) {
                 while (in.read() >= 0); //NOSONAR: intentional empty statement
             }
+        } catch (Exception ex) {
+            LOG.error("Failed to process request", ex);
         }
     }
 
