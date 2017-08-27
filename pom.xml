@@ -183,7 +183,7 @@
                 <version>2.10.4</version>
                 <configuration>
                     <links>
-                        <link>http://docs.oracle.com/javase/7/docs/api/</link>
+                        <link>http://docs.oracle.com/javase/8/docs/api/</link>
                         <link>http://docs.oracle.com/javaee/7/api/</link>
                         <link>https://www.bouncycastle.org/docs/docs1.5on/</link>
                         <link>https://www.bouncycastle.org/docs/pkixdocs1.5on/</link>
