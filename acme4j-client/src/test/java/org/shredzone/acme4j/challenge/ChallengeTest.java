@@ -113,6 +113,9 @@ public class ChallengeTest {
         assertThat(challenge.getStatus(), is(Status.VALID));
         assertThat(challenge.getLocation(), is(new URI("http://example.com/challenge/123")));
         assertThat(challenge.getValidated(), is(parseTimestamp("2015-12-12T17:19:36.336785823Z")));
+        assertThat(challenge.getError(), is(notNullValue()));
+        assertThat(challenge.getError().getType(), is(URI.create("urn:ietf:params:acme:error:connection")));
+        assertThat(challenge.getError().getDetail(), is("connection refused"));
         assertThat(challenge.getJSON().get("type").asString(), is("generic-01"));
         assertThat(challenge.getJSON().get("uri").asURL(), is(new URL("http://example.com/challenge/123")));
         assertThat(challenge.getJSON().get("not-present").asString(), is(nullValue()));

@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.util.Objects;
 
 import org.shredzone.acme4j.AcmeResource;
+import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.connector.Connection;
@@ -47,6 +48,7 @@ public class Challenge extends AcmeResource {
     protected static final String KEY_STATUS = "status";
     protected static final String KEY_URI = "uri";
     protected static final String KEY_VALIDATED = "validated";
+    protected static final String KEY_ERROR = "error";
 
     private JSON data = JSON.empty();
 
@@ -115,6 +117,13 @@ public class Challenge extends AcmeResource {
      */
     public Instant getValidated() {
         return data.get(KEY_VALIDATED).asInstant();
+    }
+
+    /**
+     * Returns the reason why the challenge failed, if returned by the server.
+     */
+    public Problem getError() {
+        return data.get(KEY_ERROR).asProblem();
     }
 
     /**
