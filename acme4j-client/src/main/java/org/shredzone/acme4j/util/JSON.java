@@ -41,6 +41,7 @@ import java.util.stream.StreamSupport;
 
 import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
+import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
@@ -292,6 +293,19 @@ public final class JSON implements Serializable {
             } catch (ClassCastException ex) {
                 throw new AcmeProtocolException(path + ": expected an object", ex);
             }
+        }
+
+        /**
+         * Returns the value as {@link Problem}.
+         *
+         * @return {@link Problem}, or {@code null} if the value was not set.
+         */
+        public Problem asProblem() {
+            if (val == null) {
+                return null;
+            }
+
+            return new Problem(asObject());
         }
 
         /**

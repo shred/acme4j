@@ -36,6 +36,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.junit.Test;
+import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
@@ -84,7 +85,7 @@ public class JSONTest {
         JSON json = TestUtils.getJsonAsObject("json");
 
         assertThat(json.keySet(), containsInAnyOrder(
-                    "text", "number", "uri", "url", "date", "array", "collect"));
+                    "text", "number", "uri", "url", "date", "array", "collect", "problem"));
         assertThat(json.contains("text"), is(true));
         assertThat(json.contains("music"), is(false));
         assertThat(json.get("text"), is(notNullValue()));
@@ -189,6 +190,11 @@ public class JSONTest {
 
         JSON sub = array.get(3).asObject();
         assertThat(sub.get("test").asString(), is("ok"));
+
+        Problem problem = json.get("problem").asProblem();
+        assertThat(problem, is(notNullValue()));
+        assertThat(problem.getType(), is(URI.create("urn:ietf:params:acme:error:rateLimited")));
+        assertThat(problem.getDetail(), is("too many requests"));
     }
 
     /**
@@ -205,6 +211,7 @@ public class JSONTest {
         assertThat(json.get("none").asInstant(), is(nullValue()));
         assertThat(json.get("none").asArray(), is(nullValue()));
         assertThat(json.get("none").asObject(), is(nullValue()));
+        assertThat(json.get("none").asProblem(), is(nullValue()));
 
         try {
             json.get("none").asInt();
@@ -268,6 +275,13 @@ public class JSONTest {
 
         try {
             json.get("text").asInstant();
+            fail("no exception was thrown");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
+
+        try {
+            json.get("text").asProblem();
             fail("no exception was thrown");
         } catch (AcmeProtocolException ex) {
             // expected
