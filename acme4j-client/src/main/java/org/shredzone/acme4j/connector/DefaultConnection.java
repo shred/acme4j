@@ -156,7 +156,13 @@ public class DefaultConnection implements Connection {
             jws.getHeaders().setJwkHeaderValue("jwk", jwk);
             jws.setAlgorithmHeaderValue(keyAlgorithm(jwk));
             jws.setKey(keypair.getPrivate());
-            byte[] outputData = jws.getCompactSerialization().getBytes(DEFAULT_CHARSET);
+            jws.sign();
+
+            JSONBuilder jb = new JSONBuilder();
+            jb.put("protected", jws.getHeaders().getEncodedHeader());
+            jb.put("payload", jws.getEncodedPayload());
+            jb.put("signature", jws.getEncodedSignature());
+            byte[] outputData = jb.toString().getBytes(DEFAULT_CHARSET);
 
             conn.setFixedLengthStreamingMode(outputData.length);
             conn.connect();
