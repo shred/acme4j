@@ -7,14 +7,6 @@ Web site: [Let's Encrypt](https://letsencrypt.org)
 * `acme://letsencrypt.org` - Production server
 * `acme://letsencrypt.org/staging` - Testing server
 
-## Features
+## Note
 
-* Accepts the ACME server certificate of Let's Encrypt even on older Java versions
-
-## Limits
-
-* Registrations per IP: 10 per 3 hours
-* Certificates per Domain: 5 per 7 days
-* SANs per Certificate: 100
-
-See [here](https://community.letsencrypt.org/t/public-beta-rate-limits/4772) for the current limits.
+* Java 8u101 or higher is required for connecting to the _Let's Encrypt_ servers.

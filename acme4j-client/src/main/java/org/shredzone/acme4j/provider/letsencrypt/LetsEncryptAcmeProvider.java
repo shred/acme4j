@@ -17,7 +17,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
-import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AbstractAcmeProvider;
 import org.shredzone.acme4j.provider.AcmeProvider;
@@ -28,8 +27,7 @@ import org.shredzone.acme4j.provider.AcmeProvider;
  * The {@code serverUri} is {@code "acme://letsencrypt.org"} for the production server,
  * and {@code "acme://letsencrypt.org/staging"} for a testing server.
  * <p>
- * If you want to use <em>Let's Encrypt</em>, always prefer to use this provider, as it
- * takes care for the correct connection and SSL certificates.
+ * If you want to use <em>Let's Encrypt</em>, always prefer to use this provider.
  *
  * @see <a href="https://letsencrypt.org/">Let's Encrypt</a>
  */
@@ -61,11 +59,6 @@ public class LetsEncryptAcmeProvider extends AbstractAcmeProvider {
         } catch (MalformedURLException ex) {
             throw new AcmeProtocolException(directoryUrl, ex);
         }
-    }
-
-    @Override
-    protected HttpConnector createHttpConnector() {
-        return new LetsEncryptHttpConnector();
     }
 
 }
