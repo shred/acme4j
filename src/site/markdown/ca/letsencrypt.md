@@ -8,13 +8,9 @@ Web site: [Let's Encrypt](https://letsencrypt.org)
 * `acme://letsencrypt.org/staging` - Testing server
 * `acme://letsencrypt.org/v01` - Production server, pinned to API v01
 
-## Features
+## Compatibility
 
-* Accepts the ACME server certificate of Let's Encrypt even on older Java versions
-
-## Note
-
-* _Let's Encrypt_ diverges from the ACME specifications for various reasons. For this reason, some parts of the _acme4j_ API may not behave as documented. [See here for more details.](https://github.com/letsencrypt/boulder/blob/master/docs/acme-divergences.md)
+If you have to use a Java version that is older than 8u101 and does not accept the _IdenTrust_ certificates of the _Let's Encrypt_ servers, you can use a hardcoded local truststore as a workaround by setting the `acme4j.le.certfix` system property to `true`. Please note that the hardwired certificate will expire by June, 2018.
 
 ## Limits
 

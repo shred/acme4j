@@ -32,7 +32,11 @@ import org.shredzone.acme4j.connector.HttpConnector;
 /**
  * {@link HttpConnector} to be used for Let's Encrypt. It is pinned to the Let's Encrypt
  * server certificate.
+ *
+ * @deprecated API server certificate CA is accepted by current JREs. There is no need
+ * for certificate pinning any more. Hardcoded certificate will expire by June 25th, 2018.
  */
+@Deprecated
 public class LetsEncryptHttpConnector extends HttpConnector {
 
     private static SSLSocketFactory sslSocketFactory;
