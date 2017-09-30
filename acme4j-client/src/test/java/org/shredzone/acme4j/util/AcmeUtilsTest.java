@@ -26,8 +26,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-import javax.xml.bind.DatatypeConverter;
-
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -57,20 +55,10 @@ public class AcmeUtilsTest {
     }
 
     /**
-     * Test sha-256 hash.
+     * Test sha-256 hash and hex encode.
      */
     @Test
-    public void testSha256Hash() {
-        byte[] hash = sha256hash("foobar");
-        byte[] expected = DatatypeConverter.parseHexBinary("c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2");
-        assertThat(hash, is(expected));
-    }
-
-    /**
-     * Test hex encode.
-     */
-    @Test
-    public void testHexEncode() {
+    public void testSha256HashHexEncode() {
         String hexEncode = hexEncode(sha256hash("foobar"));
         assertThat(hexEncode, is("c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2"));
     }

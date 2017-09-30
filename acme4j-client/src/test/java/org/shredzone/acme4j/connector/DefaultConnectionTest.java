@@ -27,6 +27,7 @@ import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -255,7 +256,7 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testHandleRetryAfterHeaderDate() throws AcmeException, IOException {
-        Instant retryDate = Instant.now().plus(Duration.ofHours(10));
+        Instant retryDate = Instant.now().plus(Duration.ofHours(10)).truncatedTo(ChronoUnit.MILLIS);
         String retryMsg = "absolute date";
 
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_ACCEPTED);
