@@ -11,10 +11,10 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.shredzone.acme4j.util;
+package org.shredzone.acme4j.toolbox;
 
 import static java.util.stream.Collectors.joining;
-import static org.shredzone.acme4j.util.AcmeUtils.parseTimestamp;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 
 import java.io.BufferedReader;
 import java.io.IOException;

@@ -24,9 +24,9 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DummyConnection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.util.JSONBuilder;
-import org.shredzone.acme4j.util.JSON;
-import org.shredzone.acme4j.util.TestUtils;
+import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSONBuilder;
+import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
  * Test implementation of {@link AcmeProvider}. It also implements a dummy implementation

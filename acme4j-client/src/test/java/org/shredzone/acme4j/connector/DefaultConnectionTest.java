@@ -47,9 +47,9 @@ import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
-import org.shredzone.acme4j.util.JSON;
-import org.shredzone.acme4j.util.JSONBuilder;
-import org.shredzone.acme4j.util.TestUtils;
+import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSONBuilder;
+import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
  * Unit tests for {@link DefaultConnection}.

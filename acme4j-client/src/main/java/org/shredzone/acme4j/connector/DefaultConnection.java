@@ -13,7 +13,7 @@
  */
 package org.shredzone.acme4j.connector;
 
-import static org.shredzone.acme4j.util.AcmeUtils.keyAlgorithm;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.keyAlgorithm;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,9 +52,9 @@ import org.shredzone.acme4j.exception.AcmeRateLimitExceededException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
-import org.shredzone.acme4j.util.AcmeUtils;
-import org.shredzone.acme4j.util.JSON;
-import org.shredzone.acme4j.util.JSONBuilder;
+import org.shredzone.acme4j.toolbox.AcmeUtils;
+import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

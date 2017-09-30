@@ -11,11 +11,11 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.shredzone.acme4j.util;
+package org.shredzone.acme4j.toolbox;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.shredzone.acme4j.util.AcmeUtils.*;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;

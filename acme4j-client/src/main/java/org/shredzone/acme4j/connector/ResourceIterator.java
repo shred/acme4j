@@ -26,7 +26,7 @@ import org.shredzone.acme4j.AcmeResource;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
-import org.shredzone.acme4j.util.JSON;
+import org.shredzone.acme4j.toolbox.JSON;
 
 /**
  * An {@link Iterator} that fetches a batch of URIs from the ACME server, and generates

@@ -13,7 +13,7 @@
  */
 package org.shredzone.acme4j.challenge;
 
-import static org.shredzone.acme4j.util.AcmeUtils.*;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.*;
 
 import org.shredzone.acme4j.Session;
 

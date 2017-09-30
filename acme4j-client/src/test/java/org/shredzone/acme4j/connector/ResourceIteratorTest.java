@@ -15,7 +15,7 @@ package org.shredzone.acme4j.connector;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.shredzone.acme4j.util.TestUtils.isIntArrayContainingInAnyOrder;
+import static org.shredzone.acme4j.toolbox.TestUtils.isIntArrayContainingInAnyOrder;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -31,8 +31,8 @@ import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
-import org.shredzone.acme4j.util.JSON;
-import org.shredzone.acme4j.util.JSONBuilder;
+import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSONBuilder;
 
 /**
  * Unit test for {@link ResourceIterator}.

@@ -31,7 +31,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.util.JSON;
+import org.shredzone.acme4j.toolbox.JSON;
 
 /**
  * Abstract implementation of {@link AcmeProvider}. It consists of a challenge

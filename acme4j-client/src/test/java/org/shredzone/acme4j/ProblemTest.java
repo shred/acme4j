@@ -20,8 +20,8 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 import java.net.URI;
 
 import org.junit.Test;
-import org.shredzone.acme4j.util.JSON;
-import org.shredzone.acme4j.util.TestUtils;
+import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
  * Unit tests for {@link Problem}.

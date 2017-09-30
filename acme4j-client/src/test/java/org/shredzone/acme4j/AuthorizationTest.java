@@ -15,8 +15,8 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.shredzone.acme4j.util.AcmeUtils.parseTimestamp;
-import static org.shredzone.acme4j.util.TestUtils.*;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
+import static org.shredzone.acme4j.toolbox.TestUtils.*;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -34,8 +34,8 @@ import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
-import org.shredzone.acme4j.util.JSON;
-import org.shredzone.acme4j.util.JSONBuilder;
+import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSONBuilder;
 
 /**
  * Unit tests for {@link Authorization}.

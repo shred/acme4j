@@ -15,7 +15,7 @@ package org.shredzone.acme4j.exception;
 
 import java.util.Objects;
 
-import org.shredzone.acme4j.util.AcmeUtils;
+import org.shredzone.acme4j.toolbox.AcmeUtils;
 
 /**
  * An exception that is thrown when the ACME server returned an error. It contains

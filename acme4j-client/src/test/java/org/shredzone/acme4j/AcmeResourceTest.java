@@ -23,7 +23,7 @@ import java.io.ObjectOutputStream;
 import java.net.URI;
 
 import org.junit.Test;
-import org.shredzone.acme4j.util.TestUtils;
+import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
  * Unit tests for {@link AcmeResource}.

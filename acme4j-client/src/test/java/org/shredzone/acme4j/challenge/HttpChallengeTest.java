@@ -15,7 +15,7 @@ package org.shredzone.acme4j.challenge;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.shredzone.acme4j.util.TestUtils.getJsonAsObject;
+import static org.shredzone.acme4j.toolbox.TestUtils.getJsonAsObject;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.IOException;
@@ -25,8 +25,8 @@ import org.junit.Test;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
-import org.shredzone.acme4j.util.JSONBuilder;
-import org.shredzone.acme4j.util.TestUtils;
+import org.shredzone.acme4j.toolbox.JSONBuilder;
+import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
  * Unit tests for {@link Http01Challenge}.

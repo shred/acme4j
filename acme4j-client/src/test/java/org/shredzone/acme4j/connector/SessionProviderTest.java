@@ -27,8 +27,8 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
-import org.shredzone.acme4j.util.JSON;
-import org.shredzone.acme4j.util.TestUtils;
+import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
  * Unit tests for {@link Session#provider()}. Requires that both enclosed

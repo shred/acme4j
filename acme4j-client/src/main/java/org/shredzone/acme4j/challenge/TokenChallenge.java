@@ -13,7 +13,7 @@
  */
 package org.shredzone.acme4j.challenge;
 
-import static org.shredzone.acme4j.util.AcmeUtils.base64UrlEncode;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.base64UrlEncode;
 
 import java.security.PublicKey;
 
@@ -21,7 +21,7 @@ import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
-import org.shredzone.acme4j.util.JSONBuilder;
+import org.shredzone.acme4j.toolbox.JSONBuilder;
 
 /**
  * An extension of {@link Challenge} that handles challenges with a {@code token} and
