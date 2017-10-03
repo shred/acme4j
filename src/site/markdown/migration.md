@@ -2,6 +2,10 @@
 
 This document will help you migrate your code to the latest _acme4j_ version.
 
+## Migration to Version 0.13
+
+In the `acme4j-client` module, the `org.shredzone.acme4j.util` package has been renamed in order to fix a split package in Java 9. This package is meant to be internal, so this change should not break your code. The same named public package in the `acme4j-utils` module is unchanged.
+
 ## Migration to Version 0.12
 
 Java support for the _IdenTrust_ certificate that is used by _Let's Encrypt_ servers was added to JRE 8u101 in July 2016. For this reason, _acme4j_ does not need to use a hardcoded local truststore anymore. It has been disabled in this version, and the standard Java truststore is used instead.
