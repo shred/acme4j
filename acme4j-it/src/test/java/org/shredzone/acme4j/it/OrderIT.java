@@ -22,6 +22,7 @@ import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import org.junit.Test;
 import org.shredzone.acme4j.Account;
@@ -138,7 +139,7 @@ public class OrderIT extends PebbleITBase {
         csr.sign(domainKeyPair);
         byte[] encodedCsr = csr.getEncoded();
 
-        Instant notBefore = Instant.now();
+        Instant notBefore = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         Instant notAfter = notBefore.plus(Duration.ofDays(20L));
 
         Order order = account.orderCertificate(encodedCsr, notBefore, notAfter);
