@@ -14,7 +14,7 @@
 package org.shredzone.acme4j.connector;
 
 import static java.util.stream.Collectors.toList;
-import static org.shredzone.acme4j.util.AcmeUtils.*;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -52,9 +52,9 @@ import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.exception.AcmeUserActionRequiredException;
-import org.shredzone.acme4j.util.AcmeUtils;
-import org.shredzone.acme4j.util.JSON;
-import org.shredzone.acme4j.util.JSONBuilder;
+import org.shredzone.acme4j.toolbox.AcmeUtils;
+import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

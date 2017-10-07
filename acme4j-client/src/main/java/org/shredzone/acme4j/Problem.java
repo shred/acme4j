@@ -16,7 +16,7 @@ package org.shredzone.acme4j;
 import java.io.Serializable;
 import java.net.URI;
 
-import org.shredzone.acme4j.util.JSON;
+import org.shredzone.acme4j.toolbox.JSON;
 
 /**
  * Represents a JSON Problem.

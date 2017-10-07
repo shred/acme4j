@@ -14,7 +14,7 @@
 package org.shredzone.acme4j.util;
 
 import static java.util.stream.Collectors.joining;
-import static org.shredzone.acme4j.util.AcmeUtils.toAce;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.toAce;
 
 import java.io.IOException;
 import java.io.OutputStream;

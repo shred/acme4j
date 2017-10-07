@@ -23,7 +23,7 @@ import java.util.List;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
-import org.shredzone.acme4j.util.JSON;
+import org.shredzone.acme4j.toolbox.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

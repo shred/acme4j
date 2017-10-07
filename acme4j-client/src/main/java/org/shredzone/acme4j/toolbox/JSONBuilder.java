@@ -11,9 +11,9 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.shredzone.acme4j.util;
+package org.shredzone.acme4j.toolbox;
 
-import static org.shredzone.acme4j.util.AcmeUtils.base64UrlEncode;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.base64UrlEncode;
 
 import java.security.Key;
 import java.security.PublicKey;

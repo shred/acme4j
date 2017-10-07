@@ -14,7 +14,7 @@
 package org.shredzone.acme4j;
 
 import static java.util.stream.Collectors.toList;
-import static org.shredzone.acme4j.util.AcmeUtils.parseTimestamp;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -28,8 +28,8 @@ import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
-import org.shredzone.acme4j.util.JSON;
-import org.shredzone.acme4j.util.JSONBuilder;
+import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

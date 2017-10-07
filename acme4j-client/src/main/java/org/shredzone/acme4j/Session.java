@@ -31,7 +31,7 @@ import org.shredzone.acme4j.challenge.TokenChallenge;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
-import org.shredzone.acme4j.util.JSON;
+import org.shredzone.acme4j.toolbox.JSON;
 
 /**
  * A session stores the ACME server URI and the account's key pair. It also tracks

@@ -19,8 +19,8 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
 
-import org.shredzone.acme4j.util.JSON;
-import org.shredzone.acme4j.util.JSON.Value;
+import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSON.Value;
 
 /**
  * Contains metadata related to the provider.

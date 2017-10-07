@@ -22,7 +22,7 @@ import java.net.URL;
 import org.junit.Test;
 import org.shredzone.acme4j.AcmeResource;
 import org.shredzone.acme4j.Session;
-import org.shredzone.acme4j.util.TestUtils;
+import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
  * Unit tests for {@link AcmeLazyLoadingException}.

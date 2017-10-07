@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.shredzone.acme4j.util;
+package org.shredzone.acme4j.toolbox;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

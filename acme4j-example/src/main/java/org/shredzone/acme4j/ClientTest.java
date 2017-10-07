@@ -21,7 +21,6 @@ import java.io.Writer;
 import java.net.URI;
 import java.security.KeyPair;
 import java.security.Security;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
@@ -29,12 +28,12 @@ import java.util.Collection;
 import javax.swing.JOptionPane;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.util.AcmeUtils;
 import org.shredzone.acme4j.util.CSRBuilder;
 import org.shredzone.acme4j.util.CertificateUtils;
 import org.shredzone.acme4j.util.KeyPairUtils;
@@ -369,10 +368,10 @@ public class ClientTest {
         }
 
         // Create a validation certificate
-        try (FileWriter fw = new FileWriter("tlssni.crt")) {
+        try (JcaPEMWriter pw = new JcaPEMWriter(new FileWriter("tlssni.crt"))) {
             X509Certificate cert = CertificateUtils.createTlsSni02Certificate(domainKeyPair, subject, sanB);
-            AcmeUtils.writeToPem(cert.getEncoded(), AcmeUtils.PemLabel.CERTIFICATE, fw);
-        } catch (IOException | CertificateEncodingException ex) {
+            pw.writeObject(cert);
+        } catch (IOException ex) {
             throw new AcmeException("Could not write certificate", ex);
         }
 
