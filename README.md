@@ -14,7 +14,8 @@ It is an independent open source implementation that is not affiliated with or e
 * Easy to use Java API
 * Requires JRE 8 or higher
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
-* Small, only requires [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home) and [slf4j](http://www.slf4j.org/) as dependencies
+* Small: `acme4j-client` only requires [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home) and [slf4j](http://www.slf4j.org/) as dependencies
+* Only the optional `acme4j-utils` module requires [Bouncy Castle](http://www.bouncycastle.org)
 * Extensive unit tests
 
 ## Usage
