@@ -213,8 +213,8 @@ public class DefaultConnection implements Connection {
         assertConnectionIsOpen();
 
         String contentType = conn.getHeaderField(CONTENT_TYPE_HEADER);
-        if (!("application/json".equals(contentType)
-                    || "application/problem+json".equals(contentType))) {
+        if (contentType == null || !(contentType.contains("application/json")
+                || contentType.contains("application/problem+json"))) {
             throw new AcmeProtocolException("Unexpected content type: " + contentType);
         }
 
