@@ -43,6 +43,7 @@ import org.hamcrest.Description;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
  * Unit tests for {@link AcmeUtils}.
@@ -297,6 +298,35 @@ public class AcmeUtilsTest {
 
         assertThat(AcmeUtils.toURL(testUri), is(testUrl));
         assertThat(AcmeUtils.toURL(null), is(nullValue()));
+    }
+
+    /**
+     * Test {@link AcmeUtils#getContentType(String)}.
+     */
+    @Test
+    public void testGetContentType() {
+        assertThat(AcmeUtils.getContentType(null), is(nullValue()));
+        assertThat(AcmeUtils.getContentType("application/json"),
+                        is("application/json"));
+        assertThat(AcmeUtils.getContentType("Application/Problem+JSON"),
+                        is("application/problem+json"));
+        assertThat(AcmeUtils.getContentType("application/json; charset=utf-8"),
+                        is("application/json"));
+        assertThat(AcmeUtils.getContentType("application/json; charset=utf-8 (Plain text)"),
+                        is("application/json"));
+        assertThat(AcmeUtils.getContentType("application/json; charset=\"utf-8\""),
+                        is("application/json"));
+        assertThat(AcmeUtils.getContentType("application/json; charset=\"UTF-8\"; foo=4"),
+                        is("application/json"));
+        assertThat(AcmeUtils.getContentType(" application/json ;foo=4"),
+                        is("application/json"));
+
+        try {
+            AcmeUtils.getContentType("application/json; charset=\"iso-8859-1\"");
+            fail("Accepted bad charset");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
     }
 
     /**

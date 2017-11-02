@@ -232,7 +232,8 @@ public class DefaultConnection implements Connection {
                 return match.getAsInt();
             }
 
-            if (!"application/problem+json".equals(conn.getHeaderField(CONTENT_TYPE_HEADER))) {
+            String contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
+            if (!"application/problem+json".equals(contentType)) {
                 throw new AcmeException("HTTP " + rc + ": " + conn.getResponseMessage());
             }
 
@@ -249,7 +250,7 @@ public class DefaultConnection implements Connection {
     public JSON readJsonResponse() throws AcmeException {
         assertConnectionIsOpen();
 
-        String contentType = conn.getHeaderField(CONTENT_TYPE_HEADER);
+        String contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
         if (!("application/json".equals(contentType)
                     || "application/problem+json".equals(contentType))) {
             throw new AcmeProtocolException("Unexpected content type: " + contentType);
@@ -275,7 +276,7 @@ public class DefaultConnection implements Connection {
     public List<X509Certificate> readCertificates() throws AcmeException {
         assertConnectionIsOpen();
 
-        String contentType = conn.getHeaderField(CONTENT_TYPE_HEADER);
+        String contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
         if (!("application/pem-certificate-chain".equals(contentType))) {
             throw new AcmeProtocolException("Unexpected content type: " + contentType);
         }
