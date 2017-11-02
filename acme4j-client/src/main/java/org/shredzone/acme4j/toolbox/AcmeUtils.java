@@ -51,6 +51,9 @@ public final class AcmeUtils {
     private static final Pattern TZ_PATTERN = Pattern.compile(
                 "([+-])(\\d{2}):?(\\d{2})$");
 
+    private final static Pattern CONTENT_TYPE_PATTERN = Pattern.compile(
+                "([^;]+)(?:;.*?charset=(\"?)([a-z0-9_-]+)(\\2))?.*", Pattern.CASE_INSENSITIVE);
+
     private AcmeUtils() {
         // Utility class without constructor
     }
@@ -222,6 +225,29 @@ public final class AcmeUtils {
         } else {
             return null;
         }
+    }
+
+    /**
+     * Extracts the content type of a Content-Type header.
+     *
+     * @param header
+     *            Content-Type header
+     * @return Content-Type, or {@code null} if the header was invalid or empty
+     * @throws AcmeProtocolException
+     *             if the Content-Type header contains a different charset than "utf-8".
+     */
+    public static String getContentType(String header) {
+        if (header != null) {
+            Matcher m = CONTENT_TYPE_PATTERN.matcher(header);
+            if (m.matches()) {
+                String charset = m.group(3);
+                if (charset != null && !"utf-8".equalsIgnoreCase(charset)) {
+                    throw new AcmeProtocolException("Unsupported charset " + charset);
+                }
+                return m.group(1).trim().toLowerCase();
+            }
+        }
+        return null;
     }
 
 }
