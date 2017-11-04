@@ -29,7 +29,8 @@
     <description>Example for using acme4j</description>
 
     <properties>
-        <sonar.exclusions>src/main/java/org/shredzone/acme4j/**</sonar.exclusions>
+        <!-- I prefer readability over maintainability in the examples... -->
+        <sonar.skip>true</sonar.skip>
     </properties>
 
     <build>
