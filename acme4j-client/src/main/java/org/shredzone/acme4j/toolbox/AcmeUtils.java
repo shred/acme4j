@@ -55,7 +55,7 @@ public final class AcmeUtils {
     private static final Pattern TZ_PATTERN = Pattern.compile(
                 "([+-])(\\d{2}):?(\\d{2})$");
 
-    private final static Pattern CONTENT_TYPE_PATTERN = Pattern.compile(
+    private static final Pattern CONTENT_TYPE_PATTERN = Pattern.compile(
                 "([^;]+)(?:;.*?charset=(\"?)([a-z0-9_-]+)(\\2))?.*", Pattern.CASE_INSENSITIVE);
 
     private static final Base64.Encoder PEM_ENCODER = Base64.getMimeEncoder(64, "\n".getBytes());
