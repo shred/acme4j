@@ -40,7 +40,7 @@ public class HttpConnector {
             Properties prop = new Properties();
             prop.load(in);
             agent.append('/').append(prop.getProperty("version"));
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             // Ignore, just don't use a version
             LoggerFactory.getLogger(HttpConnector.class).warn("Could not read library version", ex);
         }
