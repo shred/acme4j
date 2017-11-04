@@ -14,12 +14,13 @@
 package org.shredzone.acme4j.connector;
 
 import static java.util.stream.Collectors.toList;
-import static org.shredzone.acme4j.toolbox.AcmeUtils.*;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.keyAlgorithm;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -331,43 +332,14 @@ public class DefaultConnection implements Connection {
         }
 
         LOG.debug("Location: {}", location);
-        return toURL(resolveRelative(location));
+        return resolveRelative(location);
     }
 
     @Override
-    public URL getLink(String relation) {
-        Collection<URI> links = getLinks(relation);
-        if (links == null) {
-            return null;
-        }
-
-        if (links.size() > 1) {
-            LOG.debug("Link: {} - using the first of {}", relation, links.size());
-        }
-
-        return toURL(links.iterator().next());
-    }
-
-    @Override
-    public Collection<URI> getLinks(String relation) {
-        assertConnectionIsOpen();
-
-        List<URI> result = new ArrayList<>();
-
-        List<String> links = conn.getHeaderFields().get(LINK_HEADER);
-        if (links != null) {
-            Pattern p = Pattern.compile("<(.*?)>\\s*;\\s*rel=\"?"+ Pattern.quote(relation) + "\"?");
-            for (String link : links) {
-                Matcher m = p.matcher(link);
-                if (m.matches()) {
-                    String location = m.group(1);
-                    LOG.debug("Link: {} -> {}", relation, location);
-                    result.add(resolveRelative(location));
-                }
-            }
-        }
-
-        return !result.isEmpty() ? result : null;
+    public Collection<URL> getLinks(String relation) {
+        return collectLinks(relation).stream()
+                .map(this::resolveRelative)
+                .collect(toList());
     }
 
     @Override
@@ -420,14 +392,22 @@ public class DefaultConnection implements Connection {
         }
 
         if ("userActionRequired".equals(error)) {
-            Collection<URI> links = getLinks("terms-of-service");
-            URI tos = links != null ? links.stream().findFirst().orElse(null) : null;
+            URI tos = collectLinks("terms-of-service").stream()
+                    .findFirst()
+                    .map(it -> {
+                        try {
+                            return conn.getURL().toURI().resolve(it);
+                        } catch (URISyntaxException ex) {
+                            throw new AcmeProtocolException("Invalid TOS URI", ex);
+                        }
+                    })
+                    .orElse(null);
             return new AcmeUserActionRequiredException(problem, tos);
         }
 
         if ("rateLimited".equals(error)) {
             Optional<Instant> retryAfter = getRetryAfterHeader();
-            Collection<URI> rateLimits = getLinks("urn:ietf:params:acme:documentation");
+            Collection<URL> rateLimits = getLinks("urn:ietf:params:acme:documentation");
             return new AcmeRateLimitedException(problem, retryAfter.orElse(null), rateLimits);
         }
 
@@ -468,23 +448,51 @@ public class DefaultConnection implements Connection {
     }
 
     /**
+     * Collects links of the given relation.
+     *
+     * @param relation
+     *            Link relation
+     * @return Collection of links, unconverted
+     */
+    private Collection<String> collectLinks(String relation) {
+        assertConnectionIsOpen();
+
+        List<String> result = new ArrayList<>();
+
+        List<String> links = conn.getHeaderFields().get(LINK_HEADER);
+        if (links != null) {
+            Pattern p = Pattern.compile("<(.*?)>\\s*;\\s*rel=\"?"+ Pattern.quote(relation) + "\"?");
+            for (String link : links) {
+                Matcher m = p.matcher(link);
+                if (m.matches()) {
+                    String location = m.group(1);
+                    LOG.debug("Link: {} -> {}", relation, location);
+                    result.add(location);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
      * Resolves a relative link against the connection's last URL.
      *
      * @param link
-     *            Link to resolve. Absolute links are just converted to an URI. May be
+     *            Link to resolve. Absolute links are just converted to an URL. May be
      *            {@code null}.
-     * @return Absolute URI of the given link, or {@code null} if the link was
+     * @return Absolute URL of the given link, or {@code null} if the link was
      *         {@code null}.
      */
-    private URI resolveRelative(String link) {
+    private URL resolveRelative(String link) {
         if (link == null) {
             return null;
         }
 
         assertConnectionIsOpen();
         try {
-            return conn.getURL().toURI().resolve(link);
-        } catch (URISyntaxException ex) {
+            return new URL(conn.getURL(), link);
+        } catch (MalformedURLException ex) {
             throw new AcmeProtocolException("Cannot resolve relative link: " + link, ex);
         }
     }

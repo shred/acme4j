@@ -21,6 +21,9 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -155,11 +158,11 @@ public class ResourceIteratorTest {
             }
 
             @Override
-            public URL getLink(String relation) {
+            public Collection<URL> getLinks(String relation) {
                 if ("next".equals(relation) && (ix + 1 < pageURLs.size())) {
-                    return pageURLs.get(ix + 1);
+                    return Arrays.asList(pageURLs.get(ix + 1));
                 }
-                return null;
+                return Collections.emptyList();
             }
         };
 

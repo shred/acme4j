@@ -146,7 +146,7 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
             JSON json = conn.readJsonResponse();
             fillUrlList(json);
 
-            nextUrl = conn.getLink("next");
+            nextUrl = conn.getLinks("next").stream().findFirst().orElse(null);
         }
     }
 

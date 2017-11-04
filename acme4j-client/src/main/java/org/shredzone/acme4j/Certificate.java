@@ -14,7 +14,6 @@
 package org.shredzone.acme4j;
 
 import static java.util.Collections.unmodifiableList;
-import static java.util.stream.Collectors.toCollection;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -25,7 +24,6 @@ import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -85,14 +83,7 @@ public class Certificate extends AcmeResource {
             try (Connection conn = getSession().provider().connect()) {
                 conn.sendRequest(getLocation(), getSession());
                 conn.accept(HttpURLConnection.HTTP_OK);
-
-                Collection<URI> alternateList = conn.getLinks("alternate");
-                if (alternateList != null) {
-                    alternates = alternateList.stream()
-                             .map(AcmeUtils::toURL)
-                             .collect(toCollection(ArrayList::new));
-                }
-
+                alternates = new ArrayList<>(conn.getLinks("alternate"));
                 certChain = new ArrayList<>(conn.readCertificates());
             }
         }

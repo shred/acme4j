@@ -13,7 +13,6 @@
  */
 package org.shredzone.acme4j.connector;
 
-import java.net.URI;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -130,27 +129,15 @@ public interface Connection extends AutoCloseable {
     URL getLocation();
 
     /**
-     * Gets a relation link from the header. The result is expected to be an URL.
-     * <p>
-     * Relative links are resolved against the last request's URL. If there is more than
-     * one relation, the first one is returned.
-     *
-     * @param relation
-     *            Link relation
-     * @return Link, or {@code null} if there was no such relation link
-     */
-    URL getLink(String relation);
-
-    /**
-     * Gets one or more relation links from the header.
+     * Gets one or more relation links from the header. The result is expected to be an URL.
      * <p>
      * Relative links are resolved against the last request's URL.
      *
      * @param relation
      *            Link relation
-     * @return Collection of links, or {@code null} if there was no such relation link
+     * @return Collection of links. Empty if there was no such relation.
      */
-    Collection<URI> getLinks(String relation);
+    Collection<URL> getLinks(String relation);
 
     /**
      * Closes the {@link Connection}, releasing all resources.

@@ -13,7 +13,7 @@
  */
 package org.shredzone.acme4j.exception;
 
-import java.net.URI;
+import java.net.URL;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,7 +27,7 @@ public class AcmeRateLimitedException extends AcmeServerException {
     private static final long serialVersionUID = 4150484059796413069L;
 
     private final Instant retryAfter;
-    private final Collection<URI> documents;
+    private final Collection<URL> documents;
 
     /**
      * Creates a new {@link AcmeRateLimitedException}.
@@ -38,9 +38,9 @@ public class AcmeRateLimitedException extends AcmeServerException {
      *            The moment the request is expected to succeed again, may be {@code null}
      *            if not known
      * @param documents
-     *            URIs pointing to documents about the rate limit that was hit
+     *            URLs pointing to documents about the rate limit that was hit
      */
-    public AcmeRateLimitedException(Problem problem, Instant retryAfter, Collection<URI> documents) {
+    public AcmeRateLimitedException(Problem problem, Instant retryAfter, Collection<URL> documents) {
         super(problem);
         this.retryAfter = retryAfter;
         this.documents =
@@ -56,10 +56,10 @@ public class AcmeRateLimitedException extends AcmeServerException {
     }
 
     /**
-     * Collection of URIs pointing to documents about the rate limit that was hit.
-     * {@code null} if the server did not provide such URIs.
+     * Collection of URLs pointing to documents about the rate limit that was hit.
+     * {@code null} if the server did not provide such URLs.
      */
-    public Collection<URI> getDocuments() {
+    public Collection<URL> getDocuments() {
         return documents;
     }
 

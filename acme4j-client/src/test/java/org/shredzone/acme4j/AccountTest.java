@@ -28,6 +28,7 @@ import java.security.KeyPair;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -55,7 +56,7 @@ public class AccountTest {
 
     private URL resourceUrl  = url("http://example.com/acme/resource");
     private URL locationUrl  = url("http://example.com/acme/account");
-    private URI agreementUri = URI.create("http://example.com/agreement.pdf");
+    private URL agreementUrl = url("http://example.com/agreement.pdf");
 
     /**
      * Test that a account can be updated.
@@ -105,16 +106,8 @@ public class AccountTest {
             }
 
             @Override
-            public URL getLink(String relation) {
-                return null;
-            }
-
-            @Override
-            public Collection<URI> getLinks(String relation) {
-                switch(relation) {
-                    case "terms-of-service": return Arrays.asList(agreementUri);
-                    default: return null;
-                }
+            public Collection<URL> getLinks(String relation) {
+                return Collections.emptyList();
             }
         };
 
@@ -168,14 +161,9 @@ public class AccountTest {
             }
 
             @Override
-            public URL getLink(String relation) {
-                return null;
-            }
-
-            @Override
-            public Collection<URI> getLinks(String relation) {
+            public Collection<URL> getLinks(String relation) {
                 switch(relation) {
-                    case "terms-of-service": return Arrays.asList(agreementUri);
+                    case "terms-of-service": return Arrays.asList(agreementUrl);
                     default: return null;
                 }
             }

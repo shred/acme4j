@@ -15,9 +15,10 @@ package org.shredzone.acme4j.exception;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.shredzone.acme4j.toolbox.TestUtils.createProblem;
+import static org.shredzone.acme4j.toolbox.TestUtils.*;
 
 import java.net.URI;
+import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
@@ -39,9 +40,9 @@ public class AcmeRateLimitedExceptionTest {
         URI type = URI.create("urn:ietf:params:acme:error:rateLimited");
         String detail = "Too many requests per minute";
         Instant retryAfter = Instant.now().plus(Duration.ofMinutes(1));
-        Collection<URI> documents = Arrays.asList(
-                        URI.create("http://example.com/doc1.html"),
-                        URI.create("http://example.com/doc2.html"));
+        Collection<URL> documents = Arrays.asList(
+                        url("http://example.com/doc1.html"),
+                        url("http://example.com/doc2.html"));
 
         Problem problem = createProblem(type, detail, null);
 

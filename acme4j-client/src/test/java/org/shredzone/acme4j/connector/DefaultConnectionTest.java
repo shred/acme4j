@@ -246,10 +246,10 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getLink("next"), is(new URL("https://example.com/acme/new-authz")));
-            assertThat(conn.getLink("recover"), is(new URL("https://example.org/recover-acct")));
-            assertThat(conn.getLink("terms-of-service"), is(new URL("https://example.com/acme/terms")));
-            assertThat(conn.getLink("secret-stuff"), is(nullValue()));
+            assertThat(conn.getLinks("next"), containsInAnyOrder(new URL("https://example.com/acme/new-authz")));
+            assertThat(conn.getLinks("recover"), containsInAnyOrder(new URL("https://example.org/recover-acct")));
+            assertThat(conn.getLinks("terms-of-service"), containsInAnyOrder(new URL("https://example.com/acme/terms")));
+            assertThat(conn.getLinks("secret-stuff"), is(empty()));
         }
     }
 
@@ -258,7 +258,7 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testGetMultiLink() {
-        URL baseUrl = TestUtils.url("https://example.com/acme/request/1234");
+        URL baseUrl = url("https://example.com/acme/request/1234");
 
         Map<String, List<String>> headers = new HashMap<>();
         headers.put("Link", Arrays.asList(
@@ -273,9 +273,9 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             assertThat(conn.getLinks("terms-of-service"), containsInAnyOrder(
-                        URI.create("https://example.com/acme/terms1"),
-                        URI.create("https://example.com/acme/terms2"),
-                        URI.create("https://example.com/acme/terms3")
+                        url("https://example.com/acme/terms1"),
+                        url("https://example.com/acme/terms2"),
+                        url("https://example.com/acme/terms3")
             ));
         }
     }
@@ -290,7 +290,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getLinks("something"), is(nullValue()));
+            assertThat(conn.getLinks("something"), is(empty()));
         }
     }
 
@@ -511,7 +511,7 @@ public class DefaultConnectionTest {
             assertThat(ex.getRetryAfter(), is(retryAfter));
             assertThat(ex.getDocuments(), is(notNullValue()));
             assertThat(ex.getDocuments().size(), is(1));
-            assertThat(ex.getDocuments().iterator().next(), is(URI.create("https://example.com/rates.pdf")));
+            assertThat(ex.getDocuments().iterator().next(), is(url("https://example.com/rates.pdf")));
         } catch (AcmeException ex) {
             fail("Expected an AcmeRateLimitedException");
         }

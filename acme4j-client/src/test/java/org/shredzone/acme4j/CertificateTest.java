@@ -29,6 +29,7 @@ import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -72,11 +73,11 @@ public class CertificateTest {
             }
 
             @Override
-            public Collection<URI> getLinks(String relation) {
+            public Collection<URL> getLinks(String relation) {
                 assertThat(relation, is("alternate"));
                 return Arrays.asList(
-                        URI.create("https://example.com/acme/alt-cert/1"),
-                        URI.create("https://example.com/acme/alt-cert/2"));
+                        url("https://example.com/acme/alt-cert/1"),
+                        url("https://example.com/acme/alt-cert/2"));
             }
         };
 
@@ -159,9 +160,9 @@ public class CertificateTest {
             }
 
             @Override
-            public Collection<URI> getLinks(String relation) {
+            public Collection<URL> getLinks(String relation) {
                 assertThat(relation, is("alternate"));
-                return null;
+                return Collections.emptyList();
             }
         };
 
@@ -212,9 +213,9 @@ public class CertificateTest {
             }
 
             @Override
-            public Collection<URI> getLinks(String relation) {
+            public Collection<URL> getLinks(String relation) {
                 assertThat(relation, is("alternate"));
-                return null;
+                return Collections.emptyList();
             }
         };
 
