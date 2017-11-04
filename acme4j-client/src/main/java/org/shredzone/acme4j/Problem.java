@@ -53,7 +53,9 @@ public class Problem implements Serializable {
     }
 
     /**
-     * Returns the problem as {@link JSON} object, to access other fields.
+     * Returns the problem object, to access custom fields.
+     *
+     * @return Problem, as {@link JSON} object
      */
     public JSON asJSON() {
         return problemJson;
