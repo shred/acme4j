@@ -121,7 +121,6 @@ public class AbstractAcmeProviderTest {
      * Test that challenges are generated properly.
      */
     @Test
-    @SuppressWarnings("deprecation") // must test deprecated challenges
     public void testCreateChallenge() {
         Session session = mock(Session.class);
 

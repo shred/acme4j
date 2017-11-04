@@ -177,10 +177,7 @@ public final class CertificateUtils {
      * @param subject
      *            Subject to create a certificate for
      * @return Created certificate
-     * @deprecated Will be removed when
-     *             {@link org.shredzone.acme4j.challenge.TlsSni01Challenge} is removed
      */
-    @Deprecated
     public static X509Certificate createTlsSniCertificate(KeyPair keypair, String subject) throws IOException {
         return createCertificate(keypair, subject);
     }

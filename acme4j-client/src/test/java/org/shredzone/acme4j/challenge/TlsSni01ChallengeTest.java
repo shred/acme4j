@@ -30,7 +30,6 @@ import org.shredzone.acme4j.toolbox.TestUtils;
 /**
  * Unit tests for {@link TlsSni01Challenge}.
  */
-@SuppressWarnings("deprecation") // must test a deprecated challenge
 public class TlsSni01ChallengeTest {
     private static final String KEY_AUTHORIZATION =
             "VNLBdSiZ3LppU2CRG8bilqlwq4DuApJMg3ZJowU6JhQ.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0";

@@ -344,7 +344,6 @@ public class ClientTest {
      *            Domain name to be authorized
      * @return {@link Challenge} to verify
      */
-    @SuppressWarnings("deprecation") // until tls-sni-02 is supported
     public Challenge tlsSniChallenge(Authorization auth, String domain) throws AcmeException {
         // Find a single tls-sni-01 challenge
         org.shredzone.acme4j.challenge.TlsSni01Challenge challenge = auth.findChallenge(org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE);
