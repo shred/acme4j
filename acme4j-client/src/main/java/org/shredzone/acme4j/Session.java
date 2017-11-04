@@ -14,6 +14,7 @@
 package org.shredzone.acme4j;
 
 import java.net.URI;
+import java.net.URL;
 import java.security.KeyPair;
 import java.time.Duration;
 import java.time.Instant;
@@ -40,7 +41,7 @@ import org.shredzone.acme4j.toolbox.JSON;
  * volatile data.
  */
 public class Session {
-    private final AtomicReference<Map<Resource, URI>> resourceMap = new AtomicReference<>();
+    private final AtomicReference<Map<Resource, URL>> resourceMap = new AtomicReference<>();
     private final AtomicReference<Metadata> metadata = new AtomicReference<>();
     private final URI serverUri;
     private final AcmeProvider provider;
@@ -175,14 +176,14 @@ public class Session {
     }
 
     /**
-     * Gets the {@link URI} of the given {@link Resource}. This may involve connecting to
+     * Gets the {@link URL} of the given {@link Resource}. This may involve connecting to
      * the server and getting a directory. The result is cached.
      *
      * @param resource
-     *            {@link Resource} to get the {@link URI} of
-     * @return {@link URI}, or {@code null} if the server does not offer that resource
+     *            {@link Resource} to get the {@link URL} of
+     * @return {@link URL}, or {@code null} if the server does not offer that resource
      */
-    public URI resourceUri(Resource resource) throws AcmeException {
+    public URL resourceUrl(Resource resource) throws AcmeException {
         readDirectory();
         return resourceMap.get().get(Objects.requireNonNull(resource, "resource"));
     }
@@ -219,11 +220,11 @@ public class Session {
             metadata.set(new Metadata(JSON.empty()));
         }
 
-        Map<Resource, URI> map = new EnumMap<>(Resource.class);
+        Map<Resource, URL> map = new EnumMap<>(Resource.class);
         for (Resource res : Resource.values()) {
-            URI uri = directoryJson.get(res.path()).asURI();
-            if (uri != null) {
-                map.put(res, uri);
+            URL url = directoryJson.get(res.path()).asURL();
+            if (url != null) {
+                map.put(res, url);
             }
         }
         resourceMap.set(map);

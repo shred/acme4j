@@ -31,12 +31,12 @@ Instead of a generic provider, this call uses a special _Let's Encrypt_ provider
 Now that you have a `Session` object, you can use it to bind ACME resource objects. For example, this is the way to get a `Registration` object to an existing registration:
 
 ```java
-URI accountLocationUri = ... // your account's URI, as returned by Registration.getLocation()
+URL accountLocationUrl = ... // your account's URL, as returned by Registration.getLocation()
 
-Registration registration = Registration.bind(session, accountLocationUri);
+Registration registration = Registration.bind(session, accountLocationUrl);
 ```
 
-You can create any of the resource objects `Registration`, `Authorization`, `Challenge` and `Certificate` like that, as long as you know the corresponding resource URI. To get the resource URI, use the `getLocation()` method.
+You can create any of the resource objects `Registration`, `Authorization`, `Challenge` and `Certificate` like that, as long as you know the corresponding resource URL. To get the resource URL, use the `getLocation()` method.
 
 ## Serialization
 

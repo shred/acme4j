@@ -16,6 +16,7 @@ package org.shredzone.acme4j.connector;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.ByteArrayInputStream;
@@ -29,7 +30,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -56,7 +56,7 @@ import org.shredzone.acme4j.toolbox.TestUtils;
  */
 public class DefaultConnectionTest {
 
-    private URI requestUri = URI.create("http://example.com/acme/");;
+    private URL requestUrl = url("http://example.com/acme/");
     private HttpURLConnection mockUrlConnection;
     private HttpConnector mockHttpConnection;
     private Session session;
@@ -66,7 +66,7 @@ public class DefaultConnectionTest {
         mockUrlConnection = mock(HttpURLConnection.class);
 
         mockHttpConnection = mock(HttpConnector.class);
-        when(mockHttpConnection.openConnection(requestUri)).thenReturn(mockUrlConnection);
+        when(mockHttpConnection.openConnection(requestUrl)).thenReturn(mockUrlConnection);
 
         session = TestUtils.session();
         session.setLocale(Locale.JAPAN);
@@ -144,8 +144,8 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            URI location = conn.getLocation();
-            assertThat(location, is(new URI("https://example.com/otherlocation")));
+            URL location = conn.getLocation();
+            assertThat(location, is(url("https://example.com/otherlocation")));
         }
 
         verify(mockUrlConnection).getHeaderField("Location");
@@ -163,8 +163,8 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            URI location = conn.getLocation();
-            assertThat(location, is(new URI("https://example.org/otherlocation")));
+            URL location = conn.getLocation();
+            assertThat(location, is(url("https://example.org/otherlocation")));
         }
 
         verify(mockUrlConnection).getHeaderField("Location");
@@ -191,48 +191,15 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getLink("next"), is(new URI("https://example.com/acme/new-authz")));
-            assertThat(conn.getLink("recover"), is(new URI("https://example.org/recover-reg")));
-            assertThat(conn.getLink("terms-of-service"), is(new URI("https://example.com/acme/terms")));
+            assertThat(conn.getLink("next"), is(url("https://example.com/acme/new-authz")));
+            assertThat(conn.getLink("recover"), is(url("https://example.org/recover-reg")));
+            assertThat(conn.getLink("terms-of-service"), is(url("https://example.com/acme/terms")));
             assertThat(conn.getLink("secret-stuff"), is(nullValue()));
-        }
-    }
 
-    /**
-     * Test that multiple link headers are evaluated.
-     */
-    @Test
-    public void testGetMultiLink() {
-        Map<String, List<String>> headers = new HashMap<>();
-        headers.put("Link", Arrays.asList(
-                        "<https://example.com/acme/terms1>; rel=\"terms-of-service\"",
-                        "<https://example.com/acme/terms2>; rel=\"terms-of-service\"",
-                        "<https://example.com/acme/terms3>; rel=\"terms-of-service\""
-                    ));
-
-        when(mockUrlConnection.getHeaderFields()).thenReturn(headers);
-
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
-            assertThat(conn.getLinks("terms-of-service"), containsInAnyOrder(
-                        URI.create("https://example.com/acme/terms1"),
-                        URI.create("https://example.com/acme/terms2"),
-                        URI.create("https://example.com/acme/terms3")
-            ));
-        }
-    }
-
-    /**
-     * Test that no link headers are properly handled.
-     */
-    @Test
-    public void testGetNoLink() {
-        Map<String, List<String>> headers = Collections.emptyMap();
-        when(mockUrlConnection.getHeaderFields()).thenReturn(headers);
-
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
-            assertThat(conn.getLinks("something"), is(nullValue()));
+            assertThat(conn.getLinkAsURI("next"), is(new URI("https://example.com/acme/new-authz")));
+            assertThat(conn.getLinkAsURI("recover"), is(new URI("https://example.org/recover-reg")));
+            assertThat(conn.getLinkAsURI("terms-of-service"), is(new URI("https://example.com/acme/terms")));
+            assertThat(conn.getLinkAsURI("secret-stuff"), is(nullValue()));
         }
     }
 
@@ -243,7 +210,7 @@ public class DefaultConnectionTest {
     public void testNoLocation() throws Exception {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            URI location = conn.getLocation();
+            URL location = conn.getLocation();
             assertThat(location, is(nullValue()));
         }
 
@@ -488,7 +455,7 @@ public class DefaultConnectionTest {
     @Test
     public void testSendRequest() throws Exception {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.sendRequest(requestUri, session);
+            conn.sendRequest(requestUrl, session);
         }
 
         verify(mockUrlConnection).setRequestMethod("GET");
@@ -526,7 +493,7 @@ public class DefaultConnectionTest {
         }) {
             JSONBuilder cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");
-            conn.sendSignedRequest(requestUri, cb, DefaultConnectionTest.this.session);
+            conn.sendSignedRequest(requestUrl, cb, DefaultConnectionTest.this.session);
         }
 
         verify(mockUrlConnection).setRequestMethod("HEAD");
@@ -551,7 +518,7 @@ public class DefaultConnectionTest {
         StringBuilder expectedHeader = new StringBuilder();
         expectedHeader.append('{');
         expectedHeader.append("\"nonce\":\"").append(Base64Url.encode(nonce1)).append("\",");
-        expectedHeader.append("\"url\":\"").append(requestUri).append("\",");
+        expectedHeader.append("\"url\":\"").append(requestUrl).append("\",");
         expectedHeader.append("\"alg\":\"RS256\",");
         expectedHeader.append("\"jwk\":{");
         expectedHeader.append("\"kty\":\"").append(TestUtils.KTY).append("\",");
@@ -576,7 +543,7 @@ public class DefaultConnectionTest {
     public void testSendSignedRequestNoNonce() throws Exception {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             JSONBuilder cb = new JSONBuilder();
-            conn.sendSignedRequest(requestUri, cb, DefaultConnectionTest.this.session);
+            conn.sendSignedRequest(requestUrl, cb, DefaultConnectionTest.this.session);
         }
     }
 

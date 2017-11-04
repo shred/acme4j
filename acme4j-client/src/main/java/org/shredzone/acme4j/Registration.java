@@ -17,6 +17,7 @@ import static org.shredzone.acme4j.toolbox.AcmeUtils.*;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
@@ -56,17 +57,17 @@ public class Registration extends AcmeResource {
 
     private final List<URI> contacts = new ArrayList<>();
     private URI agreement;
-    private URI authorizations;
-    private URI certificates;
+    private URL authorizations;
+    private URL certificates;
     private Status status;
     private boolean loaded = false;
 
-    protected Registration(Session session, URI location) {
+    protected Registration(Session session, URL location) {
         super(session);
         setLocation(location);
     }
 
-    protected Registration(Session session, URI location, URI agreement) {
+    protected Registration(Session session, URL location, URI agreement) {
         super(session);
         setLocation(location);
         this.agreement = agreement;
@@ -78,10 +79,10 @@ public class Registration extends AcmeResource {
      * @param session
      *            {@link Session} to be used
      * @param location
-     *            Location URI of the registration
+     *            Location URL of the registration
      * @return {@link Registration} bound to the session and location
      */
-    public static Registration bind(Session session, URI location) {
+    public static Registration bind(Session session, URL location) {
         return new Registration(session, location);
     }
 
@@ -185,7 +186,7 @@ public class Registration extends AcmeResource {
                     .put("type", "dns")
                     .put("value", toAce(domain));
 
-            conn.sendSignedRequest(getSession().resourceUri(Resource.NEW_AUTHZ), claims, getSession());
+            conn.sendSignedRequest(getSession().resourceUrl(Resource.NEW_AUTHZ), claims, getSession());
             conn.accept(HttpURLConnection.HTTP_CREATED);
 
             JSON json = conn.readJsonResponse();
@@ -240,7 +241,7 @@ public class Registration extends AcmeResource {
                 claims.put("notAfter", notAfter);
             }
 
-            conn.sendSignedRequest(getSession().resourceUri(Resource.NEW_CERT), claims, getSession());
+            conn.sendSignedRequest(getSession().resourceUrl(Resource.NEW_CERT), claims, getSession());
             int rc = conn.accept(HttpURLConnection.HTTP_CREATED, HttpURLConnection.HTTP_ACCEPTED);
 
             X509Certificate cert = null;
@@ -252,9 +253,9 @@ public class Registration extends AcmeResource {
                 }
             }
 
-            URI chainCertUri = conn.getLink("up");
+            URL chainCertUrl = conn.getLink("up");
 
-            return new Certificate(getSession(), conn.getLocation(), chainCertUri, cert);
+            return new Certificate(getSession(), conn.getLocation(), chainCertUrl, cert);
         }
     }
 
@@ -277,7 +278,7 @@ public class Registration extends AcmeResource {
         LOG.debug("key-change");
 
         try (Connection conn = getSession().provider().connect()) {
-            URI keyChangeUri = getSession().resourceUri(Resource.KEY_CHANGE);
+            URL keyChangeUrl = getSession().resourceUrl(Resource.KEY_CHANGE);
             PublicJsonWebKey newKeyJwk = PublicJsonWebKey.Factory.newPublicJwk(newKeyPair.getPublic());
 
             JSONBuilder payloadClaim = new JSONBuilder();
@@ -286,7 +287,7 @@ public class Registration extends AcmeResource {
 
             JsonWebSignature innerJws = new JsonWebSignature();
             innerJws.setPayload(payloadClaim.toString());
-            innerJws.getHeaders().setObjectHeaderValue("url", keyChangeUri);
+            innerJws.getHeaders().setObjectHeaderValue("url", keyChangeUrl);
             innerJws.getHeaders().setJwkHeaderValue("jwk", newKeyJwk);
             innerJws.setAlgorithmHeaderValue(keyAlgorithm(newKeyJwk));
             innerJws.setKey(newKeyPair.getPrivate());
@@ -298,7 +299,7 @@ public class Registration extends AcmeResource {
             outerClaim.put("signature", innerJws.getEncodedSignature());
             outerClaim.put("payload", innerJws.getEncodedPayload());
 
-            conn.sendSignedRequest(keyChangeUri, outerClaim, getSession());
+            conn.sendSignedRequest(keyChangeUrl, outerClaim, getSession());
             conn.accept(HttpURLConnection.HTTP_OK);
 
             getSession().setKeyPair(newKeyPair);
@@ -361,19 +362,19 @@ public class Registration extends AcmeResource {
                     .forEach(contacts::add);
         }
 
-        this.authorizations = json.get(KEY_AUTHORIZATIONS).asURI();
-        this.certificates = json.get(KEY_CERTIFICATES).asURI();
+        this.authorizations = json.get(KEY_AUTHORIZATIONS).asURL();
+        this.certificates = json.get(KEY_CERTIFICATES).asURL();
 
         if (json.contains(KEY_STATUS)) {
             this.status = Status.parse(json.get(KEY_STATUS).asString());
         }
 
-        URI location = conn.getLocation();
+        URL location = conn.getLocation();
         if (location != null) {
             setLocation(location);
         }
 
-        URI tos = conn.getLink("terms-of-service");
+        URI tos = conn.getLinkAsURI("terms-of-service");
         if (tos != null) {
             this.agreement = tos;
         }

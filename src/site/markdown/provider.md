@@ -21,11 +21,11 @@ However, it is also possible to adapt the behavior of wide parts of _acme4j_ to 
 A client provider implements the [`AcmeProvider`](./apidocs/org/shredzone/acme4j/provider/AcmeProvider.html) interface, but usually it is easier to extend [`AbstractAcmeProvider`](./apidocs/org/shredzone/acme4j/provider/AbstractAcmeProvider.html) and implement only these two methods:
 
 * `accepts(URI)` checks if the client provider is accepting the provided URI. Usually it would be an URI like `acme://example.com`. Note that the `http` and `https` schemes are reserved for the generic provider and cannot be used by other providers.
-* `resolve(URI)` parses that URI and returns the corresponding URI of the directory service.
+* `resolve(URI)` parses that URI and returns the corresponding URL of the directory service.
 
 The `AcmeProvider` implementation needs to be registered with Java's `ServiceLoader`. In the `META-INF/services` path of your project, create a file `org.shredzone.acme4j.provider.AcmeProvider` and write the fully qualified class name of your implementation into that file.
 
-When _acme4j_ tries to connect to an acme URI, it first invokes the `accepts(URI)` method of all registered `AcmeProvider`s. Only one of the providers must return `true` for a successful connection. _acme4j_ then invokes the `resolve(URI)` method of that provider, and connects to the directory URI that is returned.
+When _acme4j_ tries to connect to an acme URI, it first invokes the `accepts(URI)` method of all registered `AcmeProvider`s. Only one of the providers must return `true` for a successful connection. _acme4j_ then invokes the `resolve(URI)` method of that provider, and connects to the directory URL that is returned.
 
 The connection fails if none or more than one `AcmeProvider` implementations `accept` the acme URI.
 
@@ -43,6 +43,6 @@ In your `AcmeProvider` implementation, override the `createChallenge(Session, St
 
 ## No directory service
 
-An ACME server may not provide a directory service, for example when fixed URIs are to be used.
+An ACME server may not provide a directory service, for example when fixed URLs are to be used.
 
-In this case, override the `resources(Session, URI)` method, and return a `Map` of all available resources and their respective URI.
+In this case, override the `resources(Session, URI)` method, and return a `Map` of all available resources and their respective URL.

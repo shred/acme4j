@@ -15,6 +15,7 @@ package org.shredzone.acme4j;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -83,11 +84,11 @@ public class RegistrationBuilder {
                 claims.put("contact", contacts);
             }
 
-            conn.sendSignedRequest(session.resourceUri(Resource.NEW_REG), claims, session);
+            conn.sendSignedRequest(session.resourceUrl(Resource.NEW_REG), claims, session);
             conn.accept(HttpURLConnection.HTTP_CREATED);
 
-            URI location = conn.getLocation();
-            URI tos = conn.getLink("terms-of-service");
+            URL location = conn.getLocation();
+            URI tos = conn.getLinkAsURI("terms-of-service");
 
             return new Registration(session, location, tos);
         }

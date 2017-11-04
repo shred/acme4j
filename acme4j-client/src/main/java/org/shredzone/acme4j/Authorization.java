@@ -17,7 +17,7 @@ import static java.util.stream.Collectors.toList;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 
 import java.net.HttpURLConnection;
-import java.net.URI;
+import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,7 +49,7 @@ public class Authorization extends AcmeResource {
     private List<List<Challenge>> combinations;
     private boolean loaded = false;
 
-    protected Authorization(Session session, URI location) {
+    protected Authorization(Session session, URL location) {
         super(session);
         setLocation(location);
     }
@@ -64,7 +64,7 @@ public class Authorization extends AcmeResource {
      *            Location of the Authorization
      * @return {@link Authorization} bound to the session and location
      */
-    public static Authorization bind(Session session, URI location) {
+    public static Authorization bind(Session session, URL location) {
         return new Authorization(session, location);
     }
 

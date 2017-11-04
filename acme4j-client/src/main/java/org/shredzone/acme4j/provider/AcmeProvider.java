@@ -14,6 +14,7 @@
 package org.shredzone.acme4j.provider;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.ServiceLoader;
 
 import org.shredzone.acme4j.Session;
@@ -41,15 +42,15 @@ public interface AcmeProvider {
     boolean accepts(URI serverUri);
 
     /**
-     * Resolves the server URI and returns the matching directory URI.
+     * Resolves the server URI and returns the matching directory URL.
      *
      * @param serverUri
      *            Server {@link URI}
-     * @return Resolved directory {@link URI}
+     * @return Resolved directory {@link URL}
      * @throws IllegalArgumentException
      *             if the server {@link URI} is not accepted
      */
-    URI resolve(URI serverUri);
+    URL resolve(URI serverUri);
 
     /**
      * Creates a {@link Connection} for communication with the ACME server.

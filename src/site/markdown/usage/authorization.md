@@ -56,12 +56,12 @@ If your final certificate will contain further domains or subdomains, repeat the
 
 ## Update an Authorization
 
-The server also provides an authorization URI. It can be retrieved from `Authorization.getLocation()`. You can recreate the `Authorization` object at a later time just by binding it to your `Session`:
+The server also provides an authorization URL. It can be retrieved from `Authorization.getLocation()`. You can recreate the `Authorization` object at a later time just by binding it to your `Session`:
 
 ```java
-URI authUri = ... // Authorization URI
+URL authUrl = ... // Authorization URL
 
-Authorization auth = Authorization.bind(session, authUri);
+Authorization auth = Authorization.bind(session, authUrl);
 ```
 
 As soon as you invoke a getter, the `Authorization` object lazily loads the current server state of your authorization, including the domain name, the overall status, and an expiry date.
@@ -84,14 +84,14 @@ To recreate a `Challenge` object at a later time, all you need is to store the o
 
 ```java
 Challenge originalChallenge = ... // some Challenge instance
-URI challengeUri = originalChallenge.getLocation();
+URL challengeUrl = originalChallenge.getLocation();
 ```
 
 Later, you restore the `Challenge` object by invoking `Challenge.bind()`.
 
 ```java
-URI challengeUri = ... // challenge URI
-Challenge restoredChallenge = Challenge.bind(session, challengeUri);
+URL challengeUrl = ... // challenge URL
+Challenge restoredChallenge = Challenge.bind(session, challengeUrl);
 ```
 
 The `restoredChallenge` already reflects the current state of the challenge.

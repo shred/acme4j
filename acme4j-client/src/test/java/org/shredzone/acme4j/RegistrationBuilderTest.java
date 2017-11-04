@@ -20,6 +20,7 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 
 import org.junit.Test;
 import org.shredzone.acme4j.connector.Resource;
@@ -32,8 +33,8 @@ import org.shredzone.acme4j.toolbox.JSONBuilder;
  */
 public class RegistrationBuilderTest {
 
-    private URI resourceUri  = URI.create("http://example.com/acme/resource");;
-    private URI locationUri  = URI.create("http://example.com/acme/registration");;
+    private URL resourceUrl  = url("http://example.com/acme/resource");
+    private URL locationUrl  = url("http://example.com/acme/registration");
     private URI agreementUri = URI.create("http://example.com/agreement.pdf");;
 
     /**
@@ -43,8 +44,8 @@ public class RegistrationBuilderTest {
     public void testRegistration() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
-                assertThat(uri, is(resourceUri));
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+                assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJson("newRegistration")));
                 assertThat(session, is(notNullValue()));
             }
@@ -56,12 +57,12 @@ public class RegistrationBuilderTest {
             }
 
             @Override
-            public URI getLocation() {
-                return locationUri;
+            public URL getLocation() {
+                return locationUrl;
             }
 
             @Override
-            public URI getLink(String relation) {
+            public URI getLinkAsURI(String relation) {
                 switch(relation) {
                     case "terms-of-service": return agreementUri;
                     default: return null;
@@ -69,14 +70,14 @@ public class RegistrationBuilderTest {
             }
         };
 
-        provider.putTestResource(Resource.NEW_REG, resourceUri);
+        provider.putTestResource(Resource.NEW_REG, resourceUrl);
 
         RegistrationBuilder builder = new RegistrationBuilder();
         builder.addContact("mailto:foo@example.com");
 
         Registration registration = builder.create(provider.createSession());
 
-        assertThat(registration.getLocation(), is(locationUri));
+        assertThat(registration.getLocation(), is(locationUrl));
         assertThat(registration.getAgreement(), is(agreementUri));
 
         provider.close();

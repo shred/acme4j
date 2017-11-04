@@ -16,8 +16,10 @@ package org.shredzone.acme4j.provider;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 
 import org.junit.Test;
 
@@ -42,13 +44,13 @@ public class GenericAcmeProviderTest {
      * Test if the provider resolves the URI correctly.
      */
     @Test
-    public void testResolve() throws URISyntaxException {
+    public void testResolve() throws URISyntaxException, MalformedURLException {
         URI serverUri = new URI("http://example.com/acme");
 
         GenericAcmeProvider provider = new GenericAcmeProvider();
 
-        URI resolvedUri = provider.resolve(serverUri);
-        assertThat(resolvedUri, is(equalTo(serverUri)));
+        URL resolvedUrl = provider.resolve(serverUri);
+        assertThat(resolvedUrl, is(equalTo(serverUri.toURL())));
     }
 
 }

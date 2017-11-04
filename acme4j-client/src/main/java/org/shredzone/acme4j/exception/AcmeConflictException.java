@@ -13,7 +13,7 @@
  */
 package org.shredzone.acme4j.exception;
 
-import java.net.URI;
+import java.net.URL;
 import java.util.Objects;
 
 /**
@@ -23,7 +23,7 @@ import java.util.Objects;
 public class AcmeConflictException extends AcmeException {
     private static final long serialVersionUID = 7454201988845449591L;
 
-    private final URI location;
+    private final URL location;
 
     /**
      * Creates a new {@link AcmeConflictException}.
@@ -31,9 +31,9 @@ public class AcmeConflictException extends AcmeException {
      * @param msg
      *            Details about the conflicting resource
      * @param location
-     *            {@link URI} of the conflicting resource
+     *            {@link URL} of the conflicting resource
      */
-    public AcmeConflictException(String msg, URI location) {
+    public AcmeConflictException(String msg, URL location) {
         super(msg);
         this.location = Objects.requireNonNull(location, "location");
     }
@@ -41,7 +41,7 @@ public class AcmeConflictException extends AcmeException {
     /**
      * Location of the conflicting resource.
      */
-    public URI getLocation() {
+    public URL getLocation() {
         return location;
     }
 

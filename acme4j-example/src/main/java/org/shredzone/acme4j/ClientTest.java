@@ -110,7 +110,7 @@ public class ClientTest {
         Certificate certificate = reg.requestCertificate(csrb.getEncoded());
 
         LOG.info("Success! The certificate for domains " + domains + " has been generated!");
-        LOG.info("Certificate URI: " + certificate.getLocation());
+        LOG.info("Certificate URL: " + certificate.getLocation());
 
         // Download the leaf certificate and certificate chain.
         X509Certificate cert = certificate.download();
@@ -151,9 +151,9 @@ public class ClientTest {
      * created.
      * <p>
      * This is a simple way of finding your {@link Registration}. A better way is to get
-     * the URI of your new registration with {@link Registration#getLocation()} and store
+     * the URL of your new registration with {@link Registration#getLocation()} and store
      * it somewhere. If you need to get access to your account later, reconnect to it via
-     * {@link Registration#bind(Session, URI)} by using the stored location.
+     * {@link Registration#bind(Session, URL)} by using the stored location.
      *
      * @param session
      *            {@link Session} to bind with
@@ -165,7 +165,7 @@ public class ClientTest {
         try {
             // Try to create a new Registration.
             reg = new RegistrationBuilder().create(session);
-            LOG.info("Registered a new user, URI: " + reg.getLocation());
+            LOG.info("Registered a new user, URL: " + reg.getLocation());
 
             // This is a new account. Let the user accept the Terms of Service.
             // We won't be able to authorize domains until the ToS is accepted.
@@ -177,7 +177,7 @@ public class ClientTest {
             // The Key Pair is already registered. getLocation() contains the
             // URL of the existing registration's location. Bind it to the session.
             reg = Registration.bind(session, ex.getLocation());
-            LOG.info("Account does already exist, URI: " + reg.getLocation(), ex);
+            LOG.info("Account does already exist, URL: " + reg.getLocation(), ex);
         }
 
         return reg;

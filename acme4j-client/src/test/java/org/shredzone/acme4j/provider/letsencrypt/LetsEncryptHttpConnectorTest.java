@@ -15,10 +15,10 @@ package org.shredzone.acme4j.provider.letsencrypt;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
+import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URISyntaxException;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -46,7 +46,7 @@ public class LetsEncryptHttpConnectorTest {
 
         try {
             HttpURLConnection goodConn = connector.openConnection(
-                            new URI("https://acme-staging.api.letsencrypt.org/directory"));
+                            url("https://acme-staging.api.letsencrypt.org/directory"));
             assertThat(goodConn, is(instanceOf(HttpsURLConnection.class)));
             goodConn.connect();
         } catch (SSLHandshakeException ex) {
@@ -55,7 +55,7 @@ public class LetsEncryptHttpConnectorTest {
 
         try {
             HttpURLConnection badConn = connector.openConnection(
-                            new URI("https://www.google.com"));
+                            url("https://www.google.com"));
             assertThat(badConn, is(instanceOf(HttpsURLConnection.class)));
             badConn.connect();
             fail("Connection accepts foreign certificate");

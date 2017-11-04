@@ -2,6 +2,10 @@
 
 This document will help you migrate your code to the latest _acme4j_ version.
 
+## Migration to Version 0.14
+
+All resource locations are now `URL` objects (previously they were `URI`s). This should affect your source only in a minimum way, if any.
+
 ## Migration to Version 0.13
 
 In the `acme4j-client` module, the `org.shredzone.acme4j.util` package has been renamed in order to fix a split package in Java 9. This package is meant to be internal, so this change should not break your code. The same named public package in the `acme4j-utils` module is unchanged.

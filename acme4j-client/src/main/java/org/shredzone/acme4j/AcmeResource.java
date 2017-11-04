@@ -14,7 +14,7 @@
 package org.shredzone.acme4j;
 
 import java.io.Serializable;
-import java.net.URI;
+import java.net.URL;
 import java.util.Objects;
 
 /**
@@ -24,7 +24,7 @@ public abstract class AcmeResource implements Serializable {
     private static final long serialVersionUID = -7930580802257379731L;
 
     private transient Session session;
-    private URI location;
+    private URL location;
 
     /**
      * Create a new {@link AcmeResource}.
@@ -57,7 +57,7 @@ public abstract class AcmeResource implements Serializable {
     /**
      * Sets the resource's location.
      */
-    protected void setLocation(URI location) {
+    protected void setLocation(URL location) {
         this.location = Objects.requireNonNull(location, "location");
     }
 
@@ -81,7 +81,7 @@ public abstract class AcmeResource implements Serializable {
     /**
      * Gets the resource's location.
      */
-    public URI getLocation() {
+    public URL getLocation() {
         return location;
     }
 

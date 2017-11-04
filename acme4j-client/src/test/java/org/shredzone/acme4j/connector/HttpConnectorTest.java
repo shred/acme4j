@@ -17,10 +17,10 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
+import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.junit.Test;
@@ -59,7 +59,7 @@ public class HttpConnectorTest {
     @Category(HttpURLConnection.class)
     public void testOpenConnection() throws IOException, URISyntaxException {
         HttpConnector connector = new HttpConnector();
-        HttpURLConnection conn = connector.openConnection(new URI("http://example.com"));
+        HttpURLConnection conn = connector.openConnection(url("http://example.com"));
         assertThat(conn, not(nullValue()));
         conn.connect();
         assertThat(conn.getResponseCode(), is(HttpURLConnection.HTTP_OK));

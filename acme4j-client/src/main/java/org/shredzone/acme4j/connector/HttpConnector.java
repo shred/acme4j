@@ -16,7 +16,7 @@ package org.shredzone.acme4j.connector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.URI;
+import java.net.URL;
 import java.util.Properties;
 
 import org.slf4j.LoggerFactory;
@@ -59,14 +59,14 @@ public class HttpConnector {
     }
 
     /**
-     * Opens a {@link HttpURLConnection} to the given {@link URI}.
+     * Opens a {@link HttpURLConnection} to the given {@link URL}.
      *
-     * @param uri
-     *            {@link URI} to connect to
-     * @return {@link HttpURLConnection} connected to the {@link URI}
+     * @param url
+     *            {@link URL} to connect to
+     * @return {@link HttpURLConnection} connected to the {@link URL}
      */
-    public HttpURLConnection openConnection(URI uri) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) uri.toURL().openConnection();
+    public HttpURLConnection openConnection(URL url) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         configure(conn);
         return conn;
     }

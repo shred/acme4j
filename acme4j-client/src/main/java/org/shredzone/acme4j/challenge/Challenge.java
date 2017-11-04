@@ -14,7 +14,7 @@
 package org.shredzone.acme4j.challenge;
 
 import java.net.HttpURLConnection;
-import java.net.URI;
+import java.net.URL;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -72,7 +72,7 @@ public class Challenge extends AcmeResource {
      * @return {@link Challenge} bound to this session and location
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Challenge> T bind(Session session, URI location) throws AcmeException {
+    public static <T extends Challenge> T bind(Session session, URL location) throws AcmeException {
         Objects.requireNonNull(session, "session");
         Objects.requireNonNull(location, "location");
 
@@ -105,11 +105,11 @@ public class Challenge extends AcmeResource {
     }
 
     /**
-     * Returns the location {@link URI} of the challenge.
+     * Returns the location {@link URL} of the challenge.
      */
     @Override
-    public URI getLocation() {
-        return data.get(KEY_URI).asURI();
+    public URL getLocation() {
+        return data.get(KEY_URI).asURL();
     }
 
     /**

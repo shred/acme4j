@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.connector;
 
+import static java.util.stream.Collectors.toList;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.keyAlgorithm;
 
 import java.io.IOException;
@@ -91,15 +92,15 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public void sendRequest(URI uri, Session session) throws AcmeException {
-        Objects.requireNonNull(uri, "uri");
+    public void sendRequest(URL url, Session session) throws AcmeException {
+        Objects.requireNonNull(url, "url");
         Objects.requireNonNull(session, "session");
         assertConnectionIsClosed();
 
-        LOG.debug("GET {}", uri);
+        LOG.debug("GET {}", url);
 
         try {
-            conn = httpConnector.openConnection(uri);
+            conn = httpConnector.openConnection(url);
             conn.setRequestMethod("GET");
             conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
             conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
@@ -114,8 +115,8 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) throws AcmeException {
-        Objects.requireNonNull(uri, "uri");
+    public void sendSignedRequest(URL url, JSONBuilder claims, Session session) throws AcmeException {
+        Objects.requireNonNull(url, "url");
         Objects.requireNonNull(claims, "claims");
         Objects.requireNonNull(session, "session");
         assertConnectionIsClosed();
@@ -124,8 +125,8 @@ public class DefaultConnection implements Connection {
             KeyPair keypair = session.getKeyPair();
 
             if (session.getNonce() == null) {
-                LOG.debug("Getting initial nonce, HEAD {}", uri);
-                conn = httpConnector.openConnection(uri);
+                LOG.debug("Getting initial nonce, HEAD {}", url);
+                conn = httpConnector.openConnection(url);
                 conn.setRequestMethod("HEAD");
                 conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
                 conn.connect();
@@ -137,9 +138,9 @@ public class DefaultConnection implements Connection {
                 throw new AcmeProtocolException("Server did not provide a nonce");
             }
 
-            LOG.debug("POST {} with claims: {}", uri, claims);
+            LOG.debug("POST {} with claims: {}", url, claims);
 
-            conn = httpConnector.openConnection(uri);
+            conn = httpConnector.openConnection(url);
             conn.setRequestMethod("POST");
             conn.setRequestProperty(ACCEPT_HEADER, "application/json");
             conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
@@ -152,7 +153,7 @@ public class DefaultConnection implements Connection {
             JsonWebSignature jws = new JsonWebSignature();
             jws.setPayload(claims.toString());
             jws.getHeaders().setObjectHeaderValue("nonce", Base64Url.encode(session.getNonce()));
-            jws.getHeaders().setObjectHeaderValue("url", uri);
+            jws.getHeaders().setObjectHeaderValue("url", url);
             jws.getHeaders().setJwkHeaderValue("jwk", jwk);
             jws.setAlgorithmHeaderValue(keyAlgorithm(jwk));
             jws.setKey(keypair.getPrivate());
@@ -289,7 +290,7 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public URI getLocation() {
+    public URL getLocation() {
         assertConnectionIsOpen();
 
         String location = conn.getHeaderField(LOCATION_HEADER);
@@ -302,24 +303,37 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public URI getLink(String relation) {
-        Collection<URI> links = getLinks(relation);
-        if (links == null) {
-            return null;
-        }
-
-        if (links.size() > 1) {
-            LOG.debug("Link: {} - using the first of {}", relation, links.size());
-        }
-
-        return links.iterator().next();
+    public URL getLink(String relation) {
+        return getLinks(relation).stream()
+                .findFirst()
+                .map(this::resolveRelative)
+                .orElse(null);
     }
 
     @Override
-    public Collection<URI> getLinks(String relation) {
+    public URI getLinkAsURI(String relation) {
+        return getLinks(relation).stream()
+                .findFirst()
+                .map(this::resolveRelativeAsURI)
+                .orElse(null);
+    }
+
+    @Override
+    public void close() {
+        conn = null;
+    }
+
+    /**
+     * Returns the link headers of the given relation. The link URIs are unresolved.
+     *
+     * @param relation
+     *            Relation name
+     * @return Link headers
+     */
+    private Collection<String> getLinks(String relation) {
         assertConnectionIsOpen();
 
-        List<URI> result = new ArrayList<>();
+        List<String> result = new ArrayList<>();
 
         List<String> links = conn.getHeaderFields().get(LINK_HEADER);
         if (links != null) {
@@ -329,17 +343,12 @@ public class DefaultConnection implements Connection {
                 if (m.matches()) {
                     String location = m.group(1);
                     LOG.debug("Link: {} -> {}", relation, location);
-                    result.add(resolveRelative(location));
+                    result.add(location);
                 }
             }
         }
 
-        return !result.isEmpty() ? result : null;
-    }
-
-    @Override
-    public void close() {
-        conn = null;
+        return result;
     }
 
     /**
@@ -389,14 +398,16 @@ public class DefaultConnection implements Connection {
         }
 
         if ("agreementRequired".equals(error)) {
-            URI instance = resolveRelative(json.get("instance").asString());
-            URI tos = getLink("terms-of-service");
+            URI instance = resolveRelativeAsURI(json.get("instance").asString());
+            URI tos = getLinkAsURI("terms-of-service");
             return new AcmeAgreementRequiredException(type, detail, tos, instance);
         }
 
         if ("rateLimited".equals(error)) {
             Optional<Instant> retryAfter = getRetryAfterHeader();
-            Collection<URI> rateLimits = getLinks("rate-limit");
+            Collection<URI> rateLimits = getLinks("rate-limit").stream()
+                    .map(this::resolveRelativeAsURI)
+                    .collect(toList());
             return new AcmeRateLimitExceededException(type, detail, retryAfter.orElse(null), rateLimits);
         }
 
@@ -437,7 +448,29 @@ public class DefaultConnection implements Connection {
     }
 
     /**
-     * Resolves a relative link against the connection's last URI.
+     * Resolves a relative link against the connection's last URL.
+     *
+     * @param link
+     *            Link to resolve. Absolute links are just converted to an URL. May be
+     *            {@code null}.
+     * @return Absolute URL of the given link, or {@code null} if the link was
+     *         {@code null}.
+     */
+    private URL resolveRelative(String link) {
+        if (link == null) {
+            return null;
+        }
+
+        assertConnectionIsOpen();
+        try {
+            return new URL(conn.getURL(), link);
+        } catch (MalformedURLException ex) {
+            throw new AcmeProtocolException("Cannot resolve relative link: " + link, ex);
+        }
+    }
+
+    /**
+     * Resolves a relative link against the connection's last URL.
      *
      * @param link
      *            Link to resolve. Absolute links are just converted to an URI. May be
@@ -445,15 +478,15 @@ public class DefaultConnection implements Connection {
      * @return Absolute URI of the given link, or {@code null} if the link was
      *         {@code null}.
      */
-    private URI resolveRelative(String link) {
+    private URI resolveRelativeAsURI(String link) {
         if (link == null) {
             return null;
         }
 
         assertConnectionIsOpen();
         try {
-            return new URL(conn.getURL(), link).toURI();
-        } catch (MalformedURLException | URISyntaxException ex) {
+            return conn.getURL().toURI().resolve(link);
+        } catch (URISyntaxException ex) {
             throw new AcmeProtocolException("Cannot resolve relative link: " + link, ex);
         }
     }

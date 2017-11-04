@@ -20,7 +20,7 @@ import static org.shredzone.acme4j.toolbox.TestUtils.*;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.URI;
+import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -44,7 +44,7 @@ public class AuthorizationTest {
 
     private static final String SNAILMAIL_TYPE = "snail-01"; // a non-existent challenge
 
-    private URI locationUri = URI.create("http://example.com/acme/registration");;
+    private URL locationUrl = url("http://example.com/acme/registration");
 
     /**
      * Test that {@link Authorization#findChallenge(String)} does only find standalone
@@ -121,8 +121,8 @@ public class AuthorizationTest {
     public void testUpdate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URI uri, Session session) {
-                assertThat(uri, is(locationUri));
+            public void sendRequest(URL url, Session session) {
+                assertThat(url, is(locationUrl));
             }
 
             @Override
@@ -150,13 +150,13 @@ public class AuthorizationTest {
         provider.putTestChallenge("http-01", httpChallenge);
         provider.putTestChallenge("dns-01", dnsChallenge);
 
-        Authorization auth = new Authorization(session, locationUri);
+        Authorization auth = new Authorization(session, locationUrl);
         auth.update();
 
         assertThat(auth.getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));
         assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
-        assertThat(auth.getLocation(), is(locationUri));
+        assertThat(auth.getLocation(), is(locationUrl));
 
         assertThat(auth.getChallenges(), containsInAnyOrder(
                         (Challenge) httpChallenge, (Challenge) dnsChallenge));
@@ -179,9 +179,9 @@ public class AuthorizationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URI uri, Session session) {
+            public void sendRequest(URL url, Session session) {
                 requestWasSent.set(true);
-                assertThat(uri, is(locationUri));
+                assertThat(url, is(locationUrl));
             }
 
             @Override
@@ -207,7 +207,7 @@ public class AuthorizationTest {
         provider.putTestChallenge("http-01", new Http01Challenge(session));
         provider.putTestChallenge("dns-01", new Dns01Challenge(session));
 
-        Authorization auth = new Authorization(session, locationUri);
+        Authorization auth = new Authorization(session, locationUrl);
 
         // Lazy loading
         assertThat(requestWasSent.get(), is(false));
@@ -233,8 +233,8 @@ public class AuthorizationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URI uri, Session session) {
-                assertThat(uri, is(locationUri));
+            public void sendRequest(URL url, Session session) {
+                assertThat(url, is(locationUrl));
             }
 
             @Override
@@ -262,7 +262,7 @@ public class AuthorizationTest {
         provider.putTestChallenge("http-01", httpChallenge);
         provider.putTestChallenge("dns-01", dnsChallenge);
 
-        Authorization auth = new Authorization(session, locationUri);
+        Authorization auth = new Authorization(session, locationUrl);
 
         try {
             auth.update();
@@ -274,7 +274,7 @@ public class AuthorizationTest {
         assertThat(auth.getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));
         assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
-        assertThat(auth.getLocation(), is(locationUri));
+        assertThat(auth.getLocation(), is(locationUrl));
 
         assertThat(auth.getChallenges(), containsInAnyOrder(
                         (Challenge) httpChallenge, (Challenge) dnsChallenge));
@@ -295,11 +295,11 @@ public class AuthorizationTest {
     public void testDeactivate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URI uri, JSONBuilder claims, Session session) {
+            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 JSON json = claims.toJSON();
                 assertThat(json.get("resource").asString(), is("authz"));
                 assertThat(json.get("status").asString(), is("deactivated"));
-                assertThat(uri, is(locationUri));
+                assertThat(url, is(locationUrl));
                 assertThat(session, is(notNullValue()));
             }
 
@@ -311,7 +311,7 @@ public class AuthorizationTest {
             }
         };
 
-        Authorization auth = new Authorization(provider.createSession(), locationUri);
+        Authorization auth = new Authorization(provider.createSession(), locationUrl);
         auth.deactivate();
 
         provider.close();
@@ -328,7 +328,7 @@ public class AuthorizationTest {
             provider.putTestChallenge(Dns01Challenge.TYPE, new Dns01Challenge(session));
             provider.putTestChallenge(TlsSni02Challenge.TYPE, new TlsSni02Challenge(session));
 
-            Authorization authorization = new Authorization(session, locationUri);
+            Authorization authorization = new Authorization(session, locationUrl);
             authorization.unmarshalAuthorization(getJsonAsObject("authorizationChallenges"));
             return authorization;
         }

@@ -34,7 +34,7 @@ Now all you need to do is to pass in a binary representation of the CSR and requ
 Certificate cert = registration.requestCertificate(csr);
 ```
 
-`cert.getLocation()` returns an URI where the signed certificate can be downloaded from. Optionally (if delivered by the ACME server) `cert.getChainLocation()` returns the URI of the first part of the CA chain.
+`cert.getLocation()` returns an URL where the signed certificate can be downloaded from. Optionally (if delivered by the ACME server) `cert.getChainLocation()` returns the URL of the first part of the CA chain.
 
 The `Certificate` object offers methods to download the certificate and the certificate chain.
 
@@ -50,8 +50,8 @@ Congratulations! You have just created your first certificate via _acme4j_.
 To recreate a `Certificate` object from the location, just bind it:
 
 ```java
-URI locationUri = ... // location URI from cert.getLocation()
-Certificate cert = Certificate.bind(session, locationUri);
+URL locationUrl = ... // location URL from cert.getLocation()
+Certificate cert = Certificate.bind(session, locationUrl);
 ```
 
 ### Saving Certificates
