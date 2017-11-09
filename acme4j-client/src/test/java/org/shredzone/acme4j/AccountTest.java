@@ -190,7 +190,6 @@ public class AccountTest {
      */
     @Test
     public void testOrderCertificate() throws Exception {
-        byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
         Instant notBefore = parseTimestamp("2016-01-01T00:00:00Z");
         Instant notAfter = parseTimestamp("2016-01-08T00:00:00Z");
 
@@ -224,9 +223,11 @@ public class AccountTest {
         provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
 
         Account account = new Account(session, locationUrl);
-        Order order = account.orderCertificate(csr, notBefore, notAfter);
+        Order order = account.orderCertificate(
+                        Arrays.asList("example.com", "www.example.com"),
+                        notBefore, notAfter);
 
-        assertThat(order.getCsr(), is(csr));
+        assertThat(order.getDomains(), containsInAnyOrder("example.com", "www.example.com"));
         assertThat(order.getNotBefore(), is(parseTimestamp("2016-01-01T00:10:00Z")));
         assertThat(order.getNotAfter(), is(parseTimestamp("2016-01-08T00:10:00Z")));
         assertThat(order.getExpires(), is(parseTimestamp("2016-01-10T00:00:00Z")));

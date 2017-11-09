@@ -24,6 +24,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,11 +37,12 @@ public class Order extends AcmeResource {
 
     private Status status;
     private Instant expires;
-    private byte[] csr;
+    private List<String> identifiers;
     private Instant notBefore;
     private Instant notAfter;
     private Problem error;
     private List<URL> authorizations;
+    private URL finalizeUrl;
     private Certificate certificate;
     private boolean loaded = false;
 
@@ -87,11 +89,10 @@ public class Order extends AcmeResource {
     }
 
     /**
-     * Gets the CSR that was used for the order.
+     * Gets the list of domain names to be ordered.
      */
-    public byte[] getCsr() {
-        load();
-        return csr;
+    public List<String> getDomains() {
+        return identifiers;
     }
 
     /**
@@ -119,6 +120,42 @@ public class Order extends AcmeResource {
         return authorizations.stream()
                 .map(loc -> Authorization.bind(session, loc))
                 .collect(toList());
+    }
+
+    /**
+     * Gets the location {@link URL} of where to send the finalization call to.
+     * <p>
+     * For internal purposes. Use {@link #execute(byte[])} to finalize an order.
+     */
+    public URL getFinalizeLocation() {
+        load();
+        return finalizeUrl;
+    }
+
+    /**
+     * Finalizes the order, by providing a CSR.
+     * <p>
+     * After a successful finalization, the certificate is available at
+     * {@link #getCertificate()}.
+     * <p>
+     * Even though the ACME protocol uses the term "finalize an order", this method is
+     * called {@link #execute(byte[])} to avoid confusion with the general
+     * {@link Object#finalize()} method.
+     *
+     * @param csr
+     *            CSR containing the parameters for the certificate being requested, in
+     *            DER format
+     */
+    public void execute(byte[] csr) throws AcmeException {
+        LOG.debug("finalize");
+        try (Connection conn = getSession().provider().connect()) {
+            JSONBuilder claims = new JSONBuilder();
+            claims.putBase64("csr", csr);
+
+            conn.sendSignedRequest(getFinalizeLocation(), claims, getSession());
+            conn.accept(HttpURLConnection.HTTP_OK);
+        }
+        loaded = false; // invalidate this object
     }
 
     /**
@@ -165,14 +202,19 @@ public class Order extends AcmeResource {
     public void unmarshal(JSON json) {
         this.status = json.get("status").asStatusOrElse(Status.UNKNOWN);
         this.expires = json.get("expires").asInstant();
-        this.csr = json.get("csr").asBinary();
         this.notBefore = json.get("notBefore").asInstant();
         this.notAfter = json.get("notAfter").asInstant();
+        this.finalizeUrl = json.get("finalizeURL").asURL();
 
         URL certUrl = json.get("certificate").asURL();
         certificate = certUrl != null ? Certificate.bind(getSession(), certUrl) : null;
 
         this.error = json.get("error").asProblem(getLocation());
+
+        this.identifiers = json.get("identifiers").asArray().stream()
+                .map(JSON.Value::asObject)
+                .map(it -> it.get("value").asString())
+                .collect(toList());
 
         this.authorizations = json.get("authorizations").asArray().stream()
                 .map(JSON.Value::asURL)

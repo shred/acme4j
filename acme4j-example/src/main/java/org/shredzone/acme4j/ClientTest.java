@@ -90,6 +90,14 @@ public class ClientTest {
         // Load or create a key pair for the domains. This should not be the userKeyPair!
         KeyPair domainKeyPair = loadOrCreateDomainKeyPair();
 
+        // Order the certificate
+        Order order = acct.orderCertificate(domains, null, null);
+
+        // Perform all required authorizations
+        for (Authorization auth : order.getAuthorizations()) {
+            authorize(auth);
+        }
+
         // Generate a CSR for all of the domains, and sign it with the domain key pair.
         CSRBuilder csrb = new CSRBuilder();
         csrb.addDomains(domains);
@@ -100,16 +108,8 @@ public class ClientTest {
             csrb.write(out);
         }
 
-        // Order the certificate
-        Order order = acct.orderCertificate(csrb.getEncoded(), null, null);
-
-        // Perform all required authorizations
-        for (Authorization auth : order.getAuthorizations()) {
-            authorize(auth);
-        }
-
         // Get the certificate
-        order.update();
+        order.execute(csrb.getEncoded());
         Certificate certificate = order.getCertificate();
 
         LOG.info("Success! The certificate for domains " + domains + " has been generated!");

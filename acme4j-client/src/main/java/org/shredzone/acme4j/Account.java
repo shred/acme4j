@@ -22,6 +22,7 @@ import java.security.KeyPair;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -141,21 +142,36 @@ public class Account extends AcmeResource {
     /**
      * Orders a certificate. The certificate will be associated with this account.
      *
-     * @param csr
-     *            CSR containing the parameters for the certificate being requested
+     * @param domains
+     *            Domains of the certificate to be ordered. May contain wildcard domains.
+     *            IDN names are accepted and will be ACE encoded automatically.
      * @param notBefore
      *            Requested "notBefore" date in the certificate, or {@code null}
      * @param notAfter
      *            Requested "notAfter" date in the certificate, or {@code null}
      * @return {@link Order} object for this domain
      */
-    public Order orderCertificate(byte[] csr, Instant notBefore, Instant notAfter) throws AcmeException {
-        Objects.requireNonNull(csr, "csr");
+    public Order orderCertificate(Collection<String> domains, Instant notBefore, Instant notAfter)
+                throws AcmeException {
+        Objects.requireNonNull(domains, "domains");
+        if (domains.isEmpty()) {
+            throw new IllegalArgumentException("Cannot order an empty collection of domains");
+        }
+
+        Object[] identifiers = new Object[domains.size()];
+        Iterator<String> di = domains.iterator();
+        for (int ix = 0; ix < identifiers.length; ix++) {
+            identifiers[ix] = new JSONBuilder()
+                            .put("type", "dns")
+                            .put("value", toAce(di.next()))
+                            .toMap();
+        }
 
         LOG.debug("orderCertificate");
         try (Connection conn = getSession().provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
-            claims.putBase64("csr", csr);
+            claims.array("identifiers", identifiers);
+
             if (notBefore != null) {
                 claims.put("notBefore", notBefore);
             }
