@@ -23,7 +23,6 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Arrays;
 
 import org.junit.Test;
 import org.shredzone.acme4j.Account;
@@ -138,7 +137,11 @@ public class OrderIT extends PebbleITBase {
         Instant notBefore = Instant.now().truncatedTo(ChronoUnit.MILLIS);
         Instant notAfter = notBefore.plus(Duration.ofDays(20L));
 
-        Order order = account.orderCertificate(Arrays.asList(domain), notBefore, notAfter);
+        Order order = account.newOrder()
+                    .domain(domain)
+                    .notBefore(notBefore)
+                    .notAfter(notAfter)
+                    .create();
         assertThat(order.getNotBefore(), is(notBefore));
         assertThat(order.getNotAfter(), is(notAfter));
         assertThat(order.getStatus(), is(Status.PENDING));

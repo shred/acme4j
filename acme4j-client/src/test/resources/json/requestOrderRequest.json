@@ -7,6 +7,18 @@
     {
       "type": "dns",
       "value": "www.example.com"
+    },
+    {
+      "type": "dns",
+      "value": "example.org"
+    },
+    {
+      "type": "dns",
+      "value": "m.example.com"
+    },
+    {
+      "type": "dns",
+      "value": "m.example.org"
     }
   ],
   "notBefore": "2016-01-01T00:00:00Z",

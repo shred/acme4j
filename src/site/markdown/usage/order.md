@@ -2,14 +2,15 @@
 
 Once you have your account set up, you are ready to order certificates.
 
-Use your `Account` object to order the certificate, by using the `orderCertificate()` method. It requires a collection of domain names to be ordered. You can optionally give your desired `notBefore` and `notAfter` dates for the generated certificate, but it is at the discretion of the CA to use (or ignore) these values.
+Use your `Account` object to order the certificate, by using the `newOrder()` method. It returns an OrderBuilder object that helps you to collect the parameters of the order. You can give one or more domain names. Optionally you can also give your desired `notBefore` and `notAfter` dates for the generated certificate, but it is at the discretion of the CA to use (or ignore) these values.
 
 ```java
 Account account = ... // your Account object
 
-Order order = account.orderCertificate(
-    Arrays.of("example.org", "www.example.org", "m.example.org"),
-    null, null);
+Order order = account.newOrder()
+        .domains("example.org", "www.example.org", "m.example.org")
+        .notAfter(Instant.now().plus(Duration.ofDays(20L)))
+        .create();
 ```
 
 The `Order` resource contains a collection of `Authorization`s that can be read from the `getAuthorizations()` method. You must process _all of them_ in order to get the certificate.
@@ -89,13 +90,17 @@ order.execute(csr);
 
 ## Wildcard Certificates
 
-You can also generate a wildcard certificate that is valid for all subdomains of a domain, by prefixing the domain name with `*.` (e.g. `*.example.org`). The domain itself is not covered by the wildcard certificate, and also needs to be added to the CSR if necessary.
+You can also generate a wildcard certificate that is valid for all subdomains of a domain, by prefixing the domain name with `*.` (e.g. `*.example.org`). The domain itself is not covered by the wildcard certificate, and also needs to be added to the order if necessary.
 
 You must be able to prove ownership of the domain that you want to order a wildcard certificate for. The corresponding `Authorization` resource only refers to that domain, and does not contain the wildcard notation.
 
-The following example creates a CSR for `example.org` and `*.example.org`:
+The following example creates an `Order` and a CSR for `example.org` and `*.example.org`:
 
 ```java
+Order order = account.newOrder()
+        .domains("example.org", "*.example.org")
+        .create();
+
 KeyPair domainKeyPair = ... // KeyPair to be used for HTTPS encryption
 
 CSRBuilder csrb = new CSRBuilder();

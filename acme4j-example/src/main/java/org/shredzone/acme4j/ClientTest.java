@@ -91,7 +91,7 @@ public class ClientTest {
         KeyPair domainKeyPair = loadOrCreateDomainKeyPair();
 
         // Order the certificate
-        Order order = acct.orderCertificate(domains, null, null);
+        Order order = acct.newOrder().domains(domains).create();
 
         // Perform all required authorizations
         for (Authorization auth : order.getAuthorizations()) {

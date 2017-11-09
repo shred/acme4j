@@ -15,7 +15,6 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -25,7 +24,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyPair;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -181,60 +179,6 @@ public class AccountTest {
         assertThat(account.getTermsOfServiceAgreed(), is(true));
         assertThat(account.getStatus(), is(Status.VALID));
         assertThat(requestWasSent.get(), is(false));
-
-        provider.close();
-    }
-
-    /**
-     * Test that a new {@link Authorization} can be created.
-     */
-    @Test
-    public void testOrderCertificate() throws Exception {
-        Instant notBefore = parseTimestamp("2016-01-01T00:00:00Z");
-        Instant notAfter = parseTimestamp("2016-01-08T00:00:00Z");
-
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
-            @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
-                assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("requestOrderRequest").toString()));
-                assertThat(session, is(notNullValue()));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_CREATED));
-                return HttpURLConnection.HTTP_CREATED;
-            }
-
-            @Override
-            public JSON readJsonResponse() {
-                return getJSON("requestOrderResponse");
-            }
-
-            @Override
-            public URL getLocation() {
-                return locationUrl;
-            }
-        };
-
-        Session session = provider.createSession();
-
-        provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
-
-        Account account = new Account(session, locationUrl);
-        Order order = account.orderCertificate(
-                        Arrays.asList("example.com", "www.example.com"),
-                        notBefore, notAfter);
-
-        assertThat(order.getDomains(), containsInAnyOrder("example.com", "www.example.com"));
-        assertThat(order.getNotBefore(), is(parseTimestamp("2016-01-01T00:10:00Z")));
-        assertThat(order.getNotAfter(), is(parseTimestamp("2016-01-08T00:10:00Z")));
-        assertThat(order.getExpires(), is(parseTimestamp("2016-01-10T00:00:00Z")));
-        assertThat(order.getStatus(), is(Status.PENDING));
-        assertThat(order.getLocation(), is(locationUrl));
-        assertThat(order.getAuthorizations(), is(notNullValue()));
-        assertThat(order.getAuthorizations().size(), is(2));
 
         provider.close();
     }
