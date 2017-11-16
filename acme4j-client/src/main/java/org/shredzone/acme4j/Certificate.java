@@ -126,7 +126,7 @@ public class Certificate extends AcmeResource {
             URL link = chainCertUrl;
             while (link != null && certChain.size() < MAX_CHAIN_LENGTH) {
                 try (Connection conn = getSession().provider().connect()) {
-                    conn.sendRequest(chainCertUrl, getSession());
+                    conn.sendRequest(link, getSession());
                     conn.accept(HttpURLConnection.HTTP_OK);
 
                     certChain.add(conn.readCertificate());
