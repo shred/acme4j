@@ -126,7 +126,6 @@ public class AuthorizationTest {
         assertThat(auth.getStatus(), is(Status.VALID));
         assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
         assertThat(auth.getLocation(), is(locationUrl));
-        assertThat(auth.getScope().getLocation(), is(url("https://example.com/order/123")));
 
         assertThat(auth.getChallenges(), containsInAnyOrder(
                         (Challenge) httpChallenge, (Challenge) dnsChallenge));
