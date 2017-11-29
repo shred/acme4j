@@ -315,11 +315,7 @@ public final class JSON implements Serializable {
                 return null;
             }
 
-            try {
-                return new Problem(asObject(), baseUrl.toURI());
-            } catch (URISyntaxException ex) {
-                throw new IllegalArgumentException("Bad base URL", ex);
-            }
+            return new Problem(asObject(), baseUrl);
         }
 
         /**

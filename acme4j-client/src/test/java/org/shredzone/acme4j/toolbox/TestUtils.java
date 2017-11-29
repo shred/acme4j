@@ -302,8 +302,6 @@ public final class TestUtils {
      * @return Created {@link Problem} object
      */
     public static Problem createProblem(URI type, String detail, URL instance) {
-        URI baseUri = URI.create("https://example.com/acme/1");
-
         JSONBuilder jb = new JSONBuilder();
         jb.put("type", type);
         jb.put("detail", detail);
@@ -311,7 +309,7 @@ public final class TestUtils {
             jb.put("instance", instance);
         }
 
-        return new Problem(jb.toJSON(), baseUri);
+        return new Problem(jb.toJSON(), url("https://example.com/acme/1"));
     }
 
     /**

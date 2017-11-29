@@ -1,5 +1,23 @@
 {
-  "type": "urn:ietf:params:acme:error:connection",
-  "detail": "connection refused",
-  "instance": "/documents/error.html"
+  "type": "urn:ietf:params:acme:error:malformed",
+  "detail": "Some of the identifiers requested were rejected",
+  "instance": "/documents/error.html",
+  "sub-problems": [
+    {
+      "type": "urn:ietf:params:acme:error:malformed",
+      "value": "Invalid underscore in DNS name \"_example.com\"",
+      "identifier": {
+        "type": "dns",
+        "value": "_example.com"
+      }
+    },
+    {
+      "type": "urn:ietf:params:acme:error:rejectedIdentifier",
+      "value": "This CA will not issue for \"example.net\"",
+      "identifier": {
+        "type": "dns",
+        "value": "example.net"
+      }
+    }
+  ]
 }

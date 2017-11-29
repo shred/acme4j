@@ -238,10 +238,8 @@ public class DefaultConnection implements Connection {
                 throw new AcmeException("HTTP " + rc + ": " + conn.getResponseMessage());
             }
 
-            Problem problem = new Problem(readJsonResponse(), conn.getURL().toURI());
+            Problem problem = new Problem(readJsonResponse(), conn.getURL());
             throw createAcmeException(problem);
-        } catch (URISyntaxException ex) {
-            throw new AcmeProtocolException("Bad request URL: " + conn.getURL(), ex);
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         }

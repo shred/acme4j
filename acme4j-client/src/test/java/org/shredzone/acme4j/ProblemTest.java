@@ -13,11 +13,15 @@
  */
 package org.shredzone.acme4j;
 
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
+import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.URI;
+import java.net.URL;
+import java.util.List;
 
 import org.junit.Test;
 import org.shredzone.acme4j.toolbox.JSON;
@@ -30,16 +34,31 @@ public class ProblemTest {
 
     @Test
     public void testProblem() {
-        URI baseUri = URI.create("https://example.com/acme/1");
+        URL baseUrl = url("https://example.com/acme/1");
         JSON original = TestUtils.getJSON("problem");
 
-        Problem problem = new Problem(original, baseUri);
+        Problem problem = new Problem(original, baseUrl);
 
-        assertThat(problem.getType(), is(URI.create("urn:ietf:params:acme:error:connection")));
-        assertThat(problem.getDetail(), is("connection refused"));
+        assertThat(problem.getType(), is(URI.create("urn:ietf:params:acme:error:malformed")));
+        assertThat(problem.getDetail(), is("Some of the identifiers requested were rejected"));
         assertThat(problem.getInstance(), is(URI.create("https://example.com/documents/error.html")));
+        assertThat(problem.getDomain(), is(nullValue()));
         assertThat(problem.asJSON().toString(), is(sameJSONAs(original.toString())));
         assertThat(problem.toString(), is(sameJSONAs(original.toString())));
+
+        List<Problem> subs = problem.getSubProblems();
+        assertThat(subs, not(nullValue()));
+        assertThat(subs, hasSize(2));
+
+        Problem p1 = subs.get(0);
+        assertThat(p1.getType(), is(URI.create("urn:ietf:params:acme:error:malformed")));
+        assertThat(p1.getDetail(), is("Invalid underscore in DNS name \"_example.com\""));
+        assertThat(p1.getDomain(), is("_example.com"));
+
+        Problem p2 = subs.get(1);
+        assertThat(p2.getType(), is(URI.create("urn:ietf:params:acme:error:rejectedIdentifier")));
+        assertThat(p2.getDetail(), is("This CA will not issue for \"example.net\""));
+        assertThat(p2.getDomain(), is("example.net"));
     }
 
 }
