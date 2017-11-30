@@ -65,10 +65,6 @@ public class Problem implements Serializable {
      * Returns a human-readable description of the problem.
      */
     public String getDetail() {
-        String value = problemJson.get("value").asString();
-        if (value != null) {
-            return value;
-        }
         return problemJson.get("detail").asString();
     }
 
