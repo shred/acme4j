@@ -12,7 +12,7 @@ ACME providers are "plug-ins" to _acme4j_ that are specialized on a single CA. F
 Session session = new Session("acme://letsencrypt.org", accountKeyPair);
 ```
 
-## Writing an own Provider
+## Writing your own Provider
 
 Every CA that provides an ACME server should also have an own `AcmeProvider`, and if it is just for the sake of a pretty `acme:` URI.
 
