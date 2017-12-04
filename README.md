@@ -12,7 +12,7 @@ It is an independent open source implementation that is not affiliated with or e
 
 * Supports the "ACME v1" protocol that is used by _Let's Encrypt_
 * Easy to use Java API
-* Requires JRE 8 or higher
+* Requires JRE 8u101 or higher
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
 * Small: `acme4j-client` only requires [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home) and [slf4j](http://www.slf4j.org/) as dependencies
 * Only the optional `acme4j-utils` module requires [Bouncy Castle](http://www.bouncycastle.org)
@@ -22,6 +22,12 @@ It is an independent open source implementation that is not affiliated with or e
 
 * See the [online documentation](https://shredzone.org/maven/acme4j/) about how to use _acme4j_.
 * For a quick start, have a look at [the source code of an example](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/ClientTest.java).
+
+## Important Note
+
+In order to connect to the _Let's Encrypt_ servers, _acme4j_ has used a local truststore containing their SSL certificate. Native support of IdenTrust certificates was added to Java 8u101 in July 2016. Since then, the local truststore was not necessary any more. It has been disabled in _acme4j_ v0.12.
+
+If you are still using _acme4j_ < v0.12, you should update to the latest version soon. The certificate in the local truststore expires on June 2018 (or maybe earlier, at the discretion of _Let's Encrypt_).
 
 ## Future Compatibility
 
