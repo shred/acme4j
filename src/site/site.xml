@@ -57,4 +57,13 @@
     <artifactId>maven-fluido-skin</artifactId>
     <version>1.6</version>
   </skin>
+
+  <custom>
+    <fluidoSkin>
+      <gitHub>
+        <projectId>shred/acme4j</projectId>
+        <ribbonOrientation>right</ribbonOrientation>
+      </gitHub>
+    </fluidoSkin>
+  </custom>
 </project>
