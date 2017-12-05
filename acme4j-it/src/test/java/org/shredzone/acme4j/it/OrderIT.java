@@ -157,7 +157,7 @@ public class OrderIT extends PebbleITBase {
                 .pollInterval(1, SECONDS)
                 .timeout(30, SECONDS)
                 .conditionEvaluationListener(cond -> updateAuth(auth))
-                .until(auth::getStatus, not(Status.PENDING));
+                .until(auth::getStatus, not(isOneOf(Status.PENDING, Status.PROCESSING)));
 
             if (auth.getStatus() != Status.VALID) {
                 fail("Authorization failed");
@@ -170,6 +170,13 @@ public class OrderIT extends PebbleITBase {
         byte[] encodedCsr = csr.getEncoded();
 
         order.execute(encodedCsr);
+
+        await()
+            .pollInterval(1, SECONDS)
+            .timeout(30, SECONDS)
+            .conditionEvaluationListener(cond -> updateOrder(order))
+            .until(order::getStatus, not(isOneOf(Status.PENDING, Status.PROCESSING)));
+
 
         Certificate certificate = order.getCertificate();
         X509Certificate cert = certificate.getCertificate();
@@ -190,6 +197,20 @@ public class OrderIT extends PebbleITBase {
             auth.update();
         } catch (AcmeException ex) {
             throw new AcmeLazyLoadingException(auth, ex);
+        }
+    }
+
+    /**
+     * Safely updates the order, catching checked exceptions.
+     *
+     * @param order
+     *            {@link Order} to update
+     */
+    private void updateOrder(Order order) {
+        try {
+            order.update();
+        } catch (AcmeException ex) {
+            throw new AcmeLazyLoadingException(order, ex);
         }
     }
 
