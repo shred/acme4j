@@ -8,7 +8,7 @@ To do so, prepare a PKCS#10 CSR file. A single domain may be set as _Common Name
 
 CSR files can be generated with command line tools like `openssl`. Unfortunately the standard Java does not offer classes for that, so you'd have to resort to [Bouncy Castle](http://www.bouncycastle.org/java.html) if you want to create a CSR programmatically. In the `acme4j-utils` module, there is a [`CSRBuilder`](../apidocs/org/shredzone/acme4j/util/CSRBuilder.html) for your convenience. You can also use [`KeyPairUtils`](../apidocs/org/shredzone/acme4j/util/KeyPairUtils.html) for generating a new key pair for your domain.
 
-> __Important:__ Do not just use your account key pair as domain key pair, but always generate a separate pair of keys!
+> __Important:__ Do not just use your account key pair as domain key pair, but always generate separate key pairs!
 
 ```java
 KeyPair domainKeyPair = ... // KeyPair to be used for HTTPS encryption
