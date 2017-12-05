@@ -66,7 +66,7 @@ public class CSRBuilder {
      * <p>
      * IDN domain names are ACE encoded automatically.
      * <p>
-     * Note that ACME servers may not accept wildcard domains!
+     * For wildcard certificates, the domain name must be prefixed with {@code "*."}.
      *
      * @param domain
      *            Domain name to add

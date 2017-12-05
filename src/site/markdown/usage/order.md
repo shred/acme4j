@@ -84,13 +84,29 @@ The CA server may start the validation immediately after `trigger()` is invoked,
 
 When the challenge status is `VALID`, you have successfully authorized your domain.
 
-## Deactivate an Authorization
+## Wildcard Certificates
 
-It is possible to deactivate an `Authorization`, for example if you sell the associated domain.
+You can also generate a wildcard certificate that is valid for all subdomains of a domain, by prefixing the domain name with `*.` (e.g. `*.example.org`). The domain itself is not covered by the wildcard certificate, and also needs to be added to the CSR if necessary.
+
+You must be able to prove ownership of the domain that you want to order a wildcard certificate for. The corresponding `Authorization` resource only refers to that domain, and does not contain the wildcard notation.
+
+The following example creates a CSR for `example.org` and `*.example.org`:
 
 ```java
-auth.deactivate();
+KeyPair domainKeyPair = ... // KeyPair to be used for HTTPS encryption
+
+CSRBuilder csrb = new CSRBuilder();
+csrb.addDomain("example.org");    // example.org itself, if necessary
+csrb.addDomain("*.example.org");  // wildcard for all subdomains
+csrb.sign(domainKeyPair);
+byte[] csr = csrb.getEncoded();
 ```
+
+In the subsequent authorization process, you would have to prove ownership of the `example.org` domain.
+
+> __Note:__ Some CAs may reject wildcard certificate orders, or may involve `Challenge`s that are not documented here. Refer to your CA's documentation to find out about the wildcard certificate policy.
+
+> __Note:__ _acme4j_ accepts all kind of wildcard notations (e.g. `www.*.example.org`, `*.*.example.org`.). However, those notations are not specified and may be rejected by your CA.
 
 ## Pre-Authorize a Domain
 
@@ -105,20 +121,13 @@ Authorization auth = account.preAuthorizeDomain(String domain);
 
 > __Note:__ Some CAs may not offer domain pre-authorization. `preAuthorizeDomain()` will then fail and throw an exception.
 
-## Wildcard Certificates
+## Deactivate an Authorization
 
-You can also generate wildcard certificates that are valid for the domain itself, and all of its subdomains:
+It is possible to deactivate an `Authorization`, for example if you sell the associated domain.
 
 ```java
-KeyPair domainKeyPair = ... // KeyPair to be used for HTTPS encryption
-
-CSRBuilder csrb = new CSRBuilder();
-csrb.addDomain("*.example.org");  // Wildcard
-csrb.sign(domainKeyPair);
-byte[] csr = csrb.getEncoded();
+auth.deactivate();
 ```
-
-> __Note:__ Some CAs may not accept wildcard certificate orders. Validating wildcard certificates may involve `Challenge`s that are not documented here. Refer to your CA's documentation to find out about the wildcard certificate policy.
 
 ## Restore a Challenge
 

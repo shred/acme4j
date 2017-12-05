@@ -72,6 +72,7 @@ public class CSRBuilderTest {
         builder.addDomain("fg.hi");
         builder.addDomains("jklm.no", "pqr.st");
         builder.addDomains(Arrays.asList("uv.wx", "y.z"));
+        builder.addDomain("*.wild.card");
 
         builder.setCountry("XX");
         builder.setLocality("Testville");
@@ -81,7 +82,7 @@ public class CSRBuilderTest {
 
         assertThat(builder.toString(), is("CN=abc.de,C=XX,L=Testville,O=Testing Co,"
                         + "OU=Testunit,ST=ABC,"
-                        + "DNS=abc.de,DNS=fg.hi,DNS=jklm.no,DNS=pqr.st,DNS=uv.wx,DNS=y.z"));
+                        + "DNS=abc.de,DNS=fg.hi,DNS=jklm.no,DNS=pqr.st,DNS=uv.wx,DNS=y.z,DNS=*.wild.card"));
 
         builder.sign(testKey);
 
@@ -103,6 +104,7 @@ public class CSRBuilderTest {
         builder.addDomain("fg.hi");
         builder.addDomains("jklm.no", "pqr.st");
         builder.addDomains(Arrays.asList("uv.wx", "y.z"));
+        builder.addDomain("*.wild.card");
 
         builder.setCountry("XX");
         builder.setLocality("Testville");
@@ -112,7 +114,7 @@ public class CSRBuilderTest {
 
         assertThat(builder.toString(), is("CN=abc.de,C=XX,L=Testville,O=Testing Co,"
                         + "OU=Testunit,ST=ABC,"
-                        + "DNS=abc.de,DNS=fg.hi,DNS=jklm.no,DNS=pqr.st,DNS=uv.wx,DNS=y.z"));
+                        + "DNS=abc.de,DNS=fg.hi,DNS=jklm.no,DNS=pqr.st,DNS=uv.wx,DNS=y.z,DNS=*.wild.card"));
 
         builder.sign(testEcKey);
 
@@ -149,7 +151,7 @@ public class CSRBuilderTest {
         assertThat(names.getNames(), arrayContaining(new GeneralNameMatcher("abc.de"),
                         new GeneralNameMatcher("fg.hi"), new GeneralNameMatcher("jklm.no"),
                         new GeneralNameMatcher("pqr.st"), new GeneralNameMatcher("uv.wx"),
-                        new GeneralNameMatcher("y.z")));
+                        new GeneralNameMatcher("y.z"), new GeneralNameMatcher("*.wild.card")));
     }
 
     /**
