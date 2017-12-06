@@ -51,15 +51,15 @@ public class PebbleAcmeProviderTest {
         PebbleAcmeProvider provider = new PebbleAcmeProvider();
 
         assertThat(provider.resolve(new URI("acme://pebble")),
-                        is(url("http://localhost:14000/dir")));
+                        is(url("https://localhost:14000/dir")));
         assertThat(provider.resolve(new URI("acme://pebble/")),
-                        is(url("http://localhost:14000/dir")));
+                        is(url("https://localhost:14000/dir")));
         assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com")),
-                        is(url("http://pebble.example.com:14000/dir")));
+                        is(url("https://pebble.example.com:14000/dir")));
         assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com:12345")),
-                        is(url("http://pebble.example.com:12345/dir")));
+                        is(url("https://pebble.example.com:12345/dir")));
         assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com:12345/")),
-                        is(url("http://pebble.example.com:12345/dir")));
+                        is(url("https://pebble.example.com:12345/dir")));
 
         try {
             provider.resolve(new URI("acme://pebble/bad.example.com:port"));

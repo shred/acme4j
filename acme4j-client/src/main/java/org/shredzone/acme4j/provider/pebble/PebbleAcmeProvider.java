@@ -19,6 +19,7 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.provider.AbstractAcmeProvider;
 import org.shredzone.acme4j.provider.AcmeProvider;
 
@@ -47,7 +48,7 @@ public class PebbleAcmeProvider extends AbstractAcmeProvider {
         try {
             String path = serverUri.getPath();
 
-            URL baseUrl = new URL("http://localhost:14000/dir");
+            URL baseUrl = new URL("https://localhost:14000/dir");
 
             if (path != null && !path.isEmpty() && !"/".equals(path)) {
                 baseUrl = parsePath(path);
@@ -74,10 +75,15 @@ public class PebbleAcmeProvider extends AbstractAcmeProvider {
             if (m.group(2) != null) {
                 port = Integer.parseInt(m.group(2));
             }
-            return new URL("http", host, port, "/dir");
+            return new URL("https", host, port, "/dir");
         } else {
             throw new IllegalArgumentException("Invalid Pebble host/port: " + path);
         }
+    }
+
+    @Override
+    protected HttpConnector createHttpConnector() {
+        return new PebbleHttpConnector();
     }
 
 }
