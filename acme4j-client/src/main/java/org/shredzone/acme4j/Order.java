@@ -15,7 +15,6 @@ package org.shredzone.acme4j;
 
 import static java.util.stream.Collectors.toList;
 
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.Instant;
 import java.util.List;
@@ -153,7 +152,6 @@ public class Order extends AcmeResource {
             claims.putBase64("csr", csr);
 
             conn.sendSignedRequest(getFinalizeLocation(), claims, getSession());
-            conn.accept(HttpURLConnection.HTTP_OK);
         }
         loaded = false; // invalidate this object
     }
@@ -173,7 +171,6 @@ public class Order extends AcmeResource {
         LOG.debug("update");
         try (Connection conn = getSession().provider().connect()) {
             conn.sendRequest(getLocation(), getSession());
-            conn.accept(HttpURLConnection.HTTP_OK);
 
             JSON json = conn.readJsonResponse();
             unmarshal(json);

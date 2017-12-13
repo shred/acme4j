@@ -13,7 +13,6 @@
  */
 package org.shredzone.acme4j.connector;
 
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -141,7 +140,6 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
     private void readAndQueue() throws AcmeException {
         try (Connection conn = session.provider().connect()) {
             conn.sendRequest(nextUrl, session);
-            conn.accept(HttpURLConnection.HTTP_OK);
 
             JSON json = conn.readJsonResponse();
             fillUrlList(json);

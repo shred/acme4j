@@ -131,7 +131,6 @@ public class Account extends AcmeResource {
             JSONBuilder claims = new JSONBuilder();
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
-            conn.accept(HttpURLConnection.HTTP_OK);
 
             unmarshal(conn.readJsonResponse());
          }
@@ -180,8 +179,7 @@ public class Account extends AcmeResource {
                     .put("type", "dns")
                     .put("value", toAce(domain));
 
-            conn.sendSignedRequest(newAuthzUrl, claims, getSession());
-            conn.accept(HttpURLConnection.HTTP_CREATED);
+            conn.sendSignedRequest(newAuthzUrl, claims, getSession(), HttpURLConnection.HTTP_CREATED);
 
             JSON json = conn.readJsonResponse();
 
@@ -231,7 +229,6 @@ public class Account extends AcmeResource {
             outerClaim.put("payload", innerJws.getEncodedPayload());
 
             conn.sendSignedRequest(keyChangeUrl, outerClaim, getSession());
-            conn.accept(HttpURLConnection.HTTP_OK);
 
             getSession().setKeyPair(newKeyPair);
         } catch (JoseException ex) {
@@ -252,7 +249,6 @@ public class Account extends AcmeResource {
             claims.put(KEY_STATUS, "deactivated");
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
-            conn.accept(HttpURLConnection.HTTP_OK);
 
             unmarshal(conn.readJsonResponse());
         }
@@ -366,7 +362,6 @@ public class Account extends AcmeResource {
                 }
 
                 conn.sendSignedRequest(getLocation(), claims, getSession());
-                conn.accept(HttpURLConnection.HTTP_OK);
 
                 JSON json = conn.readJsonResponse();
                 unmarshal(json);

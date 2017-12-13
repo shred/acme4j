@@ -20,7 +20,6 @@ import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -84,7 +83,6 @@ public class AbstractAcmeProviderTest {
         final Connection connection = mock(Connection.class);
         final Session session = mock(Session.class);
 
-        when(connection.accept(any(Integer.class))).thenReturn(HttpURLConnection.HTTP_OK);
         when(connection.readJsonResponse()).thenReturn(getJSON("directory"));
 
         AbstractAcmeProvider provider = new AbstractAcmeProvider() {
@@ -110,7 +108,6 @@ public class AbstractAcmeProviderTest {
         assertThat(map.toString(), sameJSONAs(TestUtils.getJSON("directory").toString()));
 
         verify(connection).sendRequest(testResolvedUrl, session);
-        verify(connection).accept(any(Integer.class));
         verify(connection).updateSession(any(Session.class));
         verify(connection).readJsonResponse();
         verify(connection).close();

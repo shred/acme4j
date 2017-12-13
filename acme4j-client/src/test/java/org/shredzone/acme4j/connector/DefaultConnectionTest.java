@@ -111,16 +111,14 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testGetNonceFromHeader() {
-        byte[] nonce = "foo-nonce-foo".getBytes();
-
         when(mockUrlConnection.getHeaderField("Replay-Nonce"))
-                .thenReturn(Base64Url.encode(nonce));
+                .thenReturn(Base64Url.encode(TestUtils.DUMMY_NONCE));
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             conn.updateSession(session);
         }
-        assertThat(session.getNonce(), is(nonce));
+        assertThat(session.getNonce(), is(TestUtils.DUMMY_NONCE));
 
         verify(mockUrlConnection).getHeaderField("Replay-Nonce");
         verifyNoMoreInteractions(mockUrlConnection);
@@ -154,8 +152,6 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testResetNonce() throws AcmeException, IOException {
-        byte[] nonce = "foo-nonce-foo".getBytes();
-
         when(mockHttpConnection.openConnection(new URL("https://example.com/acme/new-nonce")))
                 .thenReturn(mockUrlConnection);
         when(mockUrlConnection.getResponseCode())
@@ -173,13 +169,13 @@ public class DefaultConnectionTest {
         assertThat(session.getNonce(), is(nullValue()));
 
         when(mockUrlConnection.getHeaderField("Replay-Nonce"))
-                .thenReturn(Base64Url.encode(nonce));
+                .thenReturn(Base64Url.encode(TestUtils.DUMMY_NONCE));
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.resetNonce(session);
         }
 
-        assertThat(session.getNonce(), is(nonce));
+        assertThat(session.getNonce(), is(TestUtils.DUMMY_NONCE));
 
         verify(mockUrlConnection, atLeastOnce()).setRequestMethod("HEAD");
         verify(mockUrlConnection, atLeastOnce()).setRequestProperty("Accept-Language", "ja-JP");
@@ -404,15 +400,17 @@ public class DefaultConnectionTest {
     @Test
     public void testAccept() throws Exception {
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+        when(mockUrlConnection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
+
+        session.setKeyIdentifier(keyIdentifier);
+        session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
-            int rc = conn.accept(HttpURLConnection.HTTP_OK);
+            int rc = conn.sendSignedRequest(requestUrl, new JSONBuilder(), session);
             assertThat(rc, is(HttpURLConnection.HTTP_OK));
         }
 
         verify(mockUrlConnection).getResponseCode();
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
@@ -424,12 +422,15 @@ public class DefaultConnectionTest {
 
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/problem+json");
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
+        when(mockUrlConnection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
         when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
         when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
 
+        session.setKeyIdentifier(keyIdentifier);
+        session.setNonce(TestUtils.DUMMY_NONCE);
+
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
-            conn.accept(HttpURLConnection.HTTP_OK);
+            conn.sendSignedRequest(requestUrl, new JSONBuilder(), session);
             fail("Expected to fail");
         } catch (AcmeUnauthorizedException ex) {
             assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:unauthorized")));
@@ -442,7 +443,6 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verify(mockUrlConnection).getErrorStream();
         verify(mockUrlConnection).getURL();
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
@@ -458,12 +458,15 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/problem+json");
         when(mockUrlConnection.getHeaderFields()).thenReturn(linkHeader);
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
+        when(mockUrlConnection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
         when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
         when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
 
+        session.setKeyIdentifier(keyIdentifier);
+        session.setNonce(TestUtils.DUMMY_NONCE);
+
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
-            conn.accept(HttpURLConnection.HTTP_OK);
+            conn.sendSignedRequest(requestUrl, new JSONBuilder(), session);
             fail("Expected to fail");
         } catch (AcmeUserActionRequiredException ex) {
             assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:userActionRequired")));
@@ -478,7 +481,6 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verify(mockUrlConnection).getErrorStream();
         verify(mockUrlConnection, atLeastOnce()).getURL();
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
@@ -498,12 +500,15 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getHeaderFieldDate("Retry-After", 0L)).thenReturn(retryAfter.toEpochMilli());
         when(mockUrlConnection.getHeaderFields()).thenReturn(linkHeader);
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
+        when(mockUrlConnection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
         when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
         when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
 
+        session.setKeyIdentifier(keyIdentifier);
+        session.setNonce(TestUtils.DUMMY_NONCE);
+
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
-            conn.accept(HttpURLConnection.HTTP_OK);
+            conn.sendSignedRequest(requestUrl, new JSONBuilder(), session);
             fail("Expected to fail");
         } catch (AcmeRateLimitedException ex) {
             assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:rateLimited")));
@@ -523,7 +528,6 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verify(mockUrlConnection).getErrorStream();
         verify(mockUrlConnection, atLeastOnce()).getURL();
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
@@ -537,6 +541,11 @@ public class DefaultConnectionTest {
                 .thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
         when(mockUrlConnection.getURL())
                 .thenReturn(url("https://example.com/acme/1"));
+        when(mockUrlConnection.getOutputStream())
+                .thenReturn(new ByteArrayOutputStream());
+
+        session.setKeyIdentifier(keyIdentifier);
+        session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
@@ -547,8 +556,7 @@ public class DefaultConnectionTest {
                 return result.toJSON();
             };
         }) {
-            conn.conn = mockUrlConnection;
-            conn.accept(HttpURLConnection.HTTP_OK);
+            conn.sendSignedRequest(requestUrl, new JSONBuilder(), session);
             fail("Expected to fail");
         } catch (AcmeServerException ex) {
             assertThat(ex.getType(), is(URI.create("urn:zombie:error:apocalypse")));
@@ -560,7 +568,6 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verify(mockUrlConnection).getURL();
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
@@ -574,6 +581,11 @@ public class DefaultConnectionTest {
                 .thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
         when(mockUrlConnection.getURL())
                 .thenReturn(url("https://example.com/acme/1"));
+        when(mockUrlConnection.getOutputStream())
+                .thenReturn(new ByteArrayOutputStream());
+
+        session.setKeyIdentifier(keyIdentifier);
+        session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
@@ -581,8 +593,7 @@ public class DefaultConnectionTest {
                 return JSON.empty();
             };
         }) {
-            conn.conn = mockUrlConnection;
-            conn.accept(HttpURLConnection.HTTP_OK);
+            conn.sendSignedRequest(requestUrl, new JSONBuilder(), session);
             fail("Expected to fail");
         } catch (AcmeNetworkException ex) {
             fail("Did not expect an AcmeNetworkException");
@@ -593,7 +604,6 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verify(mockUrlConnection).getURL();
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
@@ -607,10 +617,14 @@ public class DefaultConnectionTest {
                 .thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
         when(mockUrlConnection.getResponseMessage())
                 .thenReturn("Infernal Server Error");
+        when(mockUrlConnection.getOutputStream())
+                .thenReturn(new ByteArrayOutputStream());
+
+        session.setKeyIdentifier(keyIdentifier);
+        session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
-            conn.accept(HttpURLConnection.HTTP_OK);
+            conn.sendSignedRequest(requestUrl, new JSONBuilder(), session);
             fail("Expected to fail");
         } catch (AcmeException ex) {
             assertThat(ex.getMessage(), is("HTTP 500: Infernal Server Error"));
@@ -619,7 +633,6 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verify(mockUrlConnection, atLeastOnce()).getResponseMessage();
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
@@ -627,6 +640,8 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testSendRequest() throws Exception {
+        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.sendRequest(requestUrl, session);
         }
@@ -636,6 +651,7 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
         verify(mockUrlConnection).setDoOutput(false);
         verify(mockUrlConnection).connect();
+        verify(mockUrlConnection).getResponseCode();
         verify(mockUrlConnection, atLeast(0)).getHeaderFields();
         verifyNoMoreInteractions(mockUrlConnection);
     }
@@ -649,6 +665,7 @@ public class DefaultConnectionTest {
         final byte[] nonce2 = "foo-nonce-2-foo".getBytes();
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
+        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
         when(mockUrlConnection.getOutputStream()).thenReturn(outputStream);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
@@ -686,6 +703,7 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection).connect();
         verify(mockUrlConnection).setDoOutput(true);
         verify(mockUrlConnection).setFixedLengthStreamingMode(outputStream.toByteArray().length);
+        verify(mockUrlConnection).getResponseCode();
         verify(mockUrlConnection).getOutputStream();
         verify(mockUrlConnection, atLeast(0)).getHeaderFields();
         verifyNoMoreInteractions(mockUrlConnection);
@@ -722,6 +740,7 @@ public class DefaultConnectionTest {
         final byte[] nonce2 = "foo-nonce-2-foo".getBytes();
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
+        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
         when(mockUrlConnection.getOutputStream()).thenReturn(outputStream);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
@@ -758,6 +777,7 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection).connect();
         verify(mockUrlConnection).setDoOutput(true);
         verify(mockUrlConnection).setFixedLengthStreamingMode(outputStream.toByteArray().length);
+        verify(mockUrlConnection).getResponseCode();
         verify(mockUrlConnection).getOutputStream();
         verify(mockUrlConnection, atLeast(0)).getHeaderFields();
         verifyNoMoreInteractions(mockUrlConnection);
@@ -802,7 +822,7 @@ public class DefaultConnectionTest {
     /**
      * Test signed POST requests if there is no nonce.
      */
-    @Test(expected = AcmeProtocolException.class)
+    @Test(expected = AcmeException.class)
     public void testSendSignedRequestNoNonce() throws Exception {
         when(mockHttpConnection.openConnection(new URL("https://example.com/acme/new-nonce")))
                 .thenReturn(mockUrlConnection);

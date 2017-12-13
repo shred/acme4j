@@ -26,7 +26,6 @@ import java.util.Arrays;
 
 import org.junit.Test;
 import org.shredzone.acme4j.connector.Resource;
-import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -49,14 +48,10 @@ public class OrderBuilderTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("requestOrderRequest").toString()));
                 assertThat(session, is(notNullValue()));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
                 assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_CREATED));
                 return HttpURLConnection.HTTP_CREATED;
             }

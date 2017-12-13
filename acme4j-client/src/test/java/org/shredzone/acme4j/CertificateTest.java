@@ -62,12 +62,6 @@ public class CertificateTest {
             }
 
             @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
-                return HttpURLConnection.HTTP_OK;
-            }
-
-            @Override
             public List<X509Certificate> readCertificates() throws AcmeException {
                 return originalCert;
             }
@@ -138,18 +132,14 @@ public class CertificateTest {
             }
 
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk, int... httpStatus) {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("revokeCertificateRequest").toString()));
                 assertThat(session, is(notNullValue()));
                 assertThat(session.getKeyIdentifier(), is(nullValue()));
                 assertThat(enforceJwk, is(true));
                 certRequested = false;
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -192,17 +182,13 @@ public class CertificateTest {
             }
 
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk, int... httpStatus) {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("revokeCertificateWithReasonRequest").toString()));
                 assertThat(session, is(notNullValue()));
                 assertThat(enforceJwk, is(true));
                 certRequested = false;
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -246,18 +232,14 @@ public class CertificateTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk, int... httpStatus)
                     throws AcmeException {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("revokeCertificateWithReasonRequest").toString()));
                 assertThat(session, is(notNullValue()));
                 assertThat(session.getKeyPair(), is(certKeyPair));
                 assertThat(enforceJwk, is(true));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
         };

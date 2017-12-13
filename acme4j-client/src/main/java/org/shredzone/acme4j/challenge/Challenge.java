@@ -15,7 +15,6 @@ package org.shredzone.acme4j.challenge;
 
 import static java.util.stream.Collectors.toList;
 
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.Instant;
 import java.util.Collections;
@@ -84,7 +83,6 @@ public class Challenge extends AcmeResource {
         LOG.debug("bind");
         try (Connection conn = session.provider().connect()) {
             conn.sendRequest(location, session);
-            conn.accept(HttpURLConnection.HTTP_OK);
 
             JSON json = conn.readJsonResponse();
             if (!(json.contains(KEY_TYPE))) {
@@ -218,7 +216,6 @@ public class Challenge extends AcmeResource {
             respond(claims);
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
-            conn.accept(HttpURLConnection.HTTP_OK);
 
             unmarshall(conn.readJsonResponse());
         }
@@ -238,7 +235,6 @@ public class Challenge extends AcmeResource {
         LOG.debug("update");
         try (Connection conn = getSession().provider().connect()) {
             conn.sendRequest(getLocation(), getSession());
-            conn.accept(HttpURLConnection.HTTP_OK);
 
             unmarshall(conn.readJsonResponse());
 

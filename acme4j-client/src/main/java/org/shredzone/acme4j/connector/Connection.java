@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.connector;
 
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -39,6 +40,9 @@ public interface Connection extends AutoCloseable {
 
     /**
      * Sends a simple GET request.
+     * <p>
+     * If the response code was not {@link HttpURLConnection#HTTP_OK}, an
+     * {@link AcmeException} matching the error is raised.
      *
      * @param url
      *            {@link URL} to send the request to.
@@ -57,12 +61,19 @@ public interface Connection extends AutoCloseable {
      *            {@link JSONBuilder} containing claims. Must not be {@code null}.
      * @param session
      *            {@link Session} instance to be used for signing and tracking
+     * @param httpStatus
+     *            Acceptable HTTP states. 200 OK if empty.
+     * @return HTTP 200 class status that was returned
      */
-    void sendSignedRequest(URL url, JSONBuilder claims, Session session) throws AcmeException;
+    int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus)
+                throws AcmeException;
 
     /**
      * Sends a signed POST request. If the session's KeyIdentifier is set, a "kid"
      * protected header field is sent. If not, a "jwk" protected header field is sent.
+     * <p>
+     * If the server does not return a 200 class status code, an {@link AcmeException} is
+     * raised matching the error.
      *
      * @param url
      *            {@link URL} to send the request to.
@@ -74,19 +85,12 @@ public interface Connection extends AutoCloseable {
      *            {@code true} to enforce a "jwk" header field even if a KeyIdentifier is
      *            set, {@code false} to choose between "kid" and "jwk" header field
      *            automatically
-     */
-    void sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
-                throws AcmeException;
-
-    /**
-     * Checks if the HTTP response status is in the given list of acceptable HTTP states,
-     * otherwise raises an {@link AcmeException} matching the error.
-     *
      * @param httpStatus
-     *            Acceptable HTTP states
-     * @return Actual HTTP status that was accepted
+     *            Acceptable HTTP states. 200 OK if empty.
+     * @return HTTP 200 class status that was returned
      */
-    int accept(int... httpStatus) throws AcmeException;
+    int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk, int... httpStatus)
+                throws AcmeException;
 
     /**
      * Reads a server response as JSON data.

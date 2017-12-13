@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
-import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -49,12 +48,6 @@ public class OrderTest {
             @Override
             public void sendRequest(URL url, Session session) {
                 assertThat(url, is(locationUrl));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
-                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
@@ -107,12 +100,6 @@ public class OrderTest {
             }
 
             @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
-                return HttpURLConnection.HTTP_OK;
-            }
-
-            @Override
             public JSON readJsonResponse() {
                 return getJSON("updateOrderResponse");
             }
@@ -153,16 +140,12 @@ public class OrderTest {
             }
 
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
                 assertThat(url, is(finalizeUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("finalizeRequest").toString()));
                 assertThat(session, is(notNullValue()));
                 isFinalized = true;
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 

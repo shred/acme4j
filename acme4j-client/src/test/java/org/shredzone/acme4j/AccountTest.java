@@ -63,15 +63,14 @@ public class AccountTest {
     public void testUpdateAccount() throws AcmeException, IOException, URISyntaxException {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             private JSON jsonResponse;
-            private Integer response;
 
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
                 assertThat(url, is(locationUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("updateAccount").toString()));
                 assertThat(session, is(notNullValue()));
                 jsonResponse = getJSON("updateAccountResponse");
-                response = HttpURLConnection.HTTP_OK;
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
@@ -80,17 +79,7 @@ public class AccountTest {
                     jsonResponse = new JSONBuilder()
                                 .array("orders", "https://example.com/acme/order/1")
                                 .toJSON();
-                    response = HttpURLConnection.HTTP_OK;
-                    return;
                 }
-
-                response = HttpURLConnection.HTTP_NOT_FOUND;
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(response, not(nullValue()));
-                return response;
             }
 
             @Override
@@ -137,14 +126,10 @@ public class AccountTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
                 requestWasSent.set(true);
                 assertThat(url, is(locationUrl));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -190,14 +175,10 @@ public class AccountTest {
     public void testPreAuthorizeDomain() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("newAuthorizationRequest").toString()));
                 assertThat(session, is(notNullValue()));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
                 assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_CREATED));
                 return HttpURLConnection.HTTP_CREATED;
             }
@@ -248,14 +229,11 @@ public class AccountTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) throws AcmeException {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("newAuthorizationRequest").toString()));
                 assertThat(session, is(notNullValue()));
-            }
 
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
                 Problem problem = TestUtils.createProblem(problemType, problemDetail, resourceUrl);
                 throw new AcmeServerException(problem);
             }
@@ -325,7 +303,7 @@ public class AccountTest {
 
         final TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder payload, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder payload, Session session, int... httpStatus) {
                 try {
                     assertThat(url, is(locationUrl));
                     assertThat(session, is(notNullValue()));
@@ -356,11 +334,8 @@ public class AccountTest {
                 } catch (JoseException ex) {
                     fail("decoding inner payload failed");
                 }
-            }
 
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -408,16 +383,12 @@ public class AccountTest {
     public void testDeactivate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
                 JSON json = claims.toJSON();
                 assertThat(json.get("status").asString(), is("deactivated"));
                 assertThat(url, is(locationUrl));
                 assertThat(session, is(notNullValue()));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -442,15 +413,11 @@ public class AccountTest {
     public void testModify() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
                 assertThat(url, is(locationUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("modifyAccount").toString()));
                 assertThat(session, is(notNullValue()));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 

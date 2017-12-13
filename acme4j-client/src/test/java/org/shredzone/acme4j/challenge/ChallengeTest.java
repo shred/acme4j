@@ -67,12 +67,6 @@ public class ChallengeTest {
             }
 
             @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
-                return HttpURLConnection.HTTP_OK;
-            }
-
-            @Override
             public JSON readJsonResponse() {
                 return getJSON("updateHttpChallengeResponse");
             }
@@ -165,15 +159,11 @@ public class ChallengeTest {
     public void testTrigger() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("triggerHttpChallengeRequest").toString()));
                 assertThat(session, is(notNullValue()));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -205,12 +195,6 @@ public class ChallengeTest {
             @Override
             public void sendRequest(URL url, Session session) {
                 assertThat(url, is(locationUrl));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
-                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
@@ -248,12 +232,6 @@ public class ChallengeTest {
             @Override
             public void sendRequest(URL url, Session session) {
                 assertThat(url, is(locationUrl));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
-                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
@@ -315,12 +293,6 @@ public class ChallengeTest {
             @Override
             public void sendRequest(URL url, Session session) {
                 assertThat(url, is(locationUrl));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
-                return HttpURLConnection.HTTP_OK;
             }
 
             @Override

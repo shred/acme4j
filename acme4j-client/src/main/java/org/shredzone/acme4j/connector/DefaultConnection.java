@@ -35,7 +35,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -78,6 +77,9 @@ public class DefaultConnection implements Connection {
 
     private static final Pattern BASE64URL_PATTERN = Pattern.compile("[0-9A-Za-z_-]+");
 
+    private static final URI BAD_NONCE_ERROR = URI.create("urn:ietf:params:acme:error:badNonce");
+    private static final int MAX_ATTEMPTS = 10;
+
     protected final HttpConnector httpConnector;
     protected HttpURLConnection conn;
 
@@ -107,8 +109,7 @@ public class DefaultConnection implements Connection {
 
             int rc = conn.getResponseCode();
             if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_NO_CONTENT) {
-                throw new AcmeProtocolException("Fetching a nonce returned " + rc + " "
-                    + conn.getResponseMessage());
+                throwAcmeException();
             }
 
             updateSession(session);
@@ -141,108 +142,49 @@ public class DefaultConnection implements Connection {
             conn.connect();
 
             logHeaders();
+
+            int rc = conn.getResponseCode();
+            if (rc != HttpURLConnection.HTTP_OK) {
+                throwAcmeException();
+            }
+
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         }
     }
 
     @Override
-    public void sendSignedRequest(URL url, JSONBuilder claims, Session session) throws AcmeException {
+    public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) throws AcmeException {
         if (session.getKeyIdentifier() == null) {
             throw new IllegalStateException("session has no KeyIdentifier set");
         }
 
-        sendSignedRequest(url, claims, session, false);
+        return sendSignedRequest(url, claims, session, false, httpStatus);
     }
 
     @Override
-    public void sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
+    public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk, int... httpStatus)
                 throws AcmeException {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(claims, "claims");
         Objects.requireNonNull(session, "session");
         assertConnectionIsClosed();
 
-        try {
-            KeyPair keypair = session.getKeyPair();
+        AcmeException lastException = null;
 
-            if (session.getNonce() == null) {
-                resetNonce(session);
+        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+            try {
+                return performRequest(url, claims, session, enforceJwk, httpStatus);
+            } catch (AcmeServerException ex) {
+                if (!BAD_NONCE_ERROR.equals(ex.getType())) {
+                    throw ex;
+                }
+                lastException = ex;
+                LOG.info("Bad Replay Nonce, trying again (attempt {}/{})", attempt, MAX_ATTEMPTS);
             }
-
-            conn = httpConnector.openConnection(url);
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty(ACCEPT_HEADER, "application/json");
-            conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
-            conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
-            conn.setRequestProperty(CONTENT_TYPE_HEADER, "application/jose+json");
-            conn.setDoOutput(true);
-
-            final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(keypair.getPublic());
-            JsonWebSignature jws = new JsonWebSignature();
-            jws.setPayload(claims.toString());
-            jws.getHeaders().setObjectHeaderValue("nonce", Base64Url.encode(session.getNonce()));
-            jws.getHeaders().setObjectHeaderValue("url", url);
-            if (enforceJwk || session.getKeyIdentifier() == null) {
-                jws.getHeaders().setJwkHeaderValue("jwk", jwk);
-            } else {
-                jws.getHeaders().setObjectHeaderValue("kid", session.getKeyIdentifier());
-            }
-
-            jws.setAlgorithmHeaderValue(keyAlgorithm(jwk));
-            jws.setKey(keypair.getPrivate());
-            jws.sign();
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("POST {}", url);
-                LOG.debug("  Payload: {}", claims.toString());
-                LOG.debug("  JWS Header: {}", jws.getHeaders().getFullHeaderAsJsonString());
-            }
-
-            JSONBuilder jb = new JSONBuilder();
-            jb.put("protected", jws.getHeaders().getEncodedHeader());
-            jb.put("payload", jws.getEncodedPayload());
-            jb.put("signature", jws.getEncodedSignature());
-            byte[] outputData = jb.toString().getBytes(DEFAULT_CHARSET);
-
-            conn.setFixedLengthStreamingMode(outputData.length);
-            conn.connect();
-
-            try (OutputStream out = conn.getOutputStream()) {
-                out.write(outputData);
-            }
-
-            logHeaders();
-
-            updateSession(session);
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
-        } catch (JoseException ex) {
-            throw new AcmeProtocolException("Failed to generate a JSON request", ex);
         }
-    }
 
-    @Override
-    public int accept(int... httpStatus) throws AcmeException {
-        assertConnectionIsOpen();
-
-        try {
-            int rc = conn.getResponseCode();
-            OptionalInt match = Arrays.stream(httpStatus).filter(s -> s == rc).findFirst();
-            if (match.isPresent()) {
-                return match.getAsInt();
-            }
-
-            String contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
-            if (!"application/problem+json".equals(contentType)) {
-                throw new AcmeException("HTTP " + rc + ": " + conn.getResponseMessage());
-            }
-
-            Problem problem = new Problem(readJsonResponse(), conn.getURL());
-            throw createAcmeException(problem);
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
-        }
+        throw new AcmeException("Too many reattempts", lastException);
     }
 
     @Override
@@ -346,6 +288,91 @@ public class DefaultConnection implements Connection {
     }
 
     /**
+     * Performs the POST request.
+     *
+     * @param url
+     *            {@link URL} to send the request to.
+     * @param claims
+     *            {@link JSONBuilder} containing claims. Must not be {@code null}.
+     * @param session
+     *            {@link Session} instance to be used for signing and tracking
+     * @param enforceJwk
+     *            {@code true} to enforce a "jwk" header field even if a KeyIdentifier is
+     *            set, {@code false} to choose between "kid" and "jwk" header field
+     *            automatically
+     * @param httpStatus
+     *            Acceptable HTTP states. 200 OK if empty.
+     * @return HTTP 200 class status that was returned
+     */
+    private int performRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk, int... httpStatus)
+                throws AcmeException {
+        try {
+            KeyPair keypair = session.getKeyPair();
+
+            if (session.getNonce() == null) {
+                resetNonce(session);
+            }
+
+            conn = httpConnector.openConnection(url);
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty(ACCEPT_HEADER, "application/json");
+            conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
+            conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
+            conn.setRequestProperty(CONTENT_TYPE_HEADER, "application/jose+json");
+            conn.setDoOutput(true);
+
+            final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(keypair.getPublic());
+            JsonWebSignature jws = new JsonWebSignature();
+            jws.setPayload(claims.toString());
+            jws.getHeaders().setObjectHeaderValue("nonce", Base64Url.encode(session.getNonce()));
+            jws.getHeaders().setObjectHeaderValue("url", url);
+            if (enforceJwk || session.getKeyIdentifier() == null) {
+                jws.getHeaders().setJwkHeaderValue("jwk", jwk);
+            } else {
+                jws.getHeaders().setObjectHeaderValue("kid", session.getKeyIdentifier());
+            }
+
+            jws.setAlgorithmHeaderValue(keyAlgorithm(jwk));
+            jws.setKey(keypair.getPrivate());
+            jws.sign();
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("POST {}", url);
+                LOG.debug("  Payload: {}", claims.toString());
+                LOG.debug("  JWS Header: {}", jws.getHeaders().getFullHeaderAsJsonString());
+            }
+
+            JSONBuilder jb = new JSONBuilder();
+            jb.put("protected", jws.getHeaders().getEncodedHeader());
+            jb.put("payload", jws.getEncodedPayload());
+            jb.put("signature", jws.getEncodedSignature());
+            byte[] outputData = jb.toString().getBytes(DEFAULT_CHARSET);
+
+            conn.setFixedLengthStreamingMode(outputData.length);
+            conn.connect();
+
+            try (OutputStream out = conn.getOutputStream()) {
+                out.write(outputData);
+            }
+
+            logHeaders();
+
+            updateSession(session);
+
+            int rc = conn.getResponseCode();
+            if ((httpStatus.length == 0 && rc != HttpURLConnection.HTTP_OK)
+                || (httpStatus.length > 0 && !Arrays.stream(httpStatus).filter(s -> s == rc).findFirst().isPresent())) {
+                throwAcmeException();
+            }
+            return rc;
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
+        } catch (JoseException ex) {
+            throw new AcmeProtocolException("Failed to generate a JSON request", ex);
+        }
+    }
+
+    /**
      * Gets the instant sent with the Retry-After header.
      */
     private Optional<Instant> getRetryAfterHeader() {
@@ -374,42 +401,52 @@ public class DefaultConnection implements Connection {
     }
 
     /**
-     * Handles a problem by throwing an exception. If a JSON problem was returned, an
-     * {@link AcmeServerException} or subtype will be thrown. Otherwise a generic
-     * {@link AcmeException} is thrown.
+     * Throws an {@link AcmeException}. This method throws an exception that tries to
+     * explain the error as precisely as possible.
      */
-    private AcmeException createAcmeException(Problem problem) {
-        if (problem.getType() == null) {
-            return new AcmeException(problem.getDetail());
+    private void throwAcmeException() throws AcmeException {
+        try {
+            String contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
+            if (!"application/problem+json".equals(contentType)) {
+                throw new AcmeException("HTTP " + conn.getResponseCode() + ": " + conn.getResponseMessage());
+            }
+
+            Problem problem = new Problem(readJsonResponse(), conn.getURL());
+
+            if (problem.getType() == null) {
+                throw new AcmeException(problem.getDetail());
+            }
+
+            String error = AcmeUtils.stripErrorPrefix(problem.getType().toString());
+
+            if ("unauthorized".equals(error)) {
+                throw new AcmeUnauthorizedException(problem);
+            }
+
+            if ("userActionRequired".equals(error)) {
+                URI tos = collectLinks("terms-of-service").stream()
+                        .findFirst()
+                        .map(it -> {
+                            try {
+                                return conn.getURL().toURI().resolve(it);
+                            } catch (URISyntaxException ex) {
+                                throw new AcmeProtocolException("Invalid TOS URI", ex);
+                            }
+                        })
+                        .orElse(null);
+                throw new AcmeUserActionRequiredException(problem, tos);
+            }
+
+            if ("rateLimited".equals(error)) {
+                Optional<Instant> retryAfter = getRetryAfterHeader();
+                Collection<URL> rateLimits = getLinks("urn:ietf:params:acme:documentation");
+                throw new AcmeRateLimitedException(problem, retryAfter.orElse(null), rateLimits);
+            }
+
+            throw new AcmeServerException(problem);
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
         }
-
-        String error = AcmeUtils.stripErrorPrefix(problem.getType().toString());
-
-        if ("unauthorized".equals(error)) {
-            return new AcmeUnauthorizedException(problem);
-        }
-
-        if ("userActionRequired".equals(error)) {
-            URI tos = collectLinks("terms-of-service").stream()
-                    .findFirst()
-                    .map(it -> {
-                        try {
-                            return conn.getURL().toURI().resolve(it);
-                        } catch (URISyntaxException ex) {
-                            throw new AcmeProtocolException("Invalid TOS URI", ex);
-                        }
-                    })
-                    .orElse(null);
-            return new AcmeUserActionRequiredException(problem, tos);
-        }
-
-        if ("rateLimited".equals(error)) {
-            Optional<Instant> retryAfter = getRetryAfterHeader();
-            Collection<URL> rateLimits = getLinks("urn:ietf:params:acme:documentation");
-            return new AcmeRateLimitedException(problem, retryAfter.orElse(null), rateLimits);
-        }
-
-        return new AcmeServerException(problem);
     }
 
     /**

@@ -17,7 +17,6 @@ import static java.util.Collections.unmodifiableList;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
@@ -82,7 +81,6 @@ public class Certificate extends AcmeResource {
             LOG.debug("download");
             try (Connection conn = getSession().provider().connect()) {
                 conn.sendRequest(getLocation(), getSession());
-                conn.accept(HttpURLConnection.HTTP_OK);
                 alternates = new ArrayList<>(conn.getLinks("alternate"));
                 certChain = new ArrayList<>(conn.readCertificates());
             }
@@ -172,7 +170,6 @@ public class Certificate extends AcmeResource {
             }
 
             conn.sendSignedRequest(resUrl, claims, getSession(), true);
-            conn.accept(HttpURLConnection.HTTP_OK);
         } catch (CertificateEncodingException ex) {
             throw new AcmeProtocolException("Invalid certificate", ex);
         }
@@ -211,7 +208,6 @@ public class Certificate extends AcmeResource {
             }
 
             conn.sendSignedRequest(resUrl, claims, session, true);
-            conn.accept(HttpURLConnection.HTTP_OK);
         } catch (CertificateEncodingException ex) {
             throw new AcmeProtocolException("Invalid certificate", ex);
         }

@@ -96,12 +96,6 @@ public class AuthorizationTest {
             }
 
             @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
-                return HttpURLConnection.HTTP_OK;
-            }
-
-            @Override
             public JSON readJsonResponse() {
                 return getJSON("updateAuthorizationResponse");
             }
@@ -145,12 +139,6 @@ public class AuthorizationTest {
             public void sendRequest(URL url, Session session) {
                 requestWasSent.set(true);
                 assertThat(url, is(locationUrl));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
-                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
@@ -200,12 +188,6 @@ public class AuthorizationTest {
             }
 
             @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
-                return HttpURLConnection.HTTP_OK;
-            }
-
-            @Override
             public JSON readJsonResponse() {
                 return getJSON("updateAuthorizationResponse");
             }
@@ -250,16 +232,12 @@ public class AuthorizationTest {
     public void testDeactivate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
                 JSON json = claims.toJSON();
                 assertThat(json.get("status").asString(), is("deactivated"));
                 assertThat(url, is(locationUrl));
                 assertThat(session, is(notNullValue()));
-            }
-
-            @Override
-            public int accept(int... httpStatus) throws AcmeException {
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK));
+                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 

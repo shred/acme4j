@@ -13,7 +13,6 @@
  */
 package org.shredzone.acme4j.provider;
 
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,7 +51,6 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
     public JSON directory(Session session, URI serverUri) throws AcmeException {
         try (Connection conn = connect()) {
             conn.sendRequest(resolve(serverUri), session);
-            conn.accept(HttpURLConnection.HTTP_OK);
 
             // use nonce header if there is one, saves a HEAD request...
             conn.updateSession(session);

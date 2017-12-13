@@ -177,8 +177,7 @@ public class AccountBuilder {
                 claims.put("only-return-existing", onlyExisting);
             }
 
-            conn.sendSignedRequest(resourceUrl, claims, session, true);
-            int resp = conn.accept(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+            int resp = conn.sendSignedRequest(resourceUrl, claims, session, true, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
 
             URL location = conn.getLocation();
 

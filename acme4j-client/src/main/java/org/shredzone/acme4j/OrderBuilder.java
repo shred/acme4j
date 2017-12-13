@@ -148,8 +148,7 @@ public class OrderBuilder {
                 claims.put("notAfter", notAfter);
             }
 
-            conn.sendSignedRequest(session.resourceUrl(Resource.NEW_ORDER), claims, session);
-            conn.accept(HttpURLConnection.HTTP_CREATED);
+            conn.sendSignedRequest(session.resourceUrl(Resource.NEW_ORDER), claims, session, HttpURLConnection.HTTP_CREATED);
 
             JSON json = conn.readJsonResponse();
 

@@ -75,6 +75,8 @@ public final class TestUtils {
 
     public static final String ACME_SERVER_URI = "https://example.com/acme";
 
+    public static final byte[] DUMMY_NONCE = "foo-nonce-foo".getBytes();
+
     private TestUtils() {
         // utility class without constructor
     }
