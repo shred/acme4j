@@ -66,6 +66,13 @@ public class Metadata {
     }
 
     /**
+     * Returns whether an external account is required by this CA.
+     */
+    public boolean isExternalAccountRequired() {
+        return meta.get("external-account-required").orElse(false).asBoolean();
+    }
+
+    /**
      * Returns the JSON representation of the metadata. This is useful for reading
      * proprietary metadata properties.
      */

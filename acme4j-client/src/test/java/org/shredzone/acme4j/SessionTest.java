@@ -249,6 +249,7 @@ public class SessionTest {
         assertThat(meta.getTermsOfService(), is(URI.create("https://example.com/acme/terms")));
         assertThat(meta.getWebsite(), is(url("https://www.example.com/")));
         assertThat(meta.getCaaIdentities(), containsInAnyOrder("example.com"));
+        assertThat(meta.isExternalAccountRequired(), is(true));
         assertThat(meta.getJSON(), is(notNullValue()));
     }
 

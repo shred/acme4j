@@ -9,6 +9,7 @@
     "caa-identities": [
       "example.com"
     ],
+    "external-account-required": true,
     "x-test-string": "foobar",
     "x-test-uri": "https://www.example.org",
     "x-test-array": [
