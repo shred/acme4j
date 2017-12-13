@@ -237,6 +237,10 @@ public class JSONTest {
         assertThat(json.get("none").asBinary(), is(nullValue()));
         assertThat(json.get("none").asProblem(BASE_URL), is(nullValue()));
 
+        assertThat(json.get("none").orElse("foo").asString(), is("foo"));
+        assertThat(json.get("none").orElse(42).asInt(), is(42));
+        assertThat(json.get("none").orElse(true).asBoolean(), is(true));
+
         try {
             json.get("none").asInt();
             fail("asInt did not fail");

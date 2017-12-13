@@ -278,6 +278,16 @@ public final class JSON implements Serializable {
         }
 
         /**
+         * Checks if the value is present. If not, the default value is used instead.
+         *
+         * @param def Default value
+         * @return itself
+         */
+        public Value orElse(Object def) {
+            return val != null ? this : new Value(path, def);
+        }
+
+        /**
          * Returns the value as {@link String}.
          *
          * @return {@link String}, or {@code null} if the value was not set.
