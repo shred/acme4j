@@ -30,7 +30,6 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
-import org.shredzone.acme4j.challenge.OutOfBand01Challenge;
 import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
@@ -155,12 +154,8 @@ public class AbstractAcmeProviderTest {
         Challenge c6 = provider.createChallenge(session, "foobar-01");
         assertThat(c6, is(nullValue()));
 
-        Challenge c7 = provider.createChallenge(session, OutOfBand01Challenge.TYPE);
-        assertThat(c7, not(nullValue()));
-        assertThat(c7, instanceOf(OutOfBand01Challenge.class));
-
-        Challenge c8 = provider.createChallenge(session, "");
-        assertThat(c8, is(nullValue()));
+        Challenge c7 = provider.createChallenge(session, "");
+        assertThat(c7, is(nullValue()));
 
         try {
             provider.createChallenge(session, (String) null);
