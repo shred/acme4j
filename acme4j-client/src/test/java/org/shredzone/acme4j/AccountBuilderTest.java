@@ -124,7 +124,7 @@ public class AccountBuilderTest {
                     assertThat(enforceJwk, is(true));
 
                     JSON binding = claims.toJSON()
-                                    .get("external-account-binding")
+                                    .get("externalAccountBinding")
                                     .required()
                                     .asObject();
 

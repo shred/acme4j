@@ -103,7 +103,7 @@ public class Problem implements Serializable {
      */
     public List<Problem> getSubProblems() {
         return unmodifiableList(
-                problemJson.get("sub-problems")
+                problemJson.get("subproblems")
                         .asArray().stream()
                         .map(o -> o.asProblem(baseUrl))
                         .collect(toList())

@@ -3,6 +3,6 @@
   "contact": [
     "mailto:foo2@example.com"
   ],
-  "terms-of-service-agreed": true,
+  "termsOfServiceAgreed": true,
   "orders": "https://example.com/acme/acct/1/orders"
 }

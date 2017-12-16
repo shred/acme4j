@@ -146,7 +146,7 @@ public class AccountTest {
             @Override
             public Collection<URL> getLinks(String relation) {
                 switch(relation) {
-                    case "terms-of-service": return Arrays.asList(agreementUrl);
+                    case "termsOfService": return Arrays.asList(agreementUrl);
                     default: return null;
                 }
             }

@@ -201,7 +201,7 @@ public class Order extends AcmeResource {
         this.expires = json.get("expires").asInstant();
         this.notBefore = json.get("notBefore").asInstant();
         this.notAfter = json.get("notAfter").asInstant();
-        this.finalizeUrl = json.get("finalizeURL").asURL();
+        this.finalizeUrl = json.get("finalize").asURL();
 
         URL certUrl = json.get("certificate").asURL();
         certificate = certUrl != null ? Certificate.bind(getSession(), certUrl) : null;

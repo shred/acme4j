@@ -1,18 +1,18 @@
 {
-  "new-nonce": "https://example.com/acme/new-nonce",
-  "new-account": "https://example.com/acme/new-account",
-  "new-order": "https://example.com/acme/new-order"
-  "new-authz": "https://example.com/acme/new-authz",
+  "newNonce": "https://example.com/acme/new-nonce",
+  "newAccount": "https://example.com/acme/new-account",
+  "newOrder": "https://example.com/acme/new-order"
+  "newAuthz": "https://example.com/acme/new-authz",
   "meta": {
-    "terms-of-service": "https://example.com/acme/terms",
+    "termsOfService": "https://example.com/acme/terms",
     "website": "https://www.example.com/",
-    "caa-identities": [
+    "caaIdentities": [
       "example.com"
     ],
-    "external-account-required": true,
-    "x-test-string": "foobar",
-    "x-test-uri": "https://www.example.org",
-    "x-test-array": [
+    "externalAccountRequired": true,
+    "xTestString": "foobar",
+    "xTestUri": "https://www.example.org",
+    "xTestArray": [
       "foo",
       "bar",
       "barfoo"

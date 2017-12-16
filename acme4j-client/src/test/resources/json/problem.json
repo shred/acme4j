@@ -2,7 +2,7 @@
   "type": "urn:ietf:params:acme:error:malformed",
   "detail": "Some of the identifiers requested were rejected",
   "instance": "/documents/error.html",
-  "sub-problems": [
+  "subproblems": [
     {
       "type": "urn:ietf:params:acme:error:malformed",
       "detail": "Invalid underscore in DNS name \"_example.com\"",

@@ -28,12 +28,12 @@ public class ResourceTest {
      */
     @Test
     public void testPath() {
-        assertThat(Resource.NEW_NONCE.path(), is("new-nonce"));
-        assertThat(Resource.NEW_ACCOUNT.path(), is("new-account"));
-        assertThat(Resource.NEW_ORDER.path(), is("new-order"));
-        assertThat(Resource.NEW_AUTHZ.path(), is("new-authz"));
-        assertThat(Resource.REVOKE_CERT.path(), is("revoke-cert"));
-        assertThat(Resource.KEY_CHANGE.path(), is("key-change"));
+        assertThat(Resource.NEW_NONCE.path(), is("newNonce"));
+        assertThat(Resource.NEW_ACCOUNT.path(), is("newAccount"));
+        assertThat(Resource.NEW_ORDER.path(), is("newOrder"));
+        assertThat(Resource.NEW_AUTHZ.path(), is("newAuthz"));
+        assertThat(Resource.REVOKE_CERT.path(), is("revokeCert"));
+        assertThat(Resource.KEY_CHANGE.path(), is("keyChange"));
 
         // fails if there are untested future Resource values
         assertThat(Resource.values().length, is(6));

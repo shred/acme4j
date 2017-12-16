@@ -44,7 +44,7 @@ public class Metadata {
      * available.
      */
     public URI getTermsOfService() {
-        return meta.get("terms-of-service").asURI();
+        return meta.get("termsOfService").asURI();
     }
 
     /**
@@ -60,7 +60,7 @@ public class Metadata {
      * itself for the purposes of CAA record validation. Empty if not available.
      */
     public Collection<String> getCaaIdentities() {
-        return meta.get("caa-identities").asArray().stream()
+        return meta.get("caaIdentities").asArray().stream()
                 .map(Value::asString)
                 .collect(toList());
     }
@@ -69,7 +69,7 @@ public class Metadata {
      * Returns whether an external account is required by this CA.
      */
     public boolean isExternalAccountRequired() {
-        return meta.get("external-account-required").orElse(false).asBoolean();
+        return meta.get("externalAccountRequired").orElse(false).asBoolean();
     }
 
     /**

@@ -49,7 +49,7 @@ public class Account extends AcmeResource {
     private static final long serialVersionUID = 7042863483428051319L;
     private static final Logger LOG = LoggerFactory.getLogger(Account.class);
 
-    private static final String KEY_TOS_AGREED = "terms-of-service-agreed";
+    private static final String KEY_TOS_AGREED = "termsOfServiceAgreed";
     private static final String KEY_ORDERS = "orders";
     private static final String KEY_CONTACT = "contact";
     private static final String KEY_STATUS = "status";

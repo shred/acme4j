@@ -68,7 +68,7 @@ public class SessionIT extends PebbleITBase {
         assertThat(meta.getWebsite(), is(nullValue()));
         assertThat(meta.getCaaIdentities(), is(empty()));
         assertThat(meta.getJSON().toString(), sameJSONAs("{"
-                        + "'terms-of-service': 'data:text/plain,Do%20what%20thou%20wilt'"
+                        + "'termsOfService': 'data:text/plain,Do%20what%20thou%20wilt'"
                         + "}"));
     }
 

@@ -167,14 +167,14 @@ public class AccountBuilder {
                 claims.put("contact", contacts);
             }
             if (termsOfServiceAgreed != null) {
-                claims.put("terms-of-service-agreed", termsOfServiceAgreed);
+                claims.put("termsOfServiceAgreed", termsOfServiceAgreed);
             }
             if (keyIdentifier != null) {
-                claims.put("external-account-binding", createExternalAccountBinding(
+                claims.put("externalAccountBinding", createExternalAccountBinding(
                         keyIdentifier, session.getKeyPair().getPublic(), macKey, resourceUrl));
             }
             if (onlyExisting != null) {
-                claims.put("only-return-existing", onlyExisting);
+                claims.put("onlyReturnExisting", onlyExisting);
             }
 
             int resp = conn.sendSignedRequest(resourceUrl, claims, session, true, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
@@ -203,7 +203,7 @@ public class AccountBuilder {
      * @param macKey
      *            {@link SecretKey} to sign the key identifier with
      * @param resource
-     *            "new-account" resource URL
+     *            "newAccount" resource URL
      * @return Created JSON structure
      */
     private Map<String, Object> createExternalAccountBinding(String kid,
