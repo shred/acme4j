@@ -118,6 +118,7 @@
                             </build>
 
                             <run>
+                                <namingStrategy>alias</namingStrategy>
                                 <ports>
                                     <port>14000:14000</port>
                                 </ports>
@@ -162,6 +163,7 @@
                             </build>
 
                             <run>
+                                <namingStrategy>alias</namingStrategy>
                                 <hostname>bammbamm</hostname>
                                 <ports>
                                     <port>14001:14001</port>
