@@ -183,7 +183,7 @@ public class OrderIT extends PebbleITBase {
         assertThat(cert, not(nullValue()));
         assertThat(cert.getNotAfter(), not(nullValue()));
         assertThat(cert.getNotBefore(), not(nullValue()));
-        assertThat(cert.getSubjectX500Principal().getName(), is("CN=" + domain));
+        assertThat(cert.getSubjectX500Principal().getName(), containsString("CN=" + domain));
     }
 
     /**
