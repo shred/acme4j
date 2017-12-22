@@ -34,7 +34,7 @@ public class AcmeServerException extends AcmeException {
      *            {@link Problem} that caused the exception
      */
     public AcmeServerException(Problem problem) {
-        super(Objects.requireNonNull(problem).getDetail());
+        super(Objects.requireNonNull(problem).toString());
         this.problem = problem;
     }
 

@@ -1,6 +1,7 @@
 {
   "type": "urn:ietf:params:acme:error:malformed",
-  "detail": "Some of the identifiers requested were rejected",
+  "title": "Some of the identifiers requested were rejected",
+  "detail": "Identifier \"abc12_\" is malformed",
   "instance": "/documents/error.html",
   "subproblems": [
     {

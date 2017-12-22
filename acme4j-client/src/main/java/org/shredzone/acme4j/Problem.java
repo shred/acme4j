@@ -62,7 +62,20 @@ public class Problem implements Serializable {
     }
 
     /**
-     * Returns a human-readable description of the problem.
+     * Returns a short, human-readable summary of the problem. The text may be localized
+     * if supported by the server. {@code null} if the server did not provide a title.
+     *
+     * @see #toString()
+     */
+    public String getTitle() {
+        return problemJson.get("title").asString();
+    }
+
+    /**
+     * Returns a detailed and specific human-readable explanation of the problem. The
+     * text may be localized if supported by the server.
+     *
+     * @see #toString()
      */
     public String getDetail() {
         return problemJson.get("detail").asString();
@@ -120,11 +133,42 @@ public class Problem implements Serializable {
     }
 
     /**
-     * Returns the problem as JSON string.
+     * Returns a human-readable description of the problem, that is as specific as
+     * possible. The description may be localized if supported by the server.
+     * <p>
+     * If {@link #getSubProblems()} exist, they will be appended.
+     * <p>
+     * Technically, it returns {@link #getDetail()}. If not set, {@link #getTitle()} is
+     * returned instead. As a last resort, {@link #getType()} is returned.
      */
     @Override
     public String toString() {
-        return problemJson.toString();
+        StringBuilder sb = new StringBuilder();
+
+        if (getDetail() != null) {
+            sb.append(getDetail());
+        } else if (getTitle() != null) {
+            sb.append(getTitle());
+        } else {
+            sb.append(getType());
+        }
+
+        List<Problem> subproblems = getSubProblems();
+
+        if (!subproblems.isEmpty()) {
+            sb.append(" (");
+            boolean first = true;
+            for (Problem sub : subproblems) {
+                if (!first) {
+                    sb.append(" ‒ ");
+                }
+                sb.append(sub.toString());
+                first = false;
+            }
+            sb.append(')');
+        }
+
+        return sb.toString();
     }
 
 }
