@@ -36,8 +36,6 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsSni02Challenge;
-import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.util.CSRBuilder;
 import org.shredzone.acme4j.util.CertificateUtils;
 
@@ -48,17 +46,14 @@ public class OrderIT extends PebbleITBase {
 
     private static final String TEST_DOMAIN = "example.com";
 
-    private final String bammbammUrl = System.getProperty("bammbammUrl", "http://localhost:14001");
-    private final String bammbammHostname = System.getProperty("bammbammHostname", "bammbamm");
-
-    private BammBammClient client = new BammBammClient(bammbammUrl);
-
     /**
      * Test if a certificate can be ordered via tns-sni-02 challenge.
      */
     @Test
     public void testTlsSniValidation() throws Exception {
         orderCertificate(TEST_DOMAIN, auth -> {
+            BammBammClient client = getBammBammClient();
+
             TlsSni02Challenge challenge = auth.findChallenge(TlsSni02Challenge.TYPE);
             assertThat(challenge, is(notNullValue()));
 
@@ -67,7 +62,7 @@ public class OrderIT extends PebbleITBase {
             X509Certificate cert = CertificateUtils.createTlsSni02Certificate(
                             challengeKey, challenge.getSubject(), challenge.getSanB());
 
-            client.dnsAddARecord(TEST_DOMAIN, bammbammHostname);
+            client.dnsAddARecord(TEST_DOMAIN, getBammBammHostname());
             client.tlsSniAddCertificate(challenge.getSubject(), challengeKey.getPrivate(), cert);
 
             cleanup(() -> client.dnsRemoveARecord(TEST_DOMAIN));
@@ -83,10 +78,12 @@ public class OrderIT extends PebbleITBase {
     @Test
     public void testHttpValidation() throws Exception {
         orderCertificate(TEST_DOMAIN, auth -> {
+            BammBammClient client = getBammBammClient();
+
             Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
             assertThat(challenge, is(notNullValue()));
 
-            client.dnsAddARecord(TEST_DOMAIN, bammbammHostname);
+            client.dnsAddARecord(TEST_DOMAIN, getBammBammHostname());
             client.httpAddToken(challenge.getToken(), challenge.getAuthorization());
 
             cleanup(() -> client.dnsRemoveARecord(TEST_DOMAIN));
@@ -102,6 +99,8 @@ public class OrderIT extends PebbleITBase {
     @Test
     public void testDnsValidation() throws Exception {
         orderCertificate(TEST_DOMAIN, auth -> {
+            BammBammClient client = getBammBammClient();
+
             Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
             assertThat(challenge, is(notNullValue()));
 
@@ -184,34 +183,6 @@ public class OrderIT extends PebbleITBase {
         assertThat(cert.getNotAfter(), not(nullValue()));
         assertThat(cert.getNotBefore(), not(nullValue()));
         assertThat(cert.getSubjectX500Principal().getName(), containsString("CN=" + domain));
-    }
-
-    /**
-     * Safely updates the authorization, catching checked exceptions.
-     *
-     * @param auth
-     *            {@link Authorization} to update
-     */
-    private void updateAuth(Authorization auth) {
-        try {
-            auth.update();
-        } catch (AcmeException ex) {
-            throw new AcmeLazyLoadingException(auth, ex);
-        }
-    }
-
-    /**
-     * Safely updates the order, catching checked exceptions.
-     *
-     * @param order
-     *            {@link Order} to update
-     */
-    private void updateOrder(Order order) {
-        try {
-            order.update();
-        } catch (AcmeException ex) {
-            throw new AcmeLazyLoadingException(order, ex);
-        }
     }
 
     @FunctionalInterface

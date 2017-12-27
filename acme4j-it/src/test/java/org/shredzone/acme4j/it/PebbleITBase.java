@@ -23,6 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.After;
+import org.shredzone.acme4j.Authorization;
+import org.shredzone.acme4j.Order;
+import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.util.KeyPairUtils;
 
 /**
@@ -36,6 +40,11 @@ import org.shredzone.acme4j.util.KeyPairUtils;
 public abstract class PebbleITBase {
     private final String pebbleHost = System.getProperty("pebbleHost", "localhost");
     private final int pebblePort = Integer.parseInt(System.getProperty("pebblePort", "14000"));
+
+    private final String bammbammUrl = System.getProperty("bammbammUrl", "http://localhost:14001");
+    private final String bammbammHostname = System.getProperty("bammbammHostname", "bammbamm");
+
+    private BammBammClient bammBammClient;
 
     private final List<CleanupCallback> cleanup = new ArrayList<>();
 
@@ -56,6 +65,23 @@ public abstract class PebbleITBase {
      */
     protected URI pebbleURI() {
         return URI.create("acme://pebble/" + pebbleHost + ":" + pebblePort);
+    }
+
+    /**
+     * @return {@link BammBammClient} singleton instance.
+     */
+    protected BammBammClient getBammBammClient() {
+        if (bammBammClient == null) {
+            bammBammClient = new BammBammClient(bammbammUrl);
+        }
+        return bammBammClient;
+    }
+
+    /**
+     * @return Hostname or IP address of the BammBamm server.
+     */
+    protected String getBammBammHostname() {
+        return bammbammHostname;
     }
 
     /**
@@ -80,6 +106,34 @@ public abstract class PebbleITBase {
         assertThat(url.getHost(), is(pebbleHost));
         assertThat(url.getPort(), is(pebblePort));
         assertThat(url.getPath(), not(isEmptyOrNullString()));
+    }
+
+    /**
+     * Safely updates the authorization, catching checked exceptions.
+     *
+     * @param auth
+     *            {@link Authorization} to update
+     */
+    protected void updateAuth(Authorization auth) {
+        try {
+            auth.update();
+        } catch (AcmeException ex) {
+            throw new AcmeLazyLoadingException(auth, ex);
+        }
+    }
+
+    /**
+     * Safely updates the order, catching checked exceptions.
+     *
+     * @param order
+     *            {@link Order} to update
+     */
+    protected void updateOrder(Order order) {
+        try {
+            order.update();
+        } catch (AcmeException ex) {
+            throw new AcmeLazyLoadingException(order, ex);
+        }
     }
 
     @FunctionalInterface
