@@ -140,7 +140,7 @@ public class ChallengeTest {
         JSONBuilder cb = new JSONBuilder();
         challenge.respond(cb);
 
-        assertThat(cb.toString(), sameJSONAs("{\"type\"=\"generic-01\"}"));
+        assertThat(cb.toString(), sameJSONAs("{}"));
     }
 
     /**

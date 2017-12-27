@@ -160,7 +160,7 @@ public class Challenge extends AcmeResource {
      *            {@link JSONBuilder} to copy the response to
      */
     protected void respond(JSONBuilder cb) {
-        cb.put(KEY_TYPE, getType());
+        // Do nothing here...
     }
 
     /**
