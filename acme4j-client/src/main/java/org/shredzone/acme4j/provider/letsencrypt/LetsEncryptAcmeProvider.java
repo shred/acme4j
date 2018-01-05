@@ -33,8 +33,8 @@ import org.shredzone.acme4j.provider.AcmeProvider;
  */
 public class LetsEncryptAcmeProvider extends AbstractAcmeProvider {
 
-    private static final String V01_DIRECTORY_URL = "https://acme-v01.api.letsencrypt.org/directory";
-    private static final String STAGING_DIRECTORY_URL = "https://acme-staging.api.letsencrypt.org/directory";
+    private static final String V02_DIRECTORY_URL = "https://acme-v02.api.letsencrypt.org/directory";
+    private static final String STAGING_DIRECTORY_URL = "https://acme-staging-v02.api.letsencrypt.org/directory";
 
     @Override
     public boolean accepts(URI serverUri) {
@@ -46,8 +46,8 @@ public class LetsEncryptAcmeProvider extends AbstractAcmeProvider {
     public URL resolve(URI serverUri) {
         String path = serverUri.getPath();
         String directoryUrl;
-        if (path == null || "".equals(path) || "/".equals(path) || "/v01".equals(path)) {
-            directoryUrl = V01_DIRECTORY_URL;
+        if (path == null || "".equals(path) || "/".equals(path) || "/v02".equals(path)) {
+            directoryUrl = V02_DIRECTORY_URL;
         } else if ("/staging".equals(path)) {
             directoryUrl = STAGING_DIRECTORY_URL;
         } else {

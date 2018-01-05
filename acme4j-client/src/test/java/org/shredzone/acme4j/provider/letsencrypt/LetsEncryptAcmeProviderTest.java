@@ -27,8 +27,8 @@ import org.junit.Test;
  */
 public class LetsEncryptAcmeProviderTest {
 
-    private static final String V01_DIRECTORY_URL = "https://acme-v01.api.letsencrypt.org/directory";
-    private static final String STAGING_DIRECTORY_URL = "https://acme-staging.api.letsencrypt.org/directory";
+    private static final String V02_DIRECTORY_URL = "https://acme-v02.api.letsencrypt.org/directory";
+    private static final String STAGING_DIRECTORY_URL = "https://acme-staging-v02.api.letsencrypt.org/directory";
 
     /**
      * Tests if the provider accepts the correct URIs.
@@ -40,7 +40,7 @@ public class LetsEncryptAcmeProviderTest {
         assertThat(provider.accepts(new URI("acme://letsencrypt.org")), is(true));
         assertThat(provider.accepts(new URI("acme://letsencrypt.org/")), is(true));
         assertThat(provider.accepts(new URI("acme://letsencrypt.org/staging")), is(true));
-        assertThat(provider.accepts(new URI("acme://letsencrypt.org/v01")), is(true));
+        assertThat(provider.accepts(new URI("acme://letsencrypt.org/v02")), is(true));
         assertThat(provider.accepts(new URI("acme://example.com")), is(false));
         assertThat(provider.accepts(new URI("http://example.com/acme")), is(false));
         assertThat(provider.accepts(new URI("https://example.com/acme")), is(false));
@@ -53,9 +53,9 @@ public class LetsEncryptAcmeProviderTest {
     public void testResolve() throws URISyntaxException {
         LetsEncryptAcmeProvider provider = new LetsEncryptAcmeProvider();
 
-        assertThat(provider.resolve(new URI("acme://letsencrypt.org")), is(url(V01_DIRECTORY_URL)));
-        assertThat(provider.resolve(new URI("acme://letsencrypt.org/")), is(url(V01_DIRECTORY_URL)));
-        assertThat(provider.resolve(new URI("acme://letsencrypt.org/v01")), is(url(V01_DIRECTORY_URL)));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org")), is(url(V02_DIRECTORY_URL)));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org/")), is(url(V02_DIRECTORY_URL)));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org/v02")), is(url(V02_DIRECTORY_URL)));
         assertThat(provider.resolve(new URI("acme://letsencrypt.org/staging")), is(url(STAGING_DIRECTORY_URL)));
 
         try {
