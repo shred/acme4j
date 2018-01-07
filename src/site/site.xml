@@ -45,7 +45,10 @@
         <item name="Let's Encrypt" href="ca/letsencrypt.html"/>
         <item name="Pebble" href="ca/pebble.html"/>
       </item>
-      <item name="ACME Provider" href="provider.html"/>
+      <item name="Development" href="development/index.html">
+        <item name="ACME Provider" href="provider.html"/>
+        <item name="Testing" href="testing.html"/>
+      </item>
     </menu>
     <menu ref="modules"/>
     <menu ref="reports"/>
