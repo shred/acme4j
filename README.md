@@ -1,4 +1,4 @@
-# ACME Java Client ![build status](https://shredzone.org/badge/acme4j.svg) ![maven central](https://maven-badges.herokuapp.com/maven-central/org.shredzone.acme4j/acme4j/badge.svg)
+# ACME Java Client ![build status](https://shredzone.org/badge/acmev1/acme4j.svg)
 
 This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-06) protocol.
 
@@ -7,6 +7,20 @@ ACME is a protocol that a certificate authority (CA) and an applicant can use to
 This Java client helps connecting to an ACME server, and performing all necessary steps to manage certificates.
 
 It is an independent open source implementation that is not affiliated with or endorsed by _Let's Encrypt_.
+
+## ACME v1
+
+This _acme4j_ branch implements the deprecated _ACME v1_ protocol. It should only be used for existing code, and for connecting to CAs that do not provide an _ACME v2_ service.
+
+For new projects, it is recommended to use _acme4j_ version 2, which fully implements the current ACME v2 protocol.
+
+Existing code should be migrated to _acme4j_ version 2 (see the [migration guide](https://shredzone.org/maven/acme4j/migration.html)). _Let's Encrypt_ has not yet announced a sunset date for ACME v1, so there seems to be plenty of time for migration at the moment.
+
+## Important
+
+In order to connect to the _Let's Encrypt_ servers, _acme4j_ has used a local truststore containing their SSL certificate. Native support of IdenTrust certificates was added to Java 8u101 in July 2016. Since then, the local truststore was not necessary any more. It has been disabled in _acme4j_ v0.12.
+
+**If you are still using _acme4j_ < v0.12, you should update to a later version soon.** The certificate in the local truststore expires on June 2018 (or maybe earlier, at the discretion of _Let's Encrypt_).
 
 ## Features
 
@@ -20,32 +34,13 @@ It is an independent open source implementation that is not affiliated with or e
 
 ## Usage
 
-* See the [online documentation](https://shredzone.org/maven/acme4j/) about how to use _acme4j_.
-* For a quick start, have a look at [the source code of an example](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/ClientTest.java).
-
-## Important Note
-
-In order to connect to the _Let's Encrypt_ servers, _acme4j_ has used a local truststore containing their SSL certificate. Native support of IdenTrust certificates was added to Java 8u101 in July 2016. Since then, the local truststore was not necessary any more. It has been disabled in _acme4j_ v0.12.
-
-If you are still using _acme4j_ < v0.12, you should update to the latest version soon. The certificate in the local truststore expires on June 2018 (or maybe earlier, at the discretion of _Let's Encrypt_).
-
-## Future Compatibility
-
-This version of _acme4j_ is tailor-made for _Let's Encrypt_ and other CAs that use the [Boulder](https://github.com/letsencrypt/boulder) server and the "ACME v1" protocol.
-
-ACME v1 is deprecated and will be replaced by ACME v2 in the near future. _Let's Encrypt_ [has announced](https://letsencrypt.org/2017/06/14/acme-v2-api.html) to offer an ACME v2 API endpoint by January 2018. There is no end of life date for ACME v1 at the moment.
-
-To prepare your software for ACME v2, you can use _acme4j_ available in the ["draft" branch](https://github.com/shred/acme4j/tree/draft), which fully supports the ACME v2 protocol, but is not downward compatible to ACME v1. A first release of this branch will be available at Maven Central in due time.
-
-Make sure to set the correct major version in your dependencies:
-
-* _acme4j_ version 0.xx → ACME v1 protocol. **This is what you want for production code at the moment.**
-* _acme4j_ version 1.xx → ACME v2 protocol. The "draft" branch. Not meant for production yet.
+* See the [online documentation](https://shredzone.org/maven/acme4j-acmev1/) about how to use _acme4j_.
+* For a quick start, have a look at [the source code of an example](https://github.com/shred/acme4j/blob/acmev1/acme4j-example/src/main/java/org/shredzone/acme4j/ClientTest.java).
 
 ## Contribute
 
 * Fork the [Source code at GitHub](https://github.com/shred/acme4j). Feel free to send pull requests.
-* Found a bug? [File a bug report!](https://github.com/shred/acme4j/issues)
+* Found a bug? [File a bug report!](https://github.com/shred/acme4j/issues). Please add a note that you are referring to the old ACMEv1 implementation!
 
 ## License
 

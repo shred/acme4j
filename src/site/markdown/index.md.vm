@@ -11,6 +11,15 @@ It is an independent open source implementation that is not affiliated with or e
 
 The source code can be found at [GitHub](https://github.com/shred/acme4j) and is distributed under the terms of [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
+ACME v1
+-------
+
+This version of _acme4j_ implements the deprecated _ACME v1_ protocol. It should only be used for existing code, and for connecting to CAs that do not provide an _ACME v2_ service.
+
+For new projects, it is recommended to use _acme4j_ version 2, which fully implements the current ACME v2 protocol.
+
+Existing code should be migrated to _acme4j_ version 2 (see the [migration guide](https://shredzone.org/maven/acme4j/migration.html)). _Let's Encrypt_ has not yet announced a sunset date for ACME v1, so there seems to be plenty of time for migration at the moment.
+
 Quick Start
 -----------
 

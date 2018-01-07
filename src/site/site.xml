@@ -21,7 +21,8 @@
   <body>
     <links>
       <item name="API javadoc" href="./apidocs/index.html"/>
-      <item name="GitHub" href="https://github.com/shred/acme4j"/>
+      <item name="ACMEv2" href="https://acme4j.shredzone.org/"/>
+      <item name="GitHub" href="https://github.com/shred/acme4j/tree/acmev1"/>
     </links>
     <breadcrumbs>
       <item name="shredzone.org" href="https://shredzone.org"/>
