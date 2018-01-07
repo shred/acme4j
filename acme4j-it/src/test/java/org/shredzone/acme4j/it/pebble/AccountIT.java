@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.shredzone.acme4j.it;
+package org.shredzone.acme4j.it.pebble;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;

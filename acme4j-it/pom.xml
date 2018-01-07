@@ -36,13 +36,22 @@
     <profiles>
         <profile>
             <!-- Profile with integration tests. Requires docker! -->
-            <!-- mvn -P ci clean install -->
+            <!-- mvn -P ci verify -->
             <id>ci</id>
             <properties>
                 <skipITs>false</skipITs>
             </properties>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <exclude>org/shredzone/acme4j/it/boulder/**</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>io.fabric8</groupId>
                         <artifactId>docker-maven-plugin</artifactId>
@@ -63,6 +72,27 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <!-- Profile for testing against a local Boulder server. -->
+            <!-- mvn -P boulder verify -->
+            <id>boulder</id>
+            <properties>
+                <skipITs>false</skipITs>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-failsafe-plugin</artifactId>
+                        <configuration>
+                            <excludes>
+                                <exclude>org/shredzone/acme4j/it/pebble/**</exclude>
+                            </excludes>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>

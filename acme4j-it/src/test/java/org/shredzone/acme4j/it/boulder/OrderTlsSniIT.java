@@ -11,22 +11,17 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.shredzone.acme4j.it;
+package org.shredzone.acme4j.it.boulder;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.stream.Collectors.toList;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.net.URI;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
 
-import org.bouncycastle.asn1.x509.GeneralName;
 import org.junit.Test;
 import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.AccountBuilder;
@@ -35,26 +30,32 @@ import org.shredzone.acme4j.Certificate;
 import org.shredzone.acme4j.Order;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
-import org.shredzone.acme4j.challenge.Dns01Challenge;
+import org.shredzone.acme4j.challenge.TlsSni02Challenge;
+import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
+import org.shredzone.acme4j.it.BammBammClient;
 import org.shredzone.acme4j.util.CSRBuilder;
+import org.shredzone.acme4j.util.CertificateUtils;
+import org.shredzone.acme4j.util.KeyPairUtils;
 
 /**
- * Tests a complete wildcard certificate order. Wildcard certificates currently only
- * support dns-01 challenge.
+ * Tests a complete certificate order with different challenges.
  */
-public class OrderWildcardIT extends PebbleITBase {
+public class OrderTlsSniIT {
 
     private static final String TEST_DOMAIN = "example.com";
-    private static final String TEST_WILDCARD_DOMAIN = "*.example.com";
+
+    private final String bammbammUrl = System.getProperty("bammbammUrl", "http://localhost:14001");
+
+    private BammBammClient client = new BammBammClient(bammbammUrl);
 
     /**
-     * Test if a wildcard certificate can be ordered via dns-01 challenge.
+     * Test if a certificate can be ordered via http-01 challenge.
      */
     @Test
-    public void testDnsValidation() throws Exception {
-        BammBammClient client = getBammBammClient();
+    public void testHttpValidation() throws Exception {
         KeyPair keyPair = createKeyPair();
-        Session session = new Session(pebbleURI(), keyPair);
+        Session session = new Session(boulderURI(), keyPair);
 
         Account account = new AccountBuilder()
                     .agreeToTermsOfService()
@@ -62,30 +63,16 @@ public class OrderWildcardIT extends PebbleITBase {
 
         KeyPair domainKeyPair = createKeyPair();
 
-        Instant notBefore = Instant.now().truncatedTo(ChronoUnit.MILLIS);
-        Instant notAfter = notBefore.plus(Duration.ofDays(20L));
-
-        Order order = account.newOrder()
-                    .domain(TEST_WILDCARD_DOMAIN)
-                    .domain(TEST_DOMAIN)
-                    .notBefore(notBefore)
-                    .notAfter(notAfter)
-                    .create();
-        assertThat(order.getNotBefore(), is(notBefore));
-        assertThat(order.getNotAfter(), is(notAfter));
-        assertThat(order.getStatus(), is(Status.PENDING));
+        Order order = account.newOrder().domain(TEST_DOMAIN).create();
 
         for (Authorization auth : order.getAuthorizations()) {
-            assertThat(auth.getDomain(), is(TEST_DOMAIN));
-            assertThat(auth.getStatus(), is(Status.PENDING));
-
-            Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
+            TlsSni02Challenge challenge = auth.findChallenge(TlsSni02Challenge.TYPE);
             assertThat(challenge, is(notNullValue()));
 
-            String challengeDomainName = "_acme-challenge." + TEST_DOMAIN;
+            KeyPair challengeKeyPair = createKeyPair();
+            X509Certificate challengeCert = CertificateUtils.createTlsSni02Certificate(challengeKeyPair, challenge.getSubject(), challenge.getSanB());
 
-            client.dnsAddTxtRecord(challengeDomainName, challenge.getDigest());
-            cleanup(() -> client.dnsRemoveTxtRecord(challengeDomainName));
+            client.tlsSniAddCertificate(challenge.getSubject(), challengeKeyPair.getPrivate(), challengeCert);
 
             challenge.trigger();
 
@@ -98,11 +85,12 @@ public class OrderWildcardIT extends PebbleITBase {
             if (auth.getStatus() != Status.VALID) {
                 fail("Authorization failed");
             }
+
+            client.tlsSniRemoveCertificate(challenge.getSubject());
         }
 
         CSRBuilder csr = new CSRBuilder();
         csr.addDomain(TEST_DOMAIN);
-        csr.addDomain(TEST_WILDCARD_DOMAIN);
         csr.sign(domainKeyPair);
         byte[] encodedCsr = csr.getEncoded();
 
@@ -114,19 +102,56 @@ public class OrderWildcardIT extends PebbleITBase {
             .conditionEvaluationListener(cond -> updateOrder(order))
             .until(order::getStatus, not(isOneOf(Status.PENDING, Status.PROCESSING)));
 
-
         Certificate certificate = order.getCertificate();
         X509Certificate cert = certificate.getCertificate();
         assertThat(cert, not(nullValue()));
         assertThat(cert.getNotAfter(), not(nullValue()));
         assertThat(cert.getNotBefore(), not(nullValue()));
         assertThat(cert.getSubjectX500Principal().getName(), containsString("CN=" + TEST_DOMAIN));
+    }
 
-        List<String> san = cert.getSubjectAlternativeNames().stream()
-                .filter(it -> ((Number) it.get(0)).intValue() == GeneralName.dNSName)
-                .map(it -> (String) it.get(1))
-                .collect(toList());
-        assertThat(san, contains(TEST_DOMAIN, TEST_WILDCARD_DOMAIN));
+    /**
+     * @return The {@link URI} of the Boulder server to test against.
+     */
+    protected URI boulderURI() {
+        return URI.create("http://localhost:4001/directory");
+    }
+
+    /**
+     * Creates a fresh key pair.
+     *
+     * @return Created new {@link KeyPair}
+     */
+    protected KeyPair createKeyPair() {
+        return KeyPairUtils.createKeyPair(2048);
+    }
+
+    /**
+     * Safely updates the authorization, catching checked exceptions.
+     *
+     * @param auth
+     *            {@link Authorization} to update
+     */
+    private void updateAuth(Authorization auth) {
+        try {
+            auth.update();
+        } catch (AcmeException ex) {
+            throw new AcmeLazyLoadingException(auth, ex);
+        }
+    }
+
+    /**
+     * Safely updates the order, catching checked exceptions.
+     *
+     * @param order
+     *            {@link Order} to update
+     */
+    private void updateOrder(Order order) {
+        try {
+            order.update();
+        } catch (AcmeException ex) {
+            throw new AcmeLazyLoadingException(order, ex);
+        }
     }
 
 }
