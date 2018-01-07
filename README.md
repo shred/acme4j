@@ -1,4 +1,4 @@
-# ACME Java Client ![build status](https://shredzone.org/badge/draft/acme4j.svg) ![maven central](https://maven-badges.herokuapp.com/maven-central/org.shredzone.acme4j/acme4j/badge.svg)
+# ACME Java Client ![build status](https://shredzone.org/badge/acme4j.svg) ![maven central](https://maven-badges.herokuapp.com/maven-central/org.shredzone.acme4j/acme4j/badge.svg)
 
 This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-09) protocol.
 
@@ -17,17 +17,20 @@ It is an independent open source implementation that is not affiliated with or e
 * Small, only requires [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home) and [slf4j](http://www.slf4j.org/) as dependencies
 * Extensive unit and integration tests
 
-## Current Status
+## Work in Progress!
 
-This branch implements the ACME v2 protocol.
+There are two versions of the ACME specification, ACME v1 and ACME v2.
 
-It is not meant for production yet! There are no servers that fully cover the ACME v2 API at the moment. For this reason, some of the functions are also untested.
+ACME v1 is currently in production. It is supported by _acme4j_ < 2.0, so **use _acme4j_ < 2.0 for production purposes!**
 
-Use the [master branch](https://github.com/shred/acme4j/tree/master) for production purposes.
+At the moment, _Let's Encrypt_ only provides an ACME v2 staging server for testing purposes. An ACME v2 production server is planned to be launched on Feburary 27th, 2018. _acme4j_ >= 2.0 supports the ACME v2 protocol.
 
-Known issues:
+_Let's Encrypt_ has not announced a sunset date for ACME v1 yet, so there is plenty of time for migration. _acme4j_ < 2.0 will be maintained in the [acmev1 branch](https://github.com/shred/acme4j/tree/acmev1) until sunset of the ACME v1 protocol.
 
-* The API is still subject to change, if required by future drafts.
+## Known Issues
+
+* _Let's Encrypt_ does not support the `tls-sni-02` challenge yet, while _acme4j_ does not provide `tls-sni-01` support any more. If you use tls-sni, do not upgrade to _acme4j_ v2 yet!
+* The _acme4j_ v2 API is still subject to change.
 * Integration tests do not fully cover all functions. The standard methods for creating an account, ordering, and downloading a certificate are tested. Other methods are not tested yet, and may not work as expected.
 
 ## Usage
