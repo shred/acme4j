@@ -20,6 +20,7 @@
   <version position="right"/>
   <body>
     <links>
+      <item name="ACME v1" href="https://shredzone.org/maven/acme4j-acmev1/index.html"/>
       <item name="API javadoc" href="./apidocs/index.html"/>
       <item name="GitHub" href="https://github.com/shred/acme4j"/>
     </links>
