@@ -47,8 +47,8 @@
         <item name="Pebble" href="ca/pebble.html"/>
       </item>
       <item name="Development" href="development/index.html">
-        <item name="ACME Provider" href="provider.html"/>
-        <item name="Testing" href="testing.html"/>
+        <item name="ACME Provider" href="development/provider.html"/>
+        <item name="Testing" href="development/testing.html"/>
       </item>
     </menu>
     <menu ref="modules"/>
