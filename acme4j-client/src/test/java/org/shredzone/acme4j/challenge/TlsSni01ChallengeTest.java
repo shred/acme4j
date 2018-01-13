@@ -45,6 +45,7 @@ public class TlsSni01ChallengeTest {
      * Test that {@link TlsSni01Challenge} generates a correct authorization key.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testTlsSniChallenge() throws IOException {
         TlsSni01Challenge challenge = new TlsSni01Challenge(session);
         challenge.unmarshall(getJsonAsObject("tlsSniChallenge"));

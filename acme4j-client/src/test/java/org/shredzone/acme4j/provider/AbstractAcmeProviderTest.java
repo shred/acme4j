@@ -41,6 +41,7 @@ import org.shredzone.acme4j.toolbox.TestUtils;
 /**
  * Unit tests for {@link AbstractAcmeProvider}.
  */
+@SuppressWarnings("deprecation")
 public class AbstractAcmeProviderTest {
 
     /**

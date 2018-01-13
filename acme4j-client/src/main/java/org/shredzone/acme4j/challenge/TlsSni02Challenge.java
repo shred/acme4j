@@ -19,7 +19,11 @@ import org.shredzone.acme4j.Session;
 
 /**
  * Implements the {@value TYPE} challenge.
+ *
+ * @deprecated This challenge is vulnerable and will be removed from the ACME specs. Do
+ *             not use!
  */
+@Deprecated
 public class TlsSni02Challenge extends TokenChallenge {
     private static final long serialVersionUID = 8921833167878544518L;
 

@@ -41,6 +41,7 @@ import org.shredzone.acme4j.toolbox.JSON;
  * Implementing classes must implement at least {@link AcmeProvider#accepts(URI)}
  * and {@link AbstractAcmeProvider#resolve(URI)}.
  */
+@SuppressWarnings("deprecation")
 public abstract class AbstractAcmeProvider implements AcmeProvider {
 
     private static final Map<String, Function<Session, Challenge>> CHALLENGES = challengeMap();

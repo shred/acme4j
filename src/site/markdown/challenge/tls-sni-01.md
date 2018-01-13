@@ -1,6 +1,6 @@
 # tls-sni-01 Challenge
 
-> **NOTE:** In ACMEv2, this challenge is going to be replaced by [tls-sni-02](./tls-sni-02.html). However, the _Let's Encrypt_ ACMEv1 server is still offering this challenge as the only TLS-SNI based challenge. To be on the safe side, request both challenges and process the one that is returned.
+> **SECURITY:** [This challenge is vulnerable in shared hosting environments](https://community.letsencrypt.org/t/2018-01-09-issue-with-tls-sni-01-and-shared-hosting-infrastructure/49996), and is going to be removed from the ACME specs. _Let's Encrypt_ does not offer this challenge to the general public any more.
 
 With the `tls-sni-01` challenge, you prove to the CA that you are able to control the web server of the domain to be authorized, by letting it respond to a SNI request with a specific self-signed cert.
 

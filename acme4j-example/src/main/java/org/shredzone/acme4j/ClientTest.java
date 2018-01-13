@@ -65,7 +65,7 @@ public class ClientTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientTest.class);
 
-    private enum ChallengeType { HTTP, DNS, TLSSNI }
+    private enum ChallengeType { HTTP, DNS }
 
     /**
      * Generates a certificate for the given domains. Also takes care for the registration
@@ -210,10 +210,6 @@ public class ClientTest {
             case DNS:
                 challenge = dnsChallenge(auth, domain);
                 break;
-
-            case TLSSNI:
-                challenge = tlsSniChallenge(auth, domain);
-                break;
         }
 
         if (challenge == null) {
@@ -324,63 +320,6 @@ public class ClientTest {
         StringBuilder message = new StringBuilder();
         message.append("Please create a TXT record:\n\n");
         message.append("_acme-challenge." + domain + ". IN TXT " + challenge.getDigest());
-        acceptChallenge(message.toString());
-
-        return challenge;
-    }
-
-    /**
-     * Prepares a TLS-SNI challenge.
-     * <p>
-     * The verification of this challenge expects that the web server returns a special
-     * validation certificate.
-     * <p>
-     * This example outputs instructions that need to be executed manually. In a
-     * production environment, you would rather configure your web server automatically.
-     *
-     * @param auth
-     *            {@link Authorization} to find the challenge in
-     * @param domain
-     *            Domain name to be authorized
-     * @return {@link Challenge} to verify
-     */
-    public Challenge tlsSniChallenge(Authorization auth, String domain) throws AcmeException {
-        // Find a single tls-sni-01 challenge
-        org.shredzone.acme4j.challenge.TlsSni01Challenge challenge = auth.findChallenge(org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE);
-        if (challenge == null) {
-            throw new AcmeException("Found no " + org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE + " challenge, don't know what to do...");
-        }
-
-        // Get the Subject
-        String subject = challenge.getSubject();
-
-        // Create a validation key pair
-        KeyPair domainKeyPair;
-        try (FileWriter fw = new FileWriter("tlssni.key")) {
-            domainKeyPair = KeyPairUtils.createKeyPair(2048);
-            KeyPairUtils.writeKeyPair(domainKeyPair, fw);
-        } catch (IOException ex) {
-            throw new AcmeException("Could not write keypair", ex);
-        }
-
-        // Create a validation certificate
-        try (FileWriter fw = new FileWriter("tlssni.crt")) {
-            X509Certificate cert = CertificateUtils.createTlsSniCertificate(domainKeyPair, subject);
-            CertificateUtils.writeX509Certificate(cert, fw);
-        } catch (IOException ex) {
-            throw new AcmeException("Could not write certificate", ex);
-        }
-
-        // Output the challenge, wait for acknowledge...
-        LOG.info("Please configure your web server.");
-        LOG.info("It must return the certificate 'tlssni.crt' on a SNI request to:");
-        LOG.info(subject);
-        LOG.info("The matching keypair is available at 'tlssni.key'.");
-        LOG.info("If you're ready, dismiss the dialog...");
-
-        StringBuilder message = new StringBuilder();
-        message.append("Please use 'tlssni.key' and 'tlssni.crt' cert for SNI requests to:\n\n");
-        message.append("https://").append(subject).append("\n\n");
         acceptChallenge(message.toString());
 
         return challenge;

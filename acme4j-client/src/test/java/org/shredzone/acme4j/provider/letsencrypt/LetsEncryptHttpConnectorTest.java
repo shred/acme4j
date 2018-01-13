@@ -41,6 +41,7 @@ public class LetsEncryptHttpConnectorTest {
      */
     @Test
     @Category(HttpURLConnection.class)
+    @SuppressWarnings("deprecation")
     public void testCertificate() throws IOException, URISyntaxException {
         LetsEncryptHttpConnector connector = new LetsEncryptHttpConnector();
 
@@ -68,6 +69,7 @@ public class LetsEncryptHttpConnectorTest {
      * Test that the {@link SSLSocketFactory} can be instantiated and is cached.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testCreateSocketFactory() throws IOException {
         LetsEncryptHttpConnector connector = new LetsEncryptHttpConnector();
 

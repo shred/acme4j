@@ -125,8 +125,8 @@ public class CertificateUtilsTest {
      * Test if {@link CertificateUtils#createTlsSniCertificate(KeyPair, String)} creates a
      * good certificate.
      */
+    @SuppressWarnings("deprecation")
     @Test
-    @SuppressWarnings("deprecation") // test deprecated method
     public void testCreateTlsSniCertificate() throws IOException, CertificateParsingException {
         String subject = "30c452b9bd088cdbc2c4094947025d7c.7364ea602ac325a1b55ceaae024fbe29.acme.invalid";
 
@@ -149,6 +149,7 @@ public class CertificateUtilsTest {
      * Test if {@link CertificateUtils#createTlsSni02Certificate(KeyPair, String, String)}
      * creates a good certificate.
      */
+    @SuppressWarnings("deprecation")
     @Test
     public void testCreateTlsSni02Certificate() throws IOException, CertificateParsingException {
         String sanA = "1082909237a535173c8415a44539f84e.248317530d8d1a0c71de8fd23f1beae4.token.acme.invalid";

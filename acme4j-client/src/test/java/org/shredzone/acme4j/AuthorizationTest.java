@@ -40,6 +40,7 @@ import org.shredzone.acme4j.toolbox.JSONBuilder;
 /**
  * Unit tests for {@link Authorization}.
  */
+@SuppressWarnings("deprecation")
 public class AuthorizationTest {
 
     private static final String SNAILMAIL_TYPE = "snail-01"; // a non-existent challenge
