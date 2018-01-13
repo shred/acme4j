@@ -19,7 +19,10 @@ import org.shredzone.acme4j.Session;
 
 /**
  * Implements the {@value TYPE} challenge.
+ *
+ * @deprecated This challenge has been removed from the ACMEv2 specs.
  */
+@Deprecated
 public class OutOfBand01Challenge extends Challenge {
     private static final long serialVersionUID = -7459595198486630582L;
 

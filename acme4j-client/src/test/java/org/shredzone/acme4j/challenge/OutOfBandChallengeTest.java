@@ -43,6 +43,7 @@ public class OutOfBandChallengeTest {
      * Test that {@link OutOfBand01Challenge} is returning the validation URL.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testHttpChallenge() throws IOException {
         OutOfBand01Challenge challenge = new OutOfBand01Challenge(session);
         challenge.unmarshall(getJsonAsObject("oobChallenge"));
