@@ -1,5 +1,9 @@
 # ACME Java Client ![build status](https://shredzone.org/badge/acme4j.svg) ![maven central](https://maven-badges.herokuapp.com/maven-central/org.shredzone.acme4j/acme4j/badge.svg)
 
+> **NOTE:** There is currently no _acme4j_ 2.0 release available at Maven Central. To use _acme4j_ with the ACMEv2 protocol, you need to build it yourself and use version `2.0-SNAPSHOT` in your project. Version 2.0 will be available at the latest when _Let's Encrypt_ starts its production ACMEv2 server on February 27th, 2018.
+>
+> **For production** you should use the latest version available at Maven Central (see the badge above). You can find the corresponding source code in the [acmev1 branch](https://github.com/shred/acme4j/tree/acmev1).
+
 This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-09) protocol.
 
 ACME is a protocol that a certificate authority (CA) and an applicant can use to automate the process of verification and certificate issuance.
@@ -17,19 +21,18 @@ It is an independent open source implementation that is not affiliated with or e
 * Small, only requires [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home) and [slf4j](http://www.slf4j.org/) as dependencies
 * Extensive unit and integration tests
 
-## Work in Progress!
+## ACME Versions
 
-There are two versions of the ACME specification, ACME v1 and ACME v2.
+There are two versions of the ACME protocol specification, ACME v1 and ACME v2.
 
 ACME v1 is currently in production. It is supported by _acme4j_ < 2.0, so **use _acme4j_ < 2.0 for production purposes!**
 
-At the moment, _Let's Encrypt_ only provides an ACME v2 staging server for testing purposes. An ACME v2 production server is planned to be launched on Feburary 27th, 2018. _acme4j_ >= 2.0 supports the ACME v2 protocol.
+_Let's Encrypt_ plans to launch an ACME v2 production server on Feburary 27th, 2018. A staging server is already available. _acme4j_ >= 2.0 supports the ACME v2 protocol.
 
-_Let's Encrypt_ has not announced a sunset date for ACME v1 yet, so there is plenty of time for migration. _acme4j_ < 2.0 will be maintained in the [acmev1 branch](https://github.com/shred/acme4j/tree/acmev1) until sunset of the ACME v1 protocol.
+_Let's Encrypt_ has not announced a sunset date for ACME v1 yet, so there is plenty of time for migration.
 
 ## Known Issues
 
-* _Let's Encrypt_ does not support the `tls-sni-02` challenge yet, while _acme4j_ does not provide `tls-sni-01` support any more. If you use tls-sni, do not upgrade to _acme4j_ v2 yet!
 * The _acme4j_ v2 API is still subject to change.
 * Integration tests do not fully cover all functions. The standard methods for creating an account, ordering, and downloading a certificate are tested. Other methods are not tested yet, and may not work as expected.
 
@@ -51,4 +54,4 @@ _acme4j_ is open source software. The source code is distributed under the terms
 
 * I would like to thank Brian Campbell and all the other [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home) developers. _acme4j_ would not exist without your excellent work.
 * Thanks to [Daniel McCarney](https://github.com/cpu) for his help with the ACME protocol, Pebble, and Boulder.
-* I also like to thank everyone who contributed to _acme4j_.
+* I also like to thank [everyone who contributed to _acme4j_](https://github.com/shred/acme4j/graphs/contributors).
