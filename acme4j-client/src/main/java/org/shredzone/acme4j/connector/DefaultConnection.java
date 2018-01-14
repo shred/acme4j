@@ -426,13 +426,7 @@ public class DefaultConnection implements Connection {
             if ("userActionRequired".equals(error)) {
                 URI tos = collectLinks("terms-of-service").stream()
                         .findFirst()
-                        .map(it -> {
-                            try {
-                                return conn.getURL().toURI().resolve(it);
-                            } catch (URISyntaxException ex) {
-                                throw new AcmeProtocolException("Invalid TOS URI", ex);
-                            }
-                        })
+                        .map(this::resolveUri)
                         .orElse(null);
                 throw new AcmeUserActionRequiredException(problem, tos);
             }
@@ -529,6 +523,26 @@ public class DefaultConnection implements Connection {
             return new URL(conn.getURL(), link);
         } catch (MalformedURLException ex) {
             throw new AcmeProtocolException("Cannot resolve relative link: " + link, ex);
+        }
+    }
+
+    /**
+     * Resolves a relative URI against the connection's last URL.
+     *
+     * @param uri
+     *            URI to resolve
+     * @return Absolute URI of the given link, or {@code null} if the URI was
+     *         {@code null}.
+     */
+    private URI resolveUri(String uri) {
+        if (uri == null) {
+            return null;
+        }
+
+        try {
+            return conn.getURL().toURI().resolve(uri);
+        } catch (URISyntaxException ex) {
+            throw new AcmeProtocolException("Invalid URI", ex);
         }
     }
 
