@@ -35,7 +35,6 @@ import org.jose4j.jwx.CompactSerializer;
 import org.jose4j.lang.JoseException;
 import org.junit.Test;
 import org.shredzone.acme4j.Account.EditableAccount;
-import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.connector.Resource;
@@ -196,12 +195,9 @@ public class AccountTest {
 
         Session session = provider.createSession();
 
-        Http01Challenge httpChallenge = new Http01Challenge(session);
-        Dns01Challenge dnsChallenge = new Dns01Challenge(session);
-
         provider.putTestResource(Resource.NEW_AUTHZ, resourceUrl);
-        provider.putTestChallenge(Http01Challenge.TYPE, httpChallenge);
-        provider.putTestChallenge(Dns01Challenge.TYPE, dnsChallenge);
+        provider.putTestChallenge(Http01Challenge.TYPE, Http01Challenge::new);
+        provider.putTestChallenge(Dns01Challenge.TYPE, Dns01Challenge::new);
 
         String domainName = "example.org";
 
@@ -214,7 +210,8 @@ public class AccountTest {
         assertThat(auth.getLocation(), is(locationUrl));
 
         assertThat(auth.getChallenges(), containsInAnyOrder(
-                        (Challenge) httpChallenge, (Challenge) dnsChallenge));
+                        provider.getChallenge(Http01Challenge.TYPE),
+                        provider.getChallenge(Dns01Challenge.TYPE)));
 
         provider.close();
     }

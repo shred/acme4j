@@ -1,6 +1,6 @@
 {
   "type": "http-01",
   "status": "pending",
-  "url": "https://example.com/acme/some-resource",
+  "url": "https://example.com/acme/some-location",
   "token": "IlirfxKKXAsHtmzK29Pj8A"
 }

@@ -49,8 +49,7 @@ public class HttpChallengeTest {
      */
     @Test
     public void testHttpChallenge() throws IOException {
-        Http01Challenge challenge = new Http01Challenge(session);
-        challenge.setJSON(getJSON("httpChallenge"));
+        Http01Challenge challenge = new Http01Challenge(session, getJSON("httpChallenge"));
 
         assertThat(challenge.getType(), is(Http01Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));
@@ -69,8 +68,7 @@ public class HttpChallengeTest {
      */
     @Test(expected = AcmeProtocolException.class)
     public void testNoTokenSet() {
-        Http01Challenge challenge = new Http01Challenge(session);
-        challenge.setJSON(getJSON("httpNoTokenChallenge"));
+        Http01Challenge challenge = new Http01Challenge(session, getJSON("httpNoTokenChallenge"));
         challenge.getToken();
     }
 

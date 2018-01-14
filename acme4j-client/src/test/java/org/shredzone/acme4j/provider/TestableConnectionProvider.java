@@ -18,6 +18,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -34,7 +35,8 @@ import org.shredzone.acme4j.toolbox.TestUtils;
  * of {@link Connection} that is always returned on {@link #connect()}.
  */
 public class TestableConnectionProvider extends DummyConnection implements AcmeProvider {
-    private final Map<String, Challenge> challengeMap = new HashMap<>();
+    private final Map<String, BiFunction<Session, JSON, Challenge>> creatorMap = new HashMap<>();
+    private final Map<String, Challenge> createdMap = new HashMap<>();
     private final JSONBuilder directory = new JSONBuilder();
 
     /**
@@ -50,17 +52,29 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
     }
 
     /**
-     * Register a {@link Challenge}. For the sake of simplicity,
-     * {@link #createChallenge(Session, String)} will always return the same
-     * {@link Challenge} instance in this test suite.
+     * Register a {@link Challenge}.
      *
-     * @param s
-     *            Challenge type
-     * @param c
-     *            {@link Challenge} instance.
+     * @param type
+     *            Challenge type to register.
+     * @param creator
+     *            Creator {@link BiFunction} that creates a matching {@link Challenge}
      */
-    public void putTestChallenge(String s, Challenge c) {
-        challengeMap.put(s, c);
+    public void putTestChallenge(String type, BiFunction<Session, JSON, Challenge> creator) {
+        creatorMap.put(type, creator);
+    }
+
+    /**
+     * Returns the {@link Challenge} instance that has been created. Fails if no such
+     * challenge was created.
+     *
+     * @param type Challenge type
+     * @return Created {@link Challenge} instance
+     */
+    public Challenge getChallenge(String type) {
+        if (!createdMap.containsKey(type)) {
+            throw new IllegalArgumentException("No challenge of type " + type + " was created");
+        }
+        return createdMap.get(type);
     }
 
     /**
@@ -94,16 +108,23 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
     }
 
     @Override
-    public Challenge createChallenge(Session session, String type) {
-        if (challengeMap.isEmpty()) {
+    public Challenge createChallenge(Session session, JSON data) {
+        if (creatorMap.isEmpty()) {
             throw new UnsupportedOperationException();
         }
 
-        if (challengeMap.containsKey(type)) {
-            return challengeMap.get(type);
+        Challenge created;
+
+        String type = data.get("type").asString();
+        if (creatorMap.containsKey(type)) {
+            created = creatorMap.get(type).apply(session, data);
         } else {
-            return new Challenge(session);
+            created = new Challenge(session, data);
         }
+
+        createdMap.put(type, created);
+
+        return created;
     }
 
 }

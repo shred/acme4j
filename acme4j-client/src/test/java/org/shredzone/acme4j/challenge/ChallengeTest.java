@@ -47,7 +47,6 @@ import org.shredzone.acme4j.toolbox.TestUtils;
  */
 public class ChallengeTest {
     private Session session;
-    private URL resourceUrl = url("https://example.com/acme/some-resource");
     private URL locationUrl = url("https://example.com/acme/some-location");
 
     @Before
@@ -74,7 +73,7 @@ public class ChallengeTest {
 
         Session session = provider.createSession();
 
-        provider.putTestChallenge(Http01Challenge.TYPE, new Http01Challenge(session));
+        provider.putTestChallenge(Http01Challenge.TYPE, Http01Challenge::new);
 
         Http01Challenge challenge = Challenge.bind(session, locationUrl);
 
@@ -91,8 +90,7 @@ public class ChallengeTest {
      */
     @Test
     public void testUnmarshal() throws URISyntaxException {
-        Challenge challenge = new Challenge(session);
-        challenge.setJSON(getJSON("genericChallenge"));
+        Challenge challenge = new Challenge(session, getJSON("genericChallenge"));
 
         // Test unmarshalled values
         assertThat(challenge.getType(), is("generic-01"));
@@ -126,8 +124,7 @@ public class ChallengeTest {
      */
     @Test
     public void testRespond() throws JoseException {
-        Challenge challenge = new Challenge(session);
-        challenge.setJSON(getJSON("genericChallenge"));
+        Challenge challenge = new Challenge(session, getJSON("genericChallenge"));
 
         JSONBuilder cb = new JSONBuilder();
         challenge.respond(cb);
@@ -140,8 +137,7 @@ public class ChallengeTest {
      */
     @Test(expected = AcmeProtocolException.class)
     public void testNotAcceptable() throws URISyntaxException {
-        Http01Challenge challenge = new Http01Challenge(session);
-        challenge.setJSON(getJSON("dnsChallenge"));
+        new Http01Challenge(session, getJSON("dnsChallenge"));
     }
 
     /**
@@ -152,7 +148,7 @@ public class ChallengeTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
-                assertThat(url, is(resourceUrl));
+                assertThat(url, is(locationUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("triggerHttpChallengeRequest").toString()));
                 assertThat(session, is(notNullValue()));
                 assertThat(httpStatus, isIntArrayContainingInAnyOrder());
@@ -167,8 +163,7 @@ public class ChallengeTest {
 
         Session session = provider.createSession();
 
-        Http01Challenge challenge = new Http01Challenge(session);
-        challenge.setJSON(getJSON("triggerHttpChallenge"));
+        Http01Challenge challenge = new Http01Challenge(session, getJSON("triggerHttpChallenge"));
 
         challenge.trigger();
 
@@ -202,8 +197,7 @@ public class ChallengeTest {
 
         Session session = provider.createSession();
 
-        Challenge challenge = new Http01Challenge(session);
-        challenge.setJSON(getJSON("triggerHttpChallengeResponse"));
+        Challenge challenge = new Http01Challenge(session, getJSON("triggerHttpChallengeResponse"));
 
         challenge.update();
 
@@ -240,8 +234,7 @@ public class ChallengeTest {
 
         Session session = provider.createSession();
 
-        Challenge challenge = new Http01Challenge(session);
-        challenge.setJSON(getJSON("triggerHttpChallengeResponse"));
+        Challenge challenge = new Http01Challenge(session, getJSON("triggerHttpChallengeResponse"));
 
         try {
             challenge.update();
@@ -302,10 +295,9 @@ public class ChallengeTest {
     /**
      * Test that unmarshalling something different like a challenge fails.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = AcmeProtocolException.class)
     public void testBadUnmarshall() {
-        Challenge challenge = new Challenge(session);
-        challenge.setJSON(getJSON("updateAccountResponse"));
+        new Challenge(session, getJSON("updateAccountResponse"));
     }
 
 }

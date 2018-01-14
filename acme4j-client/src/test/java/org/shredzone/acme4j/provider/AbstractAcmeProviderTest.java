@@ -34,7 +34,9 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
@@ -133,29 +135,40 @@ public class AbstractAcmeProviderTest {
             }
         };
 
-        Challenge c1 = provider.createChallenge(session, Http01Challenge.TYPE);
+        Challenge c1 = provider.createChallenge(session, getJSON("httpChallenge"));
         assertThat(c1, not(nullValue()));
         assertThat(c1, instanceOf(Http01Challenge.class));
 
-        Challenge c2 = provider.createChallenge(session, Http01Challenge.TYPE);
+        Challenge c2 = provider.createChallenge(session, getJSON("httpChallenge"));
         assertThat(c2, not(sameInstance(c1)));
 
-        Challenge c3 = provider.createChallenge(session, Dns01Challenge.TYPE);
+        Challenge c3 = provider.createChallenge(session, getJSON("dnsChallenge"));
         assertThat(c3, not(nullValue()));
         assertThat(c3, instanceOf(Dns01Challenge.class));
 
-        Challenge c5 = provider.createChallenge(session, TlsSni02Challenge.TYPE);
+        Challenge c5 = provider.createChallenge(session, getJSON("tlsSni02Challenge"));
         assertThat(c5, not(nullValue()));
         assertThat(c5, instanceOf(TlsSni02Challenge.class));
 
-        Challenge c6 = provider.createChallenge(session, "foobar-01");
+        JSON json6 = new JSONBuilder()
+                    .put("type", "foobar-01")
+                    .put("url", "https://example.com/some/challenge")
+                    .toJSON();
+        Challenge c6 = provider.createChallenge(session, json6);
         assertThat(c6, is(nullValue()));
 
-        Challenge c7 = provider.createChallenge(session, "");
-        assertThat(c7, is(nullValue()));
+        try {
+            JSON json7 = new JSONBuilder()
+                        .put("url", "https://example.com/some/challenge")
+                        .toJSON();
+            provider.createChallenge(session, json7);
+            fail("Challenge without type was accepted");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
 
         try {
-            provider.createChallenge(session, (String) null);
+            provider.createChallenge(session, null);
             fail("null was accepted");
         } catch (NullPointerException ex) {
             // expected

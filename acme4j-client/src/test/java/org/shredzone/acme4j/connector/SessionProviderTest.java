@@ -103,7 +103,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public Challenge createChallenge(Session session, String type) {
+        public Challenge createChallenge(Session session, JSON data) {
             throw new UnsupportedOperationException();
         }
     }
@@ -131,7 +131,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public Challenge createChallenge(Session session, String type) {
+        public Challenge createChallenge(Session session, JSON data) {
             throw new UnsupportedOperationException();
         }
     }

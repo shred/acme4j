@@ -125,9 +125,11 @@ public class SessionTest {
         KeyPair keyPair = TestUtils.createKeyPair();
         URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
         String challengeType = Http01Challenge.TYPE;
+        URL challengeUrl = new URL("https://example.com/acme/authz/0");
 
         JSON data = new JSONBuilder()
                         .put("type", challengeType)
+                        .put("url", challengeUrl)
                         .toJSON();
 
         Http01Challenge mockChallenge = mock(Http01Challenge.class);
@@ -135,7 +137,7 @@ public class SessionTest {
 
         when(mockProvider.createChallenge(
                         ArgumentMatchers.any(Session.class),
-                        ArgumentMatchers.eq(challengeType)))
+                        ArgumentMatchers.eq(data)))
                 .thenReturn(mockChallenge);
 
         Session session = new Session(serverUri, keyPair) {
@@ -149,7 +151,7 @@ public class SessionTest {
         assertThat(challenge, is(instanceOf(Http01Challenge.class)));
         assertThat(challenge, is(sameInstance((Challenge) mockChallenge)));
 
-        verify(mockProvider).createChallenge(session, challengeType);
+        verify(mockProvider).createChallenge(session, data);
     }
 
     /**

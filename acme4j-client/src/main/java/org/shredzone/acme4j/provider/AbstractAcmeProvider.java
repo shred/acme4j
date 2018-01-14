@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Function;
+import java.util.function.BiFunction;
 
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -40,7 +40,7 @@ import org.shredzone.acme4j.toolbox.JSON;
  */
 public abstract class AbstractAcmeProvider implements AcmeProvider {
 
-    private static final Map<String, Function<Session, Challenge>> CHALLENGES = challengeMap();
+    private static final Map<String, BiFunction<Session, JSON, Challenge>> CHALLENGES = challengeMap();
 
     @Override
     public Connection connect() {
@@ -59,8 +59,8 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
         }
     }
 
-    private static Map<String, Function<Session, Challenge>> challengeMap() {
-        Map<String, Function<Session, Challenge>> map = new HashMap<>();
+    private static Map<String, BiFunction<Session, JSON, Challenge>> challengeMap() {
+        Map<String, BiFunction<Session, JSON, Challenge>> map = new HashMap<>();
 
         map.put(Dns01Challenge.TYPE, Dns01Challenge::new);
         map.put(TlsSni02Challenge.TYPE, TlsSni02Challenge::new);
@@ -69,17 +69,25 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
         return Collections.unmodifiableMap(map);
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Custom provider implementations may override this method to provide challenges that
+     * are unique to the provider.
+     */
     @Override
-    public Challenge createChallenge(Session session, String type) {
+    public Challenge createChallenge(Session session, JSON data) {
         Objects.requireNonNull(session, "session");
-        Objects.requireNonNull(type, "type");
+        Objects.requireNonNull(data, "data");
 
-        Function<Session, Challenge> constructor = CHALLENGES.get(type);
+        String type = data.get("type").required().asString();
+
+        BiFunction<Session, JSON, Challenge> constructor = CHALLENGES.get(type);
         if (constructor == null) {
             return null;
         }
 
-        return constructor.apply(session);
+        return constructor.apply(session, data);
     }
 
     /**

@@ -108,10 +108,8 @@ public class AuthorizationTest {
 
         Session session = provider.createSession();
 
-        Http01Challenge httpChallenge = new Http01Challenge(session);
-        Dns01Challenge dnsChallenge = new Dns01Challenge(session);
-        provider.putTestChallenge("http-01", httpChallenge);
-        provider.putTestChallenge("dns-01", dnsChallenge);
+        provider.putTestChallenge("http-01", Http01Challenge::new);
+        provider.putTestChallenge("dns-01", Dns01Challenge::new);
 
         Authorization auth = new Authorization(session, locationUrl);
         auth.update();
@@ -122,7 +120,8 @@ public class AuthorizationTest {
         assertThat(auth.getLocation(), is(locationUrl));
 
         assertThat(auth.getChallenges(), containsInAnyOrder(
-                        (Challenge) httpChallenge, (Challenge) dnsChallenge));
+                        provider.getChallenge(Http01Challenge.TYPE),
+                        provider.getChallenge(Dns01Challenge.TYPE)));
 
         provider.close();
     }
@@ -154,8 +153,8 @@ public class AuthorizationTest {
 
         Session session = provider.createSession();
 
-        provider.putTestChallenge("http-01", new Http01Challenge(session));
-        provider.putTestChallenge("dns-01", new Dns01Challenge(session));
+        provider.putTestChallenge("http-01", Http01Challenge::new);
+        provider.putTestChallenge("dns-01", Dns01Challenge::new);
 
         Authorization auth = new Authorization(session, locationUrl);
 
@@ -200,10 +199,8 @@ public class AuthorizationTest {
 
         Session session = provider.createSession();
 
-        Http01Challenge httpChallenge = new Http01Challenge(session);
-        Dns01Challenge dnsChallenge = new Dns01Challenge(session);
-        provider.putTestChallenge("http-01", httpChallenge);
-        provider.putTestChallenge("dns-01", dnsChallenge);
+        provider.putTestChallenge("http-01", Http01Challenge::new);
+        provider.putTestChallenge("dns-01", Dns01Challenge::new);
 
         Authorization auth = new Authorization(session, locationUrl);
 
@@ -220,7 +217,8 @@ public class AuthorizationTest {
         assertThat(auth.getLocation(), is(locationUrl));
 
         assertThat(auth.getChallenges(), containsInAnyOrder(
-                        (Challenge) httpChallenge, (Challenge) dnsChallenge));
+                        provider.getChallenge(Http01Challenge.TYPE),
+                        provider.getChallenge(Dns01Challenge.TYPE)));
 
         provider.close();
     }
@@ -249,10 +247,8 @@ public class AuthorizationTest {
 
         Session session = provider.createSession();
 
-        Http01Challenge httpChallenge = new Http01Challenge(session);
-        Dns01Challenge dnsChallenge = new Dns01Challenge(session);
-        provider.putTestChallenge("http-01", httpChallenge);
-        provider.putTestChallenge("dns-01", dnsChallenge);
+        provider.putTestChallenge("http-01", Http01Challenge::new);
+        provider.putTestChallenge("dns-01", Dns01Challenge::new);
 
         Authorization auth = new Authorization(session, locationUrl);
         auth.deactivate();
@@ -267,10 +263,10 @@ public class AuthorizationTest {
         try (TestableConnectionProvider provider = new TestableConnectionProvider()) {
             Session session = provider.createSession();
 
-            provider.putTestChallenge(Http01Challenge.TYPE, new Http01Challenge(session));
-            provider.putTestChallenge(Dns01Challenge.TYPE, new Dns01Challenge(session));
-            provider.putTestChallenge(TlsSni02Challenge.TYPE, new TlsSni02Challenge(session));
-            provider.putTestChallenge(DUPLICATE_TYPE, new Challenge(session));
+            provider.putTestChallenge(Http01Challenge.TYPE, Http01Challenge::new);
+            provider.putTestChallenge(Dns01Challenge.TYPE, Dns01Challenge::new);
+            provider.putTestChallenge(TlsSni02Challenge.TYPE, TlsSni02Challenge::new);
+            provider.putTestChallenge(DUPLICATE_TYPE, Challenge::new);
 
             Authorization authorization = new Authorization(session, locationUrl);
             authorization.setJSON(getJSON("authorizationChallenges"));

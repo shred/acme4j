@@ -75,17 +75,15 @@ public interface AcmeProvider {
     JSON directory(Session session, URI serverUri) throws AcmeException;
 
     /**
-     * Creates a {@link Challenge} instance for the given challenge type.
-     * <p>
-     * Custom provider implementations may override this method to provide challenges that
-     * are unique to the provider.
+     * Creates a {@link Challenge} instance for the given challenge data.
      *
      * @param session
      *            {@link Session} to bind the challenge to
-     * @param type
-     *            Challenge type
-     * @return {@link Challenge} instance
+     * @param data
+     *            Challenge {@link JSON} data
+     * @return {@link Challenge} instance, or {@code null} if this provider is unable to
+     *         generate a matching {@link Challenge} instance.
      */
-    Challenge createChallenge(Session session, String type);
+    Challenge createChallenge(Session session, JSON data);
 
 }

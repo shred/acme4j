@@ -37,7 +37,7 @@ The standard Java mechanisms are used to verify the HTTPS certificate provided b
 
 If your ACME server provides challenges that are not specified in the ACME protocol, there should be an own `Challenge` implementation for each of your challenge, by extending the [`Challenge`](../apidocs/org/shredzone/acme4j/challenge/Challenge.html) class.
 
-In your `AcmeProvider` implementation, override the `createChallenge(Session, String)` method so it returns a new instance of your `Challenge` implementation when your individual challenge type is requested. All other types should be delegated to the super method.
+In your `AcmeProvider` implementation, override the `createChallenge(Session, JSON)` method so it returns a new instance of your `Challenge` implementation when your individual challenge type is requested. All other types should be delegated to the super method.
 
 ## Amended Directory Service
 

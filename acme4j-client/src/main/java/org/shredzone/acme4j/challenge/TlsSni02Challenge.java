@@ -16,6 +16,7 @@ package org.shredzone.acme4j.challenge;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.*;
 
 import org.shredzone.acme4j.Session;
+import org.shredzone.acme4j.toolbox.JSON;
 
 /**
  * Implements the {@value TYPE} challenge.
@@ -33,9 +34,11 @@ public class TlsSni02Challenge extends TokenChallenge {
      *
      * @param session
      *            {@link Session} to bind to.
+     * @param data
+     *            {@link JSON} challenge data
      */
-    public TlsSni02Challenge(Session session) {
-        super(session);
+    public TlsSni02Challenge(Session session, JSON data) {
+        super(session, data);
     }
 
     /**

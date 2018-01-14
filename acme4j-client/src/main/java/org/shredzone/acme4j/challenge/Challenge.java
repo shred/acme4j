@@ -58,9 +58,11 @@ public class Challenge extends AcmeJsonResource {
      *
      * @param session
      *            {@link Session} to bind to.
+     * @param data
+     *            {@link JSON} challenge data
      */
-    public Challenge(Session session) {
-        super(session);
+    public Challenge(Session session, JSON data) {
+        super(session, data);
     }
 
     /**
@@ -159,16 +161,14 @@ public class Challenge extends AcmeJsonResource {
     }
 
     @Override
-    public void setJSON(JSON json) {
-        String type = json.get(KEY_TYPE).asString();
-        if (type == null) {
-            throw new IllegalArgumentException("map does not contain a type");
-        }
+    protected void setJSON(JSON json) {
+        String type = json.get(KEY_TYPE).required().asString();
+
         if (!acceptable(type)) {
-            throw new AcmeProtocolException("wrong type: " + type);
+            throw new AcmeProtocolException("incompatible type " + type + " for this challenge");
         }
 
-        setLocation(json.get(KEY_URL).asURL());
+        setLocation(json.get(KEY_URL).required().asURL());
 
         super.setJSON(json);
     }

@@ -176,17 +176,14 @@ public class Session {
     public Challenge createChallenge(JSON data) {
         Objects.requireNonNull(data, "data");
 
-        String type = data.get("type").required().asString();
-
-        Challenge challenge = provider().createChallenge(this, type);
+        Challenge challenge = provider().createChallenge(this, data);
         if (challenge == null) {
             if (data.contains("token")) {
-                challenge = new TokenChallenge(this);
+                challenge = new TokenChallenge(this, data);
             } else {
-                challenge = new Challenge(this);
+                challenge = new Challenge(this, data);
             }
         }
-        challenge.setJSON(data);
         return challenge;
     }
 

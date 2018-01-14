@@ -46,8 +46,7 @@ public class DnsChallengeTest {
      */
     @Test
     public void testDnsChallenge() throws IOException {
-        Dns01Challenge challenge = new Dns01Challenge(session);
-        challenge.setJSON(getJSON("dnsChallenge"));
+        Dns01Challenge challenge = new Dns01Challenge(session, getJSON("dnsChallenge"));
 
         assertThat(challenge.getType(), is(Dns01Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));
