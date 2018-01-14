@@ -45,3 +45,5 @@ All resource objects are serializable, so the current state of the object can be
 However the `Session` the object is bound with is _not_ serialized! This is because the `Session` object contains a copy of your private key. Not serializing it prevents that you unintentionally reveal your private key in a place with lowered access restrictions.
 
 This means that a deserialized object is not bound to a `Session` yet. It is required to rebind it to a `Session`, by invoking its `rebind()` method.
+
+Serialization is only meant for short term storage at runtime, not for long term persistence. Do not share serialized data between different versions of _acme4j_.
