@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -262,6 +263,16 @@ public final class JSON implements Serializable {
         private Value(String path, Object val) {
             this.path = path;
             this.val = val;
+        }
+
+        /**
+         * Returns this value as {@link Optional}, for further mapping and filtering.
+         *
+         * @return {@link Optional} of this value, or {@link Optional#empty()} if this
+         *         value is {@code null}.
+         */
+        public Optional<Value> optional() {
+            return val != null ? Optional.of(this) : Optional.empty();
         }
 
         /**

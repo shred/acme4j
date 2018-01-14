@@ -201,6 +201,8 @@ public class JSONTest {
         assertThat(json.get("status").asStatusOrElse(Status.INVALID), is(Status.VALID));
         assertThat(json.get("binary").asBinary(), is("Chainsaw".getBytes()));
 
+        assertThat(json.get("text").optional().isPresent(), is(true));
+
         JSON.Array array = json.get("array").asArray();
         assertThat(array.get(0).asString(), is("foo"));
         assertThat(array.get(1).asInt(), is(987));
@@ -240,6 +242,8 @@ public class JSONTest {
         assertThat(json.get("none").orElse("foo").asString(), is("foo"));
         assertThat(json.get("none").orElse(42).asInt(), is(42));
         assertThat(json.get("none").orElse(true).asBoolean(), is(true));
+
+        assertThat(json.get("none").optional().isPresent(), is(false));
 
         try {
             json.get("none").asInt();
