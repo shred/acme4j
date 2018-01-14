@@ -14,7 +14,6 @@
 package org.shredzone.acme4j;
 
 import static java.util.stream.Collectors.toList;
-import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 
 import java.net.URL;
 import java.time.Instant;
@@ -24,10 +23,10 @@ import java.util.List;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
-import org.shredzone.acme4j.exception.AcmeRetryAfterException;
+import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSON.Value;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,15 +34,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Represents an authorization request at the ACME server.
  */
-public class Authorization extends AcmeResource {
+public class Authorization extends AcmeJsonResource {
     private static final long serialVersionUID = -3116928998379417741L;
     private static final Logger LOG = LoggerFactory.getLogger(Authorization.class);
-
-    private String domain;
-    private Status status;
-    private Instant expires;
-    private List<Challenge> challenges;
-    private boolean loaded = false;
 
     protected Authorization(Session session, URL location) {
         super(session);
@@ -68,32 +61,43 @@ public class Authorization extends AcmeResource {
      * Gets the domain name to be authorized.
      */
     public String getDomain() {
-        load();
-        return domain;
+        JSON jsonIdentifier = getJSON().get("identifier").required().asObject();
+        String type = jsonIdentifier.get("type").required().asString();
+        if (!"dns".equals(type)) {
+            throw new AcmeProtocolException("Unknown authorization type: " + type);
+        }
+        return jsonIdentifier.get("value").required().asString();
     }
 
     /**
      * Gets the authorization status.
      */
     public Status getStatus() {
-        load();
-        return status;
+        return getJSON().get("status").asStatusOrElse(Status.PENDING);
     }
 
     /**
      * Gets the expiry date of the authorization, if set by the server.
      */
     public Instant getExpires() {
-        load();
-        return expires;
+        return getJSON().get("expires").optional()
+                    .map(Value::asString)
+                    .map(AcmeUtils::parseTimestamp)
+                    .orElse(null);
     }
 
     /**
      * Gets a list of all challenges offered by the server.
      */
     public List<Challenge> getChallenges() {
-        load();
-        return challenges;
+        Session session = getSession();
+
+        return Collections.unmodifiableList(getJSON().get("challenges")
+                    .asArray()
+                    .stream()
+                    .map(Value::asObject)
+                    .map(session::createChallenge)
+                    .collect(toList()));
     }
 
     /**
@@ -116,28 +120,6 @@ public class Authorization extends AcmeResource {
     }
 
     /**
-     * Updates the {@link Authorization}. After invocation, the {@link Authorization}
-     * reflects the current state at the ACME server.
-     *
-     * @throws AcmeRetryAfterException
-     *             the auhtorization is still being validated, and the server returned an
-     *             estimated date when the validation will be completed. If you are
-     *             polling for the authorization to complete, you should wait for the date
-     *             given in {@link AcmeRetryAfterException#getRetryAfter()}. Note that the
-     *             authorization status is updated even if this exception was thrown.
-     */
-    public void update() throws AcmeException {
-        LOG.debug("update");
-        try (Connection conn = getSession().provider().connect()) {
-            conn.sendRequest(getLocation(), getSession());
-
-            unmarshalAuthorization(conn.readJsonResponse());
-
-            conn.handleRetryAfter("authorization is not completed yet");
-        }
-    }
-
-    /**
      * Permanently deactivates the {@link Authorization}.
      */
     public void deactivate() throws AcmeException {
@@ -148,68 +130,8 @@ public class Authorization extends AcmeResource {
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
 
-            unmarshalAuthorization(conn.readJsonResponse());
+            setJSON(conn.readJsonResponse());
         }
-    }
-
-    /**
-     * Lazily updates the object's state when one of the getters is invoked.
-     */
-    protected void load() {
-        if (!loaded) {
-            try {
-                update();
-            } catch (AcmeRetryAfterException ex) {
-                // ignore... The object was still updated.
-                LOG.debug("Retry-After", ex);
-            } catch (AcmeException ex) {
-                throw new AcmeLazyLoadingException(this, ex);
-            }
-        }
-    }
-
-    /**
-     * Sets the properties according to the given JSON data.
-     *
-     * @param json
-     *            JSON data
-     */
-    protected void unmarshalAuthorization(JSON json) {
-        this.status = json.get("status").asStatusOrElse(Status.PENDING);
-
-        String jsonExpires = json.get("expires").asString();
-        if (jsonExpires != null) {
-            expires = parseTimestamp(jsonExpires);
-        }
-
-        JSON jsonIdentifier = json.get("identifier").asObject();
-        if (jsonIdentifier != null) {
-            String type = jsonIdentifier.get("type").asString();
-            if (type != null && !"dns".equals(type)) {
-                throw new AcmeProtocolException("Unknown authorization type: " + type);
-            }
-            domain = jsonIdentifier.get("value").asString();
-        }
-
-        challenges = fetchChallenges(json);
-
-        loaded = true;
-    }
-
-    /**
-     * Fetches all {@link Challenge} that are defined in the JSON.
-     *
-     * @param json
-     *            {@link JSON} to read
-     * @return List of {@link Challenge}
-     */
-    private List<Challenge> fetchChallenges(JSON json) {
-        Session session = getSession();
-
-        return Collections.unmodifiableList(json.get("challenges").asArray().stream()
-                .map(JSON.Value::asObject)
-                .map(session::createChallenge)
-                .collect(toList()));
     }
 
 }

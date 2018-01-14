@@ -26,7 +26,6 @@ import java.util.Set;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,10 +149,8 @@ public class OrderBuilder {
 
             conn.sendSignedRequest(session.resourceUrl(Resource.NEW_ORDER), claims, session, HttpURLConnection.HTTP_CREATED);
 
-            JSON json = conn.readJsonResponse();
-
             Order order = new Order(session, conn.getLocation());
-            order.unmarshal(json);
+            order.setJSON(conn.readJsonResponse());
             return order;
         }
     }

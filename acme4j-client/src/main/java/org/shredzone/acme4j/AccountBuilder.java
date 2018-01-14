@@ -187,7 +187,7 @@ public class AccountBuilder {
             }
 
             if (resp == HttpURLConnection.HTTP_CREATED) {
-                account.unmarshal(conn.readJsonResponse());
+                account.setJSON(conn.readJsonResponse());
             }
             return account;
         }

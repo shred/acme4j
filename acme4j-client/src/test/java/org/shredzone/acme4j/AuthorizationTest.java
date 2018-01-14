@@ -273,7 +273,7 @@ public class AuthorizationTest {
             provider.putTestChallenge(DUPLICATE_TYPE, new Challenge(session));
 
             Authorization authorization = new Authorization(session, locationUrl);
-            authorization.unmarshalAuthorization(getJSON("authorizationChallenges"));
+            authorization.setJSON(getJSON("authorizationChallenges"));
             return authorization;
         }
     }

@@ -1,5 +1,6 @@
 {
   "type": "dns-01",
+  "url": "https://example.com/acme/authz/0",
   "status": "pending",
   "token": "pNvmJivs0WCko2suV7fhe-59oFqyYx_yB7tx6kIMAyE"
 }

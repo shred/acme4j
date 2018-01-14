@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j;
 
+import static java.util.stream.Collectors.toList;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.*;
 
 import java.net.HttpURLConnection;
@@ -33,11 +34,10 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.ResourceIterator;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
-import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSON.Value;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Represents an account at the ACME server.
  */
-public class Account extends AcmeResource {
+public class Account extends AcmeJsonResource {
     private static final long serialVersionUID = 7042863483428051319L;
     private static final Logger LOG = LoggerFactory.getLogger(Account.class);
 
@@ -53,12 +53,6 @@ public class Account extends AcmeResource {
     private static final String KEY_ORDERS = "orders";
     private static final String KEY_CONTACT = "contact";
     private static final String KEY_STATUS = "status";
-
-    private final List<URI> contacts = new ArrayList<>();
-    private Status status;
-    private Boolean termsOfServiceAgreed;
-    private URL orders;
-    private boolean loaded = false;
 
     protected Account(Session session, URL location) {
         super(session);
@@ -86,24 +80,25 @@ public class Account extends AcmeResource {
      *         {@code null} if the server did not provide such an information.
      */
     public Boolean getTermsOfServiceAgreed() {
-        load();
-        return termsOfServiceAgreed;
+        return getJSON().get(KEY_TOS_AGREED).optional().map(Value::asBoolean).orElse(null);
     }
 
     /**
      * List of contact addresses (emails, phone numbers etc).
      */
     public List<URI> getContacts() {
-        load();
-        return Collections.unmodifiableList(contacts);
+        return Collections.unmodifiableList(getJSON().get(KEY_CONTACT)
+                    .asArray()
+                    .stream()
+                    .map(JSON.Value::asURI)
+                    .collect(toList()));
     }
 
     /**
      * Returns the current status of the account.
      */
     public Status getStatus() {
-        load();
-        return status;
+        return getJSON().get(KEY_STATUS).asStatusOrElse(Status.UNKNOWN);
     }
 
     /**
@@ -117,23 +112,17 @@ public class Account extends AcmeResource {
      *         fetched from the server.
      */
     public Iterator<Order> getOrders() throws AcmeException {
-        LOG.debug("getOrders");
-        load();
-        return new ResourceIterator<>(getSession(), KEY_ORDERS, orders, Order::bind);
+        URL ordersUrl = getJSON().get(KEY_ORDERS).asURL();
+        return new ResourceIterator<>(getSession(), KEY_ORDERS, ordersUrl, Order::bind);
     }
 
-    /**
-     * Updates the account to the current account status.
-     */
+    @Override
     public void update() throws AcmeException {
-        LOG.debug("update");
+        LOG.debug("update Account");
         try (Connection conn = getSession().provider().connect()) {
-            JSONBuilder claims = new JSONBuilder();
-
-            conn.sendSignedRequest(getLocation(), claims, getSession());
-
-            unmarshal(conn.readJsonResponse());
-         }
+            conn.sendSignedRequest(getLocation(), new JSONBuilder(), getSession());
+            setJSON(conn.readJsonResponse());
+        }
     }
 
     /**
@@ -181,10 +170,8 @@ public class Account extends AcmeResource {
 
             conn.sendSignedRequest(newAuthzUrl, claims, getSession(), HttpURLConnection.HTTP_CREATED);
 
-            JSON json = conn.readJsonResponse();
-
             Authorization auth = new Authorization(getSession(), conn.getLocation());
-            auth.unmarshalAuthorization(json);
+            auth.setJSON(conn.readJsonResponse());
             return auth;
         }
     }
@@ -250,51 +237,8 @@ public class Account extends AcmeResource {
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
 
-            unmarshal(conn.readJsonResponse());
+            setJSON(conn.readJsonResponse());
         }
-    }
-
-    /**
-     * Lazily updates the object's state when one of the getters is invoked.
-     */
-    protected void load() {
-        if (!loaded) {
-            try {
-                update();
-            } catch (AcmeRetryAfterException ex) {
-                // ignore... The object was still updated.
-                LOG.debug("Retry-After", ex);
-            } catch (AcmeException ex) {
-                throw new AcmeLazyLoadingException(this, ex);
-            }
-        }
-    }
-
-    /**
-     * Sets account properties according to the given JSON data.
-     *
-     * @param json
-     *            JSON data
-     */
-    protected void unmarshal(JSON json) {
-        if (json.contains(KEY_TOS_AGREED)) {
-            this.termsOfServiceAgreed = json.get(KEY_TOS_AGREED).asBoolean();
-        }
-
-        if (json.contains(KEY_CONTACT)) {
-            contacts.clear();
-            json.get(KEY_CONTACT).asArray().stream()
-                    .map(JSON.Value::asURI)
-                    .forEach(contacts::add);
-        }
-
-        this.orders = json.get(KEY_ORDERS).asURL();
-
-        if (json.contains(KEY_STATUS)) {
-            this.status = Status.parse(json.get(KEY_STATUS).asString());
-        }
-
-        loaded = true;
     }
 
     /**
@@ -313,7 +257,7 @@ public class Account extends AcmeResource {
         private final List<URI> editContacts = new ArrayList<>();
 
         private EditableAccount() {
-            editContacts.addAll(Account.this.contacts);
+            editContacts.addAll(Account.this.getContacts());
         }
 
         /**
@@ -363,8 +307,7 @@ public class Account extends AcmeResource {
 
                 conn.sendSignedRequest(getLocation(), claims, getSession());
 
-                JSON json = conn.readJsonResponse();
-                unmarshal(json);
+                setJSON(conn.readJsonResponse());
             }
         }
     }

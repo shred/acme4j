@@ -1,6 +1,7 @@
 {
   "termsOfServiceAgreed": true,
   "contact": [
+    "mailto:foo@example.com",
     "mailto:foo2@example.com",
     "mailto:foo3@example.com"
   ]

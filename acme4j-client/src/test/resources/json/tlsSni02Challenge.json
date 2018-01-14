@@ -1,5 +1,6 @@
 {
   "type": "tls-sni-02",
+  "url": "https://example.com/acme/authz/0",
   "status": "pending",
   "token": "VNLBdSiZ3LppU2CRG8bilqlwq4DuApJMg3ZJowU6JhQ"
 }

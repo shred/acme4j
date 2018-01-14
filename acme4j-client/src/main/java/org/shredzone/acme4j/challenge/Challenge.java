@@ -21,14 +21,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import org.shredzone.acme4j.AcmeResource;
+import org.shredzone.acme4j.AcmeJsonResource;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
-import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Array;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -44,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * own type. {@link Challenge#respond(JSONBuilder)} should be overridden to put all
  * required data to the response.
  */
-public class Challenge extends AcmeResource {
+public class Challenge extends AcmeJsonResource {
     private static final long serialVersionUID = 2338794776848388099L;
     private static final Logger LOG = LoggerFactory.getLogger(Challenge.class);
 
@@ -53,8 +52,6 @@ public class Challenge extends AcmeResource {
     protected static final String KEY_STATUS = "status";
     protected static final String KEY_VALIDATED = "validated";
     protected static final String KEY_ERRORS = "errors";
-
-    private JSON data = JSON.empty();
 
     /**
      * Creates a new generic {@link Challenge} object.
@@ -97,29 +94,21 @@ public class Challenge extends AcmeResource {
      * Returns the challenge type by name (e.g. "http-01").
      */
     public String getType() {
-        return data.get(KEY_TYPE).asString();
-    }
-
-    /**
-     * Returns the location {@link URL} of the challenge.
-     */
-    @Override
-    public URL getLocation() {
-        return data.get(KEY_URL).asURL();
+        return getJSON().get(KEY_TYPE).asString();
     }
 
     /**
      * Returns the current status of the challenge.
      */
     public Status getStatus() {
-        return data.get(KEY_STATUS).asStatusOrElse(Status.UNKNOWN);
+        return getJSON().get(KEY_STATUS).asStatusOrElse(Status.UNKNOWN);
     }
 
     /**
      * Returns the validation date, if returned by the server.
      */
     public Instant getValidated() {
-        return data.get(KEY_VALIDATED).asInstant();
+        return getJSON().get(KEY_VALIDATED).asInstant();
     }
 
     /**
@@ -128,9 +117,11 @@ public class Challenge extends AcmeResource {
      */
     public List<Problem> getErrors() {
         URL location = getLocation();
-        return Collections.unmodifiableList(data.get(KEY_ERRORS).asArray().stream()
-                        .map(it -> it.asProblem(location))
-                        .collect(toList()));
+        return Collections.unmodifiableList(getJSON().get(KEY_ERRORS)
+                    .asArray()
+                    .stream()
+                    .map(it -> it.asProblem(location))
+                    .collect(toList()));
     }
 
     /**
@@ -138,19 +129,12 @@ public class Challenge extends AcmeResource {
      * {@code null} if there are no errors.
      */
     public Problem getLastError() {
-        Array errors = data.get(KEY_ERRORS).asArray();
+        Array errors = getJSON().get(KEY_ERRORS).asArray();
         if (!errors.isEmpty()) {
             return errors.get(errors.size() - 1).asProblem(getLocation());
         } else {
             return null;
         }
-    }
-
-    /**
-     * Returns the JSON representation of the challenge data.
-     */
-    protected JSON getJSON() {
-        return data;
     }
 
     /**
@@ -174,13 +158,8 @@ public class Challenge extends AcmeResource {
         return type != null && !type.trim().isEmpty();
     }
 
-    /**
-     * Sets the challenge state to the given JSON map.
-     *
-     * @param json
-     *            JSON containing the challenge data
-     */
-    public void unmarshall(JSON json) {
+    @Override
+    public void setJSON(JSON json) {
         String type = json.get(KEY_TYPE).asString();
         if (type == null) {
             throw new IllegalArgumentException("map does not contain a type");
@@ -189,7 +168,9 @@ public class Challenge extends AcmeResource {
             throw new AcmeProtocolException("wrong type: " + type);
         }
 
-        data = json;
+        setLocation(json.get(KEY_URL).asURL());
+
+        super.setJSON(json);
     }
 
     /**
@@ -208,28 +189,7 @@ public class Challenge extends AcmeResource {
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
 
-            unmarshall(conn.readJsonResponse());
-        }
-    }
-
-    /**
-     * Updates the state of this challenge.
-     *
-     * @throws AcmeRetryAfterException
-     *             the challenge is still being validated, and the server returned an
-     *             estimated date when the challenge will be completed. If you are polling
-     *             for the challenge to complete, you should wait for the date given in
-     *             {@link AcmeRetryAfterException#getRetryAfter()}. Note that the
-     *             challenge status is updated even if this exception was thrown.
-     */
-    public void update() throws AcmeException {
-        LOG.debug("update");
-        try (Connection conn = getSession().provider().connect()) {
-            conn.sendRequest(getLocation(), getSession());
-
-            unmarshall(conn.readJsonResponse());
-
-            conn.handleRetryAfter("challenge is not completed yet");
+            setJSON(conn.readJsonResponse());
         }
     }
 

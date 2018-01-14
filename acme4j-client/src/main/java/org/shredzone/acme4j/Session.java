@@ -186,7 +186,7 @@ public class Session {
                 challenge = new Challenge(this);
             }
         }
-        challenge.unmarshall(data);
+        challenge.setJSON(data);
         return challenge;
     }
 

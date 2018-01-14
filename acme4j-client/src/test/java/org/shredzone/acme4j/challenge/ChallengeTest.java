@@ -87,20 +87,12 @@ public class ChallengeTest {
     }
 
     /**
-     * Test that after unmarshalling, the challenge properties are set correctly.
+     * Test that after unmarshaling, the challenge properties are set correctly.
      */
     @Test
-    public void testUnmarshall() throws URISyntaxException {
+    public void testUnmarshal() throws URISyntaxException {
         Challenge challenge = new Challenge(session);
-
-        // Test default values
-        assertThat(challenge.getType(), is(nullValue()));
-        assertThat(challenge.getStatus(), is(Status.UNKNOWN));
-        assertThat(challenge.getLocation(), is(nullValue()));
-        assertThat(challenge.getValidated(), is(nullValue()));
-
-        // Unmarshall a challenge JSON
-        challenge.unmarshall(getJSON("genericChallenge"));
+        challenge.setJSON(getJSON("genericChallenge"));
 
         // Test unmarshalled values
         assertThat(challenge.getType(), is("generic-01"));
@@ -135,7 +127,7 @@ public class ChallengeTest {
     @Test
     public void testRespond() throws JoseException {
         Challenge challenge = new Challenge(session);
-        challenge.unmarshall(getJSON("genericChallenge"));
+        challenge.setJSON(getJSON("genericChallenge"));
 
         JSONBuilder cb = new JSONBuilder();
         challenge.respond(cb);
@@ -149,7 +141,7 @@ public class ChallengeTest {
     @Test(expected = AcmeProtocolException.class)
     public void testNotAcceptable() throws URISyntaxException {
         Http01Challenge challenge = new Http01Challenge(session);
-        challenge.unmarshall(getJSON("dnsChallenge"));
+        challenge.setJSON(getJSON("dnsChallenge"));
     }
 
     /**
@@ -176,7 +168,7 @@ public class ChallengeTest {
         Session session = provider.createSession();
 
         Http01Challenge challenge = new Http01Challenge(session);
-        challenge.unmarshall(getJSON("triggerHttpChallenge"));
+        challenge.setJSON(getJSON("triggerHttpChallenge"));
 
         challenge.trigger();
 
@@ -211,7 +203,7 @@ public class ChallengeTest {
         Session session = provider.createSession();
 
         Challenge challenge = new Http01Challenge(session);
-        challenge.unmarshall(getJSON("triggerHttpChallengeResponse"));
+        challenge.setJSON(getJSON("triggerHttpChallengeResponse"));
 
         challenge.update();
 
@@ -249,7 +241,7 @@ public class ChallengeTest {
         Session session = provider.createSession();
 
         Challenge challenge = new Http01Challenge(session);
-        challenge.unmarshall(getJSON("triggerHttpChallengeResponse"));
+        challenge.setJSON(getJSON("triggerHttpChallengeResponse"));
 
         try {
             challenge.update();
@@ -313,7 +305,7 @@ public class ChallengeTest {
     @Test(expected = IllegalArgumentException.class)
     public void testBadUnmarshall() {
         Challenge challenge = new Challenge(session);
-        challenge.unmarshall(getJSON("updateAccountResponse"));
+        challenge.setJSON(getJSON("updateAccountResponse"));
     }
 
 }

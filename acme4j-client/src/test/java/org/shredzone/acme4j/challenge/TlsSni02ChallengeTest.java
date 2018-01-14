@@ -47,7 +47,7 @@ public class TlsSni02ChallengeTest {
     @Test
     public void testTlsSni02Challenge() throws IOException {
         TlsSni02Challenge challenge = new TlsSni02Challenge(session);
-        challenge.unmarshall(getJSON("tlsSni02Challenge"));
+        challenge.setJSON(getJSON("tlsSni02Challenge"));
 
         assertThat(challenge.getType(), is(TlsSni02Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));

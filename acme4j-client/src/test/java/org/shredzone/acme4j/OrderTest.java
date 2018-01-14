@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
+import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -53,6 +54,11 @@ public class OrderTest {
             @Override
             public JSON readJsonResponse() {
                 return getJSON("updateOrderResponse");
+            }
+
+            @Override
+            public void handleRetryAfter(String message) throws AcmeException {
+                assertThat(message, not(nullValue()));
             }
         };
 
@@ -103,6 +109,11 @@ public class OrderTest {
             public JSON readJsonResponse() {
                 return getJSON("updateOrderResponse");
             }
+
+            @Override
+            public void handleRetryAfter(String message) throws AcmeException {
+                assertThat(message, not(nullValue()));
+            }
         };
 
         Session session = provider.createSession();
@@ -152,6 +163,11 @@ public class OrderTest {
             @Override
             public JSON readJsonResponse() {
                 return getJSON(isFinalized ? "finalizeResponse" : "updateOrderResponse");
+            }
+
+            @Override
+            public void handleRetryAfter(String message) throws AcmeException {
+                assertThat(message, not(nullValue()));
             }
         };
 

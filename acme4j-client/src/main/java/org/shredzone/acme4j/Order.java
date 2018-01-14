@@ -17,12 +17,12 @@ import static java.util.stream.Collectors.toList;
 
 import java.net.URL;
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
-import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSON.Value;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,20 +30,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Represents a certificate order.
  */
-public class Order extends AcmeResource {
+public class Order extends AcmeJsonResource {
     private static final long serialVersionUID = 5435808648658292177L;
     private static final Logger LOG = LoggerFactory.getLogger(Order.class);
-
-    private Status status;
-    private Instant expires;
-    private List<String> identifiers;
-    private Instant notBefore;
-    private Instant notAfter;
-    private Problem error;
-    private List<URL> authorizations;
-    private URL finalizeUrl;
-    private Certificate certificate;
-    private boolean loaded = false;
 
     protected Order(Session session, URL location) {
         super(session);
@@ -67,58 +56,60 @@ public class Order extends AcmeResource {
      * Returns the current status of the order.
      */
     public Status getStatus() {
-        load();
-        return status;
+        return getJSON().get("status").asStatusOrElse(Status.UNKNOWN);
     }
 
     /**
      * Returns a {@link Problem} document if the order failed.
      */
     public Problem getError() {
-        load();
-        return error;
+        return getJSON().get("error").asProblem(getLocation());
     }
 
     /**
      * Gets the expiry date of the authorization, if set by the server.
      */
     public Instant getExpires() {
-        load();
-        return expires;
+        return getJSON().get("expires").asInstant();
     }
 
     /**
      * Gets the list of domain names to be ordered.
      */
     public List<String> getDomains() {
-        return identifiers;
+        return Collections.unmodifiableList(getJSON().get("identifiers")
+                    .asArray()
+                    .stream()
+                    .map(Value::asObject)
+                    .map(it -> it.get("value").asString())
+                    .collect(toList()));
     }
 
     /**
      * Gets the "not before" date that was used for the order, or {@code null}.
      */
     public Instant getNotBefore() {
-        load();
-        return notBefore;
+        return getJSON().get("notBefore").asInstant();
     }
 
     /**
      * Gets the "not after" date that was used for the order, or {@code null}.
      */
     public Instant getNotAfter() {
-        load();
-        return notAfter;
+        return getJSON().get("notAfter").asInstant();
     }
 
     /**
      * Gets the {@link Authorization} required for this order.
      */
     public List<Authorization> getAuthorizations() {
-        load();
         Session session = getSession();
-        return authorizations.stream()
-                .map(loc -> Authorization.bind(session, loc))
-                .collect(toList());
+        return Collections.unmodifiableList(getJSON().get("authorizations")
+                    .asArray()
+                    .stream()
+                    .map(Value::asURL)
+                    .map(loc -> Authorization.bind(session, loc))
+                    .collect(toList()));
     }
 
     /**
@@ -127,8 +118,17 @@ public class Order extends AcmeResource {
      * For internal purposes. Use {@link #execute(byte[])} to finalize an order.
      */
     public URL getFinalizeLocation() {
-        load();
-        return finalizeUrl;
+        return getJSON().get("finalize").asURL();
+    }
+
+    /**
+     * Gets the {@link Certificate} if it is available. {@code null} otherwise.
+     */
+    public Certificate getCertificate() {
+        return getJSON().get("certificate").optional()
+                    .map(Value::asURL)
+                    .map(certUrl -> Certificate.bind(getSession(), certUrl))
+                    .orElse(null);
     }
 
     /**
@@ -153,71 +153,7 @@ public class Order extends AcmeResource {
 
             conn.sendSignedRequest(getFinalizeLocation(), claims, getSession());
         }
-        loaded = false; // invalidate this object
-    }
-
-    /**
-     * Gets the {@link Certificate} if it is available. {@code null} otherwise.
-     */
-    public Certificate getCertificate() {
-        load();
-        return certificate;
-    }
-
-    /**
-     * Updates the order to the current account status.
-     */
-    public void update() throws AcmeException {
-        LOG.debug("update");
-        try (Connection conn = getSession().provider().connect()) {
-            conn.sendRequest(getLocation(), getSession());
-
-            JSON json = conn.readJsonResponse();
-            unmarshal(json);
-         }
-    }
-
-    /**
-     * Lazily updates the object's state when one of the getters is invoked.
-     */
-    protected void load() {
-        if (!loaded) {
-            try {
-                update();
-            } catch (AcmeException ex) {
-                throw new AcmeLazyLoadingException(this, ex);
-            }
-        }
-    }
-
-    /**
-     * Sets order properties according to the given JSON data.
-     *
-     * @param json
-     *            JSON data
-     */
-    public void unmarshal(JSON json) {
-        this.status = json.get("status").asStatusOrElse(Status.UNKNOWN);
-        this.expires = json.get("expires").asInstant();
-        this.notBefore = json.get("notBefore").asInstant();
-        this.notAfter = json.get("notAfter").asInstant();
-        this.finalizeUrl = json.get("finalize").asURL();
-
-        URL certUrl = json.get("certificate").asURL();
-        certificate = certUrl != null ? Certificate.bind(getSession(), certUrl) : null;
-
-        this.error = json.get("error").asProblem(getLocation());
-
-        this.identifiers = json.get("identifiers").asArray().stream()
-                .map(JSON.Value::asObject)
-                .map(it -> it.get("value").asString())
-                .collect(toList());
-
-        this.authorizations = json.get("authorizations").asArray().stream()
-                .map(JSON.Value::asURL)
-                .collect(toList());
-
-        loaded = true;
+        invalidate();
     }
 
 }

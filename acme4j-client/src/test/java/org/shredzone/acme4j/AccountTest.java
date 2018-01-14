@@ -433,6 +433,7 @@ public class AccountTest {
         };
 
         Account account = new Account(provider.createSession(), locationUrl);
+        account.setJSON(getJSON("newAccount"));
 
         EditableAccount editable = account.modify();
         assertThat(editable, notNullValue());
@@ -442,9 +443,10 @@ public class AccountTest {
         editable.commit();
 
         assertThat(account.getLocation(), is(locationUrl));
-        assertThat(account.getContacts().size(), is(2));
-        assertThat(account.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
-        assertThat(account.getContacts().get(1), is(URI.create("mailto:foo3@example.com")));
+        assertThat(account.getContacts().size(), is(3));
+        assertThat(account.getContacts().get(0), is(URI.create("mailto:foo@example.com")));
+        assertThat(account.getContacts().get(1), is(URI.create("mailto:foo2@example.com")));
+        assertThat(account.getContacts().get(2), is(URI.create("mailto:foo3@example.com")));
 
         provider.close();
     }

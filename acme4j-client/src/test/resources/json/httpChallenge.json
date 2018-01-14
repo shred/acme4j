@@ -1,5 +1,6 @@
 {
   "type": "http-01",
+  "url": "https://example.com/acme/authz/0",
   "status": "pending",
   "token": "rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ"
 }
