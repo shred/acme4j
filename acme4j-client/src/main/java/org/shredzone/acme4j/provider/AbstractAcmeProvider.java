@@ -25,6 +25,7 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsSni02Challenge;
+import org.shredzone.acme4j.challenge.TokenChallenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
@@ -72,6 +73,9 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
     /**
      * {@inheritDoc}
      * <p>
+     * This implementation handles the standard challenge types. For unknown types,
+     * generic {@link Challenge} or {@link TokenChallenge} instances are created.
+     * <p>
      * Custom provider implementations may override this method to provide challenges that
      * are unique to the provider.
      */
@@ -83,11 +87,15 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
         String type = data.get("type").required().asString();
 
         BiFunction<Session, JSON, Challenge> constructor = CHALLENGES.get(type);
-        if (constructor == null) {
-            return null;
+        if (constructor != null) {
+            return constructor.apply(session, data);
         }
 
-        return constructor.apply(session, data);
+        if (data.contains("token")) {
+            return new TokenChallenge(session, data);
+        } else {
+            return new Challenge(session, data);
+        }
     }
 
     /**

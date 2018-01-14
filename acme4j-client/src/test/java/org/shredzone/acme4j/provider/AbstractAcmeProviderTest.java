@@ -155,7 +155,8 @@ public class AbstractAcmeProviderTest {
                     .put("url", "https://example.com/some/challenge")
                     .toJSON();
         Challenge c6 = provider.createChallenge(session, json6);
-        assertThat(c6, is(nullValue()));
+        assertThat(c6, not(nullValue()));
+        assertThat(c6, instanceOf(Challenge.class));
 
         try {
             JSON json7 = new JSONBuilder()

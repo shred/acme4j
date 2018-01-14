@@ -27,9 +27,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.StreamSupport;
 
 import org.shredzone.acme4j.challenge.Challenge;
-import org.shredzone.acme4j.challenge.TokenChallenge;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 
@@ -174,15 +174,9 @@ public class Session {
      * @return {@link Challenge} instance
      */
     public Challenge createChallenge(JSON data) {
-        Objects.requireNonNull(data, "data");
-
         Challenge challenge = provider().createChallenge(this, data);
         if (challenge == null) {
-            if (data.contains("token")) {
-                challenge = new TokenChallenge(this, data);
-            } else {
-                challenge = new Challenge(this, data);
-            }
+            throw new AcmeProtocolException("Could not create challenge for: " + data);
         }
         return challenge;
     }
