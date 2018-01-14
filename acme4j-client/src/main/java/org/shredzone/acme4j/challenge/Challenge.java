@@ -190,15 +190,6 @@ public class Challenge extends AcmeResource {
         }
 
         data = json;
-        authorize();
-    }
-
-    /**
-     * Callback that is invoked when the challenge is supposed to compute its
-     * authorization data.
-     */
-    protected void authorize() {
-        // Does nothing here...
     }
 
     /**

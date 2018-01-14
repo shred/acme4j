@@ -33,8 +33,6 @@ public class TokenChallenge extends Challenge {
     protected static final String KEY_TOKEN = "token";
     protected static final String KEY_KEY_AUTHORIZATION = "keyAuthorization";
 
-    private String authorization;
-
     /**
      * Creates a new generic {@link TokenChallenge} object.
      *
@@ -59,21 +57,12 @@ public class TokenChallenge extends Challenge {
     }
 
     /**
-     * Gets the authorization.
-     */
-    protected String getAuthorization() {
-        return authorization;
-    }
-
-    /**
-     * Computes the authorization string.
+     * Returns the authorization string.
      * <p>
      * The default is {@code token + '.' + base64url(jwkThumbprint)}. Subclasses may
      * override this method if a different algorithm is used.
-     *
-     * @return Authorization string
      */
-    protected String computeAuthorization() {
+    protected String getAuthorization() {
         try {
             PublicKey pk = getSession().getKeyPair().getPublic();
             PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(pk);
@@ -83,12 +72,6 @@ public class TokenChallenge extends Challenge {
         } catch (JoseException ex) {
             throw new AcmeProtocolException("Cannot compute key thumbprint", ex);
         }
-    }
-
-    @Override
-    protected void authorize() {
-        super.authorize();
-        authorization = computeAuthorization();
     }
 
 }

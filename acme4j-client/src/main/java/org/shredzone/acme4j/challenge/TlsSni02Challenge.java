@@ -28,9 +28,6 @@ public class TlsSni02Challenge extends TokenChallenge {
      */
     public static final String TYPE = "tls-sni-02";
 
-    private String subject;
-    private String sanB;
-
     /**
      * Creates a new generic {@link TlsSni02Challenge} object.
      *
@@ -46,7 +43,8 @@ public class TlsSni02Challenge extends TokenChallenge {
      * The CA will send the SNI request against this domain.
      */
     public String getSubject() {
-        return subject;
+        String tokenHash = hexEncode(sha256hash(getToken()));
+        return tokenHash.substring(0, 32) + '.' + tokenHash.substring(32) + ".token.acme.invalid";
     }
 
     /**
@@ -54,23 +52,13 @@ public class TlsSni02Challenge extends TokenChallenge {
      * certificate.
      */
     public String getSanB() {
-        return sanB;
+        String kaHash = hexEncode(sha256hash(getAuthorization()));
+        return kaHash.substring(0, 32) + '.' + kaHash.substring(32) + ".ka.acme.invalid";
     }
 
     @Override
     protected boolean acceptable(String type) {
         return TYPE.equals(type);
-    }
-
-    @Override
-    protected void authorize() {
-        super.authorize();
-
-        String tokenHash = hexEncode(sha256hash(getToken()));
-        subject = tokenHash.substring(0, 32) + '.' + tokenHash.substring(32) + ".token.acme.invalid";
-
-        String kaHash = hexEncode(sha256hash(getAuthorization()));
-        sanB = kaHash.substring(0, 32) + '.' + kaHash.substring(32) + ".ka.acme.invalid";
     }
 
 }
