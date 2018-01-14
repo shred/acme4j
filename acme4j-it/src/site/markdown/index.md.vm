@@ -57,6 +57,6 @@ The tags `maven` and `docker` are used to select the executor.
 `acme4j-it` API
 ---------------
 
-The `acme4j-it` module provides test servers for the `http-01`, `dns-01` and `tls-sni-02` challenges. You can use these classes for your own projects. However, they are not part of the official _acme4j_ API and subject to change without notice.
+The `acme4j-it` module provides test servers for the `http-01` and `dns-01` challenges. You can use these classes for your own projects. However, they are not part of the official _acme4j_ API and subject to change without notice.
 
 Note that these servers are very simple implementations without any security measures. They are tailor-made for integration tests. Do not use them in production code!

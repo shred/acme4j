@@ -19,7 +19,6 @@ import java.util.ResourceBundle;
 
 import org.shredzone.acme4j.it.server.DnsServer;
 import org.shredzone.acme4j.it.server.HttpServer;
-import org.shredzone.acme4j.it.server.TlsSniServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,8 +26,8 @@ import fi.iki.elonen.NanoHTTPD;
 import fi.iki.elonen.router.RouterNanoHTTPD;
 
 /**
- * A mock server to test Pebble. It provides a HTTP server, TLS-SNI server, and DNS
- * server. The servers can be configured remotely via simple HTTP POST requests.
+ * A mock server to test Pebble. It provides a HTTP server and DNS server. The servers can
+ * be configured remotely via simple HTTP POST requests.
  * <p>
  * <em>WARNING:</em> This is a very simple server that is only meant to be used for
  * integration tests. Do not use in the outside world!
@@ -41,22 +40,18 @@ public class BammBamm {
     private final int appPort;
     private final int httpPort;
     private final int dnsPort;
-    private final int tlsSniPort;
     private final AppServer appServer;
     private final DnsServer dnsServer;
     private final HttpServer httpServer;
-    private final TlsSniServer tlsSniServer;
 
     private BammBamm() {
         ResourceBundle bundle = ResourceBundle.getBundle("bammbamm");
         appPort = Integer.parseInt(bundle.getString("app.port"));
         dnsPort = Integer.parseInt(bundle.getString("dns.port"));
         httpPort = Integer.parseInt(bundle.getString("http.port"));
-        tlsSniPort = Integer.parseInt(bundle.getString("tlsSni.port"));
 
         dnsServer = new DnsServer();
         httpServer = new HttpServer();
-        tlsSniServer = new TlsSniServer();
         appServer = new AppServer(appPort);
     }
 
@@ -84,19 +79,11 @@ public class BammBamm {
     }
 
     /**
-     * Returns the {@link TlsSniServer} instance.
-     */
-    public TlsSniServer getTlsSniServer() {
-        return tlsSniServer;
-    }
-
-    /**
      * Starts the servers.
      */
     public void start() {
         dnsServer.start(dnsPort);
         httpServer.start(httpPort);
-        tlsSniServer.start(tlsSniPort);
 
         try {
             appServer.start(NanoHTTPD.SOCKET_READ_TIMEOUT, true);
@@ -112,7 +99,6 @@ public class BammBamm {
      */
     public void stop() {
         appServer.stop();
-        tlsSniServer.stop();
         httpServer.stop();
         dnsServer.stop();
 
@@ -134,9 +120,6 @@ public class BammBamm {
 
             addRoute(HttpHandler.ADD, HttpHandler.Add.class);
             addRoute(HttpHandler.REMOVE, HttpHandler.Remove.class);
-
-            addRoute(TlsSniHandler.ADD, TlsSniHandler.Add.class);
-            addRoute(TlsSniHandler.REMOVE, TlsSniHandler.Remove.class);
         }
     }
 

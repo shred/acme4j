@@ -29,7 +29,6 @@ import org.junit.Test;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
-import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
@@ -67,11 +66,6 @@ public class AuthorizationTest {
         Challenge c3 = authorization.findChallenge(Dns01Challenge.TYPE);
         assertThat(c3, is(notNullValue()));
         assertThat(c3, is(instanceOf(Dns01Challenge.class)));
-
-        // TlsSni02Challenge is available
-        Challenge c4 = authorization.findChallenge(TlsSni02Challenge.TYPE);
-        assertThat(c4, is(notNullValue()));
-        assertThat(c4, is(instanceOf(TlsSni02Challenge.class)));
     }
 
     /**
@@ -265,7 +259,6 @@ public class AuthorizationTest {
 
             provider.putTestChallenge(Http01Challenge.TYPE, Http01Challenge::new);
             provider.putTestChallenge(Dns01Challenge.TYPE, Dns01Challenge::new);
-            provider.putTestChallenge(TlsSni02Challenge.TYPE, TlsSni02Challenge::new);
             provider.putTestChallenge(DUPLICATE_TYPE, Challenge::new);
 
             Authorization authorization = new Authorization(session, locationUrl);

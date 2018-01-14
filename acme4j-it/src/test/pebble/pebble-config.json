@@ -3,7 +3,6 @@
     "listenAddress": "0.0.0.0:14000",
     "certificate": "/go/src/github.com/letsencrypt/pebble/test/certs/localhost/cert.pem",
     "privateKey": "/go/src/github.com/letsencrypt/pebble/test/certs/localhost/key.pem",
-    "httpPort": 5002,
-    "tlsPort": 5001
+    "httpPort": 5002
   }
 }

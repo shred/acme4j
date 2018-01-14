@@ -29,7 +29,6 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
-import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.challenge.TokenChallenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
@@ -146,10 +145,6 @@ public class AbstractAcmeProviderTest {
         Challenge c3 = provider.createChallenge(session, getJSON("dnsChallenge"));
         assertThat(c3, not(nullValue()));
         assertThat(c3, instanceOf(Dns01Challenge.class));
-
-        Challenge c5 = provider.createChallenge(session, getJSON("tlsSni02Challenge"));
-        assertThat(c5, not(nullValue()));
-        assertThat(c5, instanceOf(TlsSni02Challenge.class));
 
         JSON json6 = new JSONBuilder()
                     .put("type", "foobar-01")

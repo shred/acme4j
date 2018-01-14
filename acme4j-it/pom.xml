@@ -178,7 +178,6 @@
                                 <from>openjdk:8-jre</from>
                                 <ports>
                                     <port>53/udp</port>
-                                    <port>5001</port>
                                     <port>5002</port>
                                     <port>14001</port>
                                 </ports>

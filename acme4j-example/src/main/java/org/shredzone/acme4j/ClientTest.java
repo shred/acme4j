@@ -21,21 +21,17 @@ import java.io.Writer;
 import java.net.URI;
 import java.security.KeyPair;
 import java.security.Security;
-import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
 
 import javax.swing.JOptionPane;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
-import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.util.CSRBuilder;
-import org.shredzone.acme4j.util.CertificateUtils;
 import org.shredzone.acme4j.util.KeyPairUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +62,7 @@ public class ClientTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientTest.class);
 
-    private enum ChallengeType { HTTP, DNS, TLSSNI }
+    private enum ChallengeType { HTTP, DNS }
 
     /**
      * Generates a certificate for the given domains. Also takes care for the registration
@@ -218,10 +214,6 @@ public class ClientTest {
             case DNS:
                 challenge = dnsChallenge(auth);
                 break;
-
-            case TLSSNI:
-                challenge = tlsSniChallenge(auth);
-                break;
         }
 
         if (challenge == null) {
@@ -329,62 +321,6 @@ public class ClientTest {
         StringBuilder message = new StringBuilder();
         message.append("Please create a TXT record:\n\n");
         message.append("_acme-challenge." + auth.getDomain() + ". IN TXT " + challenge.getDigest());
-        acceptChallenge(message.toString());
-
-        return challenge;
-    }
-
-    /**
-     * Prepares a TLS-SNI challenge.
-     * <p>
-     * The verification of this challenge expects that the web server returns a special
-     * validation certificate.
-     * <p>
-     * This example outputs instructions that need to be executed manually. In a
-     * production environment, you would rather configure your web server automatically.
-     *
-     * @param auth
-     *            {@link Authorization} to find the challenge in
-     * @return {@link Challenge} to verify
-     */
-    public Challenge tlsSniChallenge(Authorization auth) throws AcmeException {
-        // Find a single tls-sni-02 challenge
-        TlsSni02Challenge challenge = auth.findChallenge(TlsSni02Challenge.TYPE);
-        if (challenge == null) {
-            throw new AcmeException("Found no " + TlsSni02Challenge.TYPE + " challenge, don't know what to do...");
-        }
-
-        // Get the Subject
-        String subject = challenge.getSubject();
-        String sanB = challenge.getSanB();
-
-        // Create a validation key pair
-        KeyPair domainKeyPair;
-        try (FileWriter fw = new FileWriter("tlssni.key")) {
-            domainKeyPair = KeyPairUtils.createKeyPair(2048);
-            KeyPairUtils.writeKeyPair(domainKeyPair, fw);
-        } catch (IOException ex) {
-            throw new AcmeException("Could not write keypair", ex);
-        }
-
-        // Create a validation certificate
-        try (JcaPEMWriter pw = new JcaPEMWriter(new FileWriter("tlssni.crt"))) {
-            X509Certificate cert = CertificateUtils.createTlsSni02Certificate(domainKeyPair, subject, sanB);
-            pw.writeObject(cert);
-        } catch (IOException ex) {
-            throw new AcmeException("Could not write certificate", ex);
-        }
-
-        // Output the challenge, wait for acknowledge...
-        LOG.info("Please configure your web server.");
-        LOG.info("It must return the certificate 'tlssni.crt' on a SNI request to:");
-        LOG.info(subject);
-        LOG.info("The matching keypair is available at 'tlssni.key'.");
-        LOG.info("If you're ready, dismiss the dialog...");
-
-        StringBuilder message = new StringBuilder();
-        message.append("Please use 'tlssni.key' and 'tlssni.crt' cert for SNI requests to:\n\n");
-        message.append("https://").append(subject).append("\n\n");
         acceptChallenge(message.toString());
 
         return challenge;

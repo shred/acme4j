@@ -24,7 +24,6 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
-import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.challenge.TokenChallenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
@@ -64,7 +63,6 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
         Map<String, BiFunction<Session, JSON, Challenge>> map = new HashMap<>();
 
         map.put(Dns01Challenge.TYPE, Dns01Challenge::new);
-        map.put(TlsSni02Challenge.TYPE, TlsSni02Challenge::new);
         map.put(Http01Challenge.TYPE, Http01Challenge::new);
 
         return Collections.unmodifiableMap(map);

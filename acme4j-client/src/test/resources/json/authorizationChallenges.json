@@ -11,11 +11,6 @@
       "token": "DGyRejmCefe7v4NfDGDKfA"
     },
     {
-      "type": "tls-sni-02",
-      "url": "https://example.com/authz/asdf/2",
-      "token": "VNLBdSiZ3LppU2CRG8bilqlwq4DuApJMg3ZJowU6JhQ"
-    },
-    {
       "type": "duplicate-01",
       "url": "https://example.com/authz/asdf/3"
     },
