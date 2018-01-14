@@ -30,6 +30,7 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsSni02Challenge;
+import org.shredzone.acme4j.challenge.TokenChallenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
@@ -158,11 +159,20 @@ public class AbstractAcmeProviderTest {
         assertThat(c6, not(nullValue()));
         assertThat(c6, instanceOf(Challenge.class));
 
-        try {
-            JSON json7 = new JSONBuilder()
+        JSON json7 = new JSONBuilder()
+                        .put("type", "foobar-01")
+                        .put("token", "abc123")
                         .put("url", "https://example.com/some/challenge")
                         .toJSON();
-            provider.createChallenge(session, json7);
+        Challenge c7 = provider.createChallenge(session, json7);
+        assertThat(c7, not(nullValue()));
+        assertThat(c7, instanceOf(TokenChallenge.class));
+
+        try {
+            JSON json8 = new JSONBuilder()
+                        .put("url", "https://example.com/some/challenge")
+                        .toJSON();
+            provider.createChallenge(session, json8);
             fail("Challenge without type was accepted");
         } catch (AcmeProtocolException ex) {
             // expected
