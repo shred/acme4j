@@ -47,9 +47,9 @@ public class TokenChallenge extends Challenge {
     }
 
     @Override
-    protected void respond(JSONBuilder cb) {
-        super.respond(cb);
-        cb.put(KEY_KEY_AUTHORIZATION, getAuthorization());
+    protected void prepareResponse(JSONBuilder response) {
+        super.prepareResponse(response);
+        response.put(KEY_KEY_AUTHORIZATION, getAuthorization());
     }
 
     /**

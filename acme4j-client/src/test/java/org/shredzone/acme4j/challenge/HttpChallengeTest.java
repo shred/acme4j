@@ -56,10 +56,10 @@ public class HttpChallengeTest {
         assertThat(challenge.getToken(), is(TOKEN));
         assertThat(challenge.getAuthorization(), is(KEY_AUTHORIZATION));
 
-        JSONBuilder cb = new JSONBuilder();
-        challenge.respond(cb);
+        JSONBuilder response = new JSONBuilder();
+        challenge.prepareResponse(response);
 
-        assertThat(cb.toString(), sameJSONAs("{\"keyAuthorization\"=\""
+        assertThat(response.toString(), sameJSONAs("{\"keyAuthorization\"=\""
             + KEY_AUTHORIZATION + "\"}").allowingExtraUnexpectedFields());
     }
 

@@ -53,10 +53,10 @@ public class TlsSni02ChallengeTest {
         assertThat(challenge.getSubject(), is("5bf0b9908ed73bc53ed3327afa52f76b.0a4bea00520f0753f42abe0bb39e3ea8.token.acme.invalid"));
         assertThat(challenge.getSanB(), is("14e2350a04434f93c2e0b6012968d99d.ed459b6a7a019d9695609b8514f9d63d.ka.acme.invalid"));
 
-        JSONBuilder cb = new JSONBuilder();
-        challenge.respond(cb);
+        JSONBuilder response = new JSONBuilder();
+        challenge.prepareResponse(response);
 
-        assertThat(cb.toString(), sameJSONAs("{\"keyAuthorization\"=\""
+        assertThat(response.toString(), sameJSONAs("{\"keyAuthorization\"=\""
             + KEY_AUTHORIZATION + "\"}").allowingExtraUnexpectedFields());
     }
 

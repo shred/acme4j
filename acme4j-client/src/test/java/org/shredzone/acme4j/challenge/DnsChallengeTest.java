@@ -52,10 +52,10 @@ public class DnsChallengeTest {
         assertThat(challenge.getStatus(), is(Status.PENDING));
         assertThat(challenge.getDigest(), is("rzMmotrIgsithyBYc0vgiLUEEKYx0WetQRgEF2JIozA"));
 
-        JSONBuilder cb = new JSONBuilder();
-        challenge.respond(cb);
+        JSONBuilder response = new JSONBuilder();
+        challenge.prepareResponse(response);
 
-        assertThat(cb.toString(), sameJSONAs("{\"keyAuthorization\"=\""
+        assertThat(response.toString(), sameJSONAs("{\"keyAuthorization\"=\""
             + KEY_AUTHORIZATION + "\"}").allowingExtraUnexpectedFields());
     }
 

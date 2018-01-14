@@ -40,8 +40,8 @@ import org.slf4j.LoggerFactory;
  * that is unknown to acme4j.
  * <p>
  * Subclasses must override {@link Challenge#acceptable(String)} so it only accepts the
- * own type. {@link Challenge#respond(JSONBuilder)} should be overridden to put all
- * required data to the response.
+ * own type. {@link Challenge#prepareResponse(JSONBuilder)} should be overridden to put
+ * all required data to the response.
  */
 public class Challenge extends AcmeJsonResource {
     private static final long serialVersionUID = 2338794776848388099L;
@@ -142,10 +142,10 @@ public class Challenge extends AcmeJsonResource {
     /**
      * Exports the response state, as preparation for triggering the challenge.
      *
-     * @param cb
-     *            {@link JSONBuilder} to copy the response to
+     * @param response
+     *            {@link JSONBuilder} to write the response to
      */
-    protected void respond(JSONBuilder cb) {
+    protected void prepareResponse(JSONBuilder response) {
         // Do nothing here...
     }
 
@@ -185,7 +185,7 @@ public class Challenge extends AcmeJsonResource {
         LOG.debug("trigger");
         try (Connection conn = getSession().provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
-            respond(claims);
+            prepareResponse(claims);
 
             conn.sendSignedRequest(getLocation(), claims, getSession());
 

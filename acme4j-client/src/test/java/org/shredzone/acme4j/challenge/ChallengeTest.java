@@ -120,16 +120,16 @@ public class ChallengeTest {
     }
 
     /**
-     * Test that {@link Challenge#respond(JSONBuilder)} contains the type.
+     * Test that {@link Challenge#prepareResponse(JSONBuilder)} contains the type.
      */
     @Test
     public void testRespond() throws JoseException {
         Challenge challenge = new Challenge(session, getJSON("genericChallenge"));
 
-        JSONBuilder cb = new JSONBuilder();
-        challenge.respond(cb);
+        JSONBuilder response = new JSONBuilder();
+        challenge.prepareResponse(response);
 
-        assertThat(cb.toString(), sameJSONAs("{}"));
+        assertThat(response.toString(), sameJSONAs("{}"));
     }
 
     /**
