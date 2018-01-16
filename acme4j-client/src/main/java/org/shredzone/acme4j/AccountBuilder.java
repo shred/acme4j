@@ -182,9 +182,6 @@ public class AccountBuilder {
             URL location = conn.getLocation();
 
             Account account = new Account(session, location);
-            if (keyIdentifier != null) {
-                session.setKeyIdentifier(keyIdentifier);
-            }
 
             if (resp == HttpURLConnection.HTTP_CREATED) {
                 account.setJSON(conn.readJsonResponse());

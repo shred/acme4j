@@ -179,7 +179,6 @@ public class AccountBuilderTest {
         Account account = builder.create(session);
 
         assertThat(account.getLocation(), is(locationUrl));
-        assertThat(session.getKeyIdentifier(), is(keyIdentifier));
 
         provider.close();
     }
