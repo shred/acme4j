@@ -26,7 +26,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 
 import org.jose4j.lang.JoseException;
 import org.junit.Before;
@@ -102,21 +101,11 @@ public class ChallengeTest {
         assertThat(challenge.getJSON().get("notPresent").asString(), is(nullValue()));
         assertThat(challenge.getJSON().get("notPresentUrl").asURL(), is(nullValue()));
 
-        List<Problem> errors = challenge.getErrors();
-        assertThat(errors, is(notNullValue()));
-        assertThat(errors, hasSize(2));
-        assertThat(errors.get(0).getType(), is(URI.create("urn:ietf:params:acme:error:connection")));
-        assertThat(errors.get(0).getDetail(), is("connection refused"));
-        assertThat(errors.get(0).getInstance(), is(URI.create("http://example.com/documents/error.html")));
-        assertThat(errors.get(1).getType(), is(URI.create("urn:ietf:params:acme:error:incorrectResponse")));
-        assertThat(errors.get(1).getDetail(), is("bad token"));
-        assertThat(errors.get(1).getInstance(), is(URI.create("http://example.com/documents/faq.html")));
-
-        Problem lastError = challenge.getLastError();
-        assertThat(lastError, is(notNullValue()));
-        assertThat(lastError.getType(), is(URI.create("urn:ietf:params:acme:error:incorrectResponse")));
-        assertThat(lastError.getDetail(), is("bad token"));
-        assertThat(lastError.getInstance(), is(URI.create("http://example.com/documents/faq.html")));
+        Problem error = challenge.getError();
+        assertThat(error, is(notNullValue()));
+        assertThat(error.getType(), is(URI.create("urn:ietf:params:acme:error:incorrectResponse")));
+        assertThat(error.getDetail(), is("bad token"));
+        assertThat(error.getInstance(), is(URI.create("http://example.com/documents/faq.html")));
     }
 
     /**

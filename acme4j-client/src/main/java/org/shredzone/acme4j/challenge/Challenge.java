@@ -13,12 +13,8 @@
  */
 package org.shredzone.acme4j.challenge;
 
-import static java.util.stream.Collectors.toList;
-
 import java.net.URL;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 import org.shredzone.acme4j.AcmeJsonResource;
@@ -29,7 +25,6 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
-import org.shredzone.acme4j.toolbox.JSON.Array;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +46,7 @@ public class Challenge extends AcmeJsonResource {
     protected static final String KEY_URL = "url";
     protected static final String KEY_STATUS = "status";
     protected static final String KEY_VALIDATED = "validated";
-    protected static final String KEY_ERRORS = "errors";
+    protected static final String KEY_ERROR = "error";
 
     /**
      * Creates a new generic {@link Challenge} object.
@@ -114,29 +109,12 @@ public class Challenge extends AcmeJsonResource {
     }
 
     /**
-     * Returns a list of reasons why the challenge has failed in the past, if returned by
-     * the server. New errors are always appended to the end of the list.
+     * Returns a reason why the challenge has failed in the past, if returned by the
+     * server. If there are multiple errors, they can be found in
+     * {@link Problem#getSubProblems()}.
      */
-    public List<Problem> getErrors() {
-        URL location = getLocation();
-        return Collections.unmodifiableList(getJSON().get(KEY_ERRORS)
-                    .asArray()
-                    .stream()
-                    .map(it -> it.asProblem(location))
-                    .collect(toList()));
-    }
-
-    /**
-     * Returns the last reason why the challenge has failed, if returned by the server.
-     * {@code null} if there are no errors.
-     */
-    public Problem getLastError() {
-        Array errors = getJSON().get(KEY_ERRORS).asArray();
-        if (!errors.isEmpty()) {
-            return errors.get(errors.size() - 1).asProblem(getLocation());
-        } else {
-            return null;
-        }
+    public Problem getError() {
+        return getJSON().get(KEY_ERROR).asProblem(getLocation());
     }
 
     /**
