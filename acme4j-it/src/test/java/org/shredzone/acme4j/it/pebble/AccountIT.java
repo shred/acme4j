@@ -52,9 +52,7 @@ public class AccountIT extends PebbleITBase {
 
         // Check registered data
         assertThat(acct.getContacts(), contains(URI.create("mailto:acme@example.com")));
-        // TODO PEBBLE: Sends UNKNOWN instead of VALID
-        // assertThat(acct.getStatus(), is(Status.VALID));
-        assertThat(acct.getTermsOfServiceAgreed(), is(true));
+        assertThat(acct.getStatus(), is(Status.VALID));
 
         // Bind another Account object
         // TODO PEBBLE: Not supported yet
@@ -63,7 +61,6 @@ public class AccountIT extends PebbleITBase {
         // assertThat(acct2.getLocation(), is(location));
         // assertThat(acct2.getContacts(), contains(URI.create("mailto:acme@example.com")));
         // assertThat(acct2.getStatus(), is(Status.VALID));
-        // assertThat(acct2.getTermsOfServiceAgreed(), is(true));
     }
 
     @Test
