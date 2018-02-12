@@ -41,6 +41,7 @@ import org.jose4j.jwk.PublicJsonWebKey;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
+import org.shredzone.acme4j.toolbox.AcmeUtils.PemLabel;
 
 /**
  * Unit tests for {@link AcmeUtils}.
@@ -259,7 +260,7 @@ public class AcmeUtilsTest {
     }
 
     /**
-     * Test that {@link AcmeUtils#writeToPem(byte[], String, Writer)} writes a correct PEM
+     * Test that {@link AcmeUtils#writeToPem(byte[], PemLabel, Writer)} writes a correct PEM
      * file.
      */
     @Test

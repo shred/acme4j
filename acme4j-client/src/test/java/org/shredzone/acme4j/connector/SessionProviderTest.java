@@ -55,8 +55,8 @@ public class SessionProviderTest {
     }
 
     /**
-     * Test that connecting to an acme URI will return an {@link AcmeClient} via
-     * the correct {@link AcmeProvider}, and that the result is cached.
+     * Test that connecting to an acme URI will return an {@link AcmeProvider}, and that
+     * the result is cached.
      */
     @Test
     public void testConnectURI() throws Exception {

@@ -24,7 +24,7 @@
 
     <name>acme4j</name>
     <description>ACME client for Java</description>
-    <url>http://acme4j.shredzone.org</url>
+    <url>https://acme4j.shredzone.org</url>
     <inceptionYear>2015</inceptionYear>
 
     <licenses>
@@ -51,10 +51,10 @@
     </developers>
 
     <properties>
-        <bouncycastle.version>1.57</bouncycastle.version>
-        <dnsjava.version>2.1.7</dnsjava.version>
-        <httpclient.version>4.5.3</httpclient.version>
-        <jose4j.version>0.6.0</jose4j.version>
+        <bouncycastle.version>1.59</bouncycastle.version>
+        <dnsjava.version>2.1.8</dnsjava.version>
+        <httpclient.version>4.5.5</httpclient.version>
+        <jose4j.version>0.6.3</jose4j.version>
         <nanohttpd.version>2.3.1</nanohttpd.version>
         <slf4j.version>1.7.25</slf4j.version>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
@@ -73,7 +73,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.6.0</version>
+                <version>3.7.0</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -115,7 +115,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.6</version>
+                <version>3.7</version>
                 <configuration>
                     <outputEncoding>UTF-8</outputEncoding>
                 </configuration>
@@ -123,7 +123,7 @@
                     <dependency>
                         <groupId>org.apache.maven.doxia</groupId>
                         <artifactId>doxia-module-markdown</artifactId>
-                        <version>1.7</version>
+                        <version>1.8</version>
                     </dependency>
                 </dependencies>
             </plugin>
@@ -175,22 +175,17 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>2.19.1</version>
+                <version>2.20.1</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.4</version>
+                <version>3.0.0</version>
                 <configuration>
-                    <links>
-                        <link>http://docs.oracle.com/javase/8/docs/api/</link>
-                        <link>http://docs.oracle.com/javaee/7/api/</link>
-                        <link>https://www.bouncycastle.org/docs/docs1.5on/</link>
-                        <link>https://www.bouncycastle.org/docs/pkixdocs1.5on/</link>
-                    </links>
                     <charset>UTF-8</charset>
+                    <detectLinks>true</detectLinks>
+                    <doclint>syntax,reference</doclint>
                     <linksource>true</linksource>
-                    <additionalparam>-Xdoclint:syntax,reference</additionalparam>
                 </configuration>
             </plugin>
         </plugins>
