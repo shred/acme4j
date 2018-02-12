@@ -47,7 +47,7 @@ public class Session {
     private final AcmeProvider provider;
 
     private KeyPair keyPair;
-    private String keyIdentifier;
+    private URL accountLocation;
     private byte[] nonce;
     private JSON directoryJson;
     private Locale locale = Locale.getDefault();
@@ -115,17 +115,17 @@ public class Session {
     }
 
     /**
-     * Gets the key identifier of the ACME account.
+     * Gets the location {@link URL} of the account logged into this session.
      */
-    public String getKeyIdentifier() {
-        return keyIdentifier;
+    public URL getAccountLocation() {
+        return accountLocation;
     }
 
     /**
-     * Sets the key identifier of the ACME account.
+     * Sets the location {@link URL} of the account logged into this session.
      */
-    public void setKeyIdentifier(String keyIdentifier) {
-        this.keyIdentifier = keyIdentifier;
+    public void setAccountLocation(URL accountLocation) {
+        this.accountLocation = accountLocation;
     }
 
     /**

@@ -155,10 +155,6 @@ public class DefaultConnection implements Connection {
 
     @Override
     public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) throws AcmeException {
-        if (session.getKeyIdentifier() == null) {
-            throw new IllegalStateException("session has no KeyIdentifier set");
-        }
-
         return sendSignedRequest(url, claims, session, false, httpStatus);
     }
 
@@ -326,10 +322,10 @@ public class DefaultConnection implements Connection {
             jws.setPayload(claims.toString());
             jws.getHeaders().setObjectHeaderValue("nonce", Base64Url.encode(session.getNonce()));
             jws.getHeaders().setObjectHeaderValue("url", url);
-            if (enforceJwk || session.getKeyIdentifier() == null) {
+            if (enforceJwk || session.getAccountLocation() == null) {
                 jws.getHeaders().setJwkHeaderValue("jwk", jwk);
             } else {
-                jws.getHeaders().setObjectHeaderValue("kid", session.getKeyIdentifier());
+                jws.getHeaders().setObjectHeaderValue("kid", session.getAccountLocation());
             }
 
             jws.setAlgorithmHeaderValue(keyAlgorithm(jwk));

@@ -136,7 +136,7 @@ public class CertificateTest {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("revokeCertificateRequest").toString()));
                 assertThat(session, is(notNullValue()));
-                assertThat(session.getKeyIdentifier(), is(nullValue()));
+                assertThat(session.getAccountLocation(), is(nullValue()));
                 assertThat(enforceJwk, is(true));
                 certRequested = false;
                 assertThat(httpStatus, isIntArrayContainingInAnyOrder());

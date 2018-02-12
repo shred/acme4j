@@ -101,7 +101,7 @@ public class AccountTest {
         Account account = new Account(session, locationUrl);
         account.update();
 
-        assertThat(session.getKeyIdentifier(), is(locationUrl.toString()));
+        assertThat(session.getAccountLocation(), is(locationUrl));
         assertThat(account.getLocation(), is(locationUrl));
         assertThat(account.getTermsOfServiceAgreed(), is(true));
         assertThat(account.getContacts(), hasSize(1));

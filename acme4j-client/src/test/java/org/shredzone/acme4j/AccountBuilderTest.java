@@ -93,7 +93,7 @@ public class AccountBuilderTest {
 
         assertThat(account.getLocation(), is(locationUrl));
         assertThat(account.getTermsOfServiceAgreed(), is(true));
-        assertThat(session.getKeyIdentifier(), is(locationUrl.toString()));
+        assertThat(session.getAccountLocation(), is(locationUrl));
 
         try {
             AccountBuilder builder2 = new AccountBuilder();
@@ -219,7 +219,7 @@ public class AccountBuilderTest {
         Account account = builder.create(session);
 
         assertThat(account.getLocation(), is(locationUrl));
-        assertThat(session.getKeyIdentifier(), is(locationUrl.toString()));
+        assertThat(session.getAccountLocation(), is(locationUrl));
 
         provider.close();
     }

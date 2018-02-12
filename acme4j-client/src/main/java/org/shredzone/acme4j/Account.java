@@ -57,7 +57,7 @@ public class Account extends AcmeJsonResource {
     protected Account(Session session, URL location) {
         super(session);
         setLocation(location);
-        session.setKeyIdentifier(location.toString());
+        session.setAccountLocation(location);
     }
 
     /**

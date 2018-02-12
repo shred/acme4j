@@ -48,7 +48,7 @@ public class AccountIT extends PebbleITBase {
         Account acct = ab.create(session);
         URL location = acct.getLocation();
         assertIsPebbleUrl(location);
-        assertThat(session.getKeyIdentifier(), is(location.toString()));
+        assertThat(session.getAccountLocation(), is(location));
 
         // Check registered data
         assertThat(acct.getContacts(), contains(URI.create("mailto:acme@example.com")));
@@ -73,7 +73,7 @@ public class AccountIT extends PebbleITBase {
                         .create(session1);
         URL location1 = acct1.getLocation();
         assertIsPebbleUrl(location1);
-        assertThat(session1.getKeyIdentifier(), is(location1.toString()));
+        assertThat(session1.getAccountLocation(), is(location1));
 
         Session session2 = new Session(pebbleURI(), keyPair);
         Account acct2 = new AccountBuilder()
@@ -81,7 +81,7 @@ public class AccountIT extends PebbleITBase {
                         .create(session2);
         URL location2 = acct2.getLocation();
         assertIsPebbleUrl(location2);
-        assertThat(session2.getKeyIdentifier(), is(location2.toString()));
+        assertThat(session2.getAccountLocation(), is(location2));
 
         assertThat(location1, is(location2));
     }

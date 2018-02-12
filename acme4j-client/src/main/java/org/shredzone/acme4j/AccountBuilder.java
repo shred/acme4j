@@ -155,7 +155,7 @@ public class AccountBuilder {
     public Account create(Session session) throws AcmeException {
         LOG.debug("create");
 
-        if (session.getKeyIdentifier() != null) {
+        if (session.getAccountLocation() != null) {
             throw new IllegalArgumentException("session already seems to have an Account");
         }
 

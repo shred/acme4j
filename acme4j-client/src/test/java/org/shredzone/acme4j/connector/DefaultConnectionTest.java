@@ -64,7 +64,7 @@ import org.shredzone.acme4j.toolbox.TestUtils;
 public class DefaultConnectionTest {
 
     private URL requestUrl = TestUtils.url("http://example.com/acme/");
-    private String keyIdentifier = TestUtils.ACME_SERVER_URI + "/acct/1";
+    private URL accountUrl = TestUtils.url(TestUtils.ACME_SERVER_URI + "/acct/1");
     private HttpURLConnection mockUrlConnection;
     private HttpConnector mockHttpConnection;
     private Session session;
@@ -402,7 +402,7 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
         when(mockUrlConnection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
 
-        session.setKeyIdentifier(keyIdentifier);
+        session.setAccountLocation(accountUrl);
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
@@ -426,7 +426,7 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
         when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
 
-        session.setKeyIdentifier(keyIdentifier);
+        session.setAccountLocation(accountUrl);
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
@@ -462,7 +462,7 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
         when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
 
-        session.setKeyIdentifier(keyIdentifier);
+        session.setAccountLocation(accountUrl);
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
@@ -504,7 +504,7 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
         when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
 
-        session.setKeyIdentifier(keyIdentifier);
+        session.setAccountLocation(accountUrl);
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
@@ -544,7 +544,7 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getOutputStream())
                 .thenReturn(new ByteArrayOutputStream());
 
-        session.setKeyIdentifier(keyIdentifier);
+        session.setAccountLocation(accountUrl);
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
@@ -584,7 +584,7 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getOutputStream())
                 .thenReturn(new ByteArrayOutputStream());
 
-        session.setKeyIdentifier(keyIdentifier);
+        session.setAccountLocation(accountUrl);
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
@@ -620,7 +620,7 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getOutputStream())
                 .thenReturn(new ByteArrayOutputStream());
 
-        session.setKeyIdentifier(keyIdentifier);
+        session.setAccountLocation(accountUrl);
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
@@ -691,7 +691,7 @@ public class DefaultConnectionTest {
         }) {
             JSONBuilder cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");
-            session.setKeyIdentifier(keyIdentifier);
+            session.setAccountLocation(accountUrl);
             conn.sendSignedRequest(requestUrl, cb, session);
         }
 
@@ -718,7 +718,7 @@ public class DefaultConnectionTest {
         expectedHeader.append("\"nonce\":\"").append(Base64Url.encode(nonce1)).append("\",");
         expectedHeader.append("\"url\":\"").append(requestUrl).append("\",");
         expectedHeader.append("\"alg\":\"RS256\",");
-        expectedHeader.append("\"kid\":\"").append(keyIdentifier).append('"');
+        expectedHeader.append("\"kid\":\"").append(accountUrl).append('"');
         expectedHeader.append('}');
 
         assertThat(Base64Url.decodeToUtf8String(encodedHeader), sameJSONAs(expectedHeader.toString()));
@@ -806,17 +806,6 @@ public class DefaultConnectionTest {
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
         jws.setKey(session.getKeyPair().getPublic());
         assertThat(jws.verifySignature(), is(true));
-    }
-
-    /**
-     * Test signed POST requests without a required KeyIdentifier.
-     */
-    @Test(expected = IllegalStateException.class)
-    public void testSendSignedRequestNoKidFailed() throws Exception {
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            JSONBuilder cb = new JSONBuilder();
-            conn.sendSignedRequest(requestUrl, cb, session);
-        }
     }
 
     /**
