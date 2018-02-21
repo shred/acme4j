@@ -122,6 +122,10 @@ public class OrderIT extends PebbleITBase {
             assertThat(auth.getDomain(), is(domain));
             assertThat(auth.getStatus(), is(Status.PENDING));
 
+            if (auth.getStatus() == Status.VALID) {
+                continue;
+            }
+
             Challenge challenge = validator.prepare(auth);
             challenge.trigger();
 

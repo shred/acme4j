@@ -204,6 +204,11 @@ public class ClientTest {
     private void authorize(Authorization auth) throws AcmeException {
         LOG.info("Authorization for domain " + auth.getDomain());
 
+        // The authorization is already valid. No need to process a challenge.
+        if (auth.getStatus() == Status.VALID) {
+            return;
+        }
+
         // Find the desired challenge and prepare it.
         Challenge challenge = null;
         switch (CHALLENGE_TYPE) {

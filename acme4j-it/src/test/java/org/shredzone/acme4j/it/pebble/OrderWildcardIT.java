@@ -80,6 +80,10 @@ public class OrderWildcardIT extends PebbleITBase {
             assertThat(auth.getDomain(), is(TEST_DOMAIN));
             assertThat(auth.getStatus(), is(Status.PENDING));
 
+            if (auth.getStatus() == Status.VALID) {
+                continue;
+            }
+
             Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
             assertThat(challenge, is(notNullValue()));
 
