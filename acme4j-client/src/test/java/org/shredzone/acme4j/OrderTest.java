@@ -151,12 +151,11 @@ public class OrderTest {
             }
 
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(finalizeUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("finalizeRequest").toString()));
                 assertThat(session, is(notNullValue()));
                 isFinalized = true;
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 

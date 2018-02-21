@@ -224,12 +224,11 @@ public class AuthorizationTest {
     public void testDeactivate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 JSON json = claims.toJSON();
                 assertThat(json.get("status").asString(), is("deactivated"));
                 assertThat(url, is(locationUrl));
                 assertThat(session, is(notNullValue()));
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 

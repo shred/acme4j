@@ -51,23 +51,21 @@ public class AccountBuilderTest {
             private boolean isUpdate;
 
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(session, is(notNullValue()));
                 assertThat(url, is(locationUrl));
                 assertThat(isUpdate, is(false));
                 isUpdate = true;
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk, int... httpStatus) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
                 assertThat(session, is(notNullValue()));
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("newAccount").toString()));
                 assertThat(enforceJwk, is(true));
                 isUpdate = false;
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED));
                 return HttpURLConnection.HTTP_CREATED;
             }
 
@@ -117,7 +115,7 @@ public class AccountBuilderTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk, int... httpStatus) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
                 try {
                     assertThat(session, is(notNullValue()));
                     assertThat(url, is(resourceUrl));
@@ -155,7 +153,6 @@ public class AccountBuilderTest {
                     fail("decoding inner payload failed");
                 }
 
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED));
                 return HttpURLConnection.HTTP_CREATED;
             }
 
@@ -190,12 +187,11 @@ public class AccountBuilderTest {
     public void testOnlyExistingRegistration() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk, int... httpStatus) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
                 assertThat(session, is(notNullValue()));
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("newAccountOnlyExisting").toString()));
                 assertThat(enforceJwk, is(true));
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED));
                 return HttpURLConnection.HTTP_OK;
             }
 

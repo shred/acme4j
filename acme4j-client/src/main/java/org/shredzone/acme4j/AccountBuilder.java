@@ -16,7 +16,6 @@ package org.shredzone.acme4j;
 import static java.util.Objects.requireNonNull;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.macKeyAlgorithm;
 
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.security.PublicKey;
@@ -177,15 +176,12 @@ public class AccountBuilder {
                 claims.put("onlyReturnExisting", onlyExisting);
             }
 
-            int resp = conn.sendSignedRequest(resourceUrl, claims, session, true, HttpURLConnection.HTTP_OK, HttpURLConnection.HTTP_CREATED);
+            conn.sendSignedRequest(resourceUrl, claims, session, true);
 
             URL location = conn.getLocation();
 
             Account account = new Account(session, location);
-
-            if (resp == HttpURLConnection.HTTP_CREATED) {
-                account.setJSON(conn.readJsonResponse());
-            }
+            account.setJSON(conn.readJsonResponse());
             return account;
         }
     }

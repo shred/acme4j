@@ -30,7 +30,6 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -154,12 +153,12 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) throws AcmeException {
-        return sendSignedRequest(url, claims, session, false, httpStatus);
+    public int sendSignedRequest(URL url, JSONBuilder claims, Session session) throws AcmeException {
+        return sendSignedRequest(url, claims, session, false);
     }
 
     @Override
-    public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk, int... httpStatus)
+    public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
                 throws AcmeException {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(claims, "claims");
@@ -170,7 +169,7 @@ public class DefaultConnection implements Connection {
 
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             try {
-                return performRequest(url, claims, session, enforceJwk, httpStatus);
+                return performRequest(url, claims, session, enforceJwk);
             } catch (AcmeServerException ex) {
                 if (!BAD_NONCE_ERROR.equals(ex.getType())) {
                     throw ex;
@@ -296,11 +295,9 @@ public class DefaultConnection implements Connection {
      *            {@code true} to enforce a "jwk" header field even if a KeyIdentifier is
      *            set, {@code false} to choose between "kid" and "jwk" header field
      *            automatically
-     * @param httpStatus
-     *            Acceptable HTTP states. 200 OK if empty.
      * @return HTTP 200 class status that was returned
      */
-    private int performRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk, int... httpStatus)
+    private int performRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
                 throws AcmeException {
         try {
             KeyPair keypair = session.getKeyPair();
@@ -356,8 +353,7 @@ public class DefaultConnection implements Connection {
             session.setNonce(getNonce());
 
             int rc = conn.getResponseCode();
-            if ((httpStatus.length == 0 && rc != HttpURLConnection.HTTP_OK)
-                || (httpStatus.length > 0 && !Arrays.stream(httpStatus).filter(s -> s == rc).findFirst().isPresent())) {
+            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_CREATED) {
                 throwAcmeException();
             }
             return rc;

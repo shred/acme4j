@@ -16,7 +16,6 @@ package org.shredzone.acme4j;
 import static java.util.stream.Collectors.toList;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.*;
 
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
@@ -168,7 +167,7 @@ public class Account extends AcmeJsonResource {
                     .put("type", "dns")
                     .put("value", toAce(domain));
 
-            conn.sendSignedRequest(newAuthzUrl, claims, getSession(), HttpURLConnection.HTTP_CREATED);
+            conn.sendSignedRequest(newAuthzUrl, claims, getSession());
 
             Authorization auth = new Authorization(getSession(), conn.getLocation());
             auth.setJSON(conn.readJsonResponse());

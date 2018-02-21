@@ -61,11 +61,9 @@ public interface Connection extends AutoCloseable {
      *            {@link JSONBuilder} containing claims. Must not be {@code null}.
      * @param session
      *            {@link Session} instance to be used for signing and tracking
-     * @param httpStatus
-     *            Acceptable HTTP states. 200 OK if empty.
      * @return HTTP 200 class status that was returned
      */
-    int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus)
+    int sendSignedRequest(URL url, JSONBuilder claims, Session session)
                 throws AcmeException;
 
     /**
@@ -85,11 +83,9 @@ public interface Connection extends AutoCloseable {
      *            {@code true} to enforce a "jwk" header field even if a KeyIdentifier is
      *            set, {@code false} to choose between "kid" and "jwk" header field
      *            automatically
-     * @param httpStatus
-     *            Acceptable HTTP states. 200 OK if empty.
      * @return HTTP 200 class status that was returned
      */
-    int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk, int... httpStatus)
+    int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
                 throws AcmeException;
 
     /**

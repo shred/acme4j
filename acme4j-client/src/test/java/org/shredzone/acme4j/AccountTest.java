@@ -64,7 +64,7 @@ public class AccountTest {
             private JSON jsonResponse;
 
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(locationUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("updateAccount").toString()));
                 assertThat(session, is(notNullValue()));
@@ -125,10 +125,9 @@ public class AccountTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 requestWasSent.set(true);
                 assertThat(url, is(locationUrl));
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -174,11 +173,10 @@ public class AccountTest {
     public void testPreAuthorizeDomain() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("newAuthorizationRequest").toString()));
                 assertThat(session, is(notNullValue()));
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_CREATED));
                 return HttpURLConnection.HTTP_CREATED;
             }
 
@@ -226,7 +224,7 @@ public class AccountTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) throws AcmeException {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) throws AcmeException {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("newAuthorizationRequest").toString()));
                 assertThat(session, is(notNullValue()));
@@ -300,7 +298,7 @@ public class AccountTest {
 
         final TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder payload, Session session, int... httpStatus) {
+            public int sendSignedRequest(URL url, JSONBuilder payload, Session session) {
                 try {
                     assertThat(url, is(locationUrl));
                     assertThat(session, is(notNullValue()));
@@ -332,7 +330,6 @@ public class AccountTest {
                     fail("decoding inner payload failed");
                 }
 
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -380,12 +377,11 @@ public class AccountTest {
     public void testDeactivate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 JSON json = claims.toJSON();
                 assertThat(json.get("status").asString(), is("deactivated"));
                 assertThat(url, is(locationUrl));
                 assertThat(session, is(notNullValue()));
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -410,11 +406,10 @@ public class AccountTest {
     public void testModify() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(locationUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("modifyAccount").toString()));
                 assertThat(session, is(notNullValue()));
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 

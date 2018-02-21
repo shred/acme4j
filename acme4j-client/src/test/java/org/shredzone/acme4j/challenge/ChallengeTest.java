@@ -136,11 +136,10 @@ public class ChallengeTest {
     public void testTrigger() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(locationUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("triggerHttpChallengeRequest").toString()));
                 assertThat(session, is(notNullValue()));
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder());
                 return HttpURLConnection.HTTP_OK;
             }
 

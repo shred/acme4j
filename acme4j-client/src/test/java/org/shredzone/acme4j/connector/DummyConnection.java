@@ -40,13 +40,13 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus)
+    public int sendSignedRequest(URL url, JSONBuilder claims, Session session)
                 throws AcmeException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk, int... httpStatus)
+    public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
                 throws AcmeException {
         throw new UnsupportedOperationException();
     }

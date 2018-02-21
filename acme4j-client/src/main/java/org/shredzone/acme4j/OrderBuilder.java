@@ -16,7 +16,6 @@ package org.shredzone.acme4j;
 import static java.util.Objects.requireNonNull;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.toAce;
 
-import java.net.HttpURLConnection;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Iterator;
@@ -147,7 +146,7 @@ public class OrderBuilder {
                 claims.put("notAfter", notAfter);
             }
 
-            conn.sendSignedRequest(session.resourceUrl(Resource.NEW_ORDER), claims, session, HttpURLConnection.HTTP_CREATED);
+            conn.sendSignedRequest(session.resourceUrl(Resource.NEW_ORDER), claims, session);
 
             Order order = new Order(session, conn.getLocation());
             order.setJSON(conn.readJsonResponse());

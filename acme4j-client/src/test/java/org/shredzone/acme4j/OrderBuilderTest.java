@@ -48,11 +48,10 @@ public class OrderBuilderTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, int... httpStatus) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("requestOrderRequest").toString()));
                 assertThat(session, is(notNullValue()));
-                assertThat(httpStatus, isIntArrayContainingInAnyOrder(HttpURLConnection.HTTP_CREATED));
                 return HttpURLConnection.HTTP_CREATED;
             }
 
