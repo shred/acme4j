@@ -35,6 +35,9 @@ import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
  */
 public class AccountIT extends PebbleITBase {
 
+    /**
+     * Create a new account, then bind it to a second session.
+     */
     @Test
     public void testCreate() throws AcmeException {
         KeyPair keyPair = createKeyPair();
@@ -55,14 +58,44 @@ public class AccountIT extends PebbleITBase {
         assertThat(acct.getStatus(), is(Status.VALID));
 
         // Bind another Account object
-        // TODO PEBBLE: Not supported yet
-        // Session session2 = new Session(pebbleURI(), keyPair);
-        // Account acct2 = Account.bind(session2, location);
-        // assertThat(acct2.getLocation(), is(location));
-        // assertThat(acct2.getContacts(), contains(URI.create("mailto:acme@example.com")));
-        // assertThat(acct2.getStatus(), is(Status.VALID));
+        Session session2 = new Session(pebbleURI(), keyPair);
+        Account acct2 = Account.bind(session2, location);
+        assertThat(acct2.getLocation(), is(location));
+        assertThat(acct2.getContacts(), contains(URI.create("mailto:acme@example.com")));
+        assertThat(acct2.getStatus(), is(Status.VALID));
     }
 
+    /**
+     * Register the same key pair twice.
+     */
+    @Test
+    public void testReCreate() throws AcmeException {
+        KeyPair keyPair = createKeyPair();
+
+        // Register a new user
+        Session session1 = new Session(pebbleURI(), keyPair);
+        Account acct1 = new AccountBuilder()
+                        .addContact("mailto:acme@example.com")
+                        .agreeToTermsOfService()
+                        .create(session1);
+        URL location1 = acct1.getLocation();
+        assertIsPebbleUrl(location1);
+
+        // Try to register the same account again
+        Session session2 = new Session(pebbleURI(), keyPair);
+        Account acct2 = new AccountBuilder()
+                        .addContact("mailto:acme@example.com")
+                        .agreeToTermsOfService()
+                        .create(session2);
+        URL location2 = acct2.getLocation();
+        assertIsPebbleUrl(location2);
+
+        assertThat(location1, is(location2));
+    }
+
+    /**
+     * Create a new account. Locate it via onlyExisting.
+     */
     @Test
     public void testCreateOnlyExisting() throws AcmeException {
         KeyPair keyPair = createKeyPair();
@@ -86,29 +119,34 @@ public class AccountIT extends PebbleITBase {
         assertThat(location1, is(location2));
     }
 
+    /**
+     * Locate a non-existing account via onlyExisting. Make sure an accountDoesNotExist
+     * error is returned.
+     */
     @Test
     public void testNotExisting() throws AcmeException {
         try {
             KeyPair keyPair = createKeyPair();
             Session session = new Session(pebbleURI(), keyPair);
             new AccountBuilder().onlyExisting().create(session);
-            fail("Expected an error");
+            fail("onlyExisting flag was ignored");
         } catch (AcmeServerException ex) {
             assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:accountDoesNotExist")));
         }
     }
 
+    /**
+     * Modify the contacts of an account.
+     */
     @Test
-    @Ignore // TODO PEBBLE: missing
     public void testModify() throws AcmeException {
         KeyPair keyPair = createKeyPair();
         Session session = new Session(pebbleURI(), keyPair);
 
-        AccountBuilder ab = new AccountBuilder();
-        ab.addContact("mailto:acme@example.com");
-        ab.agreeToTermsOfService();
-
-        Account acct = ab.create(session);
+        Account acct = new AccountBuilder()
+                        .addContact("mailto:acme@example.com")
+                        .agreeToTermsOfService()
+                        .create(session);
         URL location = acct.getLocation();
         assertIsPebbleUrl(location);
 
@@ -125,6 +163,9 @@ public class AccountIT extends PebbleITBase {
                         URI.create("mailto:acme2@example.com")));
     }
 
+    /**
+     * Change the account key.
+     */
     @Test
     @Ignore // TODO PEBBLE: missing
     public void testKeyChange() throws AcmeException {
@@ -150,6 +191,9 @@ public class AccountIT extends PebbleITBase {
         assertThat(newAccount.getStatus(), is(Status.VALID));
     }
 
+    /**
+     * Deactivate an account.
+     */
     @Test
     @Ignore // TODO PEBBLE: missing
     public void testDeactivate() throws AcmeException {
