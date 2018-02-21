@@ -24,6 +24,14 @@ _acme4j_ is available at Maven Central. Just add this snippet to your `pom.xml`:
 </dependency>
 ```
 
+For Gradle:
+
+```groovy
+dependencies {
+    compile group: '${project.groupId}', name: '${project.artifactId}-client', version: '${project.version}'
+}
+```
+
 There is also an optional utility module that will help you handling key pairs and certificates (but requires [Bouncy Castle](https://www.bouncycastle.org/java.html)):
 
 ```xml
@@ -34,4 +42,12 @@ There is also an optional utility module that will help you handling key pairs a
 </dependency>
 ```
 
-Now just have a look at [this source code](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/ClientTest.java) to see an example usage.
+For Gradle:
+
+```groovy
+dependencies {
+    compile group: '${project.groupId}', name: '${project.artifactId}-utils', version: '${project.version}'
+}
+```
+
+Now just have a look at [this source code](./acme4j-example/apidocs/src-html/org/shredzone/acme4j/ClientTest.html) to see an example usage.

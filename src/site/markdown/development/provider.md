@@ -3,13 +3,13 @@
 Basically, it is possible to connect to any kind of ACME server just by connecting to the URL of its directory resource:
 
 ```java
-Session session = new Session("https://acme-v02.api.letsencrypt.org/directory", accountKeyPair);
+Session session = new Session("https://acme-v02.api.letsencrypt.org/directory");
 ```
 
 ACME providers are "plug-ins" to _acme4j_ that are specialized on a single CA. For example, the _Let's Encrypt_ provider offers URIs that are much easier to remember. The example above would look like this:
 
 ```java
-Session session = new Session("acme://letsencrypt.org", accountKeyPair);
+Session session = new Session("acme://letsencrypt.org");
 ```
 
 ## Writing your own Provider
@@ -21,7 +21,7 @@ However, it is also possible to adapt the behavior of wide parts of _acme4j_ to 
 A client provider implements the [`AcmeProvider`](../apidocs/org/shredzone/acme4j/provider/AcmeProvider.html) interface, but usually it is easier to extend [`AbstractAcmeProvider`](../apidocs/org/shredzone/acme4j/provider/AbstractAcmeProvider.html) and implement only these two methods:
 
 * `accepts(URI)` checks if the client provider is accepting the provided URI. Usually it would be an URI like `acme://example.com`. Note that the `http` and `https` schemes are reserved for the generic provider and cannot be used by other providers.
-* `resolve(URI)` parses that URI and returns the corresponding URL of the directory service.
+* `resolve(URI)` parses the URI and returns the corresponding URL of the directory service.
 
 The `AcmeProvider` implementation needs to be registered with Java's `ServiceLoader`. In the `META-INF/services` path of your project, create a file `org.shredzone.acme4j.provider.AcmeProvider` and write the fully qualified class name of your implementation into that file.
 
@@ -37,7 +37,7 @@ The standard Java mechanisms are used to verify the HTTPS certificate provided b
 
 If your ACME server provides challenges that are not specified in the ACME protocol, there should be an own `Challenge` implementation for each of your challenge, by extending the [`Challenge`](../apidocs/org/shredzone/acme4j/challenge/Challenge.html) class.
 
-In your `AcmeProvider` implementation, override the `createChallenge(Session, JSON)` method so it returns a new instance of your `Challenge` implementation when your individual challenge type is requested. All other types should be delegated to the super method.
+In your `AcmeProvider` implementation, override the `createChallenge(Login, JSON)` method so it returns a new instance of your `Challenge` implementation when your individual challenge type is requested. All other types should be delegated to the super method.
 
 ## Amended Directory Service
 
@@ -45,7 +45,9 @@ To override single entries of an ACME server's directory, or to use a static dir
 
 ## Adding your Provider to _acme4j_
 
-After you completed your provider code, you can send in a pull request and have it added to the _acme4j_ code base, if these preconditions are met:
+After you completed your provider code, you can send in a pull request and apply for inclusion in the _acme4j_ code base.
+
+These preconditions must be met:
 
 * Your provider's source code must be published under the terms of [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 * The source code of your ACME server must be publicly available under an [OSI compliant license](https://opensource.org/licenses/alphabetical).

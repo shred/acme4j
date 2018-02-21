@@ -182,10 +182,10 @@
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <version>3.0.0</version>
                 <configuration>
-                    <charset>UTF-8</charset>
                     <detectLinks>true</detectLinks>
                     <doclint>syntax,reference</doclint>
                     <linksource>true</linksource>
+                    <locale>en</locale>
                 </configuration>
             </plugin>
         </plugins>

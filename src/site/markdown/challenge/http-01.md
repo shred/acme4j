@@ -9,11 +9,12 @@ Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
 
 String token = challenge.getToken();
 String content = challenge.getAuthorization();
+String domain = auth.getDomain();
 ```
 
 `token` is the name of the file that will be requested by the CA server. It must contain the `content` string, without any leading or trailing white spaces or line breaks. The `Content-Type` header must be either `text/plain` or absent.
 
-The expected path is (assuming that `${domain}` is your domain and `${token}` is the token):
+The expected path is (assuming that `${domain}` is the domain to be authorized, and `${token}` is the token):
 
 ```
 http://${domain}/.well-known/acme-challenge/${token}
@@ -21,4 +22,6 @@ http://${domain}/.well-known/acme-challenge/${token}
 
 The challenge is completed when the CA was able to download that file and found `content` in it.
 
-> __Note:__ The request is sent to port 80 only. If your domain has multiple IP addresses, the CA randomly selects one of them. There is no way to choose a different port or a fixed IP address.
+<div class="alert alert-info" role="alert">
+The request is sent to port 80 only. If your domain has multiple IP addresses, the CA randomly selects one of them. There is no way to choose a different port or a fixed IP address.
+</div>

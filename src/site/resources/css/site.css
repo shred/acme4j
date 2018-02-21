@@ -1,0 +1,20 @@
+.alert {
+  border: none;
+  padding: 5px 10px;
+}
+
+.alert-info {
+  border-left: 10px solid #3a87ad;
+}
+
+.alert-warning {
+  border-left: 10px solid #c09853;
+}
+
+.alert-danger {
+  border-left: 10px solid #b94a48;
+}
+
+.alert p {
+  margin: 0;
+}

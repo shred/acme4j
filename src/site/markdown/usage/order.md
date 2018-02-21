@@ -2,7 +2,7 @@
 
 Once you have your account set up, you are ready to order certificates.
 
-Use your `Account` object to order the certificate, by using the `newOrder()` method. It returns an OrderBuilder object that helps you to collect the parameters of the order. You can give one or more domain names. Optionally you can also give your desired `notBefore` and `notAfter` dates for the generated certificate, but it is at the discretion of the CA to use (or ignore) these values.
+Use your `Account` object to order the certificate, by using the `newOrder()` method. It returns an `OrderBuilder` object that helps you to collect the parameters of the order. You can give one or more domain names. Optionally you can also give your desired `notBefore` and `notAfter` dates for the generated certificate, but it is at the discretion of the CA to use (or ignore) these values.
 
 ```java
 Account account = ... // your Account object
@@ -13,13 +13,25 @@ Order order = account.newOrder()
         .create();
 ```
 
-The `Order` resource contains a collection of `Authorization`s that can be read from the `getAuthorizations()` method. You must process _all of them_ in order to get the certificate.
+<div class="alert alert-info" role="alert">
+The number of domains per certificate may be limited. See your CA's documentation for the limits.
+</div>
+
+The `Order` resource contains a collection of `Authorization`s that can be read from the `getAuthorizations()` method. You must process _all of them_ in order to get the certificate, except those with a `VALID` status.
+
+```java
+for (Authorization auth : order.getAuthorizations()) {
+  if (auth.getStatus() != Status.VALID) {
+    processAuth(auth);
+  }
+}
+```
 
 ## Process an Authorization
 
 The `Authorization` instance contains further details about how you can prove ownership of your domain. An ACME server offers combinations of different authorization methods, called `Challenge`s.
 
-`getChallenges()` returns a collection of all `Challenge`s offered by the CA for domain ownership validation. You only need to use _one_ of them to successfully authorize your domain.
+`getChallenges()` returns a collection of all `Challenge`s offered by the CA for domain ownership validation. You only need to complete _one_ of them to successfully authorize your domain.
 
 The simplest way is to invoke `findChallenge()`, stating the challenge type your system is able to provide:
 
@@ -37,30 +49,32 @@ After you have performed the necessary steps to set up the response to the chall
 challenge.trigger();
 ```
 
-Now you have to wait for the server to test your response and set the challenge status to `VALID`. The easiest (but admittedly also the ugliest) way is to poll the status:
+Now you have to wait for the server to test your response and set the authorization status to `VALID` or `INVALID`. The easiest (but admittedly also the ugliest) way is to poll the status:
 
 ```java
-while (challenge.getStatus() != Status.VALID) {
-    Thread.sleep(3000L);
-    challenge.update();
+while (auth.getStatus() != Status.VALID) {
+  Thread.sleep(3000L);
+  auth.update();
 }
 ```
 
-This is a very simple example. You should limit the number of loop iterations, and always abort the loop when the status should turn to `INVALID`. If you know when the CA server actually requested your response (e.g. when you notice a HTTP request on the response file), you should start polling after that event.
+This is a very simple example. You should limit the number of loop iterations, and also handle the case that the status could turn to `INVALID`. If you know when the CA server actually requested your response (e.g. when you notice a HTTP request on the response file), you should start polling after that event.
 
-The CA server may start the validation immediately after `trigger()` is invoked, so make sure your server is ready to respond to requests before invoking `trigger()`. Otherwise the challenge might fail.
+The CA server may start the validation immediately after `trigger()` is invoked, so make sure your server is ready to respond to requests before invoking `trigger()`. Otherwise the challenge might fail immediately.
 
-`update()` may throw an `AcmeRetryAfterException`, giving an estimated instant in `getRetryAfter()` when the challenge is completed. You should then wait until that moment has been reached, before trying again. The state of your `Challenge` instance is still updated when this exception is thrown.
+`update()` may throw an `AcmeRetryAfterException`, giving an estimated instant in `getRetryAfter()` when the authorization is completed. You should then wait until that moment has been reached, before trying again. The state of the `Authorization` instance is still updated when this exception is thrown.
 
-When the challenge status is `VALID`, you have successfully authorized your domain.
+When the authorization status is `VALID`, you have successfully authorized your domain.
 
 ## Finalize the Order
 
-After successfully completing all authorizations, the order needs to be finalized by a PKCS#10 CSR file. A single domain may be set as _Common Name_. Multiple domains must be provided as _Subject Alternative Name_. You must provide exactly the domains that you had passed to the `order()` method above, otherwise the finalization will fail. It depends on the CA if other CSR properties (_Organization_, _Organization Unit_ etc.) are accepted. Some may require these properties to be set, while others may ignore them when generating the certificate.
+After successfully completing all authorizations, the order needs to be finalized by providing PKCS#10 CSR file. A single domain may be set as _Common Name_. Multiple domains must be provided as _Subject Alternative Name_. You must provide exactly the domains that you had passed to the `order()` method above, otherwise the finalization will fail. It depends on the CA if other CSR properties (_Organization_, _Organization Unit_ etc.) are accepted. Some may require these properties to be set, while others may ignore them when generating the certificate.
 
 CSR files can be generated with command line tools like `openssl`. Unfortunately the standard Java does not offer classes for that, so you'd have to resort to [Bouncy Castle](http://www.bouncycastle.org/java.html) if you want to create a CSR programmatically. In the `acme4j-utils` module, there is a [`CSRBuilder`](../apidocs/org/shredzone/acme4j/util/CSRBuilder.html) for your convenience. You can also use [`KeyPairUtils`](../apidocs/org/shredzone/acme4j/util/KeyPairUtils.html) for generating a new key pair for your domain.
 
-> __Important:__ Do not just use your account key pair as domain key pair, but always generate separate key pairs!
+<div class="alert alert-info" role="alert">
+Do not just use your account key pair as domain key pair, but always generate separate key pairs!
+</div>
 
 ```java
 KeyPair domainKeyPair = ... // KeyPair to be used for HTTPS encryption
@@ -86,11 +100,14 @@ After that, finalize the order:
 order.execute(csr);
 ```
 
-> __Note:__ The number of domains per certificate may be limited. See your CA's documentation for the limits.
-
 ## Wildcard Certificates
 
 You can also generate a wildcard certificate that is valid for all subdomains of a domain, by prefixing the domain name with `*.` (e.g. `*.example.org`). The domain itself is not covered by the wildcard certificate, and also needs to be added to the order if necessary.
+
+<div class="alert alert-info" role="alert">
+
+_acme4j_ accepts all kind of wildcard notations (e.g. `www.*.example.org`, `*.*.example.org`). However, those notations are not specified and may be rejected by your CA.
+</div>
 
 You must be able to prove ownership of the domain that you want to order a wildcard certificate for. The corresponding `Authorization` resource only refers to that domain, and does not contain the wildcard notation.
 
@@ -108,13 +125,16 @@ csrb.addDomain("example.org");    // example.org itself, if necessary
 csrb.addDomain("*.example.org");  // wildcard for all subdomains
 csrb.sign(domainKeyPair);
 byte[] csr = csrb.getEncoded();
+
+order.execute(csr);
 ```
 
 In the subsequent authorization process, you would have to prove ownership of the `example.org` domain.
 
-> __Note:__ Some CAs may reject wildcard certificate orders, may only offer a limited set of `Challenge`s, or may involve `Challenge`s that are not documented here. Refer to your CA's documentation to find out about the wildcard certificate policy.
+<div class="alert alert-info" role="alert">
 
-> __Note:__ _acme4j_ accepts all kind of wildcard notations (e.g. `www.*.example.org`, `*.*.example.org`.). However, those notations are not specified and may be rejected by your CA.
+Some CAs may reject wildcard certificate orders, may only offer a limited set of `Challenge`s, or may involve `Challenge`s that are not documented here. Refer to your CA's documentation to find out about the wildcard certificate policy.
+</div>
 
 ## Pre-Authorize a Domain
 
@@ -124,10 +144,13 @@ It is possible to pro-actively authorize a domain. This can be useful to find ou
 Account account = ... // your Account object
 String domain = ...   // Domain name to authorize
 
-Authorization auth = account.preAuthorizeDomain(String domain);
+Authorization auth = account.preAuthorizeDomain(domain);
 ```
 
-> __Note:__ Some CAs may not offer domain pre-authorization. `preAuthorizeDomain()` will then fail and throw an exception.
+<div class="alert alert-info" role="alert">
+
+Some CAs may not offer domain pre-authorization. `preAuthorizeDomain()` will then fail and throw an `AcmeException`.
+</div>
 
 ## Deactivate an Authorization
 
@@ -137,42 +160,6 @@ It is possible to deactivate an `Authorization`, for example if you sell the ass
 auth.deactivate();
 ```
 
-## Restore a Challenge
-
-Validating a challenge can take a considerable amount of time and is a candidate for asynchronous execution. This can be a problem if you need to keep the `Challenge` object for a later time or a different Java environment.
-
-To recreate a `Challenge` object at a later time, all you need is to store the original object's `location` property:
-
-```java
-Challenge originalChallenge = ... // some Challenge instance
-URL challengeUrl = originalChallenge.getLocation();
-```
-
-Later, you restore the `Challenge` object by invoking `Challenge.bind()`.
-
-```java
-URL challengeUrl = ... // challenge URL
-Challenge restoredChallenge = Challenge.bind(session, challengeUrl);
-```
-
-The `restoredChallenge` already reflects the current state of the challenge.
-
-You can also restore `Order` and `Authorization` objects at a later execution:
-
-```java
-// Get the location URL
-Order originalOrder = ... // your Order instance
-URL orderUrl = originalOrder.getLocation();
-
-// Restore the order
-Order restoredOrder = Order.bind(session, orderUrl);
-```
-
-```java
-// Get the location URL
-Authorization originalAuthorization = ... // your Authorization instance
-URL authorizationUrl = originalAuthorization.getLocation();
-
-// Restore the order
-Authorization restoredAuthorization = Authorization.bind(session, authorizationUrl);
-```
+<div class="alert alert-info" role="alert">
+It is not documented if the deactivation of an authorization also revokes the related certificate. If the certificate should be revoked, revoke it manually before deactivation.
+</div>

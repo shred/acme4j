@@ -20,13 +20,20 @@ To run this server, you can use the Docker image mentioned above. You could also
 
 The `BammBammClient` class can be used to set the challenge responses and DNS records via the REST interface on port 14001.
 
-Note that _BammBamm_ has its main focus on simplicity, and is only meant as a server for integration test purposes. Do not use _Bammbamm_ in production environments! It is neither hardened, nor feature complete.
+<div class="alert alert-danger" role="alert">
+
+Do not use _Bammbamm_ in production environments! It has its main focus on simplicity, and is only meant as a server for integration test purposes. It is neither hardened, nor feature complete.
+</div>
 
 ## Boulder
 
 It is also possible to run some tests against the [Boulder](https://github.com/letsencrypt/boulder) ACME server, but the setup is a little tricky.
 
-First, build and start the integration test Docker servers as [explained above](#Integration_Tests). When the servers are started, find out the IP address of the _BammBamm_ server (`docker inspect bammbamm -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'`). You'll need it in the next step.
+First, build and start the integration test Docker servers as [explained above](#Integration_Tests). When the servers are started, find out the IP address of the _BammBamm_ server:
+
+```bash
+docker inspect bammbamm -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
+```
 
 Now set up a Docker instance of Boulder. Follow the instructions in the [Boulder README](https://github.com/letsencrypt/boulder#quickstart). When you are ready to start it, set the `FAKE_DNS` env variable to the IP address of _BammBamm_ you have found before.
 

@@ -6,7 +6,9 @@ With the `dns-01` challenge, you prove to the CA that you are able to control th
 
 ```java
 Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
+
 String digest = challenge.getDigest();
+String domain = auth.getDomain();
 ```
 
 The CA expects a TXT record at `_acme-challenge.${domain}` with the `digest` string as value.

@@ -1,49 +1,36 @@
 # Creating a Session
 
-Central part of the communication is a [`Session`](../apidocs/org/shredzone/acme4j/Session.html) object, which contains the URI of the target ACME server, and your account key pair. The ACME server identifies your account by your public key, and verifies that your requests are signed with a matching private key. Your private key is _never_ transferred to the ACME server!
+Central part of the communication is a [`Session`](../apidocs/org/shredzone/acme4j/Session.html) object. A session is used to track the communication with the ACME server.
 
-The first step is to create a `Session` instance. The `Session` tracks the communication with your account at the ACME server. If you want to access multiple accounts, you will need a separate `Session` instance for each of them.
-
-```java
-KeyPair keyPair = ... // your key pair
-URI acmeServerUri = ... // uri of the ACME server
-
-Session session = new Session(acmeServerUri, keyPair);
-```
-
-The `Session` constructor expects the URI of the ACME server's directory service, as it is documented by the CA. For example, this is how to connect to the _Let's Encrypt_ staging server:
+The first step is to create a `Session` instance. The `Session` constructor expects the URI of the ACME server's directory service, as it is documented by the CA. For example, this is how to connect to the _Let's Encrypt_ staging server:
 
 ```java
 Session session
-    = new Session("https://acme-staging.api.letsencrypt.org/directory", keyPair);
+    = new Session("https://acme-staging-v02.api.letsencrypt.org/directory");
 ```
 
-However, such an URI is hard to remember and might even change in the future. Also, Java accepts the certificate used by the _Let's Encrypt_ server since JDK 8u101, calls to their servers are likely to throw a certificate exception on older versions.
-
-For this reason, special ACME URIs should be preferred:
+However, such an URI is hard to remember and might even change in the future. For this reason, special ACME URIs should be preferred:
 
 ```java
-Session session = new Session("acme://letsencrypt.org/staging", keyPair);
+Session session = new Session("acme://letsencrypt.org/staging");
 ```
 
-Instead of a generic provider, this call uses a special _Let's Encrypt_ provider that also accepts the _Let's Encrypt_ certificate.
+Instead of a generic provider, this call uses a special _Let's Encrypt_ provider.
 
-Now that you have a `Session` object, you can use it to bind ACME resource objects. For example, this is the way to get an `Account` object to an existing account:
+## Metadata
+
+Some CAs provide metadata related to their ACME server:
 
 ```java
-URL accountLocationUrl = ... // your account's URL, as returned by Account.getLocation()
-
-Account account = Account.bind(session, accountLocationUrl);
+Metadata meta = session.getMetadata();
+URI tos = meta.getTermsOfService();
+URL website = meta.getWebsite();
 ```
 
-You can create any of the resource objects `Account`, `Authorization`, `Challenge`, `Certificate` and `Order` like that, as long as you know the corresponding resource URL. To get the resource URL, use the `getLocation()` method.
+`meta` is never `null`, even if the server did not provide any metadata. All of the `Metadata` getters are optional though, and may return `null` if the respective information was not provided by the server.
 
-## Serialization
+## Locale
 
-All resource objects are serializable, so the current state of the object can be frozen by Java's serialization mechanism.
+`Session.setLocale()` allows to select a different locale. Errors will be returned in that language, if supported by the CA.
 
-However the `Session` the object is bound with is _not_ serialized! This is because the `Session` object contains a copy of your private key. Not serializing it prevents that you unintentionally reveal your private key in a place with lowered access restrictions.
-
-This means that a deserialized object is not bound to a `Session` yet. It is required to rebind it to a `Session`, by invoking its `rebind()` method.
-
-Serialization is only meant for short term storage at runtime, not for long term persistence. Do not share serialized data between different versions of _acme4j_.
+By default, the system's default locale is used.

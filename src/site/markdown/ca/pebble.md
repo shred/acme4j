@@ -10,4 +10,4 @@ This ACME provider can be used to connect to a local Pebble server instance, mai
 * `acme://pebble/pebble.example.com` - Connect to a Pebble server at `pebble.example.com` and standard port 14000.
 * `acme://pebble/pebble.example.com:12345` - Connect to a Pebble server at `pebble.example.com` and port 12345.
 
-Pebble contains an integrated web server that only accepts HTTP connections, so HTTPS connections are not supported by this provider.
+Pebble uses a self-signed certificate for HTTPS connections. The Pebble provider accepts this certificate.

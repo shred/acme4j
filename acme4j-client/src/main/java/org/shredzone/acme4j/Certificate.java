@@ -54,6 +54,10 @@ public class Certificate extends AcmeResource {
 
     /**
      * Downloads the certificate chain.
+     * <p>
+     * The certificate is downloaded lazily by the other methods. So usually there is no
+     * need to invoke this method, unless the download is to be enforced. If the
+     * certificate has been downloaded already, nothing will happen.
      *
      * @throws AcmeException
      *             if the certificate could not be downloaded

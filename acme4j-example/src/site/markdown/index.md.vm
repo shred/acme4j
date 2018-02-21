@@ -16,4 +16,4 @@ You can also invoke the example tool via maven:
 mvn exec:java -Dexec.args="example.com example.org"
 ```
 
-Or just have a look at [the source code](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/ClientTest.java).
+Or just have a look at [the source code](./apidocs/src-html/org/shredzone/acme4j/ClientTest.html).
