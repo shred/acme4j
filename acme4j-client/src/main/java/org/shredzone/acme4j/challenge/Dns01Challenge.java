@@ -15,7 +15,7 @@ package org.shredzone.acme4j.challenge;
 
 import static org.shredzone.acme4j.toolbox.AcmeUtils.*;
 
-import org.shredzone.acme4j.Session;
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.toolbox.JSON;
 
 /**
@@ -32,13 +32,13 @@ public class Dns01Challenge extends TokenChallenge {
     /**
      * Creates a new generic {@link Dns01Challenge} object.
      *
-     * @param session
-     *            {@link Session} to bind to.
+     * @param login
+     *            {@link Login} the resource is bound with
      * @param data
      *            {@link JSON} challenge data
      */
-    public Dns01Challenge(Session session, JSON data) {
-        super(session, data);
+    public Dns01Challenge(Login login, JSON data) {
+        super(login, data);
     }
 
     /**

@@ -29,6 +29,7 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
+import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
  * Unit tests for {@link OrderBuilder}.
@@ -36,7 +37,7 @@ import org.shredzone.acme4j.toolbox.JSONBuilder;
 public class OrderBuilderTest {
 
     private URL resourceUrl  = url("http://example.com/acme/resource");
-    private URL locationUrl  = url("http://example.com/acme/account");
+    private URL locationUrl  = url(TestUtils.ACCOUNT_URL);
 
     /**
      * Test that a new {@link Order} can be created.
@@ -48,10 +49,10 @@ public class OrderBuilderTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("requestOrderRequest").toString()));
-                assertThat(session, is(notNullValue()));
+                assertThat(login, is(notNullValue()));
                 return HttpURLConnection.HTTP_CREATED;
             }
 
@@ -66,11 +67,11 @@ public class OrderBuilderTest {
             }
         };
 
-        Session session = provider.createSession();
+        Login login = provider.createLogin();
 
         provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
 
-        Account account = new Account(session, locationUrl);
+        Account account = new Account(login);
         Order order = account.newOrder()
                         .domains("example.com", "www.example.com")
                         .domain("example.org")

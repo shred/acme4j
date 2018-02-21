@@ -41,6 +41,7 @@ import org.jose4j.base64url.Base64Url;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -153,23 +154,29 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public int sendSignedRequest(URL url, JSONBuilder claims, Session session) throws AcmeException {
-        return sendSignedRequest(url, claims, session, false);
+    public int sendSignedRequest(URL url, JSONBuilder claims, Login login) throws AcmeException {
+        return sendSignedRequest(url, claims, login.getSession(), login.getKeyPair(), login.getAccountLocation());
     }
 
     @Override
-    public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
+    public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair)
+                throws AcmeException {
+        return sendSignedRequest(url, claims, session, keypair, null);
+    }
+
+    private int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair, URL accountLocation)
                 throws AcmeException {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(claims, "claims");
         Objects.requireNonNull(session, "session");
+        Objects.requireNonNull(keypair, "keypair");
         assertConnectionIsClosed();
 
         AcmeException lastException = null;
 
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             try {
-                return performRequest(url, claims, session, enforceJwk);
+                return performRequest(url, claims, session, keypair, accountLocation);
             } catch (AcmeServerException ex) {
                 if (!BAD_NONCE_ERROR.equals(ex.getType())) {
                     throw ex;
@@ -245,7 +252,7 @@ public class DefaultConnection implements Connection {
 
         String nonceHeader = conn.getHeaderField(REPLAY_NONCE_HEADER);
         if (nonceHeader == null || nonceHeader.trim().isEmpty()) {
-            return null;
+            return null; //NOSONAR: consistent with other getters
         }
 
         if (!BASE64URL_PATTERN.matcher(nonceHeader).matches()) {
@@ -291,17 +298,16 @@ public class DefaultConnection implements Connection {
      *            {@link JSONBuilder} containing claims. Must not be {@code null}.
      * @param session
      *            {@link Session} instance to be used for signing and tracking
-     * @param enforceJwk
-     *            {@code true} to enforce a "jwk" header field even if a KeyIdentifier is
-     *            set, {@code false} to choose between "kid" and "jwk" header field
-     *            automatically
+     * @param keypair
+     *            {@link KeyPair} to be used for signing
+     * @param accountLocation
+     *            If set, the account location is set as "kid" header. If {@code null},
+     *            the public key is set as "jwk" header.
      * @return HTTP 200 class status that was returned
      */
-    private int performRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
+    private int performRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair, URL accountLocation)
                 throws AcmeException {
         try {
-            KeyPair keypair = session.getKeyPair();
-
             if (session.getNonce() == null) {
                 resetNonce(session);
             }
@@ -319,10 +325,10 @@ public class DefaultConnection implements Connection {
             jws.setPayload(claims.toString());
             jws.getHeaders().setObjectHeaderValue("nonce", Base64Url.encode(session.getNonce()));
             jws.getHeaders().setObjectHeaderValue("url", url);
-            if (enforceJwk || session.getAccountLocation() == null) {
+            if (accountLocation == null) {
                 jws.getHeaders().setJwkHeaderValue("jwk", jwk);
             } else {
-                jws.getHeaders().setObjectHeaderValue("kid", session.getAccountLocation());
+                jws.getHeaders().setObjectHeaderValue("kid", accountLocation);
             }
 
             jws.setAlgorithmHeaderValue(keyAlgorithm(jwk));

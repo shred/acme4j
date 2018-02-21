@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
@@ -35,7 +36,7 @@ import org.shredzone.acme4j.toolbox.TestUtils;
  * of {@link Connection} that is always returned on {@link #connect()}.
  */
 public class TestableConnectionProvider extends DummyConnection implements AcmeProvider {
-    private final Map<String, BiFunction<Session, JSON, Challenge>> creatorMap = new HashMap<>();
+    private final Map<String, BiFunction<Login, JSON, Challenge>> creatorMap = new HashMap<>();
     private final Map<String, Challenge> createdMap = new HashMap<>();
     private final JSONBuilder directory = new JSONBuilder();
 
@@ -59,7 +60,7 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
      * @param creator
      *            Creator {@link BiFunction} that creates a matching {@link Challenge}
      */
-    public void putTestChallenge(String type, BiFunction<Session, JSON, Challenge> creator) {
+    public void putTestChallenge(String type, BiFunction<Login, JSON, Challenge> creator) {
         creatorMap.put(type, creator);
     }
 
@@ -80,8 +81,16 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
     /**
      * Creates a {@link Session} that uses this {@link AcmeProvider}.
      */
-    public Session createSession() throws IOException {
+    public Session createSession() {
         return TestUtils.session(this);
+    }
+
+    /**
+     * Creates a {@link Login} that uses this {@link AcmeProvider}.
+     */
+    public Login createLogin() throws IOException {
+        Session session = createSession();
+        return session.login(new URL(TestUtils.ACCOUNT_URL), TestUtils.createKeyPair());
     }
 
     @Override
@@ -108,7 +117,7 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
     }
 
     @Override
-    public Challenge createChallenge(Session session, JSON data) {
+    public Challenge createChallenge(Login login, JSON data) {
         if (creatorMap.isEmpty()) {
             throw new UnsupportedOperationException();
         }
@@ -117,9 +126,9 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
 
         String type = data.get("type").asString();
         if (creatorMap.containsKey(type)) {
-            created = creatorMap.get(type).apply(session, data);
+            created = creatorMap.get(type).apply(login, data);
         } else {
-            created = new Challenge(session, data);
+            created = new Challenge(login, data);
         }
 
         createdMap.put(type, created);

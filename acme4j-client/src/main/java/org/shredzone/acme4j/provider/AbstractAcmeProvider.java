@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
@@ -40,7 +41,7 @@ import org.shredzone.acme4j.toolbox.JSON;
  */
 public abstract class AbstractAcmeProvider implements AcmeProvider {
 
-    private static final Map<String, BiFunction<Session, JSON, Challenge>> CHALLENGES = challengeMap();
+    private static final Map<String, BiFunction<Login, JSON, Challenge>> CHALLENGES = challengeMap();
 
     @Override
     public Connection connect() {
@@ -62,8 +63,8 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
         }
     }
 
-    private static Map<String, BiFunction<Session, JSON, Challenge>> challengeMap() {
-        Map<String, BiFunction<Session, JSON, Challenge>> map = new HashMap<>();
+    private static Map<String, BiFunction<Login, JSON, Challenge>> challengeMap() {
+        Map<String, BiFunction<Login, JSON, Challenge>> map = new HashMap<>();
 
         map.put(Dns01Challenge.TYPE, Dns01Challenge::new);
         map.put(Http01Challenge.TYPE, Http01Challenge::new);
@@ -81,21 +82,21 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
      * are unique to the provider.
      */
     @Override
-    public Challenge createChallenge(Session session, JSON data) {
-        Objects.requireNonNull(session, "session");
+    public Challenge createChallenge(Login login, JSON data) {
+        Objects.requireNonNull(login, "login");
         Objects.requireNonNull(data, "data");
 
         String type = data.get("type").required().asString();
 
-        BiFunction<Session, JSON, Challenge> constructor = CHALLENGES.get(type);
+        BiFunction<Login, JSON, Challenge> constructor = CHALLENGES.get(type);
         if (constructor != null) {
-            return constructor.apply(session, data);
+            return constructor.apply(login, data);
         }
 
         if (data.contains("token")) {
-            return new TokenChallenge(session, data);
+            return new TokenChallenge(login, data);
         } else {
-            return new Challenge(session, data);
+            return new Challenge(login, data);
         }
     }
 

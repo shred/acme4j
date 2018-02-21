@@ -38,23 +38,8 @@ public class Authorization extends AcmeJsonResource {
     private static final long serialVersionUID = -3116928998379417741L;
     private static final Logger LOG = LoggerFactory.getLogger(Authorization.class);
 
-    protected Authorization(Session session, URL location) {
-        super(session);
-        setLocation(location);
-    }
-
-    /**
-     * Creates a new instance of {@link Authorization} and binds it to the
-     * {@link Session}.
-     *
-     * @param session
-     *            {@link Session} to be used
-     * @param location
-     *            Location of the Authorization
-     * @return {@link Authorization} bound to the session and location
-     */
-    public static Authorization bind(Session session, URL location) {
-        return new Authorization(session, location);
+    protected Authorization(Login login, URL location) {
+        super(login, location);
     }
 
     /**
@@ -90,13 +75,13 @@ public class Authorization extends AcmeJsonResource {
      * Gets a list of all challenges offered by the server.
      */
     public List<Challenge> getChallenges() {
-        Session session = getSession();
+        Login login = getLogin();
 
         return Collections.unmodifiableList(getJSON().get("challenges")
                     .asArray()
                     .stream()
                     .map(Value::asObject)
-                    .map(session::createChallenge)
+                    .map(login::createChallenge)
                     .collect(toList()));
     }
 
@@ -124,11 +109,11 @@ public class Authorization extends AcmeJsonResource {
      */
     public void deactivate() throws AcmeException {
         LOG.debug("deactivate");
-        try (Connection conn = getSession().provider().connect()) {
+        try (Connection conn = connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.put("status", "deactivated");
 
-            conn.sendSignedRequest(getLocation(), claims, getSession());
+            conn.sendSignedRequest(getLocation(), claims, getLogin());
 
             setJSON(conn.readJsonResponse());
         }

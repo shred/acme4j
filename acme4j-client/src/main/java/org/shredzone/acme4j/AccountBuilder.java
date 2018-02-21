@@ -18,6 +18,7 @@ import static org.shredzone.acme4j.toolbox.AcmeUtils.macKeyAlgorithm;
 
 import java.net.URI;
 import java.net.URL;
+import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,7 @@ public class AccountBuilder {
     private Boolean termsOfServiceAgreed;
     private Boolean onlyExisting;
     private String keyIdentifier;
+    private KeyPair keyPair;
     private SecretKey macKey;
 
     /**
@@ -111,6 +113,18 @@ public class AccountBuilder {
     }
 
     /**
+     * Sets the {@link KeyPair} to be used for this account.
+     *
+     * @param keyPair
+     *            Account's {@link KeyPair}
+     * @return itself
+     */
+    public AccountBuilder useKeyPair(KeyPair keyPair) {
+        this.keyPair = requireNonNull(keyPair, "keyPair");
+        return this;
+    }
+
+    /**
      * Sets a Key Identifier and MAC key provided by the CA. Use this if your CA requires
      * an individual account identification, e.g. your customer number.
      *
@@ -120,7 +134,7 @@ public class AccountBuilder {
      *            MAC key
      * @return itself
      */
-    public AccountBuilder useKeyIdentifier(String kid, SecretKey macKey) {
+    public AccountBuilder withKeyIdentifier(String kid, SecretKey macKey) {
         if (kid != null && kid.isEmpty()) {
             throw new IllegalArgumentException("kid must not be empty");
         }
@@ -139,9 +153,9 @@ public class AccountBuilder {
      *            Base64url encoded MAC key. It will be decoded for your convenience.
      * @return itself
      */
-    public AccountBuilder useKeyIdentifier(String kid, String encodedMacKey) {
+    public AccountBuilder withKeyIdentifier(String kid, String encodedMacKey) {
         byte[] encodedKey = AcmeUtils.base64UrlDecode(requireNonNull(encodedMacKey, "encodedMacKey"));
-        return useKeyIdentifier(kid, new HmacKey(encodedKey));
+        return withKeyIdentifier(kid, new HmacKey(encodedKey));
     }
 
     /**
@@ -152,11 +166,26 @@ public class AccountBuilder {
      * @return {@link Account} referring to the new account
      */
     public Account create(Session session) throws AcmeException {
-        LOG.debug("create");
+        return createLogin(session).getAccount();
+    }
 
-        if (session.getAccountLocation() != null) {
-            throw new IllegalArgumentException("session already seems to have an Account");
+    /**
+     * Creates a new account.
+     * <p>
+     * This method returns a ready to use {@link Login} for the new {@link Account}.
+     *
+     * @param session
+     *            {@link Session} to be used for registration
+     * @return {@link Login} referring to the new account
+     */
+    public Login createLogin(Session session) throws AcmeException {
+        requireNonNull(session, "session");
+
+        if (keyPair == null) {
+            throw new IllegalStateException("Use AccountBuilder.useKeyPair() to set the account's key pair.");
         }
+
+        LOG.debug("create");
 
         try (Connection conn = session.provider().connect()) {
             URL resourceUrl = session.resourceUrl(Resource.NEW_ACCOUNT);
@@ -170,19 +199,19 @@ public class AccountBuilder {
             }
             if (keyIdentifier != null) {
                 claims.put("externalAccountBinding", createExternalAccountBinding(
-                        keyIdentifier, session.getKeyPair().getPublic(), macKey, resourceUrl));
+                        keyIdentifier, keyPair.getPublic(), macKey, resourceUrl));
             }
             if (onlyExisting != null) {
                 claims.put("onlyReturnExisting", onlyExisting);
             }
 
-            conn.sendSignedRequest(resourceUrl, claims, session, true);
+            conn.sendSignedRequest(resourceUrl, claims, session, keyPair);
 
             URL location = conn.getLocation();
 
-            Account account = new Account(session, location);
-            account.setJSON(conn.readJsonResponse());
-            return account;
+            Login login = new Login(location, keyPair, session);
+            login.getAccount().setJSON(conn.readJsonResponse());
+            return login;
         }
     }
 

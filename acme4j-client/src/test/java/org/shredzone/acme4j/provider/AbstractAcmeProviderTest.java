@@ -24,6 +24,7 @@ import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
@@ -120,7 +121,7 @@ public class AbstractAcmeProviderTest {
      */
     @Test
     public void testCreateChallenge() {
-        Session session = mock(Session.class);
+        Login login = mock(Login.class);
 
         AbstractAcmeProvider provider = new AbstractAcmeProvider() {
             @Override
@@ -134,14 +135,14 @@ public class AbstractAcmeProviderTest {
             }
         };
 
-        Challenge c1 = provider.createChallenge(session, getJSON("httpChallenge"));
+        Challenge c1 = provider.createChallenge(login, getJSON("httpChallenge"));
         assertThat(c1, not(nullValue()));
         assertThat(c1, instanceOf(Http01Challenge.class));
 
-        Challenge c2 = provider.createChallenge(session, getJSON("httpChallenge"));
+        Challenge c2 = provider.createChallenge(login, getJSON("httpChallenge"));
         assertThat(c2, not(sameInstance(c1)));
 
-        Challenge c3 = provider.createChallenge(session, getJSON("dnsChallenge"));
+        Challenge c3 = provider.createChallenge(login, getJSON("dnsChallenge"));
         assertThat(c3, not(nullValue()));
         assertThat(c3, instanceOf(Dns01Challenge.class));
 
@@ -149,7 +150,7 @@ public class AbstractAcmeProviderTest {
                     .put("type", "foobar-01")
                     .put("url", "https://example.com/some/challenge")
                     .toJSON();
-        Challenge c6 = provider.createChallenge(session, json6);
+        Challenge c6 = provider.createChallenge(login, json6);
         assertThat(c6, not(nullValue()));
         assertThat(c6, instanceOf(Challenge.class));
 
@@ -158,7 +159,7 @@ public class AbstractAcmeProviderTest {
                         .put("token", "abc123")
                         .put("url", "https://example.com/some/challenge")
                         .toJSON();
-        Challenge c7 = provider.createChallenge(session, json7);
+        Challenge c7 = provider.createChallenge(login, json7);
         assertThat(c7, not(nullValue()));
         assertThat(c7, instanceOf(TokenChallenge.class));
 
@@ -166,14 +167,14 @@ public class AbstractAcmeProviderTest {
             JSON json8 = new JSONBuilder()
                         .put("url", "https://example.com/some/challenge")
                         .toJSON();
-            provider.createChallenge(session, json8);
+            provider.createChallenge(login, json8);
             fail("Challenge without type was accepted");
         } catch (AcmeProtocolException ex) {
             // expected
         }
 
         try {
-            provider.createChallenge(session, null);
+            provider.createChallenge(login, null);
             fail("null was accepted");
         } catch (NullPointerException ex) {
             // expected

@@ -17,6 +17,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ServiceLoader;
 
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
@@ -77,13 +78,13 @@ public interface AcmeProvider {
     /**
      * Creates a {@link Challenge} instance for the given challenge data.
      *
-     * @param session
-     *            {@link Session} to bind the challenge to
+     * @param login
+     *            {@link Login} to bind the challenge to
      * @param data
      *            Challenge {@link JSON} data
      * @return {@link Challenge} instance, or {@code null} if this provider is unable to
      *         generate a matching {@link Challenge} instance.
      */
-    Challenge createChallenge(Session session, JSON data);
+    Challenge createChallenge(Login login, JSON data);
 
 }

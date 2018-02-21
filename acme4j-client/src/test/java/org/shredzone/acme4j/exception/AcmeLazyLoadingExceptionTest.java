@@ -21,7 +21,7 @@ import java.net.URL;
 
 import org.junit.Test;
 import org.shredzone.acme4j.AcmeResource;
-import org.shredzone.acme4j.Session;
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
@@ -33,8 +33,8 @@ public class AcmeLazyLoadingExceptionTest {
 
     @Test
     public void testAcmeLazyLoadingException() {
-        Session session = mock(Session.class);
-        AcmeResource resource = new TestResource(session, resourceUrl);
+        Login login = mock(Login.class);
+        AcmeResource resource = new TestResource(login, resourceUrl);
 
         AcmeException cause = new AcmeException("Something went wrong");
 
@@ -50,9 +50,8 @@ public class AcmeLazyLoadingExceptionTest {
     private static class TestResource extends AcmeResource {
         private static final long serialVersionUID = 1023419539450677538L;
 
-        public TestResource(Session session, URL location) {
-            super(session);
-            setLocation(location);
+        public TestResource(Login login, URL location) {
+            super(login, location);
         }
     }
 

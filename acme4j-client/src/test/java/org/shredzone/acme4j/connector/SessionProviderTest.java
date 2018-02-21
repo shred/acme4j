@@ -16,20 +16,17 @@ package org.shredzone.acme4j.connector;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
-import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.security.KeyPair;
 import java.util.ServiceLoader;
 
-import org.junit.Before;
 import org.junit.Test;
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.toolbox.JSON;
-import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
  * Unit tests for {@link Session#provider()}. Requires that both enclosed
@@ -38,20 +35,13 @@ import org.shredzone.acme4j.toolbox.TestUtils;
  */
 public class SessionProviderTest {
 
-    private KeyPair keyPair;
-
-    @Before
-    public void setup() throws IOException {
-        keyPair = TestUtils.createKeyPair();
-    }
-
     /**
      * There are no testing providers accepting {@code acme://example.org}. Test that
      * connecting to this URI will result in an {@link IllegalArgumentException}.
      */
     @Test(expected = IllegalArgumentException.class)
     public void testNone() throws Exception {
-        new Session(new URI("acme://example.org"), keyPair).provider();
+        new Session(new URI("acme://example.org")).provider();
     }
 
     /**
@@ -60,7 +50,7 @@ public class SessionProviderTest {
      */
     @Test
     public void testConnectURI() throws Exception {
-        Session session = new Session(new URI("acme://example.com"), keyPair);
+        Session session = new Session(new URI("acme://example.com"));
 
         AcmeProvider provider = session.provider();
         assertThat(provider, is(instanceOf(Provider1.class)));
@@ -76,7 +66,7 @@ public class SessionProviderTest {
      */
     @Test(expected = IllegalArgumentException.class)
     public void testDuplicate() throws Exception {
-        new Session(new URI("acme://example.net"), keyPair).provider();
+        new Session(new URI("acme://example.net")).provider();
     }
 
     public static class Provider1 implements AcmeProvider {
@@ -103,7 +93,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public Challenge createChallenge(Session session, JSON data) {
+        public Challenge createChallenge(Login login, JSON data) {
             throw new UnsupportedOperationException();
         }
     }
@@ -131,7 +121,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public Challenge createChallenge(Session session, JSON data) {
+        public Challenge createChallenge(Login login, JSON data) {
             throw new UnsupportedOperationException();
         }
     }

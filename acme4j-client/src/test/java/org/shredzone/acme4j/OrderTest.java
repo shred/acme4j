@@ -62,9 +62,9 @@ public class OrderTest {
             }
         };
 
-        Session session = provider.createSession();
+        Login login = provider.createLogin();
 
-        Order order = new Order(session, locationUrl);
+        Order order = new Order(login, locationUrl);
         order.update();
 
         assertThat(order.getStatus(), is(Status.PENDING));
@@ -116,9 +116,9 @@ public class OrderTest {
             }
         };
 
-        Session session = provider.createSession();
+        Login login = provider.createLogin();
 
-        Order order = new Order(session, locationUrl);
+        Order order = new Order(login, locationUrl);
 
         // Lazy loading
         assertThat(requestWasSent.get(), is(false));
@@ -151,10 +151,10 @@ public class OrderTest {
             }
 
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 assertThat(url, is(finalizeUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("finalizeRequest").toString()));
-                assertThat(session, is(notNullValue()));
+                assertThat(login, is(notNullValue()));
                 isFinalized = true;
                 return HttpURLConnection.HTTP_OK;
             }
@@ -170,9 +170,9 @@ public class OrderTest {
             }
         };
 
-        Session session = provider.createSession();
+        Login login = provider.createLogin();
 
-        Order order = new Order(session, locationUrl);
+        Order order = new Order(login, locationUrl);
         order.execute(csr);
 
         assertThat(order.getStatus(), is(Status.VALID));

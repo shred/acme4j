@@ -19,7 +19,6 @@ import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -28,8 +27,8 @@ import java.time.Duration;
 import java.time.Instant;
 
 import org.jose4j.lang.JoseException;
-import org.junit.Before;
 import org.junit.Test;
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
@@ -45,51 +44,14 @@ import org.shredzone.acme4j.toolbox.TestUtils;
  * Unit tests for {@link Challenge}.
  */
 public class ChallengeTest {
-    private Session session;
     private URL locationUrl = url("https://example.com/acme/some-location");
-
-    @Before
-    public void setup() throws IOException {
-        session = TestUtils.session();
-    }
-
-    /**
-     * Test that a challenge is properly restored.
-     */
-    @Test
-    public void testChallenge() throws Exception {
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
-            @Override
-            public void sendRequest(URL url, Session session) {
-                assertThat(url, is(locationUrl));
-            }
-
-            @Override
-            public JSON readJsonResponse() {
-                return getJSON("updateHttpChallengeResponse");
-            }
-        };
-
-        Session session = provider.createSession();
-
-        provider.putTestChallenge(Http01Challenge.TYPE, Http01Challenge::new);
-
-        Http01Challenge challenge = Challenge.bind(session, locationUrl);
-
-        assertThat(challenge.getType(), is(Http01Challenge.TYPE));
-        assertThat(challenge.getStatus(), is(Status.VALID));
-        assertThat(challenge.getLocation(), is(locationUrl));
-        assertThat(challenge.getToken(), is("IlirfxKKXAsHtmzK29Pj8A"));
-
-        provider.close();
-    }
 
     /**
      * Test that after unmarshaling, the challenge properties are set correctly.
      */
     @Test
     public void testUnmarshal() throws URISyntaxException {
-        Challenge challenge = new Challenge(session, getJSON("genericChallenge"));
+        Challenge challenge = new Challenge(TestUtils.login(), getJSON("genericChallenge"));
 
         // Test unmarshalled values
         assertThat(challenge.getType(), is("generic-01"));
@@ -113,7 +75,7 @@ public class ChallengeTest {
      */
     @Test
     public void testRespond() throws JoseException {
-        Challenge challenge = new Challenge(session, getJSON("genericChallenge"));
+        Challenge challenge = new Challenge(TestUtils.login(), getJSON("genericChallenge"));
 
         JSONBuilder response = new JSONBuilder();
         challenge.prepareResponse(response);
@@ -126,7 +88,7 @@ public class ChallengeTest {
      */
     @Test(expected = AcmeProtocolException.class)
     public void testNotAcceptable() throws URISyntaxException {
-        new Http01Challenge(session, getJSON("dnsChallenge"));
+        new Http01Challenge(TestUtils.login(), getJSON("dnsChallenge"));
     }
 
     /**
@@ -136,10 +98,10 @@ public class ChallengeTest {
     public void testTrigger() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 assertThat(url, is(locationUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("triggerHttpChallengeRequest").toString()));
-                assertThat(session, is(notNullValue()));
+                assertThat(login, is(notNullValue()));
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -149,9 +111,9 @@ public class ChallengeTest {
             }
         };
 
-        Session session = provider.createSession();
+        Login login = provider.createLogin();
 
-        Http01Challenge challenge = new Http01Challenge(session, getJSON("triggerHttpChallenge"));
+        Http01Challenge challenge = new Http01Challenge(login, getJSON("triggerHttpChallenge"));
 
         challenge.trigger();
 
@@ -183,9 +145,9 @@ public class ChallengeTest {
             }
         };
 
-        Session session = provider.createSession();
+        Login login = provider.createLogin();
 
-        Challenge challenge = new Http01Challenge(session, getJSON("triggerHttpChallengeResponse"));
+        Challenge challenge = new Http01Challenge(login, getJSON("triggerHttpChallengeResponse"));
 
         challenge.update();
 
@@ -220,9 +182,9 @@ public class ChallengeTest {
             }
         };
 
-        Session session = provider.createSession();
+        Login login = provider.createLogin();
 
-        Challenge challenge = new Http01Challenge(session, getJSON("triggerHttpChallengeResponse"));
+        Challenge challenge = new Http01Challenge(login, getJSON("triggerHttpChallengeResponse"));
 
         try {
             challenge.update();
@@ -238,54 +200,11 @@ public class ChallengeTest {
     }
 
     /**
-     * Test that null is handled properly.
-     */
-    @Test
-    public void testNullChallenge() throws Exception {
-        try {
-            Challenge.bind(session, null);
-            fail("locationUri accepts null");
-        } catch (NullPointerException ex) {
-            // expected
-        }
-
-        try {
-            Challenge.bind(null, locationUrl);
-            fail("session accepts null");
-        } catch (NullPointerException ex) {
-            // expected
-        }
-    }
-
-    /**
-     * Test that an exception is thrown on a bad location URL.
-     */
-    @Test(expected = IllegalArgumentException.class)
-    public void testBadBind() throws Exception {
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
-            @Override
-            public void sendRequest(URL url, Session session) {
-                assertThat(url, is(locationUrl));
-            }
-
-            @Override
-            public JSON readJsonResponse() {
-                return getJSON("updateAccountResponse");
-            }
-        };
-
-        Session session = provider.createSession();
-        Challenge.bind(session, locationUrl);
-
-        provider.close();
-    }
-
-    /**
      * Test that unmarshalling something different like a challenge fails.
      */
     @Test(expected = AcmeProtocolException.class)
     public void testBadUnmarshall() {
-        new Challenge(session, getJSON("updateAccountResponse"));
+        new Challenge(TestUtils.login(), getJSON("updateAccountResponse"));
     }
 
 }

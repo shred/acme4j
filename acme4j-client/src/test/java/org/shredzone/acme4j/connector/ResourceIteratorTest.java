@@ -30,6 +30,7 @@ import java.util.NoSuchElementException;
 import org.junit.Before;
 import org.junit.Test;
 import org.shredzone.acme4j.Authorization;
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
@@ -158,11 +159,11 @@ public class ResourceIteratorTest {
             }
         };
 
-        Session session = provider.createSession();
+        Login login = provider.createLogin();
 
         provider.close();
 
-        return new ResourceIterator<>(session, TYPE, first, Authorization::bind);
+        return new ResourceIterator<>(login, TYPE, first, Login::bindAuthorization);
     }
 
 }

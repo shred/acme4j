@@ -26,13 +26,9 @@ import java.time.Instant;
 
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
-import org.shredzone.acme4j.challenge.Challenge;
-import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
-import org.shredzone.acme4j.toolbox.JSON;
-import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
@@ -45,44 +41,25 @@ public class SessionTest {
      */
     @Test
     public void testConstructor() throws IOException {
-        KeyPair keyPair = TestUtils.createKeyPair();
         URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
 
         try {
-            new Session((URI) null, null);
+            new Session((URI) null);
             fail("accepted null parameters in constructor");
         } catch (NullPointerException ex) {
             // expected
         }
 
-        try {
-            new Session(serverUri, null);
-            fail("accepted null parameters in constructor");
-        } catch (NullPointerException ex) {
-            // expected
-        }
-
-        try {
-            new Session((URI) null, keyPair);
-            fail("accepted null parameters in constructor");
-        } catch (NullPointerException ex) {
-            // expected
-        }
-
-        Session session = new Session(serverUri, keyPair);
+        Session session = new Session(serverUri);
         assertThat(session, not(nullValue()));
         assertThat(session.getServerUri(), is(serverUri));
-        assertThat(session.getKeyPair(), is(keyPair));
-        assertThat(session.getAccountLocation(), is(nullValue()));
 
-        Session session2 = new Session("https://example.com/acme", keyPair);
+        Session session2 = new Session(TestUtils.ACME_SERVER_URI);
         assertThat(session2, not(nullValue()));
         assertThat(session2.getServerUri(), is(serverUri));
-        assertThat(session2.getKeyPair(), is(keyPair));
-        assertThat(session2.getAccountLocation(), is(nullValue()));
 
         try {
-            new Session("#*aBaDuRi*#", keyPair);
+            new Session("#*aBaDuRi*#");
             fail("accepted bad URI in constructor");
         } catch (IllegalArgumentException ex) {
             // expected
@@ -94,64 +71,34 @@ public class SessionTest {
      */
     @Test
     public void testGettersAndSetters() throws IOException {
-        KeyPair kp1 = TestUtils.createKeyPair();
-        KeyPair kp2 = TestUtils.createDomainKeyPair();
         URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
-        URL accountUrl = TestUtils.url(TestUtils.ACME_SERVER_URI + "/acct/1");
 
-        Session session = new Session(serverUri, kp1);
+        Session session = new Session(serverUri);
 
         assertThat(session.getNonce(), is(nullValue()));
         byte[] data = "foo-nonce-bar".getBytes();
         session.setNonce(data);
         assertThat(session.getNonce(), is(equalTo(data)));
 
-        assertThat(session.getKeyPair(), is(kp1));
-        session.setKeyPair(kp2);
-        assertThat(session.getKeyPair(), is(kp2));
-
-        assertThat(session.getAccountLocation(), is(nullValue()));
-        session.setAccountLocation(accountUrl);
-        assertThat(session.getAccountLocation(), is(accountUrl));
-
         assertThat(session.getServerUri(), is(serverUri));
     }
 
     /**
-     * Test if challenges are correctly created via provider.
+     * Test login methods.
      */
     @Test
-    public void testCreateChallenge() throws IOException {
-        KeyPair keyPair = TestUtils.createKeyPair();
+    public void testLogin() throws IOException {
         URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
-        String challengeType = Http01Challenge.TYPE;
-        URL challengeUrl = new URL("https://example.com/acme/authz/0");
+        URL accountLocation = url(TestUtils.ACCOUNT_URL);
+        KeyPair accountKeyPair = TestUtils.createKeyPair();
 
-        JSON data = new JSONBuilder()
-                        .put("type", challengeType)
-                        .put("url", challengeUrl)
-                        .toJSON();
+        Session session = new Session(serverUri);
 
-        Http01Challenge mockChallenge = mock(Http01Challenge.class);
-        final AcmeProvider mockProvider = mock(AcmeProvider.class);
-
-        when(mockProvider.createChallenge(
-                        ArgumentMatchers.any(Session.class),
-                        ArgumentMatchers.eq(data)))
-                .thenReturn(mockChallenge);
-
-        Session session = new Session(serverUri, keyPair) {
-            @Override
-            public AcmeProvider provider() {
-                return mockProvider;
-            };
-        };
-
-        Challenge challenge = session.createChallenge(data);
-        assertThat(challenge, is(instanceOf(Http01Challenge.class)));
-        assertThat(challenge, is(sameInstance((Challenge) mockChallenge)));
-
-        verify(mockProvider).createChallenge(session, data);
+        Login login = session.login(accountLocation, accountKeyPair);
+        assertThat(login, is(notNullValue()));
+        assertThat(login.getSession(), is(session));
+        assertThat(login.getAccountLocation(), is(accountLocation));
+        assertThat(login.getKeyPair(), is(accountKeyPair));
     }
 
     /**
@@ -159,7 +106,6 @@ public class SessionTest {
      */
     @Test
     public void testDirectory() throws AcmeException, IOException {
-        KeyPair keyPair = TestUtils.createKeyPair();
         URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
 
         final AcmeProvider mockProvider = mock(AcmeProvider.class);
@@ -168,7 +114,7 @@ public class SessionTest {
                         ArgumentMatchers.eq(serverUri)))
                 .thenReturn(getJSON("directory"));
 
-        Session session = new Session(serverUri, keyPair) {
+        Session session = new Session(serverUri) {
             @Override
             public AcmeProvider provider() {
                 return mockProvider;
@@ -197,7 +143,6 @@ public class SessionTest {
      */
     @Test
     public void testNoMeta() throws AcmeException, IOException {
-        KeyPair keyPair = TestUtils.createKeyPair();
         URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
 
         final AcmeProvider mockProvider = mock(AcmeProvider.class);
@@ -206,7 +151,7 @@ public class SessionTest {
                         ArgumentMatchers.eq(serverUri)))
                 .thenReturn(getJSON("directoryNoMeta"));
 
-        Session session = new Session(serverUri, keyPair) {
+        Session session = new Session(serverUri) {
             @Override
             public AcmeProvider provider() {
                 return mockProvider;

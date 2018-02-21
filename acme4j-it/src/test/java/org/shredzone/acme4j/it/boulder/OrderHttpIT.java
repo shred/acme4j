@@ -53,11 +53,12 @@ public class OrderHttpIT {
      */
     @Test
     public void testHttpValidation() throws Exception {
+        Session session = new Session(boulderURI());
         KeyPair keyPair = createKeyPair();
-        Session session = new Session(boulderURI(), keyPair);
 
         Account account = new AccountBuilder()
                     .agreeToTermsOfService()
+                    .useKeyPair(keyPair)
                     .create(session);
 
         KeyPair domainKeyPair = createKeyPair();

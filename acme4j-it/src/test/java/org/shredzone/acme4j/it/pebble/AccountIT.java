@@ -24,6 +24,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.AccountBuilder;
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -41,25 +42,29 @@ public class AccountIT extends PebbleITBase {
     @Test
     public void testCreate() throws AcmeException {
         KeyPair keyPair = createKeyPair();
-        Session session = new Session(pebbleURI(), keyPair);
+        Session session = new Session(pebbleURI());
 
         // Register a new user
-        AccountBuilder ab = new AccountBuilder();
-        ab.addContact("mailto:acme@example.com");
-        ab.agreeToTermsOfService();
+        Login login = new AccountBuilder()
+                        .addContact("mailto:acme@example.com")
+                        .agreeToTermsOfService()
+                        .useKeyPair(keyPair)
+                        .createLogin(session);
 
-        Account acct = ab.create(session);
-        URL location = acct.getLocation();
+        URL location = login.getAccountLocation();
         assertIsPebbleUrl(location);
-        assertThat(session.getAccountLocation(), is(location));
 
         // Check registered data
+        Account acct = login.getAccount();
+        assertThat(acct.getLocation(), is(location));
         assertThat(acct.getContacts(), contains(URI.create("mailto:acme@example.com")));
         assertThat(acct.getStatus(), is(Status.VALID));
 
         // Bind another Account object
-        Session session2 = new Session(pebbleURI(), keyPair);
-        Account acct2 = Account.bind(session2, location);
+        Session session2 = new Session(pebbleURI());
+        Login login2 = new Login(location, keyPair, session2);
+        assertThat(login2.getAccountLocation(), is(location));
+        Account acct2 = login2.getAccount();
         assertThat(acct2.getLocation(), is(location));
         assertThat(acct2.getContacts(), contains(URI.create("mailto:acme@example.com")));
         assertThat(acct2.getStatus(), is(Status.VALID));
@@ -73,21 +78,25 @@ public class AccountIT extends PebbleITBase {
         KeyPair keyPair = createKeyPair();
 
         // Register a new user
-        Session session1 = new Session(pebbleURI(), keyPair);
-        Account acct1 = new AccountBuilder()
+        Session session1 = new Session(pebbleURI());
+        Login login1 = new AccountBuilder()
                         .addContact("mailto:acme@example.com")
                         .agreeToTermsOfService()
-                        .create(session1);
-        URL location1 = acct1.getLocation();
+                        .useKeyPair(keyPair)
+                        .createLogin(session1);
+
+        URL location1 = login1.getAccountLocation();
         assertIsPebbleUrl(location1);
 
         // Try to register the same account again
-        Session session2 = new Session(pebbleURI(), keyPair);
-        Account acct2 = new AccountBuilder()
+        Session session2 = new Session(pebbleURI());
+        Login login2 = new AccountBuilder()
                         .addContact("mailto:acme@example.com")
                         .agreeToTermsOfService()
-                        .create(session2);
-        URL location2 = acct2.getLocation();
+                        .useKeyPair(keyPair)
+                        .createLogin(session2);
+
+        URL location2 = login2.getAccountLocation();
         assertIsPebbleUrl(location2);
 
         assertThat(location1, is(location2));
@@ -100,21 +109,23 @@ public class AccountIT extends PebbleITBase {
     public void testCreateOnlyExisting() throws AcmeException {
         KeyPair keyPair = createKeyPair();
 
-        Session session1 = new Session(pebbleURI(), keyPair);
-        Account acct1 = new AccountBuilder()
+        Session session1 = new Session(pebbleURI());
+        Login login1 = new AccountBuilder()
                         .agreeToTermsOfService()
-                        .create(session1);
-        URL location1 = acct1.getLocation();
-        assertIsPebbleUrl(location1);
-        assertThat(session1.getAccountLocation(), is(location1));
+                        .useKeyPair(keyPair)
+                        .createLogin(session1);
 
-        Session session2 = new Session(pebbleURI(), keyPair);
-        Account acct2 = new AccountBuilder()
+        URL location1 = login1.getAccountLocation();
+        assertIsPebbleUrl(location1);
+
+        Session session2 = new Session(pebbleURI());
+        Login login2 = new AccountBuilder()
                         .onlyExisting()
-                        .create(session2);
-        URL location2 = acct2.getLocation();
+                        .useKeyPair(keyPair)
+                        .createLogin(session2);
+
+        URL location2 = login2.getAccountLocation();
         assertIsPebbleUrl(location2);
-        assertThat(session2.getAccountLocation(), is(location2));
 
         assertThat(location1, is(location2));
     }
@@ -127,8 +138,8 @@ public class AccountIT extends PebbleITBase {
     public void testNotExisting() throws AcmeException {
         try {
             KeyPair keyPair = createKeyPair();
-            Session session = new Session(pebbleURI(), keyPair);
-            new AccountBuilder().onlyExisting().create(session);
+            Session session = new Session(pebbleURI());
+            new AccountBuilder().onlyExisting().useKeyPair(keyPair).create(session);
             fail("onlyExisting flag was ignored");
         } catch (AcmeServerException ex) {
             assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:accountDoesNotExist")));
@@ -141,11 +152,12 @@ public class AccountIT extends PebbleITBase {
     @Test
     public void testModify() throws AcmeException {
         KeyPair keyPair = createKeyPair();
-        Session session = new Session(pebbleURI(), keyPair);
+        Session session = new Session(pebbleURI());
 
         Account acct = new AccountBuilder()
                         .addContact("mailto:acme@example.com")
                         .agreeToTermsOfService()
+                        .useKeyPair(keyPair)
                         .create(session);
         URL location = acct.getLocation();
         assertIsPebbleUrl(location);
@@ -170,24 +182,27 @@ public class AccountIT extends PebbleITBase {
     @Ignore // TODO PEBBLE: missing
     public void testKeyChange() throws AcmeException {
         KeyPair keyPair = createKeyPair();
-        Session session = new Session(pebbleURI(), keyPair);
+        Session session = new Session(pebbleURI());
 
-        Account acct = new AccountBuilder().agreeToTermsOfService().create(session);
+        Account acct = new AccountBuilder()
+                        .agreeToTermsOfService()
+                        .useKeyPair(keyPair)
+                        .create(session);
         URL location = acct.getLocation();
 
         KeyPair newKeyPair = createKeyPair();
         acct.changeKey(newKeyPair);
 
         try {
-            Session sessionOldKey = new Session(pebbleURI(), keyPair);
-            Account oldAccount = Account.bind(sessionOldKey, location);
+            Session sessionOldKey = new Session(pebbleURI());
+            Account oldAccount = sessionOldKey.login(location, keyPair).getAccount();
             oldAccount.update();
         } catch (AcmeUnauthorizedException ex) {
             // Expected
         }
 
-        Session sessionNewKey = new Session(pebbleURI(), newKeyPair);
-        Account newAccount = Account.bind(sessionNewKey, location);
+        Session sessionNewKey = new Session(pebbleURI());
+        Account newAccount = sessionNewKey.login(location, newKeyPair).getAccount();
         assertThat(newAccount.getStatus(), is(Status.VALID));
     }
 
@@ -198,15 +213,18 @@ public class AccountIT extends PebbleITBase {
     @Ignore // TODO PEBBLE: missing
     public void testDeactivate() throws AcmeException {
         KeyPair keyPair = createKeyPair();
-        Session session = new Session(pebbleURI(), keyPair);
+        Session session = new Session(pebbleURI());
 
-        Account acct = new AccountBuilder().agreeToTermsOfService().create(session);
+        Account acct = new AccountBuilder()
+                        .agreeToTermsOfService()
+                        .useKeyPair(keyPair)
+                        .create(session);
         URL location = acct.getLocation();
 
         acct.deactivate();
 
-        Session session2 = new Session(pebbleURI(), keyPair);
-        Account acct2 = Account.bind(session2, location);
+        Session session2 = new Session(pebbleURI());
+        Account acct2 = session2.login(location, keyPair).getAccount();
         assertThat(acct2.getLocation(), is(location));
         assertThat(acct2.getStatus(), is(Status.DEACTIVATED));
     }

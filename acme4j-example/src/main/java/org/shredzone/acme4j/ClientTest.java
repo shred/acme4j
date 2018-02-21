@@ -77,11 +77,11 @@ public class ClientTest {
 
         // Create a session for Let's Encrypt.
         // Use "acme://letsencrypt.org" for production server
-        Session session = new Session("acme://letsencrypt.org/staging", userKeyPair);
+        Session session = new Session("acme://letsencrypt.org/staging");
 
         // Get the Account.
         // If there is no account yet, create a new one.
-        Account acct = findOrRegisterAccount(session);
+        Account acct = findOrRegisterAccount(session, userKeyPair);
 
         // Load or create a key pair for the domains. This should not be the userKeyPair!
         KeyPair domainKeyPair = loadOrCreateDomainKeyPair();
@@ -179,19 +179,22 @@ public class ClientTest {
      *
      * @param session
      *            {@link Session} to bind with
-     * @return {@link Account} connected to your account
+     * @return {@link Login} that is connected to your account
      */
-    private Account findOrRegisterAccount(Session session) throws AcmeException {
+    private Account findOrRegisterAccount(Session session, KeyPair accountKey) throws AcmeException {
         // Ask the user to accept the TOS, if server provides us with a link.
         URI tos = session.getMetadata().getTermsOfService();
         if (tos != null) {
             acceptAgreement(tos);
         }
 
-        Account acct = new AccountBuilder().agreeToTermsOfService().create(session);
-        LOG.info("Registered a new user, URL: " + acct.getLocation());
+        Account account = new AccountBuilder()
+                        .agreeToTermsOfService()
+                        .useKeyPair(accountKey)
+                        .create(session);
+        LOG.info("Registered a new user, URL: " + account.getLocation());
 
-        return acct;
+        return account;
     }
 
     /**

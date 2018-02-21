@@ -51,6 +51,7 @@ import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.keys.HmacKey;
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.provider.AcmeProvider;
@@ -70,8 +71,10 @@ public final class TestUtils {
     public static final String D_THUMBPRINT = "0VPbh7-I6swlkBu0TrNKSQp6d69bukzeQA0ksuX3FFs";
 
     public static final String ACME_SERVER_URI = "https://example.com/acme";
+    public static final String ACCOUNT_URL = "https://example.com/acme/account/1";
 
     public static final byte[] DUMMY_NONCE = "foo-nonce-foo".getBytes();
+
 
     private TestUtils() {
         // utility class without constructor
@@ -114,9 +117,20 @@ public final class TestUtils {
     /**
      * Creates a {@link Session} instance. It uses {@link #ACME_SERVER_URI} as server URI.
      */
-    public static Session session() throws IOException {
-        KeyPair keyPair = createKeyPair();
-        return new Session(URI.create(ACME_SERVER_URI), keyPair);
+    public static Session session() {
+        return new Session(URI.create(ACME_SERVER_URI));
+    }
+
+    /**
+     * Creates a {@link Login} instance. It uses {@link #ACME_SERVER_URI} as server URI,
+     * {@link #ACCOUNT_URL} as account URL, and a random key pair.
+     */
+    public static Login login() {
+        try {
+            return session().login(new URL(ACCOUNT_URL), createKeyPair());
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
+        }
     }
 
     /**
@@ -141,9 +155,8 @@ public final class TestUtils {
      * @param provider
      *            {@link AcmeProvider} to be used in this session
      */
-    public static Session session(final AcmeProvider provider) throws IOException {
-        KeyPair keyPair = createKeyPair();
-        return new Session(URI.create(ACME_SERVER_URI), keyPair) {
+    public static Session session(final AcmeProvider provider) {
+        return new Session(URI.create(ACME_SERVER_URI)) {
             @Override
             public AcmeProvider provider() {
                 return provider;

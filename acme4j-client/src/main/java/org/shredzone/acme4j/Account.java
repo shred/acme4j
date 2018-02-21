@@ -53,23 +53,8 @@ public class Account extends AcmeJsonResource {
     private static final String KEY_CONTACT = "contact";
     private static final String KEY_STATUS = "status";
 
-    protected Account(Session session, URL location) {
-        super(session);
-        setLocation(location);
-        session.setAccountLocation(location);
-    }
-
-    /**
-     * Creates a new instance of {@link Account} and binds it to the {@link Session}.
-     *
-     * @param session
-     *            {@link Session} to be used
-     * @param location
-     *            Location URI of the account
-     * @return {@link Account} bound to the session and location
-     */
-    public static Account bind(Session session, URL location) {
-        return new Account(session, location);
+    protected Account(Login login) {
+        super(login, login.getAccountLocation());
     }
 
     /**
@@ -112,14 +97,14 @@ public class Account extends AcmeJsonResource {
      */
     public Iterator<Order> getOrders() throws AcmeException {
         URL ordersUrl = getJSON().get(KEY_ORDERS).asURL();
-        return new ResourceIterator<>(getSession(), KEY_ORDERS, ordersUrl, Order::bind);
+        return new ResourceIterator<>(getLogin(), KEY_ORDERS, ordersUrl, Login::bindOrder);
     }
 
     @Override
     public void update() throws AcmeException {
         LOG.debug("update Account");
-        try (Connection conn = getSession().provider().connect()) {
-            conn.sendSignedRequest(getLocation(), new JSONBuilder(), getSession());
+        try (Connection conn = connect()) {
+            conn.sendSignedRequest(getLocation(), new JSONBuilder(), getLogin());
             setJSON(conn.readJsonResponse());
         }
     }
@@ -130,7 +115,7 @@ public class Account extends AcmeJsonResource {
      * @return {@link OrderBuilder} object
      */
     public OrderBuilder newOrder() throws AcmeException {
-        return new OrderBuilder(getSession());
+        return new OrderBuilder(getLogin());
     }
 
     /**
@@ -161,15 +146,15 @@ public class Account extends AcmeJsonResource {
         }
 
         LOG.debug("preAuthorizeDomain {}", domain);
-        try (Connection conn = getSession().provider().connect()) {
+        try (Connection conn = connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.object("identifier")
                     .put("type", "dns")
                     .put("value", toAce(domain));
 
-            conn.sendSignedRequest(newAuthzUrl, claims, getSession());
+            conn.sendSignedRequest(newAuthzUrl, claims, getLogin());
 
-            Authorization auth = new Authorization(getSession(), conn.getLocation());
+            Authorization auth = getLogin().bindAuthorization(conn.getLocation());
             auth.setJSON(conn.readJsonResponse());
             return auth;
         }
@@ -186,14 +171,14 @@ public class Account extends AcmeJsonResource {
      */
     public void changeKey(KeyPair newKeyPair) throws AcmeException {
         Objects.requireNonNull(newKeyPair, "newKeyPair");
-        if (Arrays.equals(getSession().getKeyPair().getPrivate().getEncoded(),
+        if (Arrays.equals(getLogin().getKeyPair().getPrivate().getEncoded(),
                         newKeyPair.getPrivate().getEncoded())) {
             throw new IllegalArgumentException("newKeyPair must actually be a new key pair");
         }
 
         LOG.debug("key-change");
 
-        try (Connection conn = getSession().provider().connect()) {
+        try (Connection conn = connect()) {
             URL keyChangeUrl = getSession().resourceUrl(Resource.KEY_CHANGE);
             PublicJsonWebKey newKeyJwk = PublicJsonWebKey.Factory.newPublicJwk(newKeyPair.getPublic());
 
@@ -214,9 +199,9 @@ public class Account extends AcmeJsonResource {
             outerClaim.put("signature", innerJws.getEncodedSignature());
             outerClaim.put("payload", innerJws.getEncodedPayload());
 
-            conn.sendSignedRequest(keyChangeUrl, outerClaim, getSession());
+            conn.sendSignedRequest(keyChangeUrl, outerClaim, getLogin());
 
-            getSession().setKeyPair(newKeyPair);
+            getLogin().setKeyPair(newKeyPair);
         } catch (JoseException ex) {
             throw new AcmeProtocolException("Cannot sign key-change", ex);
         }
@@ -230,11 +215,11 @@ public class Account extends AcmeJsonResource {
      */
     public void deactivate() throws AcmeException {
         LOG.debug("deactivate");
-        try (Connection conn = getSession().provider().connect()) {
+        try (Connection conn = connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.put(KEY_STATUS, "deactivated");
 
-            conn.sendSignedRequest(getLocation(), claims, getSession());
+            conn.sendSignedRequest(getLocation(), claims, getLogin());
 
             setJSON(conn.readJsonResponse());
         }
@@ -298,13 +283,13 @@ public class Account extends AcmeJsonResource {
          */
         public void commit() throws AcmeException {
             LOG.debug("modify/commit");
-            try (Connection conn = getSession().provider().connect()) {
+            try (Connection conn = connect()) {
                 JSONBuilder claims = new JSONBuilder();
                 if (!editContacts.isEmpty()) {
                     claims.put(KEY_CONTACT, editContacts);
                 }
 
-                conn.sendSignedRequest(getLocation(), claims, getSession());
+                conn.sendSignedRequest(getLocation(), claims, getLogin());
 
                 setJSON(conn.readJsonResponse());
             }

@@ -35,40 +35,19 @@ public class AcmeResourceTest {
      */
     @Test
     public void testConstructor() throws Exception {
-        Session session = TestUtils.session();
+        Login login = TestUtils.login();
         URL location = new URL("http://example.com/acme/resource");
 
         try {
-            new DummyResource(null);
-            fail("Could create resource without session");
+            new DummyResource(null, null);
+            fail("Could create resource without login and location");
         } catch (NullPointerException ex) {
             // expected
         }
 
-        AcmeResource resource = new DummyResource(session);
-        assertThat(resource.getSession(), is(session));
-
-        assertThat(resource.getLocation(), is(nullValue()));
-        resource.setLocation(location);
+        AcmeResource resource = new DummyResource(login, location);
+        assertThat(resource.getLogin(), is(login));
         assertThat(resource.getLocation(), is(location));
-
-        try {
-            resource.setLocation(null);
-            fail("Could set location to null");
-        } catch (NullPointerException ex) {
-            // expected
-        }
-
-        try {
-            resource.setSession(null);
-            fail("Could set session to null");
-        } catch (NullPointerException ex) {
-            // expected
-        }
-
-        Session session2 = TestUtils.session();
-        resource.setSession(session2);
-        assertThat(resource.getSession(), is(session2));
     }
 
     /**
@@ -76,11 +55,12 @@ public class AcmeResourceTest {
      */
     @Test
     public void testSerialization() throws Exception {
-        Session session = TestUtils.session();
+        Login login = TestUtils.login();
+        URL location = new URL("http://example.com/acme/resource");
 
         // Create a Challenge for testing
-        DummyResource challenge = new DummyResource(session);
-        assertThat(challenge.getSession(), is(session));
+        DummyResource challenge = new DummyResource(login, location);
+        assertThat(challenge.getLogin(), is(login));
 
         // Serialize it
         byte[] serialized = null;
@@ -107,19 +87,19 @@ public class AcmeResourceTest {
         }
         assertThat(restored, not(sameInstance(challenge)));
 
-        // Make sure the restored object is not attached to a session
+        // Make sure the restored object is not attached to a login
         try {
-            restored.getSession();
+            restored.getLogin();
             fail("was able to retrieve a session");
         } catch (IllegalStateException ex) {
-            // must fail because we don't have a session in the restored object
+            // must fail because we don't have a login in the restored object
         }
 
-        // Set a new session
-        restored.setSession(session);
+        // Rebind to login
+        restored.rebind(login);
 
-        // Make sure the new session is set
-        assertThat(restored.getSession(), is(session));
+        // Make sure the new login is set
+        assertThat(restored.getLogin(), is(login));
     }
 
     /**
@@ -127,12 +107,14 @@ public class AcmeResourceTest {
      */
     @Test(expected = IllegalStateException.class)
     public void testRebind() throws Exception {
-        Session session = TestUtils.session();
-        AcmeResource resource = new DummyResource(session);
-        assertThat(resource.getSession(), is(session));
+        Login login = TestUtils.login();
+        URL location = new URL("http://example.com/acme/resource");
 
-        Session session2 = TestUtils.session();
-        resource.rebind(session2); // fails to rebind to another session
+        AcmeResource resource = new DummyResource(login, location);
+        assertThat(resource.getLogin(), is(login));
+
+        Login login2 = TestUtils.login();
+        resource.rebind(login2); // fails to rebind to another login
     }
 
     /**
@@ -140,8 +122,8 @@ public class AcmeResourceTest {
      */
     private static class DummyResource extends AcmeResource {
         private static final long serialVersionUID = 7188822681353082472L;
-        public DummyResource(Session session) {
-            super(session);
+        public DummyResource(Login login, URL location) {
+            super(login, location);
         }
     }
 

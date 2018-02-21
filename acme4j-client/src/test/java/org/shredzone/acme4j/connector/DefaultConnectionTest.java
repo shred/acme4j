@@ -26,6 +26,7 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
@@ -43,6 +44,7 @@ import org.jose4j.jwx.CompactSerializer;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
@@ -64,10 +66,12 @@ import org.shredzone.acme4j.toolbox.TestUtils;
 public class DefaultConnectionTest {
 
     private URL requestUrl = TestUtils.url("http://example.com/acme/");
-    private URL accountUrl = TestUtils.url(TestUtils.ACME_SERVER_URI + "/acct/1");
+    private URL accountUrl = TestUtils.url(TestUtils.ACCOUNT_URL);
     private HttpURLConnection mockUrlConnection;
     private HttpConnector mockHttpConnection;
     private Session session;
+    private Login login;
+    private KeyPair keyPair;
 
     @Before
     public void setup() throws AcmeException, IOException {
@@ -84,11 +88,15 @@ public class DefaultConnectionTest {
 
         session = TestUtils.session(mockProvider);
         session.setLocale(Locale.JAPAN);
+
+        keyPair = TestUtils.createKeyPair();
+
+        login = session.login(accountUrl, keyPair);
     }
 
     /**
-     * Test if {@link DefaultConnection#updateSession(Session)} does nothing if there is
-     * no {@code Replay-Nonce} header.
+     * Test that {@link DefaultConnection#getNonce()} returns {@code null} if there is no
+     * {@code Replay-Nonce} header.
      */
     @Test
     public void testNoNonceFromHeader() throws AcmeException {
@@ -105,8 +113,8 @@ public class DefaultConnectionTest {
     }
 
     /**
-     * Test that {@link DefaultConnection#updateSession(Session)} extracts a
-     * {@code Replay-Nonce} header correctly.
+     * Test that {@link DefaultConnection#getNonce()} extracts a {@code Replay-Nonce}
+     * header correctly.
      */
     @Test
     public void testGetNonceFromHeader() {
@@ -123,7 +131,7 @@ public class DefaultConnectionTest {
     }
 
     /**
-     * Test that {@link DefaultConnection#updateSession(Session)} fails on an invalid
+     * Test that {@link DefaultConnection#getNonce()} fails on an invalid
      * {@code Replay-Nonce} header.
      */
     @Test
@@ -400,11 +408,10 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
         when(mockUrlConnection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
 
-        session.setAccountLocation(accountUrl);
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            int rc = conn.sendSignedRequest(requestUrl, new JSONBuilder(), session);
+            int rc = conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             assertThat(rc, is(HttpURLConnection.HTTP_OK));
         }
 
@@ -424,11 +431,10 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
         when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
 
-        session.setAccountLocation(accountUrl);
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.sendSignedRequest(requestUrl, new JSONBuilder(), session);
+            conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             fail("Expected to fail");
         } catch (AcmeUnauthorizedException ex) {
             assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:unauthorized")));
@@ -460,11 +466,10 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
         when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
 
-        session.setAccountLocation(accountUrl);
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.sendSignedRequest(requestUrl, new JSONBuilder(), session);
+            conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             fail("Expected to fail");
         } catch (AcmeUserActionRequiredException ex) {
             assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:userActionRequired")));
@@ -502,11 +507,10 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
         when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
 
-        session.setAccountLocation(accountUrl);
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.sendSignedRequest(requestUrl, new JSONBuilder(), session);
+            conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             fail("Expected to fail");
         } catch (AcmeRateLimitedException ex) {
             assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:rateLimited")));
@@ -542,7 +546,6 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getOutputStream())
                 .thenReturn(new ByteArrayOutputStream());
 
-        session.setAccountLocation(accountUrl);
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
@@ -554,7 +557,7 @@ public class DefaultConnectionTest {
                 return result.toJSON();
             };
         }) {
-            conn.sendSignedRequest(requestUrl, new JSONBuilder(), session);
+            conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             fail("Expected to fail");
         } catch (AcmeServerException ex) {
             assertThat(ex.getType(), is(URI.create("urn:zombie:error:apocalypse")));
@@ -582,7 +585,6 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getOutputStream())
                 .thenReturn(new ByteArrayOutputStream());
 
-        session.setAccountLocation(accountUrl);
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
@@ -591,7 +593,7 @@ public class DefaultConnectionTest {
                 return JSON.empty();
             };
         }) {
-            conn.sendSignedRequest(requestUrl, new JSONBuilder(), session);
+            conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             fail("Expected to fail");
         } catch (AcmeNetworkException ex) {
             fail("Did not expect an AcmeNetworkException");
@@ -618,11 +620,10 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getOutputStream())
                 .thenReturn(new ByteArrayOutputStream());
 
-        session.setAccountLocation(accountUrl);
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.sendSignedRequest(requestUrl, new JSONBuilder(), session);
+            conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             fail("Expected to fail");
         } catch (AcmeException ex) {
             assertThat(ex.getMessage(), is("HTTP 500: Infernal Server Error"));
@@ -690,8 +691,7 @@ public class DefaultConnectionTest {
         }) {
             JSONBuilder cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");
-            session.setAccountLocation(accountUrl);
-            conn.sendSignedRequest(requestUrl, cb, session);
+            conn.sendSignedRequest(requestUrl, cb, login);
         }
 
         verify(mockUrlConnection).setRequestMethod("POST");
@@ -726,7 +726,7 @@ public class DefaultConnectionTest {
 
         JsonWebSignature jws = new JsonWebSignature();
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
-        jws.setKey(session.getKeyPair().getPublic());
+        jws.setKey(login.getKeyPair().getPublic());
         assertThat(jws.verifySignature(), is(true));
     }
 
@@ -766,7 +766,7 @@ public class DefaultConnectionTest {
         }) {
             JSONBuilder cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");
-            conn.sendSignedRequest(requestUrl, cb, session, true);
+            conn.sendSignedRequest(requestUrl, cb, session, keyPair);
         }
 
         verify(mockUrlConnection).setRequestMethod("POST");
@@ -804,7 +804,7 @@ public class DefaultConnectionTest {
 
         JsonWebSignature jws = new JsonWebSignature();
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
-        jws.setKey(session.getKeyPair().getPublic());
+        jws.setKey(login.getKeyPair().getPublic());
         assertThat(jws.verifySignature(), is(true));
     }
 
@@ -820,7 +820,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             JSONBuilder cb = new JSONBuilder();
-            conn.sendSignedRequest(requestUrl, cb, DefaultConnectionTest.this.session, true);
+            conn.sendSignedRequest(requestUrl, cb, DefaultConnectionTest.this.session, DefaultConnectionTest.this.keyPair);
         }
     }
 

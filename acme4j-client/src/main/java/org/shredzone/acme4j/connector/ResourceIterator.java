@@ -22,6 +22,7 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 
 import org.shredzone.acme4j.AcmeResource;
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -36,28 +37,28 @@ import org.shredzone.acme4j.toolbox.JSON;
  */
 public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
 
-    private final Session session;
+    private final Login login;
     private final String field;
     private final Deque<URL> urlList = new ArrayDeque<>();
-    private final BiFunction<Session, URL, T> creator;
+    private final BiFunction<Login, URL, T> creator;
     private boolean eol = false;
     private URL nextUrl;
 
     /**
      * Creates a new {@link ResourceIterator}.
      *
-     * @param session
-     *            {@link Session} to bind this iterator to
+     * @param login
+     *            {@link Login} to bind this iterator to
      * @param field
      *            Field name to be used in the JSON response
      * @param start
      *            URL of the first JSON array, may be {@code null} for an empty iterator
      * @param creator
      *            Creator for an {@link AcmeResource} that is bound to the given
-     *            {@link Session} and {@link URL}.
+     *            {@link Login} and {@link URL}.
      */
-    public ResourceIterator(Session session, String field, URL start, BiFunction<Session, URL, T> creator) {
-        this.session = Objects.requireNonNull(session, "session");
+    public ResourceIterator(Login login, String field, URL start, BiFunction<Login, URL, T> creator) {
+        this.login = Objects.requireNonNull(login, "login");
         this.field = Objects.requireNonNull(field, "field");
         this.nextUrl = start;
         this.creator = Objects.requireNonNull(creator, "creator");
@@ -106,7 +107,7 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
             throw new NoSuchElementException("no more " + field);
         }
 
-        return creator.apply(session, next);
+        return creator.apply(login, next);
     }
 
     /**
@@ -138,6 +139,7 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
      * there is a "next" header, it is used for the next batch of URLs.
      */
     private void readAndQueue() throws AcmeException {
+        Session session = login.getSession();
         try (Connection conn = session.provider().connect()) {
             conn.sendRequest(nextUrl, session);
 

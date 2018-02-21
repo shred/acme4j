@@ -20,9 +20,8 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.IOException;
 
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.shredzone.acme4j.Session;
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.shredzone.acme4j.toolbox.TestUtils;
@@ -34,19 +33,14 @@ public class DnsChallengeTest {
     private static final String KEY_AUTHORIZATION =
             "pNvmJivs0WCko2suV7fhe-59oFqyYx_yB7tx6kIMAyE.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0";
 
-    private static Session session;
-
-    @BeforeClass
-    public static void setup() throws IOException {
-        session = TestUtils.session();
-    }
+    private Login login = TestUtils.login();
 
     /**
      * Test that {@link Dns01Challenge} generates a correct authorization key.
      */
     @Test
     public void testDnsChallenge() throws IOException {
-        Dns01Challenge challenge = new Dns01Challenge(session, getJSON("dnsChallenge"));
+        Dns01Challenge challenge = new Dns01Challenge(login, getJSON("dnsChallenge"));
 
         assertThat(challenge.getType(), is(Dns01Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));

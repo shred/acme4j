@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j;
 
+import java.net.URL;
 import java.util.Objects;
 
 import org.shredzone.acme4j.connector.Connection;
@@ -35,24 +36,13 @@ public abstract class AcmeJsonResource extends AcmeResource {
     /**
      * Create a new {@link AcmeJsonResource}.
      *
-     * @param session
-     *            {@link Session} the resource is bound with
+     * @param login
+     *            {@link Login} the resource is bound with
+     * @param location
+     *            Location {@link URL} of this resource
      */
-    protected AcmeJsonResource(Session session) {
-        super(session);
-    }
-
-    /**
-     * Create a new {@link AcmeJsonResource} and use the given data.
-     *
-     * @param session
-     *            {@link Session} the resource is bound with
-     * @param data
-     *            Initial {@link JSON} data
-     */
-    protected AcmeJsonResource(Session session, JSON data) {
-        super(session);
-        setJSON(data);
+    protected AcmeJsonResource(Login login, URL location) {
+        super(login, location);
     }
 
     /**
@@ -122,7 +112,7 @@ public abstract class AcmeJsonResource extends AcmeResource {
     public void update() throws AcmeException {
         String resourceType = getClass().getSimpleName();
         LOG.debug("update {}", resourceType);
-        try (Connection conn = getSession().provider().connect()) {
+        try (Connection conn = connect()) {
             conn.sendRequest(getLocation(), getSession());
             setJSON(conn.readJsonResponse());
             conn.handleRetryAfter(resourceType + " is not completed yet");

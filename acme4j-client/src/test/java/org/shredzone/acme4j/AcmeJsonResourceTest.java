@@ -15,7 +15,9 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
+import static org.shredzone.acme4j.toolbox.TestUtils.*;
+
+import java.net.URL;
 
 import org.junit.Test;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -28,16 +30,19 @@ import org.shredzone.acme4j.toolbox.TestUtils;
 public class AcmeJsonResourceTest {
 
     private static final JSON JSON_DATA = getJSON("newAccountResponse");
+    private static final URL LOCATION_URL = url("https://example.com/acme/resource/123");
 
     /**
-     * Test {@link AcmeJsonResource#AcmeJsonResource(Session)}.
+     * Test {@link AcmeJsonResource#AcmeJsonResource(Login, URL)}.
      */
     @Test
-    public void testSessionConstructor() throws Exception {
-        Session session = TestUtils.session();
+    public void testLoginConstructor() throws Exception {
+        Login login = TestUtils.login();
 
-        AcmeJsonResource resource = new DummyJsonResource(session);
-        assertThat(resource.getSession(), is(session));
+        AcmeJsonResource resource = new DummyJsonResource(login, LOCATION_URL);
+        assertThat(resource.getLogin(), is(login));
+        assertThat(resource.getSession(), is(login.getSession()));
+        assertThat(resource.getLocation(), is(LOCATION_URL));
         assertThat(resource.isValid(), is(false));
         assertUpdateInvoked(resource, 0);
 
@@ -47,29 +52,15 @@ public class AcmeJsonResourceTest {
     }
 
     /**
-     * Test {@link AcmeJsonResource#AcmeJsonResource(Session, JSON)}.
-     */
-    @Test
-    public void testSessionAndJsonConstructor() throws Exception {
-        Session session = TestUtils.session();
-
-        AcmeJsonResource resource = new DummyJsonResource(session, JSON_DATA);
-        assertThat(resource.getSession(), is(session));
-        assertThat(resource.isValid(), is(true));
-        assertThat(resource.getJSON(), is(JSON_DATA));
-        assertUpdateInvoked(resource, 0);
-    }
-
-    /**
      * Test {@link AcmeJsonResource#setJSON(JSON)}.
      */
     @Test
     public void testSetJson() throws Exception {
-        Session session = TestUtils.session();
+        Login login = TestUtils.login();
 
         JSON jsonData2 = getJSON("requestOrderResponse");
 
-        AcmeJsonResource resource = new DummyJsonResource(session);
+        AcmeJsonResource resource = new DummyJsonResource(login, LOCATION_URL);
         assertThat(resource.isValid(), is(false));
         assertUpdateInvoked(resource, 0);
 
@@ -89,13 +80,9 @@ public class AcmeJsonResourceTest {
      */
     @Test
     public void testInvalidate() throws Exception {
-        Session session = TestUtils.session();
+        Login login = TestUtils.login();
 
-        AcmeJsonResource resource = new DummyJsonResource(session, JSON_DATA);
-        assertThat(resource.isValid(), is(true));
-        assertUpdateInvoked(resource, 0);
-
-        resource.invalidate();
+        AcmeJsonResource resource = new DummyJsonResource(login, LOCATION_URL);
         assertThat(resource.isValid(), is(false));
         assertUpdateInvoked(resource, 0);
 
@@ -134,12 +121,13 @@ public class AcmeJsonResourceTest {
 
         private int updateCount = 0;
 
-        public DummyJsonResource(Session session) {
-            super(session);
+        public DummyJsonResource(Login login, URL location) {
+            super(login, location);
         }
 
-        public DummyJsonResource(Session session, JSON json) {
-            super(session, json);
+        public DummyJsonResource(Login login, URL location, JSON json) {
+            super(login, location);
+            setJSON(json);
         }
 
         @Override

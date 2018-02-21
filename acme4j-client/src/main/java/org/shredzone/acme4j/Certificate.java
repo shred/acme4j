@@ -17,7 +17,6 @@ import static java.util.Collections.unmodifiableList;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
@@ -25,7 +24,6 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BiFunction;
 
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
@@ -47,27 +45,11 @@ public class Certificate extends AcmeResource {
     private static final long serialVersionUID = 7381527770159084201L;
     private static final Logger LOG = LoggerFactory.getLogger(Certificate.class);
 
-    protected static BiFunction<URI, KeyPair, Session> revokeSessionFactory = Session::new;
-
     private ArrayList<X509Certificate> certChain = null;
     private ArrayList<URL> alternates = null;
 
-    protected Certificate(Session session, URL certUrl) {
-        super(session);
-        setLocation(certUrl);
-    }
-
-    /**
-     * Creates a new instance of {@link Certificate} and binds it to the {@link Session}.
-     *
-     * @param session
-     *            {@link Session} to be used
-     * @param location
-     *            Location of the Certificate
-     * @return {@link Certificate} bound to the session and location
-     */
-    public static Certificate bind(Session session, URL location) {
-        return new Certificate(session, location);
+    protected Certificate(Login login, URL certUrl) {
+        super(login, certUrl);
     }
 
     /**
@@ -79,7 +61,7 @@ public class Certificate extends AcmeResource {
     public void download() throws AcmeException {
         if (certChain == null) {
             LOG.debug("download");
-            try (Connection conn = getSession().provider().connect()) {
+            try (Connection conn = connect()) {
                 conn.sendRequest(getLocation(), getSession());
                 alternates = new ArrayList<>(conn.getLinks("alternate"));
                 certChain = new ArrayList<>(conn.readCertificates());
@@ -162,14 +144,14 @@ public class Certificate extends AcmeResource {
             throw new AcmeException("Server does not allow certificate revocation");
         }
 
-        try (Connection conn = getSession().provider().connect()) {
+        try (Connection conn = connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.putBase64("certificate", getCertificate().getEncoded());
             if (reason != null) {
                 claims.put("reason", reason.getReasonCode());
             }
 
-            conn.sendSignedRequest(resUrl, claims, getSession(), true);
+            conn.sendSignedRequest(resUrl, claims, getSession(), getLogin().getKeyPair());
         } catch (CertificateEncodingException ex) {
             throw new AcmeProtocolException("Invalid certificate", ex);
         }
@@ -179,8 +161,8 @@ public class Certificate extends AcmeResource {
      * Revoke a certificate. This call is meant to be used for revoking certificates if
      * the account's key pair was lost.
      *
-     * @param serverUri
-     *            {@link URI} of the ACME server
+     * @param session
+     *            {@link Session} connected to the ACME server
      * @param domainKeyPair
      *            Key pair the CSR was signed with
      * @param cert
@@ -190,10 +172,9 @@ public class Certificate extends AcmeResource {
      *            used when generating OCSP responses and CRLs. {@code null} to give no
      *            reason.
      */
-    public static void revoke(URI serverUri, KeyPair domainKeyPair, X509Certificate cert,
+    public static void revoke(Session session, KeyPair domainKeyPair, X509Certificate cert,
             RevocationReason reason) throws AcmeException {
         LOG.debug("revoke immediately");
-        Session session = revokeSessionFactory.apply(serverUri, domainKeyPair);
 
         URL resUrl = session.resourceUrl(Resource.REVOKE_CERT);
         if (resUrl == null) {
@@ -207,7 +188,7 @@ public class Certificate extends AcmeResource {
                 claims.put("reason", reason.getReasonCode());
             }
 
-            conn.sendSignedRequest(resUrl, claims, session, true);
+            conn.sendSignedRequest(resUrl, claims, session, domainKeyPair);
         } catch (CertificateEncodingException ex) {
             throw new AcmeProtocolException("Invalid certificate", ex);
         }

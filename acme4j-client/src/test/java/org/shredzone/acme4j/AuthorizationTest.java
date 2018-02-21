@@ -100,12 +100,12 @@ public class AuthorizationTest {
             }
         };
 
-        Session session = provider.createSession();
+        Login login = provider.createLogin();
 
         provider.putTestChallenge("http-01", Http01Challenge::new);
         provider.putTestChallenge("dns-01", Dns01Challenge::new);
 
-        Authorization auth = new Authorization(session, locationUrl);
+        Authorization auth = new Authorization(login, locationUrl);
         auth.update();
 
         assertThat(auth.getDomain(), is("example.org"));
@@ -145,12 +145,12 @@ public class AuthorizationTest {
             }
         };
 
-        Session session = provider.createSession();
+        Login login = provider.createLogin();
 
         provider.putTestChallenge("http-01", Http01Challenge::new);
         provider.putTestChallenge("dns-01", Dns01Challenge::new);
 
-        Authorization auth = new Authorization(session, locationUrl);
+        Authorization auth = new Authorization(login, locationUrl);
 
         // Lazy loading
         assertThat(requestWasSent.get(), is(false));
@@ -191,12 +191,12 @@ public class AuthorizationTest {
             }
         };
 
-        Session session = provider.createSession();
+        Login login = provider.createLogin();
 
         provider.putTestChallenge("http-01", Http01Challenge::new);
         provider.putTestChallenge("dns-01", Dns01Challenge::new);
 
-        Authorization auth = new Authorization(session, locationUrl);
+        Authorization auth = new Authorization(login, locationUrl);
 
         try {
             auth.update();
@@ -224,11 +224,11 @@ public class AuthorizationTest {
     public void testDeactivate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 JSON json = claims.toJSON();
                 assertThat(json.get("status").asString(), is("deactivated"));
                 assertThat(url, is(locationUrl));
-                assertThat(session, is(notNullValue()));
+                assertThat(login, is(notNullValue()));
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -238,12 +238,12 @@ public class AuthorizationTest {
             }
         };
 
-        Session session = provider.createSession();
+        Login login = provider.createLogin();
 
         provider.putTestChallenge("http-01", Http01Challenge::new);
         provider.putTestChallenge("dns-01", Dns01Challenge::new);
 
-        Authorization auth = new Authorization(session, locationUrl);
+        Authorization auth = new Authorization(login, locationUrl);
         auth.deactivate();
 
         provider.close();
@@ -254,13 +254,13 @@ public class AuthorizationTest {
      */
     private Authorization createChallengeAuthorization() throws IOException {
         try (TestableConnectionProvider provider = new TestableConnectionProvider()) {
-            Session session = provider.createSession();
+            Login login = provider.createLogin();
 
             provider.putTestChallenge(Http01Challenge.TYPE, Http01Challenge::new);
             provider.putTestChallenge(Dns01Challenge.TYPE, Dns01Challenge::new);
             provider.putTestChallenge(DUPLICATE_TYPE, Challenge::new);
 
-            Authorization authorization = new Authorization(session, locationUrl);
+            Authorization authorization = new Authorization(login, locationUrl);
             authorization.setJSON(getJSON("authorizationChallenges"));
             return authorization;
         }

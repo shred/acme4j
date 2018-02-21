@@ -55,10 +55,11 @@ public class OrderWildcardIT extends PebbleITBase {
     public void testDnsValidation() throws Exception {
         BammBammClient client = getBammBammClient();
         KeyPair keyPair = createKeyPair();
-        Session session = new Session(pebbleURI(), keyPair);
+        Session session = new Session(pebbleURI());
 
         Account account = new AccountBuilder()
                     .agreeToTermsOfService()
+                    .useKeyPair(keyPair)
                     .create(session);
 
         KeyPair domainKeyPair = createKeyPair();

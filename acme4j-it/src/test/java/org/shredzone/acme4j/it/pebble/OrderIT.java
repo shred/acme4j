@@ -98,10 +98,11 @@ public class OrderIT extends PebbleITBase {
      */
     private void orderCertificate(String domain, Validator validator) throws Exception {
         KeyPair keyPair = createKeyPair();
-        Session session = new Session(pebbleURI(), keyPair);
+        Session session = new Session(pebbleURI());
 
         Account account = new AccountBuilder()
                     .agreeToTermsOfService()
+                    .useKeyPair(keyPair)
                     .create(session);
 
         KeyPair domainKeyPair = createKeyPair();

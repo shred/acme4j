@@ -20,6 +20,7 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.KeyPair;
 
 import javax.crypto.SecretKey;
 
@@ -47,12 +48,14 @@ public class AccountBuilderTest {
      */
     @Test
     public void testRegistration() throws Exception {
+        KeyPair accountKey = TestUtils.createKeyPair();
+
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             private boolean isUpdate;
 
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
-                assertThat(session, is(notNullValue()));
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
+                assertThat(login, is(notNullValue()));
                 assertThat(url, is(locationUrl));
                 assertThat(isUpdate, is(false));
                 isUpdate = true;
@@ -60,11 +63,11 @@ public class AccountBuilderTest {
             }
 
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
                 assertThat(session, is(notNullValue()));
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("newAccount").toString()));
-                assertThat(enforceJwk, is(true));
+                assertThat(keypair, is(accountKey));
                 isUpdate = false;
                 return HttpURLConnection.HTTP_CREATED;
             }
@@ -85,22 +88,16 @@ public class AccountBuilderTest {
         AccountBuilder builder = new AccountBuilder();
         builder.addContact("mailto:foo@example.com");
         builder.agreeToTermsOfService();
+        builder.useKeyPair(accountKey);
 
         Session session = provider.createSession();
-        Account account = builder.create(session);
+        Login login = builder.createLogin(session);
 
-        assertThat(account.getLocation(), is(locationUrl));
+        assertThat(login.getAccountLocation(), is(locationUrl));
+
+        Account account = login.getAccount();
         assertThat(account.getTermsOfServiceAgreed(), is(true));
-        assertThat(session.getAccountLocation(), is(locationUrl));
-
-        try {
-            AccountBuilder builder2 = new AccountBuilder();
-            builder2.agreeToTermsOfService();
-            builder2.create(session);
-            fail("registered twice on same session");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
+        assertThat(account.getLocation(), is(locationUrl));
 
         provider.close();
     }
@@ -110,16 +107,17 @@ public class AccountBuilderTest {
      */
     @Test
     public void testRegistrationWithKid() throws Exception {
+        KeyPair accountKey = TestUtils.createKeyPair();
         String keyIdentifier = "NCC-1701";
         SecretKey macKey = TestUtils.createSecretKey("SHA-256");
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
                 try {
                     assertThat(session, is(notNullValue()));
                     assertThat(url, is(resourceUrl));
-                    assertThat(enforceJwk, is(true));
+                    assertThat(keypair, is(accountKey));
 
                     JSON binding = claims.toJSON()
                                     .get("externalAccountBinding")
@@ -170,12 +168,13 @@ public class AccountBuilderTest {
         provider.putTestResource(Resource.NEW_ACCOUNT, resourceUrl);
 
         AccountBuilder builder = new AccountBuilder();
-        builder.useKeyIdentifier(keyIdentifier, AcmeUtils.base64UrlEncode(macKey.getEncoded()));
+        builder.useKeyPair(accountKey);
+        builder.withKeyIdentifier(keyIdentifier, AcmeUtils.base64UrlEncode(macKey.getEncoded()));
 
         Session session = provider.createSession();
-        Account account = builder.create(session);
+        Login login = builder.createLogin(session);
 
-        assertThat(account.getLocation(), is(locationUrl));
+        assertThat(login.getAccountLocation(), is(locationUrl));
 
         provider.close();
     }
@@ -185,13 +184,15 @@ public class AccountBuilderTest {
      */
     @Test
     public void testOnlyExistingRegistration() throws Exception {
+        KeyPair accountKey = TestUtils.createKeyPair();
+
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
                 assertThat(session, is(notNullValue()));
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("newAccountOnlyExisting").toString()));
-                assertThat(enforceJwk, is(true));
+                assertThat(keypair, is(accountKey));
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -209,13 +210,13 @@ public class AccountBuilderTest {
         provider.putTestResource(Resource.NEW_ACCOUNT, resourceUrl);
 
         AccountBuilder builder = new AccountBuilder();
+        builder.useKeyPair(accountKey);
         builder.onlyExisting();
 
         Session session = provider.createSession();
-        Account account = builder.create(session);
+        Login login = builder.createLogin(session);
 
-        assertThat(account.getLocation(), is(locationUrl));
-        assertThat(session.getAccountLocation(), is(locationUrl));
+        assertThat(login.getAccountLocation(), is(locationUrl));
 
         provider.close();
     }

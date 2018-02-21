@@ -17,65 +17,67 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.Objects;
 
+import org.shredzone.acme4j.connector.Connection;
+
 /**
  * A generic ACME resource.
  */
 public abstract class AcmeResource implements Serializable {
     private static final long serialVersionUID = -7930580802257379731L;
 
-    private transient Session session;
-    private URL location;
+    private transient Login login;
+    private final URL location;
 
     /**
      * Create a new {@link AcmeResource}.
      *
-     * @param session
-     *            {@link Session} the resource is bound with
+     * @param login
+     *            {@link Login} the resource is bound with
      */
-    protected AcmeResource(Session session) {
-        rebind(session);
+    protected AcmeResource(Login login, URL location) {
+        this.location = Objects.requireNonNull(location, "location");
+        rebind(login);
+    }
+
+    /**
+     * Gets the {@link Login} this resource is bound with.
+     */
+    protected Login getLogin() {
+        if (login == null) {
+            throw new IllegalStateException("Use rebind() for binding this object to a login.");
+        }
+        return login;
     }
 
     /**
      * Gets the {@link Session} this resource is bound with.
      */
     protected Session getSession() {
-        if (session == null) {
-            throw new IllegalStateException("Use rebind() for binding this object to a session.");
-        }
-
-        return session;
+        return getLogin().getSession();
     }
 
     /**
-     * Sets a new {@link Session}.
+     * Opens a {@link Connection} to the provider.
      */
-    protected void setSession(Session session) {
-        this.session = Objects.requireNonNull(session, "session");
+    protected Connection connect() {
+        return getSession().provider().connect();
     }
 
     /**
-     * Sets the resource's location.
-     */
-    protected void setLocation(URL location) {
-        this.location = Objects.requireNonNull(location, "location");
-    }
-
-    /**
-     * Rebinds this resource to a {@link Session}.
+     * Rebinds this resource to a {@link Login}.
      * <p>
-     * Sessions are not serialized, because they contain volatile session data and also a
+     * Logins are not serialized, because they contain volatile session data and also a
      * private key. After de-serialization of an {@link AcmeResource}, use this method to
-     * rebind it to a {@link Session}.
+     * rebind it to a {@link Login}.
      *
-     * @param session
-     *            {@link Session} to bind this resource to
+     * @param login
+     *            {@link Login} to bind this resource to
      */
-    public void rebind(Session session) {
-        if (this.session != null) {
-            throw new IllegalStateException("Resource is already bound to a session");
+    public void rebind(Login login) {
+        if (this.login != null) {
+            throw new IllegalStateException("Resource is already bound to a login");
         }
-        setSession(session);
+        this.login = login;
     }
 
     /**

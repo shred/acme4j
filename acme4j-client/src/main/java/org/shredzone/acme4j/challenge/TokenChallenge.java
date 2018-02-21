@@ -19,7 +19,7 @@ import java.security.PublicKey;
 
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.lang.JoseException;
-import org.shredzone.acme4j.Session;
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -37,13 +37,13 @@ public class TokenChallenge extends Challenge {
     /**
      * Creates a new generic {@link TokenChallenge} object.
      *
-     * @param session
-     *            {@link Session} to bind to.
+     * @param login
+     *            {@link Login} the resource is bound with
      * @param data
      *            {@link JSON} challenge data
      */
-    public TokenChallenge(Session session, JSON data) {
-        super(session, data);
+    public TokenChallenge(Login login, JSON data) {
+        super(login, data);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class TokenChallenge extends Challenge {
      */
     protected String getAuthorization() {
         try {
-            PublicKey pk = getSession().getKeyPair().getPublic();
+            PublicKey pk = getLogin().getKeyPair().getPublic();
             PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(pk);
             return getToken()
                         + '.'

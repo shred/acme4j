@@ -18,7 +18,6 @@ import static org.junit.Assert.assertThat;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.URI;
-import java.security.KeyPair;
 
 import org.junit.Test;
 import org.shredzone.acme4j.Metadata;
@@ -31,11 +30,9 @@ import org.shredzone.acme4j.exception.AcmeException;
  */
 public class SessionIT extends PebbleITBase {
 
-    private final KeyPair keyPair = createKeyPair();
-
     @Test
     public void testNonce() throws AcmeException {
-        Session session = new Session(pebbleURI(), keyPair);
+        Session session = new Session(pebbleURI());
 
         // No nonce yet on a fresh session
         assertThat(session.getNonce(), is(nullValue()));
@@ -50,7 +47,7 @@ public class SessionIT extends PebbleITBase {
 
     @Test
     public void testResources() throws AcmeException {
-        Session session = new Session(pebbleURI(), keyPair);
+        Session session = new Session(pebbleURI());
 
         assertIsPebbleUrl(session.resourceUrl(Resource.NEW_ACCOUNT));
         assertIsPebbleUrl(session.resourceUrl(Resource.NEW_NONCE));
@@ -59,7 +56,7 @@ public class SessionIT extends PebbleITBase {
 
     @Test
     public void testMetadata() throws AcmeException {
-        Session session = new Session(pebbleURI(), keyPair);
+        Session session = new Session(pebbleURI());
 
         Metadata meta = session.getMetadata();
         assertThat(meta, not(nullValue()));

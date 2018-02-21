@@ -15,10 +15,12 @@ package org.shredzone.acme4j.connector;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.List;
 
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
@@ -52,23 +54,26 @@ public interface Connection extends AutoCloseable {
     void sendRequest(URL url, Session session) throws AcmeException;
 
     /**
-     * Sends a signed POST request. Ensures that the session has a KeyIdentifier set, and
-     * that the "kid" protected header field is used.
+     * Sends a signed POST request. Requires a {@link Login} for the session and
+     * {@link KeyPair}. The {@link Login} account location is sent in a "kid" protected
+     * header.
+     * <p>
+     * If the server does not return a 200 class status code, an {@link AcmeException} is
+     * raised matching the error.
      *
      * @param url
      *            {@link URL} to send the request to.
      * @param claims
      *            {@link JSONBuilder} containing claims. Must not be {@code null}.
-     * @param session
-     *            {@link Session} instance to be used for signing and tracking
+     * @param login
+     *            {@link Login} instance to be used for signing and tracking.
      * @return HTTP 200 class status that was returned
      */
-    int sendSignedRequest(URL url, JSONBuilder claims, Session session)
-                throws AcmeException;
+    int sendSignedRequest(URL url, JSONBuilder claims, Login login) throws AcmeException;
 
     /**
-     * Sends a signed POST request. If the session's KeyIdentifier is set, a "kid"
-     * protected header field is sent. If not, a "jwk" protected header field is sent.
+     * Sends a signed POST request. Only requires a {@link Session}. The {@link KeyPair}
+     * is sent in a "jwk" protected header field.
      * <p>
      * If the server does not return a 200 class status code, an {@link AcmeException} is
      * raised matching the error.
@@ -78,14 +83,12 @@ public interface Connection extends AutoCloseable {
      * @param claims
      *            {@link JSONBuilder} containing claims. Must not be {@code null}.
      * @param session
-     *            {@link Session} instance to be used for signing and tracking
-     * @param enforceJwk
-     *            {@code true} to enforce a "jwk" header field even if a KeyIdentifier is
-     *            set, {@code false} to choose between "kid" and "jwk" header field
-     *            automatically
+     *            {@link Session} instance to be used for tracking.
+     * @param keypair
+     *            {@link KeyPair} to be used for signing.
      * @return HTTP 200 class status that was returned
      */
-    int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
+    int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair)
                 throws AcmeException;
 
     /**

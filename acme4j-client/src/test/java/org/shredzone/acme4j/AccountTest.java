@@ -52,7 +52,7 @@ import org.shredzone.acme4j.toolbox.TestUtils;
 public class AccountTest {
 
     private URL resourceUrl  = url("http://example.com/acme/resource");
-    private URL locationUrl  = url("http://example.com/acme/account");
+    private URL locationUrl  = url(TestUtils.ACCOUNT_URL);
     private URL agreementUrl = url("http://example.com/agreement.pdf");
 
     /**
@@ -64,10 +64,10 @@ public class AccountTest {
             private JSON jsonResponse;
 
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 assertThat(url, is(locationUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("updateAccount").toString()));
-                assertThat(session, is(notNullValue()));
+                assertThat(login, is(notNullValue()));
                 jsonResponse = getJSON("updateAccountResponse");
                 return HttpURLConnection.HTTP_OK;
             }
@@ -97,11 +97,11 @@ public class AccountTest {
             }
         };
 
-        Session session = provider.createSession();
-        Account account = new Account(session, locationUrl);
+        Login login = provider.createLogin();
+        Account account = new Account(login);
         account.update();
 
-        assertThat(session.getAccountLocation(), is(locationUrl));
+        assertThat(login.getAccountLocation(), is(locationUrl));
         assertThat(account.getLocation(), is(locationUrl));
         assertThat(account.getTermsOfServiceAgreed(), is(true));
         assertThat(account.getContacts(), hasSize(1));
@@ -125,7 +125,7 @@ public class AccountTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 requestWasSent.set(true);
                 assertThat(url, is(locationUrl));
                 return HttpURLConnection.HTTP_OK;
@@ -150,7 +150,7 @@ public class AccountTest {
             }
         };
 
-        Account account = new Account(provider.createSession(), locationUrl);
+        Account account = new Account(provider.createLogin());
 
         // Lazy loading
         assertThat(requestWasSent.get(), is(false));
@@ -173,10 +173,10 @@ public class AccountTest {
     public void testPreAuthorizeDomain() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("newAuthorizationRequest").toString()));
-                assertThat(session, is(notNullValue()));
+                assertThat(login, is(notNullValue()));
                 return HttpURLConnection.HTTP_CREATED;
             }
 
@@ -191,7 +191,7 @@ public class AccountTest {
             }
         };
 
-        Session session = provider.createSession();
+        Login login = provider.createLogin();
 
         provider.putTestResource(Resource.NEW_AUTHZ, resourceUrl);
         provider.putTestChallenge(Http01Challenge.TYPE, Http01Challenge::new);
@@ -199,7 +199,7 @@ public class AccountTest {
 
         String domainName = "example.org";
 
-        Account account = new Account(session, locationUrl);
+        Account account = new Account(login);
         Authorization auth = account.preAuthorizeDomain(domainName);
 
         assertThat(auth.getDomain(), is(domainName));
@@ -224,21 +224,21 @@ public class AccountTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) throws AcmeException {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) throws AcmeException {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("newAuthorizationRequest").toString()));
-                assertThat(session, is(notNullValue()));
+                assertThat(login, is(notNullValue()));
 
                 Problem problem = TestUtils.createProblem(problemType, problemDetail, resourceUrl);
                 throw new AcmeServerException(problem);
             }
         };
 
-        Session session = provider.createSession();
+        Login login = provider.createLogin();
 
         provider.putTestResource(Resource.NEW_AUTHZ, resourceUrl);
 
-        Account account = new Account(session, locationUrl);
+        Account account = new Account(login);
 
         try {
             account.preAuthorizeDomain("example.org");
@@ -260,8 +260,8 @@ public class AccountTest {
         // just provide a resource record so the provider returns a directory
         provider.putTestResource(Resource.NEW_NONCE, resourceUrl);
 
-        Session session = provider.createSession();
-        Account account = Account.bind(session, locationUrl);
+        Login login = provider.createLogin();
+        Account account = login.getAccount();
 
         try {
             account.preAuthorizeDomain(null);
@@ -298,11 +298,11 @@ public class AccountTest {
 
         final TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder payload, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder payload, Login login) {
                 try {
                     assertThat(url, is(locationUrl));
-                    assertThat(session, is(notNullValue()));
-                    assertThat(session.getKeyPair(), is(sameInstance(oldKeyPair)));
+                    assertThat(login, is(notNullValue()));
+                    assertThat(login.getKeyPair(), is(sameInstance(oldKeyPair)));
 
                     JSON json = payload.toJSON();
                     String encodedHeader = json.get("protected").asString();
@@ -319,7 +319,7 @@ public class AccountTest {
 
                     StringBuilder expectedPayload = new StringBuilder();
                     expectedPayload.append('{');
-                    expectedPayload.append("\"account\":\"").append(resourceUrl).append("\",");
+                    expectedPayload.append("\"account\":\"").append(locationUrl).append("\",");
                     expectedPayload.append("\"newKey\":{");
                     expectedPayload.append("\"kty\":\"").append(TestUtils.D_KTY).append("\",");
                     expectedPayload.append("\"e\":\"").append(TestUtils.D_E).append("\",");
@@ -341,19 +341,21 @@ public class AccountTest {
 
         provider.putTestResource(Resource.KEY_CHANGE, locationUrl);
 
-        Session session = new Session(new URI(TestUtils.ACME_SERVER_URI), oldKeyPair) {
+        Session session = new Session(new URI(TestUtils.ACME_SERVER_URI)) {
             @Override
             public AcmeProvider provider() {
                 return provider;
             };
         };
 
-        assertThat(session.getKeyPair(), is(sameInstance(oldKeyPair)));
+        Login login = new Login(locationUrl, oldKeyPair, session);
 
-        Account account = new Account(session, resourceUrl);
+        assertThat(login.getKeyPair(), is(sameInstance(oldKeyPair)));
+
+        Account account = new Account(login);
         account.changeKey(newKeyPair);
 
-        assertThat(session.getKeyPair(), is(sameInstance(newKeyPair)));
+        assertThat(login.getKeyPair(), is(sameInstance(newKeyPair)));
     }
 
     /**
@@ -362,10 +364,10 @@ public class AccountTest {
     @Test(expected = IllegalArgumentException.class)
     public void testChangeSameKey() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider();
-        Session session = provider.createSession();
+        Login login = provider.createLogin();
 
-        Account account = new Account(session, locationUrl);
-        account.changeKey(session.getKeyPair());
+        Account account = new Account(login);
+        account.changeKey(login.getKeyPair());
 
         provider.close();
     }
@@ -377,11 +379,11 @@ public class AccountTest {
     public void testDeactivate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 JSON json = claims.toJSON();
                 assertThat(json.get("status").asString(), is("deactivated"));
                 assertThat(url, is(locationUrl));
-                assertThat(session, is(notNullValue()));
+                assertThat(login, is(notNullValue()));
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -391,7 +393,7 @@ public class AccountTest {
             }
         };
 
-        Account account = new Account(provider.createSession(), locationUrl);
+        Account account = new Account(provider.createLogin());
         account.deactivate();
 
         assertThat(account.getStatus(), is(Status.DEACTIVATED));
@@ -406,10 +408,10 @@ public class AccountTest {
     public void testModify() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 assertThat(url, is(locationUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("modifyAccount").toString()));
-                assertThat(session, is(notNullValue()));
+                assertThat(login, is(notNullValue()));
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -424,7 +426,7 @@ public class AccountTest {
             }
         };
 
-        Account account = new Account(provider.createSession(), locationUrl);
+        Account account = new Account(provider.createLogin());
         account.setJSON(getJSON("newAccount"));
 
         EditableAccount editable = account.modify();

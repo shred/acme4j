@@ -34,22 +34,8 @@ public class Order extends AcmeJsonResource {
     private static final long serialVersionUID = 5435808648658292177L;
     private static final Logger LOG = LoggerFactory.getLogger(Order.class);
 
-    protected Order(Session session, URL location) {
-        super(session);
-        setLocation(location);
-    }
-
-    /**
-     * Creates a new instance of {@link Order} and binds it to the {@link Session}.
-     *
-     * @param session
-     *            {@link Session} to be used
-     * @param location
-     *            Location URL of the order
-     * @return {@link Order} bound to the session and location
-     */
-    public static Order bind(Session session, URL location) {
-        return new Order(session, location);
+    protected Order(Login login, URL location) {
+        super(login, location);
     }
 
     /**
@@ -103,12 +89,12 @@ public class Order extends AcmeJsonResource {
      * Gets the {@link Authorization} required for this order.
      */
     public List<Authorization> getAuthorizations() {
-        Session session = getSession();
+        Login login = getLogin();
         return Collections.unmodifiableList(getJSON().get("authorizations")
                     .asArray()
                     .stream()
                     .map(Value::asURL)
-                    .map(loc -> Authorization.bind(session, loc))
+                    .map(login::bindAuthorization)
                     .collect(toList()));
     }
 
@@ -127,7 +113,7 @@ public class Order extends AcmeJsonResource {
     public Certificate getCertificate() {
         return getJSON().get("certificate").optional()
                     .map(Value::asURL)
-                    .map(certUrl -> Certificate.bind(getSession(), certUrl))
+                    .map(getLogin()::bindCertificate)
                     .orElse(null);
     }
 
@@ -147,11 +133,11 @@ public class Order extends AcmeJsonResource {
      */
     public void execute(byte[] csr) throws AcmeException {
         LOG.debug("finalize");
-        try (Connection conn = getSession().provider().connect()) {
+        try (Connection conn = connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.putBase64("csr", csr);
 
-            conn.sendSignedRequest(getFinalizeLocation(), claims, getSession());
+            conn.sendSignedRequest(getFinalizeLocation(), claims, getLogin());
         }
         invalidate();
     }

@@ -13,13 +13,11 @@
  */
 package org.shredzone.acme4j.challenge;
 
-import java.net.URL;
 import java.time.Instant;
-import java.util.Objects;
 
 import org.shredzone.acme4j.AcmeJsonResource;
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
-import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -51,40 +49,14 @@ public class Challenge extends AcmeJsonResource {
     /**
      * Creates a new generic {@link Challenge} object.
      *
-     * @param session
-     *            {@link Session} to bind to.
+     * @param login
+     *            {@link Login} the resource is bound with
      * @param data
      *            {@link JSON} challenge data
      */
-    public Challenge(Session session, JSON data) {
-        super(session, data);
-    }
-
-    /**
-     * Returns a {@link Challenge} object of an existing challenge.
-     *
-     * @param session
-     *            {@link Session} to be used
-     * @param location
-     *            Challenge location
-     * @return {@link Challenge} bound to this session and location
-     */
-    @SuppressWarnings("unchecked")
-    public static <T extends Challenge> T bind(Session session, URL location) throws AcmeException {
-        Objects.requireNonNull(session, "session");
-        Objects.requireNonNull(location, "location");
-
-        LOG.debug("bind");
-        try (Connection conn = session.provider().connect()) {
-            conn.sendRequest(location, session);
-
-            JSON json = conn.readJsonResponse();
-            if (!(json.contains(KEY_TYPE))) {
-                throw new IllegalArgumentException("Provided URL is not a challenge URL");
-            }
-
-            return (T) session.createChallenge(json);
-        }
+    public Challenge(Login login, JSON data) {
+        super(login, data.get(KEY_URL).required().asURL());
+        setJSON(data);
     }
 
     /**
@@ -146,7 +118,10 @@ public class Challenge extends AcmeJsonResource {
             throw new AcmeProtocolException("incompatible type " + type + " for this challenge");
         }
 
-        setLocation(json.get(KEY_URL).required().asURL());
+        String loc = json.get(KEY_URL).required().asString();
+        if (loc != null && !loc.equals(getLocation().toString())) {
+            throw new AcmeProtocolException("challenge has changed its location");
+        }
 
         super.setJSON(json);
     }
@@ -161,11 +136,11 @@ public class Challenge extends AcmeJsonResource {
      */
     public void trigger() throws AcmeException {
         LOG.debug("trigger");
-        try (Connection conn = getSession().provider().connect()) {
+        try (Connection conn = connect()) {
             JSONBuilder claims = new JSONBuilder();
             prepareResponse(claims);
 
-            conn.sendSignedRequest(getLocation(), claims, getSession());
+            conn.sendSignedRequest(getLocation(), claims, getLogin());
 
             setJSON(conn.readJsonResponse());
         }

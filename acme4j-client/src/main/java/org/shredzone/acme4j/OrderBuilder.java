@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
 public class OrderBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(OrderBuilder.class);
 
-    private final Session session;
+    private final Login login;
 
     private final Set<String> domainSet = new LinkedHashSet<>();
     private Instant notBefore;
@@ -44,10 +44,11 @@ public class OrderBuilder {
     /**
      * Create a new {@link OrderBuilder}.
      *
-     * @param session {@link Session} to bind with
+     * @param login
+     *            {@link Login} to bind with
      */
-    protected OrderBuilder(Session session) {
-        this.session = session;
+    protected OrderBuilder(Login login) {
+        this.login = login;
     }
 
     /**
@@ -125,6 +126,8 @@ public class OrderBuilder {
             throw new IllegalArgumentException("At least one domain is required");
         }
 
+        Session session = login.getSession();
+
         Object[] identifiers = new Object[domainSet.size()];
         Iterator<String> di = domainSet.iterator();
         for (int ix = 0; ix < identifiers.length; ix++) {
@@ -146,9 +149,9 @@ public class OrderBuilder {
                 claims.put("notAfter", notAfter);
             }
 
-            conn.sendSignedRequest(session.resourceUrl(Resource.NEW_ORDER), claims, session);
+            conn.sendSignedRequest(session.resourceUrl(Resource.NEW_ORDER), claims, login);
 
-            Order order = new Order(session, conn.getLocation());
+            Order order = new Order(login, conn.getLocation());
             order.setJSON(conn.readJsonResponse());
             return order;
         }

@@ -14,10 +14,12 @@
 package org.shredzone.acme4j.connector;
 
 import java.net.URL;
+import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.List;
 
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.toolbox.JSON;
@@ -40,13 +42,13 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public int sendSignedRequest(URL url, JSONBuilder claims, Session session)
+    public int sendSignedRequest(URL url, JSONBuilder claims, Login login)
                 throws AcmeException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
+    public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair)
                 throws AcmeException {
         throw new UnsupportedOperationException();
     }

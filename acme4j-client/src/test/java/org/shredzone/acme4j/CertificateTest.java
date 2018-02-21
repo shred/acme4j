@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
-import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -75,7 +74,7 @@ public class CertificateTest {
             }
         };
 
-        Certificate cert = new Certificate(provider.createSession(), locationUrl);
+        Certificate cert = new Certificate(provider.createLogin(), locationUrl);
         cert.download();
 
         X509Certificate downloadedCert = cert.getCertificate();
@@ -132,12 +131,11 @@ public class CertificateTest {
             }
 
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("revokeCertificateRequest").toString()));
                 assertThat(session, is(notNullValue()));
-                assertThat(session.getAccountLocation(), is(nullValue()));
-                assertThat(enforceJwk, is(true));
+                assertThat(keypair, is(notNullValue()));
                 certRequested = false;
                 return HttpURLConnection.HTTP_OK;
             }
@@ -157,7 +155,7 @@ public class CertificateTest {
 
         provider.putTestResource(Resource.REVOKE_CERT, resourceUrl);
 
-        Certificate cert = new Certificate(provider.createSession(), locationUrl);
+        Certificate cert = new Certificate(provider.createLogin(), locationUrl);
         cert.revoke();
 
         provider.close();
@@ -181,11 +179,11 @@ public class CertificateTest {
             }
 
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("revokeCertificateWithReasonRequest").toString()));
                 assertThat(session, is(notNullValue()));
-                assertThat(enforceJwk, is(true));
+                assertThat(keypair, is(notNullValue()));
                 certRequested = false;
                 return HttpURLConnection.HTTP_OK;
             }
@@ -205,7 +203,7 @@ public class CertificateTest {
 
         provider.putTestResource(Resource.REVOKE_CERT, resourceUrl);
 
-        Certificate cert = new Certificate(provider.createSession(), locationUrl);
+        Certificate cert = new Certificate(provider.createLogin(), locationUrl);
         cert.revoke(RevocationReason.KEY_COMPROMISE);
 
         provider.close();
@@ -223,20 +221,17 @@ public class CertificateTest {
      * Test that a certificate can be revoked by its domain key pair.
      */
     @Test
-    @SuppressWarnings("resource")
     public void testRevokeCertificateByKeyPair() throws AcmeException, IOException {
         final List<X509Certificate> originalCert = TestUtils.createCertificate();
         final KeyPair certKeyPair = TestUtils.createDomainKeyPair();
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, boolean enforceJwk)
-                    throws AcmeException {
+            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
                 assertThat(url, is(resourceUrl));
                 assertThat(claims.toString(), sameJSONAs(getJSON("revokeCertificateWithReasonRequest").toString()));
                 assertThat(session, is(notNullValue()));
-                assertThat(session.getKeyPair(), is(certKeyPair));
-                assertThat(enforceJwk, is(true));
+                assertThat(keypair, is(certKeyPair));
                 return HttpURLConnection.HTTP_OK;
             }
         };
@@ -244,15 +239,8 @@ public class CertificateTest {
         provider.putTestResource(Resource.REVOKE_CERT, resourceUrl);
 
         Session session = provider.createSession();
-        URI serverUri = session.getServerUri();
 
-        Certificate.revokeSessionFactory = (uri, keyPair) -> {
-            assertThat(uri, is(serverUri));
-            session.setKeyPair(keyPair);
-            return session;
-        };
-
-        Certificate.revoke(serverUri, certKeyPair, originalCert.get(0), RevocationReason.KEY_COMPROMISE);
+        Certificate.revoke(session, certKeyPair, originalCert.get(0), RevocationReason.KEY_COMPROMISE);
 
         provider.close();
     }

@@ -26,19 +26,13 @@ import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.StreamSupport;
 
-import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 
 /**
- * A session stores the ACME server URI and the account's key pair. It also tracks
- * communication parameters.
- * <p>
- * Note that {@link Session} objects are not serializable, as they contain a keypair and
- * volatile data.
+ * A session stores the ACME server URI. It also tracks communication parameters.
  */
 public class Session {
     private final AtomicReference<Map<Resource, URL>> resourceMap = new AtomicReference<>();
@@ -46,8 +40,6 @@ public class Session {
     private final URI serverUri;
     private final AcmeProvider provider;
 
-    private KeyPair keyPair;
-    private URL accountLocation;
     private byte[] nonce;
     private JSON directoryJson;
     private Locale locale = Locale.getDefault();
@@ -58,11 +50,9 @@ public class Session {
      *
      * @param serverUri
      *            URI string of the ACME server
-     * @param keyPair
-     *            {@link KeyPair} of the ACME account
      */
-    public Session(String serverUri, KeyPair keyPair) {
-        this(URI.create(serverUri), keyPair);
+    public Session(String serverUri) {
+        this(URI.create(serverUri));
     }
 
     /**
@@ -70,14 +60,11 @@ public class Session {
      *
      * @param serverUri
      *            {@link URI} of the ACME server
-     * @param keyPair
-     *            {@link KeyPair} of the ACME account
      * @throws IllegalArgumentException
      *             if no ACME provider was found for the server URI.
      */
-    public Session(URI serverUri, KeyPair keyPair) {
+    public Session(URI serverUri) {
         this.serverUri = Objects.requireNonNull(serverUri, "serverUri");
-        this.keyPair = Objects.requireNonNull(keyPair, "keyPair");
 
         final URI localServerUri = serverUri;
 
@@ -94,38 +81,23 @@ public class Session {
     }
 
     /**
+     * Logs into an existing account.
+     *
+     * @param accountLocation
+     *            Location {@link URL} of the account
+     * @param accountKeyPair
+     *            Account {@link KeyPair}
+     * @return {@link Login} to this account
+     */
+    public Login login(URL accountLocation, KeyPair accountKeyPair) {
+        return new Login(accountLocation, accountKeyPair, this);
+    }
+
+    /**
      * Gets the ACME server {@link URI} of this session.
      */
     public URI getServerUri() {
         return serverUri;
-    }
-
-    /**
-     * Gets the {@link KeyPair} of the ACME account.
-     */
-    public KeyPair getKeyPair() {
-        return keyPair;
-    }
-
-    /**
-     * Sets a different {@link KeyPair}.
-     */
-    public void setKeyPair(KeyPair keyPair) {
-        this.keyPair = keyPair;
-    }
-
-    /**
-     * Gets the location {@link URL} of the account logged into this session.
-     */
-    public URL getAccountLocation() {
-        return accountLocation;
-    }
-
-    /**
-     * Sets the location {@link URL} of the account logged into this session.
-     */
-    public void setAccountLocation(URL accountLocation) {
-        this.accountLocation = accountLocation;
     }
 
     /**
@@ -164,21 +136,6 @@ public class Session {
      */
     public AcmeProvider provider() {
         return provider;
-    }
-
-    /**
-     * Creates a {@link Challenge} instance for the given challenge data.
-     *
-     * @param data
-     *            Challenge JSON data
-     * @return {@link Challenge} instance
-     */
-    public Challenge createChallenge(JSON data) {
-        Challenge challenge = provider().createChallenge(this, data);
-        if (challenge == null) {
-            throw new AcmeProtocolException("Could not create challenge for: " + data);
-        }
-        return challenge;
     }
 
     /**
