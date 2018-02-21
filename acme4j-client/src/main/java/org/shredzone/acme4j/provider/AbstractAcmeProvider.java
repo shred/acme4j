@@ -53,7 +53,10 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
             conn.sendRequest(resolve(serverUri), session);
 
             // use nonce header if there is one, saves a HEAD request...
-            conn.updateSession(session);
+            byte[] nonce = conn.getNonce();
+            if (nonce != null) {
+                session.setNonce(nonce);
+            }
 
             return conn.readJsonResponse();
         }

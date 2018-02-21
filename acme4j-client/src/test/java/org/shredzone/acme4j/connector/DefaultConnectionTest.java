@@ -97,9 +97,8 @@ public class DefaultConnectionTest {
         assertThat(session.getNonce(), is(nullValue()));
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            conn.updateSession(session);
+            assertThat(conn.getNonce(), is(nullValue()));
         }
-        assertThat(session.getNonce(), is(nullValue()));
 
         verify(mockUrlConnection).getHeaderField("Replay-Nonce");
         verifyNoMoreInteractions(mockUrlConnection);
@@ -116,9 +115,8 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            conn.updateSession(session);
+            assertThat(conn.getNonce(), is(TestUtils.DUMMY_NONCE));
         }
-        assertThat(session.getNonce(), is(TestUtils.DUMMY_NONCE));
 
         verify(mockUrlConnection).getHeaderField("Replay-Nonce");
         verifyNoMoreInteractions(mockUrlConnection);
@@ -136,7 +134,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            conn.updateSession(session);
+            conn.getNonce();
             fail("Expected to fail");
         } catch (AcmeProtocolException ex) {
             assertThat(ex.getMessage(), org.hamcrest.Matchers.startsWith("Invalid replay nonce"));
@@ -677,17 +675,18 @@ public class DefaultConnectionTest {
                 } else {
                     fail("unknown nonce");
                 }
-            };
+            }
 
             @Override
-            public void updateSession(Session session) {
+            public byte[] getNonce() {
                 assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
                 if (session.getNonce() == nonce1) {
-                    session.setNonce(nonce2);
+                    return nonce2;
                 } else {
                     fail("unknown nonce");
+                    return null;
                 }
-            };
+            }
         }) {
             JSONBuilder cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");
@@ -752,17 +751,18 @@ public class DefaultConnectionTest {
                 } else {
                     fail("unknown nonce");
                 }
-            };
+            }
 
             @Override
-            public void updateSession(Session session) {
+            public byte[] getNonce() {
                 assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
                 if (session.getNonce() == nonce1) {
-                    session.setNonce(nonce2);
+                    return nonce2;
                 } else {
                     fail("unknown nonce");
+                    return null;
                 }
-            };
+            }
         }) {
             JSONBuilder cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");

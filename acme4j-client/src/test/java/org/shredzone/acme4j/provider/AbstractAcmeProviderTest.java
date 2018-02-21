@@ -15,7 +15,6 @@ package org.shredzone.acme4j.provider;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
@@ -110,7 +109,7 @@ public class AbstractAcmeProviderTest {
         assertThat(map.toString(), sameJSONAs(TestUtils.getJSON("directory").toString()));
 
         verify(connection).sendRequest(testResolvedUrl, session);
-        verify(connection).updateSession(any(Session.class));
+        verify(connection).getNonce();
         verify(connection).readJsonResponse();
         verify(connection).close();
         verifyNoMoreInteractions(connection);

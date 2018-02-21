@@ -116,12 +116,11 @@ public interface Connection extends AutoCloseable {
     void handleRetryAfter(String message) throws AcmeException;
 
     /**
-     * Updates a {@link Session} by evaluating the HTTP response header.
+     * Gets the nonce from the nonce header.
      *
-     * @param session
-     *            {@link Session} instance to be updated
+     * @return Nonce, or {@code null} if no nonce header was set
      */
-    void updateSession(Session session);
+    byte[] getNonce();
 
     /**
      * Gets a location from the {@code Location} header.

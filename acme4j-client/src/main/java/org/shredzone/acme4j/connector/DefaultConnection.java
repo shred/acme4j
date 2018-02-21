@@ -112,11 +112,11 @@ public class DefaultConnection implements Connection {
                 throwAcmeException();
             }
 
-            updateSession(session);
-
-            if (session.getNonce() == null) {
+            byte[] nonce = getNonce();
+            if (nonce == null) {
                 throw new AcmeProtocolException("Server did not provide a nonce");
             }
+            session.setNonce(nonce);
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         } finally {
@@ -241,12 +241,12 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public void updateSession(Session session) {
+    public byte[] getNonce() {
         assertConnectionIsOpen();
 
         String nonceHeader = conn.getHeaderField(REPLAY_NONCE_HEADER);
         if (nonceHeader == null || nonceHeader.trim().isEmpty()) {
-            return;
+            return null;
         }
 
         if (!BASE64URL_PATTERN.matcher(nonceHeader).matches()) {
@@ -255,7 +255,7 @@ public class DefaultConnection implements Connection {
 
         LOG.debug("Replay Nonce: {}", nonceHeader);
 
-        session.setNonce(Base64Url.decode(nonceHeader));
+        return Base64Url.decode(nonceHeader);
     }
 
     @Override
@@ -353,7 +353,7 @@ public class DefaultConnection implements Connection {
 
             logHeaders();
 
-            updateSession(session);
+            session.setNonce(getNonce());
 
             int rc = conn.getResponseCode();
             if ((httpStatus.length == 0 && rc != HttpURLConnection.HTTP_OK)

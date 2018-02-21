@@ -67,7 +67,7 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public void updateSession(Session session) {
+    public byte[] getNonce() {
         throw new UnsupportedOperationException();
     }
 
