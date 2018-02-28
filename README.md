@@ -1,6 +1,6 @@
 # ACME Java Client ![build status](https://shredzone.org/badge/acme4j.svg) ![maven central](https://maven-badges.herokuapp.com/maven-central/org.shredzone.acme4j/acme4j/badge.svg)
 
-> **NOTE:** There is currently no _acme4j_ 2.0 release available at Maven Central. To use _acme4j_ with the ACMEv2 protocol, you need to build it yourself and use version `2.0-SNAPSHOT` in your project. Version 2.0 will be available at the latest when _Let's Encrypt_ starts its production ACMEv2 server on February 27th, 2018.
+> **NOTE:** There is currently no _acme4j_ 2.0 release available at Maven Central. To use _acme4j_ with the ACMEv2 protocol, you need to build it yourself and use version `2.0-SNAPSHOT` in your project. Version 2.0 will be available as soon as _Let's Encrypt_ starts its production ACMEv2 server.
 >
 > **For production** you should use the latest version available at Maven Central (see the badge above). You can find the corresponding source code in the [acmev1 branch](https://github.com/shred/acme4j/tree/acmev1).
 
@@ -27,7 +27,7 @@ There are two versions of the ACME protocol specification, ACME v1 and ACME v2.
 
 ACME v1 is currently in production. It is supported by _acme4j_ < 2.0, so **use _acme4j_ < 2.0 for production purposes!**
 
-_Let's Encrypt_ plans to launch an ACME v2 production server on Feburary 27th, 2018. A staging server is already available. _acme4j_ >= 2.0 supports the ACME v2 protocol.
+_Let's Encrypt_ plans to launch an ACME v2 production server in the near future. A staging server is already available. _acme4j_ >= 2.0 supports the ACME v2 protocol.
 
 _Let's Encrypt_ has not announced a sunset date for ACME v1 yet, so there is plenty of time for migration.
 
