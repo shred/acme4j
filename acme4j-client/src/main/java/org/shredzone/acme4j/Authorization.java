@@ -44,6 +44,10 @@ public class Authorization extends AcmeJsonResource {
 
     /**
      * Gets the domain name to be authorized.
+     * <p>
+     * For wildcard domain orders, the domain itself (without wildcard prefix) is returned
+     * here. To find out if this {@link Authorization} is related to a wildcard domain
+     * order, check the {@link #isWildcard()} method.
      */
     public String getDomain() {
         JSON jsonIdentifier = getJSON().get("identifier").required().asObject();
@@ -69,6 +73,16 @@ public class Authorization extends AcmeJsonResource {
                     .map(Value::asString)
                     .map(AcmeUtils::parseTimestamp)
                     .orElse(null);
+    }
+
+    /**
+     * Returns {@code true} if this {@link Authorization} is related to a wildcard domain,
+     * {@code false} otherwise.
+     */
+    public boolean isWildcard() {
+        return getJSON().get("wildcard").optional()
+                    .map(Value::asBoolean)
+                    .orElse(false);
     }
 
     /**

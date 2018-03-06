@@ -1,0 +1,17 @@
+{
+  "status": "valid",
+  "expires": "2016-01-02T17:12:40Z",
+  "wildcard": true,
+  "identifier": {
+    "type": "dns",
+    "value": "example.org"
+  },
+  "challenges": [
+    {
+      "type": "dns-01",
+      "status": "pending",
+      "url": "https://example.com/authz/asdf/1",
+      "token": "DGyRejmCefe7v4NfDGDKfA"
+    }
+  ]
+}

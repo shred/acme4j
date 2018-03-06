@@ -110,11 +110,53 @@ public class AuthorizationTest {
 
         assertThat(auth.getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));
+        assertThat(auth.isWildcard(), is(false));
         assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
         assertThat(auth.getLocation(), is(locationUrl));
 
         assertThat(auth.getChallenges(), containsInAnyOrder(
                         provider.getChallenge(Http01Challenge.TYPE),
+                        provider.getChallenge(Dns01Challenge.TYPE)));
+
+        provider.close();
+    }
+
+    /**
+     * Test that wildcard authorization are correct.
+     */
+    @Test
+    public void testWildcard() throws Exception {
+        TestableConnectionProvider provider = new TestableConnectionProvider() {
+            @Override
+            public void sendRequest(URL url, Session session) {
+                assertThat(url, is(locationUrl));
+            }
+
+            @Override
+            public JSON readJsonResponse() {
+                return getJSON("updateAuthorizationWildcardResponse");
+            }
+
+            @Override
+            public void handleRetryAfter(String message) throws AcmeException {
+                // Just do nothing
+            }
+        };
+
+        Login login = provider.createLogin();
+
+        provider.putTestChallenge("dns-01", Dns01Challenge::new);
+
+        Authorization auth = new Authorization(login, locationUrl);
+        auth.update();
+
+        assertThat(auth.getDomain(), is("example.org"));
+        assertThat(auth.getStatus(), is(Status.VALID));
+        assertThat(auth.isWildcard(), is(true));
+        assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
+        assertThat(auth.getLocation(), is(locationUrl));
+
+        assertThat(auth.getChallenges(), containsInAnyOrder(
                         provider.getChallenge(Dns01Challenge.TYPE)));
 
         provider.close();
@@ -161,6 +203,7 @@ public class AuthorizationTest {
         requestWasSent.set(false);
         assertThat(auth.getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));
+        assertThat(auth.isWildcard(), is(false));
         assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
         assertThat(requestWasSent.get(), is(false));
 
@@ -207,6 +250,7 @@ public class AuthorizationTest {
 
         assertThat(auth.getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));
+        assertThat(auth.isWildcard(), is(false));
         assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
         assertThat(auth.getLocation(), is(locationUrl));
 
