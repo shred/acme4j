@@ -16,6 +16,7 @@ package org.shredzone.acme4j.provider.pebble;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -39,8 +40,8 @@ public class PebbleHttpConnector extends HttpConnector {
     private static SSLSocketFactory sslSocketFactory;
 
     @Override
-    public HttpURLConnection openConnection(URL url) throws IOException {
-        HttpURLConnection conn = super.openConnection(url);
+    public HttpURLConnection openConnection(URL url, Proxy proxy) throws IOException {
+        HttpURLConnection conn = super.openConnection(url, proxy);
         if (conn instanceof HttpsURLConnection) {
             ((HttpsURLConnection) conn).setSSLSocketFactory(createSocketFactory());
         }

@@ -101,7 +101,7 @@ public class DefaultConnection implements Connection {
 
             URL newNonceUrl = session.resourceUrl(Resource.NEW_NONCE);
 
-            conn = httpConnector.openConnection(newNonceUrl);
+            conn = httpConnector.openConnection(newNonceUrl, session.getProxy());
             conn.setRequestMethod("HEAD");
             conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
             conn.connect();
@@ -132,7 +132,7 @@ public class DefaultConnection implements Connection {
         LOG.debug("GET {}", url);
 
         try {
-            conn = httpConnector.openConnection(url);
+            conn = httpConnector.openConnection(url, session.getProxy());
             conn.setRequestMethod("GET");
             conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
             conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
@@ -311,7 +311,7 @@ public class DefaultConnection implements Connection {
                 resetNonce(session);
             }
 
-            conn = httpConnector.openConnection(url);
+            conn = httpConnector.openConnection(url, session.getProxy());
             conn.setRequestMethod("POST");
             conn.setRequestProperty(ACCEPT_HEADER, "application/json");
             conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);

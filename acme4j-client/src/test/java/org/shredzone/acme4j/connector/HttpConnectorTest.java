@@ -20,6 +20,7 @@ import static org.mockito.Mockito.*;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URISyntaxException;
 import java.net.URL;
 
@@ -59,7 +60,7 @@ public class HttpConnectorTest {
     @Category(HttpURLConnection.class)
     public void testOpenConnection() throws IOException {
         HttpConnector connector = new HttpConnector();
-        HttpURLConnection conn = connector.openConnection(new URL("http://example.com"));
+        HttpURLConnection conn = connector.openConnection(new URL("http://example.com"), Proxy.NO_PROXY);
         assertThat(conn, not(nullValue()));
         conn.connect();
         assertThat(conn.getResponseCode(), is(HttpURLConnection.HTTP_OK));

@@ -16,6 +16,7 @@ package org.shredzone.acme4j.connector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URL;
 import java.util.Properties;
 
@@ -63,10 +64,12 @@ public class HttpConnector {
      *
      * @param url
      *            {@link URL} to connect to
+     * @param proxy
+     *            {@link Proxy} to be used
      * @return {@link HttpURLConnection} connected to the {@link URL}
      */
-    public HttpURLConnection openConnection(URL url) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+    public HttpURLConnection openConnection(URL url, Proxy proxy) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
         configure(conn);
         return conn;
     }

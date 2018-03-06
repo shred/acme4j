@@ -34,3 +34,11 @@ URL website = meta.getWebsite();
 `Session.setLocale()` allows to select a different locale. Errors will be returned in that language, if supported by the CA.
 
 By default, the system's default locale is used.
+
+## Proxy
+
+_acme4j_ uses a standard `HttpURLConnection` for HTTP connections.
+
+If a proxy must be used for internet connections, you can set a `Proxy` instance by invoking `Session.setProxy()`. An alternative is to use the system properties `http.proxyHost` and `http.proxyPort` to globally set a proxy for the Java process.
+
+If the proxy needs authentication, you need to set a default `Authenticator`. Be careful: Most code snippets I have found in the internet will send out the proxy credentials to anyone who is asking. See [this blog article](http://rolandtapken.de/blog/2012-04/java-process-httpproxyuser-and-httpproxypassword) for a good way to implement a proxy `Authenticator`.

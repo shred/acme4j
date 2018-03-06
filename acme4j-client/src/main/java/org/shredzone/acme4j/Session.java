@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j;
 
+import java.net.Proxy;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
@@ -42,6 +43,7 @@ public class Session {
 
     private String nonce;
     private Locale locale = Locale.getDefault();
+    private Proxy proxy = Proxy.NO_PROXY;
     protected Instant directoryCacheExpiry;
 
     /**
@@ -126,6 +128,21 @@ public class Session {
      */
     public void setLocale(Locale locale) {
         this.locale = locale;
+    }
+
+    /**
+     * Gets the {@link Proxy} to be used for connections.
+     */
+    public Proxy getProxy() {
+        return proxy;
+    }
+
+    /**
+     * Sets a {@link Proxy} that is to be used for all connections. If {@code null},
+     * {@link Proxy#NO_PROXY} is used, which is also the default.
+     */
+    public void setProxy(Proxy proxy) {
+        this.proxy = proxy != null ? proxy : Proxy.NO_PROXY;
     }
 
     /**
