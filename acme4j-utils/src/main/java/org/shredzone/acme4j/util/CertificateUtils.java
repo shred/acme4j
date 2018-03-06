@@ -16,6 +16,7 @@ package org.shredzone.acme4j.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -40,7 +41,7 @@ public final class CertificateUtils {
      * @return CSR that was read
      */
     public static PKCS10CertificationRequest readCSR(InputStream in) throws IOException {
-        try (PEMParser pemParser = new PEMParser(new InputStreamReader(in))) {
+        try (PEMParser pemParser = new PEMParser(new InputStreamReader(in, StandardCharsets.US_ASCII))) {
             Object parsedObj = pemParser.readObject();
             if (!(parsedObj instanceof PKCS10CertificationRequest)) {
                 throw new IOException("Not a PKCS10 CSR");

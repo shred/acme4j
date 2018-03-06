@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.IDN;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
@@ -58,7 +59,8 @@ public final class AcmeUtils {
     private static final Pattern CONTENT_TYPE_PATTERN = Pattern.compile(
                 "([^;]+)(?:;.*?charset=(\"?)([a-z0-9_-]+)(\\2))?.*", Pattern.CASE_INSENSITIVE);
 
-    private static final Base64.Encoder PEM_ENCODER = Base64.getMimeEncoder(64, "\n".getBytes());
+    private static final Base64.Encoder PEM_ENCODER = Base64.getMimeEncoder(64,
+                "\n".getBytes(StandardCharsets.US_ASCII));
 
     /**
      * Enumeration of PEM labels.
@@ -305,7 +307,7 @@ public final class AcmeUtils {
      */
     public static void writeToPem(byte[] encoded, PemLabel label, Writer out) throws IOException {
         out.append("-----BEGIN ").append(label.toString()).append("-----\n");
-        out.append(new String(PEM_ENCODER.encode(encoded)));
+        out.append(new String(PEM_ENCODER.encode(encoded), StandardCharsets.US_ASCII));
         out.append("\n-----END ").append(label.toString()).append("-----\n");
     }
 

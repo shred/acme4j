@@ -14,6 +14,7 @@
 package org.shredzone.acme4j.provider.pebble;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyManagementException;
@@ -52,10 +53,9 @@ public class PebbleHttpConnector extends HttpConnector {
      */
     protected synchronized SSLSocketFactory createSocketFactory() throws IOException {
         if (sslSocketFactory == null) {
-            try {
+            try (InputStream in = getClass().getResourceAsStream("/org/shredzone/acme4j/provider/pebble/pebble.truststore")) {
                 KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
-                keystore.load(getClass().getResourceAsStream("/org/shredzone/acme4j/provider/pebble/pebble.truststore"),
-                                "acme4j".toCharArray());
+                keystore.load(in, "acme4j".toCharArray());
 
                 TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
                 tmf.init(keystore);

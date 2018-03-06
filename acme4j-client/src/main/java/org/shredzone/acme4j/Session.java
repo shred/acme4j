@@ -168,12 +168,13 @@ public class Session {
     private void readDirectory() throws AcmeException {
         synchronized (this) {
             Instant now = Instant.now();
-            if (directoryJson != null && directoryCacheExpiry.isAfter(now)) {
+            if (directoryCacheExpiry != null && directoryCacheExpiry.isAfter(now)) {
                 return;
             }
-            directoryJson = provider().directory(this, getServerUri());
             directoryCacheExpiry = now.plus(Duration.ofHours(1));
         }
+
+        JSON directoryJson = provider().directory(this, getServerUri());
 
         JSON meta = directoryJson.get("meta").asObject();
         if (meta != null) {
