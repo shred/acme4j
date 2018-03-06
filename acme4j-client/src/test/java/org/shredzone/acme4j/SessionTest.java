@@ -76,9 +76,8 @@ public class SessionTest {
         Session session = new Session(serverUri);
 
         assertThat(session.getNonce(), is(nullValue()));
-        byte[] data = "foo-nonce-bar".getBytes();
-        session.setNonce(data);
-        assertThat(session.getNonce(), is(equalTo(data)));
+        session.setNonce(DUMMY_NONCE);
+        assertThat(session.getNonce(), is(equalTo(DUMMY_NONCE)));
 
         assertThat(session.getServerUri(), is(serverUri));
     }

@@ -73,7 +73,7 @@ public final class TestUtils {
     public static final String ACME_SERVER_URI = "https://example.com/acme";
     public static final String ACCOUNT_URL = "https://example.com/acme/account/1";
 
-    public static final byte[] DUMMY_NONCE = "foo-nonce-foo".getBytes();
+    public static final String DUMMY_NONCE = Base64Url.encode("foo-nonce-foo".getBytes());
 
 
     private TestUtils() {

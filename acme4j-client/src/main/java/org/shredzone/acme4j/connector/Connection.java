@@ -117,9 +117,9 @@ public interface Connection extends AutoCloseable {
     /**
      * Gets the nonce from the nonce header.
      *
-     * @return Nonce, or {@code null} if no nonce header was set
+     * @return Base64 encoded nonce, or {@code null} if no nonce header was set
      */
-    byte[] getNonce();
+    String getNonce();
 
     /**
      * Gets a location from the {@code Location} header.

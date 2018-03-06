@@ -119,7 +119,7 @@ public class DefaultConnectionTest {
     @Test
     public void testGetNonceFromHeader() {
         when(mockUrlConnection.getHeaderField("Replay-Nonce"))
-                .thenReturn(Base64Url.encode(TestUtils.DUMMY_NONCE));
+                .thenReturn(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
@@ -175,7 +175,7 @@ public class DefaultConnectionTest {
         assertThat(session.getNonce(), is(nullValue()));
 
         when(mockUrlConnection.getHeaderField("Replay-Nonce"))
-                .thenReturn(Base64Url.encode(TestUtils.DUMMY_NONCE));
+                .thenReturn(TestUtils.DUMMY_NONCE);
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.resetNonce(session);
@@ -660,8 +660,8 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testSendSignedRequest() throws Exception {
-        final byte[] nonce1 = "foo-nonce-1-foo".getBytes();
-        final byte[] nonce2 = "foo-nonce-2-foo".getBytes();
+        final String nonce1 = Base64Url.encode("foo-nonce-1-foo".getBytes());
+        final String nonce2 = Base64Url.encode("foo-nonce-2-foo".getBytes());
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
@@ -679,7 +679,7 @@ public class DefaultConnectionTest {
             }
 
             @Override
-            public byte[] getNonce() {
+            public String getNonce() {
                 assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
                 if (session.getNonce() == nonce1) {
                     return nonce2;
@@ -714,7 +714,7 @@ public class DefaultConnectionTest {
 
         StringBuilder expectedHeader = new StringBuilder();
         expectedHeader.append('{');
-        expectedHeader.append("\"nonce\":\"").append(Base64Url.encode(nonce1)).append("\",");
+        expectedHeader.append("\"nonce\":\"").append(nonce1).append("\",");
         expectedHeader.append("\"url\":\"").append(requestUrl).append("\",");
         expectedHeader.append("\"alg\":\"RS256\",");
         expectedHeader.append("\"kid\":\"").append(accountUrl).append('"');
@@ -735,8 +735,8 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testSendSignedRequestNoKid() throws Exception {
-        final byte[] nonce1 = "foo-nonce-1-foo".getBytes();
-        final byte[] nonce2 = "foo-nonce-2-foo".getBytes();
+        final String nonce1 = Base64Url.encode("foo-nonce-1-foo".getBytes());
+        final String nonce2 = Base64Url.encode("foo-nonce-2-foo".getBytes());
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
@@ -754,7 +754,7 @@ public class DefaultConnectionTest {
             }
 
             @Override
-            public byte[] getNonce() {
+            public String getNonce() {
                 assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
                 if (session.getNonce() == nonce1) {
                     return nonce2;
@@ -789,7 +789,7 @@ public class DefaultConnectionTest {
 
         StringBuilder expectedHeader = new StringBuilder();
         expectedHeader.append('{');
-        expectedHeader.append("\"nonce\":\"").append(Base64Url.encode(nonce1)).append("\",");
+        expectedHeader.append("\"nonce\":\"").append(nonce1).append("\",");
         expectedHeader.append("\"url\":\"").append(requestUrl).append("\",");
         expectedHeader.append("\"alg\":\"RS256\",");
         expectedHeader.append("\"jwk\":{");

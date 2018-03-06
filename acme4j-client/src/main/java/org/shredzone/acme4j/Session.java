@@ -40,8 +40,7 @@ public class Session {
     private final URI serverUri;
     private final AcmeProvider provider;
 
-    private byte[] nonce;
-    private JSON directoryJson;
+    private String nonce;
     private Locale locale = Locale.getDefault();
     protected Instant directoryCacheExpiry;
 
@@ -101,16 +100,16 @@ public class Session {
     }
 
     /**
-     * Gets the last nonce, or {@code null} if the session is new.
+     * Gets the last base64 encoded nonce, or {@code null} if the session is new.
      */
-    public byte[] getNonce() {
+    public String getNonce() {
         return nonce;
     }
 
     /**
-     * Sets the nonce received by the server.
+     * Sets the base64 encoded nonce received by the server.
      */
-    public void setNonce(byte[] nonce) {
+    public void setNonce(String nonce) {
         this.nonce = nonce;
     }
 

@@ -69,7 +69,7 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public byte[] getNonce() {
+    public String getNonce() {
         throw new UnsupportedOperationException();
     }
 

@@ -37,7 +37,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jose4j.base64url.Base64Url;
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
@@ -112,7 +111,7 @@ public class DefaultConnection implements Connection {
                 throwAcmeException();
             }
 
-            byte[] nonce = getNonce();
+            String nonce = getNonce();
             if (nonce == null) {
                 throw new AcmeProtocolException("Server did not provide a nonce");
             }
@@ -247,12 +246,12 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public byte[] getNonce() {
+    public String getNonce() {
         assertConnectionIsOpen();
 
         String nonceHeader = conn.getHeaderField(REPLAY_NONCE_HEADER);
         if (nonceHeader == null || nonceHeader.trim().isEmpty()) {
-            return null; //NOSONAR: consistent with other getters
+            return null;
         }
 
         if (!BASE64URL_PATTERN.matcher(nonceHeader).matches()) {
@@ -261,7 +260,7 @@ public class DefaultConnection implements Connection {
 
         LOG.debug("Replay Nonce: {}", nonceHeader);
 
-        return Base64Url.decode(nonceHeader);
+        return nonceHeader;
     }
 
     @Override
@@ -323,7 +322,7 @@ public class DefaultConnection implements Connection {
             final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(keypair.getPublic());
             JsonWebSignature jws = new JsonWebSignature();
             jws.setPayload(claims.toString());
-            jws.getHeaders().setObjectHeaderValue("nonce", Base64Url.encode(session.getNonce()));
+            jws.getHeaders().setObjectHeaderValue("nonce", session.getNonce());
             jws.getHeaders().setObjectHeaderValue("url", url);
             if (accountLocation == null) {
                 jws.getHeaders().setJwkHeaderValue("jwk", jwk);
