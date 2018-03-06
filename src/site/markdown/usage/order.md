@@ -152,6 +152,11 @@ Authorization auth = account.preAuthorizeDomain(domain);
 Some CAs may not offer domain pre-authorization. `preAuthorizeDomain()` will then fail and throw an `AcmeException`.
 </div>
 
+<div class="alert alert-info" role="alert">
+
+Some CAs may not offer wildcard domain pre-authorization, but only wildcard domain orders.
+</div>
+
 ## Deactivate an Authorization
 
 It is possible to deactivate an `Authorization`, for example if you sell the associated domain.
