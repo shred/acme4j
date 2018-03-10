@@ -28,7 +28,7 @@ For Gradle:
 
 ```groovy
 dependencies {
-    compile group: '${project.groupId}', name: '${project.artifactId}-client', version: '${project.version}'
+    compile '${project.groupId}:${project.artifactId}-client:${project.version}'
 }
 ```
 
@@ -46,7 +46,7 @@ For Gradle:
 
 ```groovy
 dependencies {
-    compile group: '${project.groupId}', name: '${project.artifactId}-utils', version: '${project.version}'
+    compile '${project.groupId}:${project.artifactId}-utils:${project.version}'
 }
 ```
 
