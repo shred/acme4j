@@ -4,7 +4,11 @@
 >
 > **For production** you should use the latest version available at Maven Central (see the badge above). You can find the corresponding source code in the [acmev1 branch](https://github.com/shred/acme4j/tree/acmev1).
 
-This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-09) protocol.
+> **NOTE:** Due to a change in the ACME draft 10 that is not downward compatible, **please use the [staging](https://github.com/shred/acme4j/tree/staging) branch of _acme4j_ if you want to connect to the _Let's Encrypt_ staging server.** This is only a temporary workaround, until the staging server incorporates these changes.
+>
+> This master branch implements the latest ACME draft. It can be used with a local Pebble or Boulder server.
+
+This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-10) protocol.
 
 ACME is a protocol that a certificate authority (CA) and an applicant can use to automate the process of verification and certificate issuance.
 
@@ -14,7 +18,7 @@ It is an independent open source implementation that is not affiliated with or e
 
 ## Features
 
-* Fully supports the ACME v2 protocol up to [draft 09](https://tools.ietf.org/html/draft-ietf-acme-acme-09)
+* Fully supports the ACME v2 protocol up to [draft 10](https://tools.ietf.org/html/draft-ietf-acme-acme-10)
 * Easy to use Java API
 * Requires JRE 8 (update 101) or higher
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
