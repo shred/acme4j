@@ -32,7 +32,6 @@ public class TokenChallenge extends Challenge {
     private static final long serialVersionUID = 1634133407432681800L;
 
     protected static final String KEY_TOKEN = "token";
-    protected static final String KEY_KEY_AUTHORIZATION = "keyAuthorization";
 
     /**
      * Creates a new generic {@link TokenChallenge} object.
@@ -49,7 +48,6 @@ public class TokenChallenge extends Challenge {
     @Override
     protected void prepareResponse(JSONBuilder response) {
         super.prepareResponse(response);
-        response.put(KEY_KEY_AUTHORIZATION, getAuthorization());
     }
 
     /**
