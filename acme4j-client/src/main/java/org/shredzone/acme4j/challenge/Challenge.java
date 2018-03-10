@@ -68,6 +68,9 @@ public class Challenge extends AcmeJsonResource {
 
     /**
      * Returns the current status of the challenge.
+     * <p>
+     * Possible values are: {@link Status#PENDING}, {@link Status#PROCESSING},
+     * {@link Status#VALID}, {@link Status#INVALID}.
      */
     public Status getStatus() {
         return getJSON().get(KEY_STATUS).asStatusOrElse(Status.UNKNOWN);

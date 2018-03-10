@@ -20,7 +20,53 @@ import java.util.Arrays;
  */
 public enum Status {
 
-    PENDING, PROCESSING, VALID, INVALID, REVOKED, DEACTIVATED, UNKNOWN;
+    /**
+     * The server has created the resource, and is waiting for the client to process it.
+     */
+    PENDING,
+
+    /**
+     * The {@link Order} is ready to be finalized. Invoke {@link Order#execute(byte[])}.
+     */
+    READY,
+
+    /**
+     * The server is processing the resource. The client should invoke
+     * {@link AcmeJsonResource#update()} and re-check the status.
+     */
+    PROCESSING,
+
+    /**
+     * The resource is valid and can be used as intended.
+     */
+    VALID,
+
+    /**
+     * An error or authorization/validation failure has occured. The client should check
+     * for error messages.
+     */
+    INVALID,
+
+    /**
+     * The {@link Authorization} has been revoked by the server.
+     */
+    REVOKED,
+
+    /**
+     * The {@link Account} or {@link Authorization} has been deactivated by the client.
+     */
+    DEACTIVATED,
+
+    /**
+     * The {@link Authorization} is expired.
+     */
+    EXPIRED,
+
+    /**
+     * The server did not provide a status, or the provided status is not a specified ACME
+     * status.
+     */
+    UNKNOWN;
 
     /**
      * Parses the string and returns a corresponding Status object.

@@ -40,6 +40,9 @@ public class Order extends AcmeJsonResource {
 
     /**
      * Returns the current status of the order.
+     * <p>
+     * Possible values are: {@link Status#PENDING}, {@link Status#READY},
+     * {@link Status#PROCESSING}, {@link Status#VALID}, {@link Status#INVALID}.
      */
     public Status getStatus() {
         return getJSON().get("status").asStatusOrElse(Status.UNKNOWN);

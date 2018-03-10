@@ -80,6 +80,9 @@ public class Account extends AcmeJsonResource {
 
     /**
      * Returns the current status of the account.
+     * <p>
+     * Possible values are: {@link Status#VALID}, {@link Status#DEACTIVATED},
+     * {@link Status#REVOKED}.
      */
     public Status getStatus() {
         return getJSON().get(KEY_STATUS).asStatusOrElse(Status.UNKNOWN);
