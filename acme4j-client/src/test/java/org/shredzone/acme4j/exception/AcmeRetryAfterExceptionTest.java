@@ -57,8 +57,8 @@ public class AcmeRetryAfterExceptionTest {
      * Test that date is required.
      */
     @Test(expected = NullPointerException.class)
-    public void testRequiredAcmeRetryAfterException() {
-        new AcmeRetryAfterException("null-test", null);
+    public void testRequiredAcmeRetryAfterException() throws AcmeException {
+        throw new AcmeRetryAfterException("null-test", null);
     }
 
 }
