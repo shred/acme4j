@@ -22,7 +22,6 @@ import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
-import org.shredzone.acme4j.toolbox.JSONBuilder;
 
 /**
  * An extension of {@link Challenge} that handles challenges with a {@code token} and
@@ -43,11 +42,6 @@ public class TokenChallenge extends Challenge {
      */
     public TokenChallenge(Login login, JSON data) {
         super(login, data);
-    }
-
-    @Override
-    protected void prepareResponse(JSONBuilder response) {
-        super.prepareResponse(response);
     }
 
     /**
