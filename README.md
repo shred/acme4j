@@ -16,11 +16,13 @@ For new projects, it is recommended to use _acme4j_ version 2, which fully imple
 
 Existing code should be migrated to _acme4j_ version 2 (see the [migration guide](https://shredzone.org/maven/acme4j/migration.html)). _Let's Encrypt_ has not yet announced a sunset date for ACME v1, so there seems to be plenty of time for migration at the moment.
 
+This _acme4j_ v1 branch is not actively maintained any more. It will only get bugfixes and security updates, but no new features. As soon as _Let's Encrypt_ officially ends its ACME v1 support, work on this branch will be stopped.
+
 ## Important
 
 In order to connect to the _Let's Encrypt_ servers, _acme4j_ has used a local truststore containing their SSL certificate. Native support of IdenTrust certificates was added to Java 8u101 in July 2016. Since then, the local truststore was not necessary any more. It has been disabled in _acme4j_ v0.12.
 
-**If you are still using _acme4j_ < v0.12, you should update to a later version soon.** The certificate in the local truststore expires on June 2018 (or maybe earlier, at the discretion of _Let's Encrypt_).
+**If you are still using _acme4j_ < v0.12, you must update to a later version!** The certificate in the local truststore expires in June 2018 (or maybe earlier, at the discretion of _Let's Encrypt_). After that, older _acme4j_ versions will not be able to connect to the _Let's Encrypt_ servers any more.
 
 ## Features
 
@@ -39,8 +41,8 @@ In order to connect to the _Let's Encrypt_ servers, _acme4j_ has used a local tr
 
 ## Contribute
 
-* Fork the [Source code at GitHub](https://github.com/shred/acme4j). Feel free to send pull requests.
-* Found a bug? [File a bug report!](https://github.com/shred/acme4j/issues). Please add a note that you are referring to the old ACMEv1 implementation!
+* Fork the [Source code at GitHub](https://github.com/shred/acme4j). Feel free to send pull requests. However, work on this branch is discontinued in favor of the ACMEv2 implementation in the master branch. We will only accept bug fixes and security related patches.
+* Found a bug? [File a bug report](https://github.com/shred/acme4j/issues). Please add a note that you are referring to the old ACMEv1 implementation!
 
 ## License
 
