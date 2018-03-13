@@ -104,8 +104,30 @@ public class ClientTest {
             csrb.write(out);
         }
 
-        // Get the certificate
+        // Order the certificate
         order.execute(csrb.getEncoded());
+
+        // Wait for the order to complete
+        try {
+            int attempts = 10;
+            while (order.getStatus() != Status.VALID && attempts-- > 0) {
+                // Did the order fail?
+                if (order.getStatus() == Status.INVALID) {
+                    throw new AcmeException("Order failed... Giving up.");
+                }
+
+                // Wait for a few seconds
+                Thread.sleep(3000L);
+
+                // Then update the status
+                order.update();
+            }
+        } catch (InterruptedException ex) {
+            LOG.error("interrupted", ex);
+            Thread.currentThread().interrupt();
+        }
+
+        // Get the certificate
         Certificate certificate = order.getCertificate();
 
         LOG.info("Success! The certificate for domains " + domains + " has been generated!");
