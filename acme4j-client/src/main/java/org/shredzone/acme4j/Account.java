@@ -158,7 +158,10 @@ public class Account extends AcmeJsonResource {
             conn.sendSignedRequest(newAuthzUrl, claims, getLogin());
 
             Authorization auth = getLogin().bindAuthorization(conn.getLocation());
-            auth.setJSON(conn.readJsonResponse());
+            JSON json = conn.readJsonResponse();
+            if (json != null) {
+                auth.setJSON(json);
+            }
             return auth;
         }
     }
@@ -224,7 +227,10 @@ public class Account extends AcmeJsonResource {
 
             conn.sendSignedRequest(getLocation(), claims, getLogin());
 
-            setJSON(conn.readJsonResponse());
+            JSON json = conn.readJsonResponse();
+            if (json != null) {
+                setJSON(json);
+            }
         }
     }
 
@@ -294,7 +300,10 @@ public class Account extends AcmeJsonResource {
 
                 conn.sendSignedRequest(getLocation(), claims, getLogin());
 
-                setJSON(conn.readJsonResponse());
+                JSON json = conn.readJsonResponse();
+                if (json != null) {
+                    setJSON(json);
+                }
             }
         }
     }

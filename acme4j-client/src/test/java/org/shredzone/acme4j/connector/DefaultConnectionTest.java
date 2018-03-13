@@ -427,6 +427,7 @@ public class DefaultConnectionTest {
         String jsonData = "{\"type\":\"urn:ietf:params:acme:error:unauthorized\",\"detail\":\"Invalid response: 404\"}";
 
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/problem+json");
+        when(mockUrlConnection.getContentLength()).thenReturn(jsonData.length());
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
         when(mockUrlConnection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
         when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
@@ -446,6 +447,7 @@ public class DefaultConnectionTest {
 
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
+        verify(mockUrlConnection).getContentLength();
         verify(mockUrlConnection).getErrorStream();
         verify(mockUrlConnection).getURL();
     }
@@ -461,6 +463,7 @@ public class DefaultConnectionTest {
         linkHeader.put("Link", Arrays.asList("<https://example.com/tos.pdf>; rel=\"terms-of-service\""));
 
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/problem+json");
+        when(mockUrlConnection.getContentLength()).thenReturn(jsonData.length());
         when(mockUrlConnection.getHeaderFields()).thenReturn(linkHeader);
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
         when(mockUrlConnection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
@@ -484,6 +487,7 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection, atLeastOnce()).getHeaderFields();
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verify(mockUrlConnection).getErrorStream();
+        verify(mockUrlConnection).getContentLength();
         verify(mockUrlConnection, atLeastOnce()).getURL();
     }
 
@@ -500,6 +504,7 @@ public class DefaultConnectionTest {
         Instant retryAfter = Instant.now().plusSeconds(30L).truncatedTo(ChronoUnit.MILLIS);
 
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/problem+json");
+        when(mockUrlConnection.getContentLength()).thenReturn(jsonData.length());
         when(mockUrlConnection.getHeaderField("Retry-After")).thenReturn(retryAfter.toString());
         when(mockUrlConnection.getHeaderFieldDate("Retry-After", 0L)).thenReturn(retryAfter.toEpochMilli());
         when(mockUrlConnection.getHeaderFields()).thenReturn(linkHeader);
@@ -529,6 +534,7 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection).getHeaderFieldDate("Retry-After", 0L);
         verify(mockUrlConnection, atLeastOnce()).getHeaderFields();
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
+        verify(mockUrlConnection).getContentLength();
         verify(mockUrlConnection).getErrorStream();
         verify(mockUrlConnection, atLeastOnce()).getURL();
     }
@@ -833,6 +839,7 @@ public class DefaultConnectionTest {
         String jsonData = "{\n\"foo\":123,\n\"bar\":\"a-string\"\n}\n";
 
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/json");
+        when(mockUrlConnection.getContentLength()).thenReturn(jsonData.length());
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
         when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
 
@@ -845,6 +852,7 @@ public class DefaultConnectionTest {
         }
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
+        verify(mockUrlConnection).getContentLength();
         verify(mockUrlConnection).getResponseCode();
         verify(mockUrlConnection).getInputStream();
         verifyNoMoreInteractions(mockUrlConnection);
