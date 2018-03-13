@@ -94,7 +94,7 @@ public interface Connection extends AutoCloseable {
     /**
      * Reads a server response as JSON data.
      *
-     * @return The JSON response
+     * @return The JSON response, or {@code null} if the server did not provide any data.
      */
     JSON readJsonResponse() throws AcmeException;
 

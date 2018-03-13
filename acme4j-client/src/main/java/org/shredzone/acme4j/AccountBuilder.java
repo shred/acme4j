@@ -35,6 +35,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
+import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -210,7 +211,10 @@ public class AccountBuilder {
             URL location = conn.getLocation();
 
             Login login = new Login(location, keyPair, session);
-            login.getAccount().setJSON(conn.readJsonResponse());
+            JSON json = conn.readJsonResponse();
+            if (json != null) {
+                login.getAccount().setJSON(json);
+            }
             return login;
         }
     }

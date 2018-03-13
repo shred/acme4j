@@ -192,6 +192,10 @@ public class DefaultConnection implements Connection {
     public JSON readJsonResponse() throws AcmeException {
         assertConnectionIsOpen();
 
+        if (conn.getContentLength() == 0) {
+            return null;
+        }
+
         String contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
         if (!("application/json".equals(contentType)
                     || "application/problem+json".equals(contentType))) {
