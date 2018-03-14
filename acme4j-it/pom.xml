@@ -117,7 +117,7 @@
                             <name>acme4j/pebble:${project.version}</name>
 
                             <build>
-                                <from>golang:1.9</from>
+                                <from>golang:1.10</from>
                                 <optimise>true</optimise>
                                 <runCmds>
                                     <run>go get -u -v -d gopkg.in/square/go-jose.v2</run>
