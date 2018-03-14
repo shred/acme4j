@@ -22,6 +22,7 @@ import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSONBuilder;
 
 /**
  * An extension of {@link Challenge} that handles challenges with a {@code token} and
@@ -31,6 +32,7 @@ public class TokenChallenge extends Challenge {
     private static final long serialVersionUID = 1634133407432681800L;
 
     protected static final String KEY_TOKEN = "token";
+    protected static final String KEY_KEY_AUTHORIZATION = "keyAuthorization";
 
     /**
      * Creates a new generic {@link TokenChallenge} object.
@@ -42,6 +44,12 @@ public class TokenChallenge extends Challenge {
      */
     public TokenChallenge(Login login, JSON data) {
         super(login, data);
+    }
+
+    @Override
+    protected void prepareResponse(JSONBuilder response) {
+        super.prepareResponse(response);
+        response.put(KEY_KEY_AUTHORIZATION, getAuthorization());
     }
 
     /**

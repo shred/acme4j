@@ -30,6 +30,8 @@ import org.shredzone.acme4j.toolbox.TestUtils;
  * Unit tests for {@link Dns01Challenge}.
  */
 public class DnsChallengeTest {
+    private static final String KEY_AUTHORIZATION =
+            "pNvmJivs0WCko2suV7fhe-59oFqyYx_yB7tx6kIMAyE.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0";
 
     private Login login = TestUtils.login();
 
@@ -43,12 +45,12 @@ public class DnsChallengeTest {
         assertThat(challenge.getType(), is(Dns01Challenge.TYPE));
         assertThat(challenge.getStatus(), is(Status.PENDING));
         assertThat(challenge.getDigest(), is("rzMmotrIgsithyBYc0vgiLUEEKYx0WetQRgEF2JIozA"));
-        assertThat(challenge.getAuthorization(), is("pNvmJivs0WCko2suV7fhe-59oFqyYx_yB7tx6kIMAyE.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0"));
 
         JSONBuilder response = new JSONBuilder();
         challenge.prepareResponse(response);
 
-        assertThat(response.toString(), sameJSONAs("{}").allowingExtraUnexpectedFields());
+        assertThat(response.toString(), sameJSONAs("{\"keyAuthorization\"=\""
+            + KEY_AUTHORIZATION + "\"}").allowingExtraUnexpectedFields());
     }
 
 }

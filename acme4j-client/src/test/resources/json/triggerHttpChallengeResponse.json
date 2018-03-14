@@ -2,5 +2,6 @@
   "type": "http-01",
   "status": "pending",
   "url": "https://example.com/acme/some-location",
-  "token": "IlirfxKKXAsHtmzK29Pj8A"
+  "token": "IlirfxKKXAsHtmzK29Pj8A",
+  "keyAuthorization": "XbmEGDDc2AMDArHLt5x7GxZfIRv0aScknUKlyf5S4KU.KMH_h8aGAKlY3VQqBUczm1cfo9kaovivy59rSY1xZ0E"
 }
