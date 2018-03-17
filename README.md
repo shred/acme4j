@@ -18,12 +18,6 @@ Existing code should be migrated to _acme4j_ version 2 (see the [migration guide
 
 This _acme4j_ v1 branch is not actively maintained any more. It will only get bugfixes and security updates, but no new features. As soon as _Let's Encrypt_ officially ends its ACME v1 support, work on this branch will be stopped.
 
-## Important
-
-In order to connect to the _Let's Encrypt_ servers, _acme4j_ has used a local truststore containing their SSL certificate. Native support of IdenTrust certificates was added to Java 8u101 in July 2016. Since then, the local truststore was not necessary any more. It has been disabled in _acme4j_ v0.12.
-
-**If you are still using _acme4j_ < v0.12, you must update to a later version!** The certificate in the local truststore expires in June 2018 (or maybe earlier, at the discretion of _Let's Encrypt_). After that, older _acme4j_ versions will not be able to connect to the _Let's Encrypt_ servers any more.
-
 ## Features
 
 * Supports the "ACME v1" protocol that is used by _Let's Encrypt_

@@ -10,7 +10,7 @@ Web site: [Let's Encrypt](https://letsencrypt.org)
 
 ## Compatibility
 
-If you have to use a Java version that is older than 8u101 and does not accept the _IdenTrust_ certificates of the _Let's Encrypt_ servers, you can use a hardcoded local truststore as a workaround by setting the `acme4j.le.certfix` system property to `true`. Please note that the hardwired certificate will expire by June, 2018.
+Java 8u101 or later is required for connecting to the _Let's Encrypt_ servers.
 
 ## Limits
 
