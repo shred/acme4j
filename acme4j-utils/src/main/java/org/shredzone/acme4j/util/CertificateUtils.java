@@ -133,22 +133,6 @@ public final class CertificateUtils {
     }
 
     /**
-     * Writes an X.509 certificate chain PEM file.
-     *
-     * @param chain
-     *            {@link X509Certificate[]} to write
-     * @param w
-     *            {@link Writer} to write the PEM file to. The {@link Writer} is closed
-     *            after use.
-     * @deprecated Use
-     *             {@link #writeX509CertificateChain(Writer, X509Certificate, X509Certificate...)}
-     */
-    @Deprecated
-    public static void writeX509CertificateChain(X509Certificate[] chain, Writer w) throws IOException {
-        writeX509CertificateChain(w, null, chain);
-    }
-
-    /**
      * Reads a CSR PEM file.
      *
      * @param in
@@ -164,43 +148,6 @@ public final class CertificateUtils {
             }
             return (PKCS10CertificationRequest) parsedObj;
         }
-    }
-
-    /**
-     * Creates a self-signed {@link X509Certificate} that can be used for
-     * {@link org.shredzone.acme4j.challenge.TlsSni01Challenge}. The certificate is valid
-     * for 7 days.
-     *
-     * @param keypair
-     *            A domain {@link KeyPair} to be used for the challenge
-     * @param subject
-     *            Subject to create a certificate for
-     * @return Created certificate
-     * @deprecated The tls-sni-01 challenge is deprecated
-     */
-    @Deprecated
-    public static X509Certificate createTlsSniCertificate(KeyPair keypair, String subject) throws IOException {
-        return createCertificate(keypair, subject);
-    }
-
-    /**
-     * Creates a self-signed {@link X509Certificate} that can be used for
-     * {@link org.shredzone.acme4j.challenge.TlsSni02Challenge}. The certificate is valid
-     * for 7 days.
-     *
-     * @param keypair
-     *            A domain {@link KeyPair} to be used for the challenge
-     * @param sanA
-     *            SAN-A to be used in the certificate
-     * @param sanB
-     *            SAN-B to be used in the certificate
-     * @return Created certificate
-     * @deprecated The tls-sni-02 challenge is deprecated
-     */
-    @Deprecated
-    public static X509Certificate createTlsSni02Certificate(KeyPair keypair, String sanA, String sanB)
-                throws IOException {
-        return createCertificate(keypair, sanA, sanB);
     }
 
     /**

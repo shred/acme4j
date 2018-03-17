@@ -25,9 +25,6 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
-import org.shredzone.acme4j.challenge.OutOfBand01Challenge;
-import org.shredzone.acme4j.challenge.TlsSni01Challenge;
-import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
@@ -41,7 +38,6 @@ import org.shredzone.acme4j.toolbox.JSON;
  * Implementing classes must implement at least {@link AcmeProvider#accepts(URI)}
  * and {@link AbstractAcmeProvider#resolve(URI)}.
  */
-@SuppressWarnings("deprecation")
 public abstract class AbstractAcmeProvider implements AcmeProvider {
 
     private static final Map<String, Function<Session, Challenge>> CHALLENGES = challengeMap();
@@ -68,10 +64,7 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
         Map<String, Function<Session, Challenge>> map = new HashMap<>();
 
         map.put(Dns01Challenge.TYPE, Dns01Challenge::new);
-        map.put(TlsSni01Challenge.TYPE, TlsSni01Challenge::new);
-        map.put(TlsSni02Challenge.TYPE, TlsSni02Challenge::new);
         map.put(Http01Challenge.TYPE, Http01Challenge::new);
-        map.put(OutOfBand01Challenge.TYPE, OutOfBand01Challenge::new);
 
         return Collections.unmodifiableMap(map);
     }

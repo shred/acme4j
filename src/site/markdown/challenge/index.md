@@ -10,6 +10,3 @@ The ACME specifications define these standard challenges:
 
 * [http-01](./http-01.html)
 * [dns-01](./dns-01.html)
-* [tls-sni-01](./tls-sni-01.html)
-* [tls-sni-02](./tls-sni-02.html)
-* [oob-01](./oob-01.html)

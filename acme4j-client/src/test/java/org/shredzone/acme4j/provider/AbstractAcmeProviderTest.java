@@ -30,8 +30,6 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
-import org.shredzone.acme4j.challenge.OutOfBand01Challenge;
-import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
@@ -41,7 +39,6 @@ import org.shredzone.acme4j.toolbox.TestUtils;
 /**
  * Unit tests for {@link AbstractAcmeProvider}.
  */
-@SuppressWarnings("deprecation")
 public class AbstractAcmeProviderTest {
 
     /**
@@ -148,20 +145,8 @@ public class AbstractAcmeProviderTest {
         assertThat(c3, not(nullValue()));
         assertThat(c3, instanceOf(Dns01Challenge.class));
 
-        Challenge c4 = provider.createChallenge(session, org.shredzone.acme4j.challenge.TlsSni01Challenge.TYPE);
-        assertThat(c4, not(nullValue()));
-        assertThat(c4, instanceOf(org.shredzone.acme4j.challenge.TlsSni01Challenge.class));
-
-        Challenge c5 = provider.createChallenge(session, TlsSni02Challenge.TYPE);
-        assertThat(c5, not(nullValue()));
-        assertThat(c5, instanceOf(TlsSni02Challenge.class));
-
         Challenge c6 = provider.createChallenge(session, "foobar-01");
         assertThat(c6, is(nullValue()));
-
-        Challenge c7 = provider.createChallenge(session, OutOfBand01Challenge.TYPE);
-        assertThat(c7, not(nullValue()));
-        assertThat(c7, instanceOf(OutOfBand01Challenge.class));
 
         Challenge c8 = provider.createChallenge(session, "");
         assertThat(c8, is(nullValue()));

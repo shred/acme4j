@@ -30,7 +30,6 @@ import org.junit.Test;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
-import org.shredzone.acme4j.challenge.TlsSni02Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
@@ -40,7 +39,6 @@ import org.shredzone.acme4j.toolbox.JSONBuilder;
 /**
  * Unit tests for {@link Authorization}.
  */
-@SuppressWarnings("deprecation")
 public class AuthorizationTest {
 
     private static final String SNAILMAIL_TYPE = "snail-01"; // a non-existent challenge
@@ -63,10 +61,6 @@ public class AuthorizationTest {
         Challenge c2 = authorization.findChallenge(Http01Challenge.TYPE);
         assertThat(c2, is(notNullValue()));
         assertThat(c2, is(instanceOf(Http01Challenge.class)));
-
-        // TlsSniChallenge is available, but not as standalone challenge
-        Challenge c3 = authorization.findChallenge(TlsSni02Challenge.TYPE);
-        assertThat(c3, is(nullValue()));
     }
 
     /**
@@ -84,31 +78,19 @@ public class AuthorizationTest {
         assertThat(c1, contains(instanceOf(Http01Challenge.class)));
 
         // Available combined challenge
-        Collection<Challenge> c2 = authorization.findCombination(Dns01Challenge.TYPE, TlsSni02Challenge.TYPE);
-        assertThat(c2, hasSize(2));
-        assertThat(c2, contains(instanceOf(Dns01Challenge.class),
-                        instanceOf(TlsSni02Challenge.class)));
+        Collection<Challenge> c2 = authorization.findCombination(Dns01Challenge.TYPE, Http01Challenge.TYPE);
+        assertThat(c2, hasSize(1));
+        assertThat(c2, contains(instanceOf(Http01Challenge.class)));
 
         // Order does not matter
-        Collection<Challenge> c3 = authorization.findCombination(TlsSni02Challenge.TYPE, Dns01Challenge.TYPE);
-        assertThat(c3, hasSize(2));
-        assertThat(c3, contains(instanceOf(Dns01Challenge.class),
-                        instanceOf(TlsSni02Challenge.class)));
+        Collection<Challenge> c3 = authorization.findCombination(Http01Challenge.TYPE, Dns01Challenge.TYPE);
+        assertThat(c3, hasSize(1));
+        assertThat(c3, contains(instanceOf(Http01Challenge.class)));
 
         // Finds smaller combinations as well
-        Collection<Challenge> c4 = authorization.findCombination(Dns01Challenge.TYPE, TlsSni02Challenge.TYPE, SNAILMAIL_TYPE);
-        assertThat(c4, hasSize(2));
-        assertThat(c4, contains(instanceOf(Dns01Challenge.class),
-                        instanceOf(TlsSni02Challenge.class)));
-
-        // Finds the smallest possible combination
-        Collection<Challenge> c5 = authorization.findCombination(Dns01Challenge.TYPE, TlsSni02Challenge.TYPE, Http01Challenge.TYPE);
-        assertThat(c5, hasSize(1));
-        assertThat(c5, contains(instanceOf(Http01Challenge.class)));
-
-        // Finds only entire combinations
-        Collection<Challenge> c6 = authorization.findCombination(Dns01Challenge.TYPE);
-        assertThat(c6, is(empty()));
+        Collection<Challenge> c4 = authorization.findCombination(Dns01Challenge.TYPE, Http01Challenge.TYPE, SNAILMAIL_TYPE);
+        assertThat(c4, hasSize(1));
+        assertThat(c4, contains(instanceOf(Http01Challenge.class)));
 
         // Does not find challenges that have not been provided
         Collection<Challenge> c7 = authorization.findCombination(SNAILMAIL_TYPE);
@@ -327,7 +309,6 @@ public class AuthorizationTest {
 
             provider.putTestChallenge(Http01Challenge.TYPE, new Http01Challenge(session));
             provider.putTestChallenge(Dns01Challenge.TYPE, new Dns01Challenge(session));
-            provider.putTestChallenge(TlsSni02Challenge.TYPE, new TlsSni02Challenge(session));
 
             Authorization authorization = new Authorization(session, locationUrl);
             authorization.unmarshalAuthorization(getJsonAsObject("authorizationChallenges"));
