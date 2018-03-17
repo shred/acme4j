@@ -56,7 +56,7 @@ public class TokenChallenge extends Challenge {
      * Gets the token.
      */
     protected String getToken() {
-        return getJSON().get(KEY_TOKEN).required().asString();
+        return getJSON().get(KEY_TOKEN).asString();
     }
 
     /**

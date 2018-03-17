@@ -121,7 +121,6 @@ public class AccountBuilderTest {
 
                     JSON binding = claims.toJSON()
                                     .get("externalAccountBinding")
-                                    .required()
                                     .asObject();
 
                     String encodedHeader = binding.get("protected").asString();

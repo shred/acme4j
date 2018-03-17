@@ -31,6 +31,7 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSON.Value;
 
 /**
  * A session stores the ACME server URI. It also tracks communication parameters.
@@ -193,19 +194,18 @@ public class Session {
 
         JSON directoryJson = provider().directory(this, getServerUri());
 
-        JSON meta = directoryJson.get("meta").asObject();
-        if (meta != null) {
-            metadata.set(new Metadata(meta));
+        Value meta = directoryJson.get("meta");
+        if (meta.isPresent()) {
+            metadata.set(new Metadata(meta.asObject()));
         } else {
             metadata.set(new Metadata(JSON.empty()));
         }
 
         Map<Resource, URL> map = new EnumMap<>(Resource.class);
         for (Resource res : Resource.values()) {
-            URL url = directoryJson.get(res.path()).asURL();
-            if (url != null) {
-                map.put(res, url);
-            }
+            directoryJson.get(res.path())
+                    .map(Value::asURL)
+                    .ifPresent(url -> map.put(res, url));
         }
 
         resourceMap.set(map);

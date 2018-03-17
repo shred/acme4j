@@ -23,6 +23,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSON.Value;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +56,7 @@ public class Challenge extends AcmeJsonResource {
      *            {@link JSON} challenge data
      */
     public Challenge(Login login, JSON data) {
-        super(login, data.get(KEY_URL).required().asURL());
+        super(login, data.get(KEY_URL).asURL());
         setJSON(data);
     }
 
@@ -73,14 +74,14 @@ public class Challenge extends AcmeJsonResource {
      * {@link Status#VALID}, {@link Status#INVALID}.
      */
     public Status getStatus() {
-        return getJSON().get(KEY_STATUS).asStatusOrElse(Status.UNKNOWN);
+        return getJSON().get(KEY_STATUS).asStatus();
     }
 
     /**
      * Returns the validation date, if returned by the server.
      */
     public Instant getValidated() {
-        return getJSON().get(KEY_VALIDATED).asInstant();
+        return getJSON().get(KEY_VALIDATED).map(Value::asInstant).orElse(null);
     }
 
     /**
@@ -89,7 +90,9 @@ public class Challenge extends AcmeJsonResource {
      * {@link Problem#getSubProblems()}.
      */
     public Problem getError() {
-        return getJSON().get(KEY_ERROR).asProblem(getLocation());
+        return getJSON().get(KEY_ERROR)
+                    .map(it -> it.asProblem(getLocation()))
+                    .orElse(null);
     }
 
     /**
@@ -115,13 +118,13 @@ public class Challenge extends AcmeJsonResource {
 
     @Override
     protected void setJSON(JSON json) {
-        String type = json.get(KEY_TYPE).required().asString();
+        String type = json.get(KEY_TYPE).asString();
 
         if (!acceptable(type)) {
             throw new AcmeProtocolException("incompatible type " + type + " for this challenge");
         }
 
-        String loc = json.get(KEY_URL).required().asString();
+        String loc = json.get(KEY_URL).asString();
         if (loc != null && !loc.equals(getLocation().toString())) {
             throw new AcmeProtocolException("challenge has changed its location");
         }

@@ -40,6 +40,7 @@ import org.junit.Test;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
+import org.shredzone.acme4j.toolbox.JSON.Value;
 
 /**
  * Unit test for {@link JSON}.
@@ -198,10 +199,12 @@ public class JSONTest {
         assertThat(json.get("uri").asURI(), is(URI.create("mailto:foo@example.com")));
         assertThat(json.get("url").asURL(), is(url("http://example.com")));
         assertThat(json.get("date").asInstant(), is(date));
-        assertThat(json.get("status").asStatusOrElse(Status.INVALID), is(Status.VALID));
+        assertThat(json.get("status").asStatus(), is(Status.VALID));
         assertThat(json.get("binary").asBinary(), is("Chainsaw".getBytes()));
 
+        assertThat(json.get("text").isPresent(), is(true));
         assertThat(json.get("text").optional().isPresent(), is(true));
+        assertThat(json.get("text").map(Value::asString).isPresent(), is(true));
 
         JSON.Array array = json.get("array").asArray();
         assertThat(array.get(0).asString(), is("foo"));
@@ -230,20 +233,65 @@ public class JSONTest {
         JSON json = TestUtils.getJSON("datatypes");
 
         assertThat(json.get("none"), is(notNullValue()));
-        assertThat(json.get("none").asString(), is(nullValue()));
-        assertThat(json.get("none").asURI(), is(nullValue()));
-        assertThat(json.get("none").asURL(), is(nullValue()));
-        assertThat(json.get("none").asInstant(), is(nullValue()));
-        assertThat(json.get("none").asObject(), is(nullValue()));
-        assertThat(json.get("none").asStatusOrElse(Status.INVALID), is(Status.INVALID));
-        assertThat(json.get("none").asBinary(), is(nullValue()));
-        assertThat(json.get("none").asProblem(BASE_URL), is(nullValue()));
-
-        assertThat(json.get("none").orElse("foo").asString(), is("foo"));
-        assertThat(json.get("none").orElse(42).asInt(), is(42));
-        assertThat(json.get("none").orElse(true).asBoolean(), is(true));
-
+        assertThat(json.get("none").isPresent(), is(false));
         assertThat(json.get("none").optional().isPresent(), is(false));
+        assertThat(json.get("none").map(Value::asString).isPresent(), is(false));
+
+        try {
+            json.get("none").asString();
+            fail("asString did not fail");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
+
+        try {
+            json.get("none").asURI();
+            fail("asURI did not fail");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
+
+        try {
+            json.get("none").asURL();
+            fail("asURL did not fail");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
+
+        try {
+            json.get("none").asInstant();
+            fail("asInstant did not fail");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
+
+        try {
+            json.get("none").asObject();
+            fail("asObject did not fail");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
+
+        try {
+            json.get("none").asStatus();
+            fail("asStatus did not fail");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
+
+        try {
+            json.get("none").asBinary();
+            fail("asBinary did not fail");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
+
+        try {
+            json.get("none").asProblem(BASE_URL);
+            fail("asProblem did not fail");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
 
         try {
             json.get("none").asInt();
@@ -258,16 +306,6 @@ public class JSONTest {
         } catch (AcmeProtocolException ex) {
             // expected
         }
-
-        try {
-            json.get("none").required();
-            fail("required did not fail");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        JSON.Value textv = json.get("text");
-        assertThat(textv.required(), is(textv));
     }
 
     /**

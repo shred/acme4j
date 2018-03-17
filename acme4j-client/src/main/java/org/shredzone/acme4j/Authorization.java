@@ -50,12 +50,12 @@ public class Authorization extends AcmeJsonResource {
      * order, check the {@link #isWildcard()} method.
      */
     public String getDomain() {
-        JSON jsonIdentifier = getJSON().get("identifier").required().asObject();
-        String type = jsonIdentifier.get("type").required().asString();
+        JSON jsonIdentifier = getJSON().get("identifier").asObject();
+        String type = jsonIdentifier.get("type").asString();
         if (!"dns".equals(type)) {
             throw new AcmeProtocolException("Unknown authorization type: " + type);
         }
-        return jsonIdentifier.get("value").required().asString();
+        return jsonIdentifier.get("value").asString();
     }
 
     /**
@@ -65,14 +65,14 @@ public class Authorization extends AcmeJsonResource {
      * {@link Status#INVALID}, {@link Status#DEACTIVATED}, {@link Status#REVOKED}.
      */
     public Status getStatus() {
-        return getJSON().get("status").asStatusOrElse(Status.UNKNOWN);
+        return getJSON().get("status").asStatus();
     }
 
     /**
      * Gets the expiry date of the authorization, if set by the server.
      */
     public Instant getExpires() {
-        return getJSON().get("expires").optional()
+        return getJSON().get("expires")
                     .map(Value::asString)
                     .map(AcmeUtils::parseTimestamp)
                     .orElse(null);
@@ -83,7 +83,7 @@ public class Authorization extends AcmeJsonResource {
      * {@code false} otherwise.
      */
     public boolean isWildcard() {
-        return getJSON().get("wildcard").optional()
+        return getJSON().get("wildcard")
                     .map(Value::asBoolean)
                     .orElse(false);
     }

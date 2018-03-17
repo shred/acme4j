@@ -24,6 +24,7 @@ import java.util.List;
 
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JSON.Value;
 
 /**
  * Represents a JSON Problem.
@@ -53,12 +54,16 @@ public class Problem implements Serializable {
      * Returns the problem type. It is always an absolute URI.
      */
     public URI getType() {
-        try {
-            String type = problemJson.get("type").asString();
-            return type != null ? baseUrl.toURI().resolve(type) : null;
-        } catch (URISyntaxException ex) {
-            throw new IllegalArgumentException("Bad base URL", ex);
-        }
+        return problemJson.get("type")
+                    .map(Value::asString)
+                    .map(it -> {
+                        try {
+                            return baseUrl.toURI().resolve(it);
+                        } catch (URISyntaxException ex) {
+                            throw new IllegalArgumentException("Bad base URL", ex);
+                        }
+                    })
+                    .orElse(null);
     }
 
     /**
@@ -68,7 +73,7 @@ public class Problem implements Serializable {
      * @see #toString()
      */
     public String getTitle() {
-        return problemJson.get("title").asString();
+        return problemJson.get("title").map(Value::asString).orElse(null);
     }
 
     /**
@@ -78,7 +83,7 @@ public class Problem implements Serializable {
      * @see #toString()
      */
     public String getDetail() {
-        return problemJson.get("detail").asString();
+        return problemJson.get("detail").map(Value::asString).orElse(null);
     }
 
     /**
@@ -86,29 +91,35 @@ public class Problem implements Serializable {
      * an absolute URI.
      */
     public URI getInstance() {
-        try {
-            String instance = problemJson.get("instance").asString();
-            return instance != null ? baseUrl.toURI().resolve(instance) : null;
-        } catch (URISyntaxException ex) {
-            throw new IllegalArgumentException("Bad base URL", ex);
-        }
+        return problemJson.get("instance")
+                        .map(Value::asString)
+                        .map(it ->  {
+                            try {
+                                return baseUrl.toURI().resolve(it);
+                            } catch (URISyntaxException ex) {
+                                throw new IllegalArgumentException("Bad base URL", ex);
+                            }
+                        })
+                        .orElse(null);
     }
 
     /**
      * Returns the domain this problem relates to. May be {@code null}.
      */
     public String getDomain() {
-        JSON identifier = problemJson.get("identifier").asObject();
-        if (identifier == null) {
+        Value identifier = problemJson.get("identifier");
+        if (!identifier.isPresent()) {
             return null;
         }
 
-        String type = identifier.get("type").asString();
+        JSON json = identifier.asObject();
+
+        String type = json.get("type").asString();
         if (!"dns".equals(type)) {
             throw new AcmeProtocolException("Cannot process a " + type + " identifier");
         }
 
-        return identifier.get("value").asString();
+        return json.get("value").asString();
     }
 
     /**
@@ -117,7 +128,8 @@ public class Problem implements Serializable {
     public List<Problem> getSubProblems() {
         return unmodifiableList(
                 problemJson.get("subproblems")
-                        .asArray().stream()
+                        .asArray()
+                        .stream()
                         .map(o -> o.asProblem(baseUrl))
                         .collect(toList())
         );

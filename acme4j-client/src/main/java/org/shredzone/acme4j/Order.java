@@ -45,21 +45,21 @@ public class Order extends AcmeJsonResource {
      * {@link Status#PROCESSING}, {@link Status#VALID}, {@link Status#INVALID}.
      */
     public Status getStatus() {
-        return getJSON().get("status").asStatusOrElse(Status.UNKNOWN);
+        return getJSON().get("status").asStatus();
     }
 
     /**
      * Returns a {@link Problem} document if the order failed.
      */
     public Problem getError() {
-        return getJSON().get("error").asProblem(getLocation());
+        return getJSON().get("error").map(v -> v.asProblem(getLocation())).orElse(null);
     }
 
     /**
      * Gets the expiry date of the authorization, if set by the server.
      */
     public Instant getExpires() {
-        return getJSON().get("expires").asInstant();
+        return getJSON().get("expires").map(Value::asInstant).orElse(null);
     }
 
     /**
@@ -78,14 +78,14 @@ public class Order extends AcmeJsonResource {
      * Gets the "not before" date that was used for the order, or {@code null}.
      */
     public Instant getNotBefore() {
-        return getJSON().get("notBefore").asInstant();
+        return getJSON().get("notBefore").map(Value::asInstant).orElse(null);
     }
 
     /**
      * Gets the "not after" date that was used for the order, or {@code null}.
      */
     public Instant getNotAfter() {
-        return getJSON().get("notAfter").asInstant();
+        return getJSON().get("notAfter").map(Value::asInstant).orElse(null);
     }
 
     /**
@@ -114,7 +114,7 @@ public class Order extends AcmeJsonResource {
      * Gets the {@link Certificate} if it is available. {@code null} otherwise.
      */
     public Certificate getCertificate() {
-        return getJSON().get("certificate").optional()
+        return getJSON().get("certificate")
                     .map(Value::asURL)
                     .map(getLogin()::bindCertificate)
                     .orElse(null);

@@ -64,7 +64,7 @@ public class Account extends AcmeJsonResource {
      *         {@code null} if the server did not provide such an information.
      */
     public Boolean getTermsOfServiceAgreed() {
-        return getJSON().get(KEY_TOS_AGREED).optional().map(Value::asBoolean).orElse(null);
+        return getJSON().get(KEY_TOS_AGREED).map(Value::asBoolean).orElse(null);
     }
 
     /**
@@ -85,7 +85,7 @@ public class Account extends AcmeJsonResource {
      * {@link Status#REVOKED}.
      */
     public Status getStatus() {
-        return getJSON().get(KEY_STATUS).asStatusOrElse(Status.UNKNOWN);
+        return getJSON().get(KEY_STATUS).asStatus();
     }
 
     /**

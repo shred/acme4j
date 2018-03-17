@@ -37,6 +37,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -247,6 +248,9 @@ public final class JSON implements Serializable {
 
     /**
      * A single JSON value. This instance also covers {@code null} values.
+     * <p>
+     * All return values are never {@code null} unless specified otherwise. For optional
+     * parameters, use {@link Value#optional()}.
      */
     public static final class Value {
         private final String path;
@@ -266,57 +270,52 @@ public final class JSON implements Serializable {
         }
 
         /**
+         * Checks if this value is {@code null}.
+         *
+         * @return {@code true} if this value is present, {@code false} if {@code null}.
+         */
+        public boolean isPresent() {
+            return val != null;
+        }
+
+        /**
          * Returns this value as {@link Optional}, for further mapping and filtering.
          *
          * @return {@link Optional} of this value, or {@link Optional#empty()} if this
          *         value is {@code null}.
+         * @see #map(Function)
          */
         public Optional<Value> optional() {
             return val != null ? Optional.of(this) : Optional.empty();
         }
 
         /**
-         * Checks if the value is present. An {@link AcmeProtocolException} is thrown if
-         * the value is {@code null}.
+         * Returns this value as an {@link Optional} of the desired type, for further
+         * mapping and filtering.
          *
-         * @return itself
+         * @param mapper
+         *            A {@link Function} that converts a {@link Value} to the desired type
+         * @return {@link Optional} of this value, or {@link Optional#empty()} if this
+         *         value is {@code null}.
+         * @see #optional()
          */
-        public Value required() {
-            if (val == null) {
-                throw new AcmeProtocolException(path + ": required, but not set");
-            }
-            return this;
-        }
-
-        /**
-         * Checks if the value is present. If not, the default value is used instead.
-         *
-         * @param def Default value
-         * @return itself
-         */
-        public Value orElse(Object def) {
-            return val != null ? this : new Value(path, def);
+        public <T> Optional<T> map(Function <Value, T> mapper) {
+            return optional().map(mapper);
         }
 
         /**
          * Returns the value as {@link String}.
-         *
-         * @return {@link String}, or {@code null} if the value was not set.
          */
         public String asString() {
-            return val != null ? val.toString() : null;
+            required();
+            return val.toString();
         }
 
         /**
          * Returns the value as JSON object.
-         *
-         * @return {@link JSON}, or {@code null} if the value was not set.
          */
         public JSON asObject() {
-            if (val == null) {
-                return null;
-            }
-
+            required();
             try {
                 return new JSON(path, (Map<String, Object>) val);
             } catch (ClassCastException ex) {
@@ -329,20 +328,17 @@ public final class JSON implements Serializable {
          *
          * @param baseUrl
          *            Base {@link URL} to resolve relative links against
-         * @return {@link Problem}, or {@code null} if the value was not set.
          */
         public Problem asProblem(URL baseUrl) {
-            if (val == null) {
-                return null;
-            }
-
+            required();
             return new Problem(asObject(), baseUrl);
         }
 
         /**
-         * Returns the value as JSON array.
-         *
-         * @return {@link JSON.Array}, which is empty if the value was not set.
+         * Returns the value as {@link JSON.Array}.
+         * <p>
+         * Unlike the other getters, this method returns an empty array if the value is
+         * not set. Use {@link #isPresent()} to find out if the value was actually set.
          */
         public Array asArray() {
             if (val == null) {
@@ -358,12 +354,9 @@ public final class JSON implements Serializable {
 
         /**
          * Returns the value as int.
-         *
-         * @return integer value
          */
         public int asInt() {
             required();
-
             try {
                 return ((Number) val).intValue();
             } catch (ClassCastException ex) {
@@ -373,12 +366,9 @@ public final class JSON implements Serializable {
 
         /**
          * Returns the value as boolean.
-         *
-         * @return integer value
          */
         public boolean asBoolean() {
             required();
-
             try {
                 return (Boolean) val;
             } catch (ClassCastException ex) {
@@ -388,14 +378,9 @@ public final class JSON implements Serializable {
 
         /**
          * Returns the value as {@link URI}.
-         *
-         * @return {@link URI}, or {@code null} if the value was not set.
          */
         public URI asURI() {
-            if (val == null) {
-                return null;
-            }
-
+            required();
             try {
                 return new URI(val.toString());
             } catch (URISyntaxException ex) {
@@ -405,14 +390,9 @@ public final class JSON implements Serializable {
 
         /**
          * Returns the value as {@link URL}.
-         *
-         * @return {@link URL}, or {@code null} if the value was not set.
          */
         public URL asURL() {
-            if (val == null) {
-                return null;
-            }
-
+            required();
             try {
                 return new URL(val.toString());
             } catch (MalformedURLException ex) {
@@ -422,14 +402,9 @@ public final class JSON implements Serializable {
 
         /**
          * Returns the value as {@link Instant}.
-         *
-         * @return {@link Instant}, or {@code null} if the value was not set.
          */
         public Instant asInstant() {
-            if (val == null) {
-                return null;
-            }
-
+            required();
             try {
                 return parseTimestamp(val.toString());
             } catch (IllegalArgumentException ex) {
@@ -439,30 +414,28 @@ public final class JSON implements Serializable {
 
         /**
          * Returns the value as base64 decoded byte array.
-         *
-         * @return byte array, or {@code null} if the value was not set.
          */
         public byte[] asBinary() {
-            if (val == null) {
-                return null; //NOSONAR: we want to return null here
-            }
-
+            required();
             return AcmeUtils.base64UrlDecode(val.toString());
         }
 
         /**
-         * Returns the parsed status.
-         *
-         * @param def
-         *            Default status if value is not present or {@code null}
-         * @return {@link Status}
+         * Returns the parsed {@link Status}.
          */
-        public Status asStatusOrElse(Status def) {
-            if (val == null) {
-                return def;
-            }
-
+        public Status asStatus() {
+            required();
             return Status.parse(val.toString());
+        }
+
+        /**
+         * Checks if the value is present. An {@link AcmeProtocolException} is thrown if
+         * the value is {@code null}.
+         */
+        private void required() {
+            if (!isPresent()) {
+                throw new AcmeProtocolException(path + ": required, but not set");
+            }
         }
 
         @Override

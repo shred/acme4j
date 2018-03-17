@@ -60,8 +60,6 @@ public class ChallengeTest {
         assertThat(challenge.getValidated(), is(parseTimestamp("2015-12-12T17:19:36.336785823Z")));
         assertThat(challenge.getJSON().get("type").asString(), is("generic-01"));
         assertThat(challenge.getJSON().get("url").asURL(), is(url("http://example.com/challenge/123")));
-        assertThat(challenge.getJSON().get("notPresent").asString(), is(nullValue()));
-        assertThat(challenge.getJSON().get("notPresentUrl").asURL(), is(nullValue()));
 
         Problem error = challenge.getError();
         assertThat(error, is(notNullValue()));

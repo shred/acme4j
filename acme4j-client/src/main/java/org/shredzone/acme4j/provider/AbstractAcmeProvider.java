@@ -86,7 +86,7 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
         Objects.requireNonNull(login, "login");
         Objects.requireNonNull(data, "data");
 
-        String type = data.get("type").required().asString();
+        String type = data.get("type").asString();
 
         BiFunction<Login, JSON, Challenge> constructor = CHALLENGES.get(type);
         if (constructor != null) {
