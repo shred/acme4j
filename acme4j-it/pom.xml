@@ -132,7 +132,7 @@
                                 <cmd>
                                     <shell>
                                         echo "nameserver $(grep 'bammbamm' /etc/hosts|cut -f1)"&gt;/etc/resolv.conf; \
-                                        pebble -config /etc/pebble/pebble-config.json
+                                        pebble -strict -config /etc/pebble/pebble-config.json
                                     </shell>
                                 </cmd>
                                 <assembly>
