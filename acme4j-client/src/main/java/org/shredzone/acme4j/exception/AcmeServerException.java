@@ -16,12 +16,17 @@ package org.shredzone.acme4j.exception;
 import java.net.URI;
 import java.util.Objects;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.concurrent.Immutable;
+
 import org.shredzone.acme4j.Problem;
 
 /**
  * An exception that is thrown when the ACME server returned an error. It contains
  * further details of the cause.
  */
+@ParametersAreNonnullByDefault
+@Immutable
 public class AcmeServerException extends AcmeException {
     private static final long serialVersionUID = 5971622508467042792L;
 

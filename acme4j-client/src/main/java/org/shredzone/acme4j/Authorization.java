@@ -20,6 +20,9 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -34,6 +37,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Represents an authorization request at the ACME server.
  */
+@ParametersAreNonnullByDefault
 public class Authorization extends AcmeJsonResource {
     private static final long serialVersionUID = -3116928998379417741L;
     private static final Logger LOG = LoggerFactory.getLogger(Authorization.class);
@@ -71,6 +75,7 @@ public class Authorization extends AcmeJsonResource {
     /**
      * Gets the expiry date of the authorization, if set by the server.
      */
+    @CheckForNull
     public Instant getExpires() {
         return getJSON().get("expires")
                     .map(Value::asString)
@@ -114,6 +119,7 @@ public class Authorization extends AcmeJsonResource {
      *             if the type does not match the expected Challenge class type
      */
     @SuppressWarnings("unchecked")
+    @CheckForNull
     public <T extends Challenge> T findChallenge(final String type) {
         return (T) getChallenges().stream()
                 .filter(ch -> type.equals(ch.getType()))

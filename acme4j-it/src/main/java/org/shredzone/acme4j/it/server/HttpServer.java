@@ -22,6 +22,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +36,7 @@ import fi.iki.elonen.NanoHTTPD.Response.Status;
  * <p>
  * This server can be used to validate {@code http-01} challenges.
  */
+@ParametersAreNonnullByDefault
 public class HttpServer {
     private static final Logger LOG = LoggerFactory.getLogger(HttpServer.class);
 

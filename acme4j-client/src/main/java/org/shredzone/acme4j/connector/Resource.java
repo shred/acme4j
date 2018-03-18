@@ -13,9 +13,14 @@
  */
 package org.shredzone.acme4j.connector;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.concurrent.Immutable;
+
 /**
  * Enumeration of resources.
  */
+@ParametersAreNonnullByDefault
+@Immutable
 public enum Resource {
 
     NEW_NONCE("newNonce"),

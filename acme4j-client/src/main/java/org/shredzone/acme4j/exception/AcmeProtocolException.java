@@ -13,10 +13,15 @@
  */
 package org.shredzone.acme4j.exception;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.concurrent.Immutable;
+
 /**
  * This runtime exception is thrown on ACME protocol errors that should not occur. For
  * example, this exception is thrown when a server response could not be parsed.
  */
+@ParametersAreNonnullByDefault
+@Immutable
 public class AcmeProtocolException extends RuntimeException {
     private static final long serialVersionUID = 2031203835755725193L;
 

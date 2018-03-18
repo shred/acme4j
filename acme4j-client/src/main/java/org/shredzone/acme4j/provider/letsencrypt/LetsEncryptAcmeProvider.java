@@ -17,6 +17,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AbstractAcmeProvider;
 import org.shredzone.acme4j.provider.AcmeProvider;
@@ -31,6 +33,7 @@ import org.shredzone.acme4j.provider.AcmeProvider;
  *
  * @see <a href="https://letsencrypt.org/">Let's Encrypt</a>
  */
+@ParametersAreNonnullByDefault
 public class LetsEncryptAcmeProvider extends AbstractAcmeProvider {
 
     private static final String V02_DIRECTORY_URL = "https://acme-v02.api.letsencrypt.org/directory";

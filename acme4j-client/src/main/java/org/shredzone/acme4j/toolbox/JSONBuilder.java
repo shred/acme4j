@@ -24,6 +24,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.PublicJsonWebKey;
@@ -41,6 +44,7 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
  * cb.array("array", 123, 456, 789);
  * </pre>
  */
+@ParametersAreNonnullByDefault
 public class JSONBuilder {
 
     private final Map<String, Object> data = new LinkedHashMap<>();
@@ -54,7 +58,7 @@ public class JSONBuilder {
      *            Property value
      * @return {@code this}
      */
-    public JSONBuilder put(String key, Object value) {
+    public JSONBuilder put(String key, @Nullable Object value) {
         data.put(Objects.requireNonNull(key, "key"), value);
         return this;
     }
@@ -69,7 +73,7 @@ public class JSONBuilder {
      *            Property {@link Instant} value
      * @return {@code this}
      */
-    public JSONBuilder put(String key, Instant value) {
+    public JSONBuilder put(String key, @Nullable Instant value) {
         if (value == null) {
             put(key, (Object) null);
             return this;

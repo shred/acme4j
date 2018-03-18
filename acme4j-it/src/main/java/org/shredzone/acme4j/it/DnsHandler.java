@@ -16,6 +16,8 @@ package org.shredzone.acme4j.it;
 import java.net.InetAddress;
 import java.util.Map;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.shredzone.acme4j.it.server.DnsServer;
 
 import fi.iki.elonen.NanoHTTPD.IHTTPSession;
@@ -23,6 +25,7 @@ import fi.iki.elonen.NanoHTTPD.IHTTPSession;
 /**
  * Request handler for all {@code dns-01} related requests.
  */
+@ParametersAreNonnullByDefault
 public final class DnsHandler {
 
     public static final String ADD_A_RECORD = "/dns/add/a/:domain";
@@ -37,6 +40,7 @@ public final class DnsHandler {
     /**
      * Adds an A Record.
      */
+    @ParametersAreNonnullByDefault
     public static class AddARecord extends AbstractResponder {
         @Override
         public void handle(Map<String, String> urlParams, IHTTPSession session) throws Exception {
@@ -51,6 +55,7 @@ public final class DnsHandler {
     /**
      * Removes an A Record.
      */
+    @ParametersAreNonnullByDefault
     public static class RemoveARecord extends AbstractResponder {
         @Override
         public void handle(Map<String, String> urlParams, IHTTPSession session) throws Exception {
@@ -64,6 +69,7 @@ public final class DnsHandler {
     /**
      * Adds a TXT Record.
      */
+    @ParametersAreNonnullByDefault
     public static class AddTxtRecord extends AbstractResponder {
         @Override
         public void handle(Map<String, String> urlParams, IHTTPSession session) throws Exception {
@@ -78,6 +84,7 @@ public final class DnsHandler {
     /**
      * Removes a TXT Record.
      */
+    @ParametersAreNonnullByDefault
     public static class RemoveTxtRecord extends AbstractResponder {
         @Override
         public void handle(Map<String, String> urlParams, IHTTPSession session) throws Exception {

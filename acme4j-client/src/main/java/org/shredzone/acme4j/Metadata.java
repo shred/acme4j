@@ -19,12 +19,18 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.concurrent.Immutable;
+
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 
 /**
  * Contains metadata related to the provider.
  */
+@ParametersAreNonnullByDefault
+@Immutable
 public class Metadata {
 
     private final JSON meta;
@@ -43,6 +49,7 @@ public class Metadata {
      * Returns an {@link URI} to the current terms of service, or {@code null} if not
      * available.
      */
+    @CheckForNull
     public URI getTermsOfService() {
         return meta.get("termsOfService").map(Value::asURI).orElse(null);
     }
@@ -51,6 +58,7 @@ public class Metadata {
      * Returns an {@link URL} to a website providing more information about the ACME
      * server. {@code null} if not available.
      */
+    @CheckForNull
     public URL getWebsite() {
         return meta.get("website").map(Value::asURL).orElse(null);
     }

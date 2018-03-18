@@ -20,6 +20,8 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -34,6 +36,7 @@ import org.apache.http.util.EntityUtils;
 /**
  * A BammBamm client.
  */
+@ParametersAreNonnullByDefault
 public class BammBammClient {
     private final String baseUrl;
 
@@ -145,6 +148,7 @@ public class BammBammClient {
     /**
      * This class helps to assemble and invoke a HTTP POST request.
      */
+    @ParametersAreNonnullByDefault
     private static class Request {
         private static final HttpClient CLIENT = HttpClients.createDefault();
         private static final Charset UTF8 = Charset.forName("utf-8");

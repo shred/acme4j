@@ -15,6 +15,9 @@ package org.shredzone.acme4j.challenge;
 
 import java.time.Instant;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.shredzone.acme4j.AcmeJsonResource;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
@@ -37,6 +40,7 @@ import org.slf4j.LoggerFactory;
  * own type. {@link Challenge#prepareResponse(JSONBuilder)} should be overridden to put
  * all required data to the response.
  */
+@ParametersAreNonnullByDefault
 public class Challenge extends AcmeJsonResource {
     private static final long serialVersionUID = 2338794776848388099L;
     private static final Logger LOG = LoggerFactory.getLogger(Challenge.class);
@@ -80,6 +84,7 @@ public class Challenge extends AcmeJsonResource {
     /**
      * Returns the validation date, if returned by the server.
      */
+    @CheckForNull
     public Instant getValidated() {
         return getJSON().get(KEY_VALIDATED).map(Value::asInstant).orElse(null);
     }
@@ -89,6 +94,7 @@ public class Challenge extends AcmeJsonResource {
      * server. If there are multiple errors, they can be found in
      * {@link Problem#getSubProblems()}.
      */
+    @CheckForNull
     public Problem getError() {
         return getJSON().get(KEY_ERROR)
                     .map(it -> it.asProblem(getLocation()))

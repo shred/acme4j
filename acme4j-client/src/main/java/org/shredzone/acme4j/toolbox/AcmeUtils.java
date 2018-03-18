@@ -27,6 +27,11 @@ import java.util.Base64;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.WillNotClose;
+import javax.annotation.concurrent.Immutable;
 import javax.crypto.SecretKey;
 
 import org.jose4j.base64url.Base64Url;
@@ -43,6 +48,7 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
  * This class is internal. You may use it in your own code, but be warned that methods may
  * change their signature or disappear without prior announcement.
  */
+@ParametersAreNonnullByDefault
 public final class AcmeUtils {
     private static final char[] HEX = "0123456789abcdef".toCharArray();
     private static final String ACME_ERROR_PREFIX = "urn:ietf:params:acme:error:";
@@ -65,6 +71,8 @@ public final class AcmeUtils {
     /**
      * Enumeration of PEM labels.
      */
+    @ParametersAreNonnullByDefault
+    @Immutable
     public enum PemLabel {
         CERTIFICATE("CERTIFICATE"),
         CERTIFICATE_REQUEST("CERTIFICATE REQUEST"),
@@ -158,7 +166,8 @@ public final class AcmeUtils {
      * @return Encoded domain name, white space trimmed and lower cased. {@code null} if
      *         {@code null} was passed in.
      */
-    public static String toAce(String domain) {
+    @CheckForNull
+    public static String toAce(@Nullable String domain) {
         if (domain == null) {
             return null;
         }
@@ -287,7 +296,8 @@ public final class AcmeUtils {
      *            Error type to strip the prefix from. {@code null} is safe.
      * @return Stripped error type, or {@code null} if the prefix was not found.
      */
-    public static String stripErrorPrefix(String type) {
+    @CheckForNull
+    public static String stripErrorPrefix(@Nullable String type) {
         if (type != null && type.startsWith(ACME_ERROR_PREFIX)) {
             return type.substring(ACME_ERROR_PREFIX.length());
         } else {
@@ -305,7 +315,8 @@ public final class AcmeUtils {
      * @param out
      *            {@link Writer} to write to. It will not be closed after use!
      */
-    public static void writeToPem(byte[] encoded, PemLabel label, Writer out) throws IOException {
+    public static void writeToPem(byte[] encoded, PemLabel label, @WillNotClose Writer out)
+                throws IOException {
         out.append("-----BEGIN ").append(label.toString()).append("-----\n");
         out.append(new String(PEM_ENCODER.encode(encoded), StandardCharsets.US_ASCII));
         out.append("\n-----END ").append(label.toString()).append("-----\n");
@@ -320,7 +331,8 @@ public final class AcmeUtils {
      * @throws AcmeProtocolException
      *             if the Content-Type header contains a different charset than "utf-8".
      */
-    public static String getContentType(String header) {
+    @CheckForNull
+    public static String getContentType(@Nullable String header) {
         if (header != null) {
             Matcher m = CONTENT_TYPE_PATTERN.matcher(header);
             if (m.matches()) {

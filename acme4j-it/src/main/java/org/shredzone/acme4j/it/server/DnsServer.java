@@ -23,6 +23,8 @@ import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xbill.DNS.ARecord;
@@ -44,6 +46,7 @@ import org.xbill.DNS.Type;
  * This server can be used to validate {@code dns-01} challenges, and to direct other
  * challenges to the mock servers.
  */
+@ParametersAreNonnullByDefault
 public class DnsServer {
     private static final Logger LOG = LoggerFactory.getLogger(DnsServer.class);
     private static final int UDP_SIZE = 512;

@@ -19,6 +19,8 @@ import java.net.URL;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.provider.AbstractAcmeProvider;
 import org.shredzone.acme4j.provider.AcmeProvider;
@@ -34,6 +36,7 @@ import org.shredzone.acme4j.provider.AcmeProvider;
  * possible to connect to an external Pebble server on the given {@code other-host} and
  * port. The port is optional, and if omitted, the standard port is used.
  */
+@ParametersAreNonnullByDefault
 public class PebbleAcmeProvider extends AbstractAcmeProvider {
 
     private static final Pattern HOST_PATTERN = Pattern.compile("^/([^:/]+)(?:\\:(\\d+))?/?$");

@@ -13,9 +13,14 @@
  */
 package org.shredzone.acme4j.exception;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.concurrent.Immutable;
+
 /**
  * A generic ACME exception.
  */
+@ParametersAreNonnullByDefault
+@Immutable
 public class AcmeException extends Exception {
     private static final long serialVersionUID = -2935088954705632025L;
 

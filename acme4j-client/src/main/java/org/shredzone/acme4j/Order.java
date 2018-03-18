@@ -20,6 +20,9 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.toolbox.JSON.Value;
@@ -30,6 +33,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Represents a certificate order.
  */
+@ParametersAreNonnullByDefault
 public class Order extends AcmeJsonResource {
     private static final long serialVersionUID = 5435808648658292177L;
     private static final Logger LOG = LoggerFactory.getLogger(Order.class);
@@ -51,6 +55,7 @@ public class Order extends AcmeJsonResource {
     /**
      * Returns a {@link Problem} document if the order failed.
      */
+    @CheckForNull
     public Problem getError() {
         return getJSON().get("error").map(v -> v.asProblem(getLocation())).orElse(null);
     }
@@ -58,6 +63,7 @@ public class Order extends AcmeJsonResource {
     /**
      * Gets the expiry date of the authorization, if set by the server.
      */
+    @CheckForNull
     public Instant getExpires() {
         return getJSON().get("expires").map(Value::asInstant).orElse(null);
     }
@@ -77,6 +83,7 @@ public class Order extends AcmeJsonResource {
     /**
      * Gets the "not before" date that was used for the order, or {@code null}.
      */
+    @CheckForNull
     public Instant getNotBefore() {
         return getJSON().get("notBefore").map(Value::asInstant).orElse(null);
     }
@@ -84,6 +91,7 @@ public class Order extends AcmeJsonResource {
     /**
      * Gets the "not after" date that was used for the order, or {@code null}.
      */
+    @CheckForNull
     public Instant getNotAfter() {
         return getJSON().get("notAfter").map(Value::asInstant).orElse(null);
     }
@@ -113,6 +121,7 @@ public class Order extends AcmeJsonResource {
     /**
      * Gets the {@link Certificate} if it is available. {@code null} otherwise.
      */
+    @CheckForNull
     public Certificate getCertificate() {
         return getJSON().get("certificate")
                     .map(Value::asURL)

@@ -20,6 +20,9 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -30,6 +33,7 @@ import org.shredzone.acme4j.toolbox.JSONBuilder;
 /**
  * Connects to the ACME server and offers different methods for invoking the API.
  */
+@ParametersAreNonnullByDefault
 public interface Connection extends AutoCloseable {
 
     /**
@@ -64,7 +68,7 @@ public interface Connection extends AutoCloseable {
      * @param url
      *            {@link URL} to send the request to.
      * @param claims
-     *            {@link JSONBuilder} containing claims. Must not be {@code null}.
+     *            {@link JSONBuilder} containing claims.
      * @param login
      *            {@link Login} instance to be used for signing and tracking.
      * @return HTTP 200 class status that was returned
@@ -81,7 +85,7 @@ public interface Connection extends AutoCloseable {
      * @param url
      *            {@link URL} to send the request to.
      * @param claims
-     *            {@link JSONBuilder} containing claims. Must not be {@code null}.
+     *            {@link JSONBuilder} containing claims.
      * @param session
      *            {@link Session} instance to be used for tracking.
      * @param keypair
@@ -96,6 +100,7 @@ public interface Connection extends AutoCloseable {
      *
      * @return The JSON response, or {@code null} if the server did not provide any data.
      */
+    @CheckForNull
     JSON readJsonResponse() throws AcmeException;
 
     /**
@@ -119,6 +124,7 @@ public interface Connection extends AutoCloseable {
      *
      * @return Base64 encoded nonce, or {@code null} if no nonce header was set
      */
+    @CheckForNull
     String getNonce();
 
     /**
@@ -128,6 +134,7 @@ public interface Connection extends AutoCloseable {
      *
      * @return Location {@link URL}, or {@code null} if no Location header was set
      */
+    @CheckForNull
     URL getLocation();
 
     /**

@@ -26,6 +26,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
@@ -44,6 +47,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Represents an account at the ACME server.
  */
+@ParametersAreNonnullByDefault
 public class Account extends AcmeJsonResource {
     private static final long serialVersionUID = 7042863483428051319L;
     private static final Logger LOG = LoggerFactory.getLogger(Account.class);
@@ -63,6 +67,7 @@ public class Account extends AcmeJsonResource {
      * @return {@code true} if the user agreed to the terms of service. May be
      *         {@code null} if the server did not provide such an information.
      */
+    @CheckForNull
     public Boolean getTermsOfServiceAgreed() {
         return getJSON().get(KEY_TOS_AGREED).map(Value::asBoolean).orElse(null);
     }
@@ -108,7 +113,10 @@ public class Account extends AcmeJsonResource {
         LOG.debug("update Account");
         try (Connection conn = connect()) {
             conn.sendSignedRequest(getLocation(), new JSONBuilder(), getLogin());
-            setJSON(conn.readJsonResponse());
+            JSON json = conn.readJsonResponse();
+            if (json != null) {
+                setJSON(json);
+            }
         }
     }
 
@@ -144,9 +152,6 @@ public class Account extends AcmeJsonResource {
         }
 
         URL newAuthzUrl = getSession().resourceUrl(Resource.NEW_AUTHZ);
-        if (newAuthzUrl == null) {
-            throw new AcmeException("Server does not allow pre-authorization");
-        }
 
         LOG.debug("preAuthorizeDomain {}", domain);
         try (Connection conn = connect()) {
@@ -157,7 +162,12 @@ public class Account extends AcmeJsonResource {
 
             conn.sendSignedRequest(newAuthzUrl, claims, getLogin());
 
-            Authorization auth = getLogin().bindAuthorization(conn.getLocation());
+            URL authLocation = conn.getLocation();
+            if (authLocation == null) {
+                throw new AcmeProtocolException("Server did not provide an authorization location");
+            }
+
+            Authorization auth = getLogin().bindAuthorization(authLocation);
             JSON json = conn.readJsonResponse();
             if (json != null) {
                 auth.setJSON(json);
@@ -246,6 +256,7 @@ public class Account extends AcmeJsonResource {
     /**
      * Editable {@link Account}.
      */
+    @ParametersAreNonnullByDefault
     public class EditableAccount {
         private final List<URI> editContacts = new ArrayList<>();
 

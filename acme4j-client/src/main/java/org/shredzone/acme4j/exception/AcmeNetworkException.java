@@ -15,10 +15,15 @@ package org.shredzone.acme4j.exception;
 
 import java.io.IOException;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.concurrent.Immutable;
+
 /**
  * This exception is thrown when a network error occured while communicating with the
  * server.
  */
+@ParametersAreNonnullByDefault
+@Immutable
 public class AcmeNetworkException extends AcmeException {
     private static final long serialVersionUID = 2054398693543329179L;
 

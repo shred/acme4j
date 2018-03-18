@@ -15,9 +15,14 @@ package org.shredzone.acme4j;
 
 import java.util.Arrays;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.concurrent.Immutable;
+
 /**
  * Status codes of challenges and authorizations.
  */
+@ParametersAreNonnullByDefault
+@Immutable
 public enum Status {
 
     /**

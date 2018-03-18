@@ -17,11 +17,18 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.concurrent.Immutable;
+
 import org.shredzone.acme4j.Problem;
 
 /**
  * An exception that is thrown when the user is required to take action as indicated.
  */
+@ParametersAreNonnullByDefault
+@Immutable
 public class AcmeUserActionRequiredException extends AcmeServerException {
     private static final long serialVersionUID = 7719055447283858352L;
 
@@ -35,7 +42,7 @@ public class AcmeUserActionRequiredException extends AcmeServerException {
      * @param tosUri
      *            {@link URI} of the terms-of-service document to accept
      */
-    public AcmeUserActionRequiredException(Problem problem, URI tosUri) {
+    public AcmeUserActionRequiredException(Problem problem, @Nullable URI tosUri) {
         super(problem);
         this.tosUri = tosUri;
     }
@@ -44,6 +51,7 @@ public class AcmeUserActionRequiredException extends AcmeServerException {
      * Returns the {@link URI} of the terms-of-service document to accept, or {@code null}
      * if the server did not provide a link to such a document.
      */
+    @CheckForNull
     public URI getTermsOfServiceUri() {
         return tosUri;
     }
@@ -52,13 +60,18 @@ public class AcmeUserActionRequiredException extends AcmeServerException {
      * Returns the {@link URL} of a document indicating the action required by the user,
      * or {@code null} if the server did not provide such a link.
      */
+    @CheckForNull
     public URL getInstance() {
+        URI instance = getProblem().getInstance();
+
+        if (instance == null) {
+            return null;
+        }
+
         try {
-            URI instance = getProblem().getInstance();
-            return instance != null ? instance.toURL() : null;
+            return instance.toURL();
         } catch (MalformedURLException ex) {
-            throw new AcmeProtocolException(
-                    "Bad instance URL: " + getProblem().getInstance().toString(), ex);
+            throw new AcmeProtocolException("Bad instance URL: " + instance.toString(), ex);
         }
     }
 

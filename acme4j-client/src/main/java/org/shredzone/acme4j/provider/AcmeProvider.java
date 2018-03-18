@@ -17,6 +17,9 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ServiceLoader;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -30,6 +33,7 @@ import org.shredzone.acme4j.toolbox.JSON;
  * <p>
  * Provider implementations must be registered with Java's {@link ServiceLoader}.
  */
+@ParametersAreNonnullByDefault
 public interface AcmeProvider {
 
     /**
@@ -85,6 +89,7 @@ public interface AcmeProvider {
      * @return {@link Challenge} instance, or {@code null} if this provider is unable to
      *         generate a matching {@link Challenge} instance.
      */
+    @CheckForNull
     Challenge createChallenge(Login login, JSON data);
 
 }

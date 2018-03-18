@@ -173,8 +173,6 @@ public class SessionTest {
                         is(new URL("https://example.com/acme/new-authz")));
         assertThat(session.resourceUrl(Resource.NEW_ORDER),
                         is(new URL("https://example.com/acme/new-order")));
-        assertThat(session.resourceUrl(Resource.REVOKE_CERT),
-                        is(nullValue()));
 
         Metadata meta = session.getMetadata();
         assertThat(meta, not(nullValue()));
@@ -197,8 +195,13 @@ public class SessionTest {
                         is(new URL("https://example.com/acme/new-authz")));
         assertThat(session.resourceUrl(Resource.NEW_ORDER),
                         is(new URL("https://example.com/acme/new-order")));
-        assertThat(session.resourceUrl(Resource.REVOKE_CERT),
-                        is(nullValue()));
+
+        try {
+            session.resourceUrl(Resource.REVOKE_CERT);
+            fail("Did not fail to get an unsupported resource URL");
+        } catch (AcmeException ex) {
+            // Expected
+        }
 
         Metadata meta = session.getMetadata();
         assertThat(meta, not(nullValue()));

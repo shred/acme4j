@@ -15,6 +15,8 @@ package org.shredzone.acme4j.it;
 
 import java.util.Map;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.shredzone.acme4j.it.server.HttpServer;
 
 import fi.iki.elonen.NanoHTTPD.IHTTPSession;
@@ -22,6 +24,7 @@ import fi.iki.elonen.NanoHTTPD.IHTTPSession;
 /**
  * Request handler for all {@code http-01} related requests.
  */
+@ParametersAreNonnullByDefault
 public final class HttpHandler {
 
     public static final String ADD = "/http/add/:token";
@@ -34,6 +37,7 @@ public final class HttpHandler {
     /**
      * Adds a HTTP challenge.
      */
+    @ParametersAreNonnullByDefault
     public static class Add extends AbstractResponder {
         @Override
         public void handle(Map<String, String> urlParams, IHTTPSession session) throws Exception {
@@ -48,6 +52,7 @@ public final class HttpHandler {
     /**
      * Removes a HTTP challenge.
      */
+    @ParametersAreNonnullByDefault
     public static class Remove extends AbstractResponder {
         @Override
         public void handle(Map<String, String> urlParams, IHTTPSession session) throws Exception {

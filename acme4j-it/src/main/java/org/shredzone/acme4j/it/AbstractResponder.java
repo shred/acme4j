@@ -16,6 +16,8 @@ package org.shredzone.acme4j.it;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +30,7 @@ import fi.iki.elonen.router.RouterNanoHTTPD.UriResponder;
 /**
  * A generic responder class for requests.
  */
+@ParametersAreNonnullByDefault
 public abstract class AbstractResponder implements UriResponder {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractResponder.class);
 

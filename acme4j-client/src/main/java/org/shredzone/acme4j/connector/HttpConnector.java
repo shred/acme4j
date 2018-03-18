@@ -20,6 +20,9 @@ import java.net.Proxy;
 import java.net.URL;
 import java.util.Properties;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.concurrent.ThreadSafe;
+
 import org.slf4j.LoggerFactory;
 
 /**
@@ -29,6 +32,8 @@ import org.slf4j.LoggerFactory;
  * Subclasses may reconfigure the {@link HttpURLConnection} and pin it to a concrete SSL
  * certificate.
  */
+@ParametersAreNonnullByDefault
+@ThreadSafe
 public class HttpConnector {
 
     private static final int TIMEOUT = 10000;

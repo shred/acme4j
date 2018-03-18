@@ -282,7 +282,7 @@ public class AccountTest {
             fail("preauthorization was accepted");
         } catch (AcmeException ex) {
             // expected
-            assertThat(ex.getMessage(), is("Server does not allow pre-authorization"));
+            assertThat(ex.getMessage(), is("Server does not offer newAuthz"));
         }
 
         provider.close();

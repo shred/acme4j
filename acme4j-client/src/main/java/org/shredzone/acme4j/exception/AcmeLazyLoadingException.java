@@ -17,12 +17,17 @@ import static java.util.Objects.requireNonNull;
 
 import java.net.URL;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.concurrent.Immutable;
+
 import org.shredzone.acme4j.AcmeResource;
 
 /**
  * This runtime exception is thrown when an {@link AcmeException} occured while trying to
  * lazy-load a resource from the ACME server.
  */
+@ParametersAreNonnullByDefault
+@Immutable
 public class AcmeLazyLoadingException extends RuntimeException {
     private static final long serialVersionUID = 1000353433913721901L;
 

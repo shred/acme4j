@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import javax.annotation.ParametersAreNonnullByDefault;
 import javax.crypto.SecretKey;
 
 import org.jose4j.jwk.PublicJsonWebKey;
@@ -34,6 +35,7 @@ import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -43,6 +45,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A builder for registering a new account.
  */
+@ParametersAreNonnullByDefault
 public class AccountBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(AccountBuilder.class);
 
@@ -209,6 +212,9 @@ public class AccountBuilder {
             conn.sendSignedRequest(resourceUrl, claims, session, keyPair);
 
             URL location = conn.getLocation();
+            if (location == null) {
+                throw new AcmeProtocolException("Server did not provide an account location");
+            }
 
             Login login = new Login(location, keyPair, session);
             JSON json = conn.readJsonResponse();

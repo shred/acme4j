@@ -13,7 +13,7 @@
  */
 package org.shredzone.acme4j.exception;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.time.Duration;
@@ -37,19 +37,6 @@ public class AcmeRetryAfterExceptionTest {
         AcmeRetryAfterException ex = new AcmeRetryAfterException(detail, retryAfter);
 
         assertThat(ex.getMessage(), is(detail));
-        assertThat(ex.getRetryAfter(), is(retryAfter));
-    }
-
-    /**
-     * Test that optional parameters are null-safe.
-     */
-    @Test
-    public void testNullAcmeRetryAfterException() {
-        Instant retryAfter = Instant.now().plus(Duration.ofMinutes(1));
-
-        AcmeRetryAfterException ex = new AcmeRetryAfterException(null, retryAfter);
-
-        assertThat(ex.getMessage(), nullValue());
         assertThat(ex.getRetryAfter(), is(retryAfter));
     }
 

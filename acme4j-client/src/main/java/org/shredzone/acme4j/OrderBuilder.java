@@ -16,15 +16,19 @@ package org.shredzone.acme4j;
 import static java.util.Objects.requireNonNull;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.toAce;
 
+import java.net.URL;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
@@ -33,6 +37,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A builder for a new {@link Order} object.
  */
+@ParametersAreNonnullByDefault
 public class OrderBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(OrderBuilder.class);
 
@@ -152,7 +157,12 @@ public class OrderBuilder {
 
             conn.sendSignedRequest(session.resourceUrl(Resource.NEW_ORDER), claims, login);
 
-            Order order = new Order(login, conn.getLocation());
+            URL orderLocation = conn.getLocation();
+            if (orderLocation == null) {
+                throw new AcmeProtocolException("Server did not provide an order location");
+            }
+
+            Order order = new Order(login, orderLocation);
             JSON json = conn.readJsonResponse();
             if (json != null) {
                 order.setJSON(json);

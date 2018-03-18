@@ -15,12 +15,15 @@ package org.shredzone.acme4j.challenge;
 
 import static org.shredzone.acme4j.toolbox.AcmeUtils.*;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.toolbox.JSON;
 
 /**
  * Implements the {@value TYPE} challenge.
  */
+@ParametersAreNonnullByDefault
 public class Dns01Challenge extends TokenChallenge {
     private static final long serialVersionUID = 6964687027713533075L;
 

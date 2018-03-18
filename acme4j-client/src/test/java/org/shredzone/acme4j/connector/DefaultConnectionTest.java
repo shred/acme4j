@@ -48,7 +48,6 @@ import org.mockito.ArgumentMatchers;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRateLimitedException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
@@ -602,10 +601,10 @@ public class DefaultConnectionTest {
         }) {
             conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             fail("Expected to fail");
-        } catch (AcmeNetworkException ex) {
-            fail("Did not expect an AcmeNetworkException");
+        } catch (AcmeProtocolException ex) {
+            assertThat(ex.getMessage(), not(isEmptyOrNullString()));
         } catch (AcmeException ex) {
-            assertThat(ex.getMessage(), isEmptyOrNullString());
+            fail("Did not expect an AcmeException");
         }
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
@@ -846,6 +845,7 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             JSON result = conn.readJsonResponse();
+            assertThat(result, is(notNullValue()));
             assertThat(result.keySet(), hasSize(2));
             assertThat(result.get("foo").asInt(), is(123));
             assertThat(result.get("bar").asString(), is("a-string"));

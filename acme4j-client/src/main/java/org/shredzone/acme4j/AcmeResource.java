@@ -17,11 +17,14 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.Objects;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.shredzone.acme4j.connector.Connection;
 
 /**
  * A generic ACME resource.
  */
+@ParametersAreNonnullByDefault
 public abstract class AcmeResource implements Serializable {
     private static final long serialVersionUID = -7930580802257379731L;
 
@@ -33,6 +36,8 @@ public abstract class AcmeResource implements Serializable {
      *
      * @param login
      *            {@link Login} the resource is bound with
+     * @param location
+     *            Location {@link URL} of this resource
      */
     protected AcmeResource(Login login, URL location) {
         this.location = Objects.requireNonNull(location, "location");
@@ -77,7 +82,7 @@ public abstract class AcmeResource implements Serializable {
         if (this.login != null) {
             throw new IllegalStateException("Resource is already bound to a login");
         }
-        this.login = login;
+        this.login = Objects.requireNonNull(login, "login");
     }
 
     /**

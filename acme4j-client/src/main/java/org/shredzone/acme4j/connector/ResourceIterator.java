@@ -21,6 +21,9 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.shredzone.acme4j.AcmeResource;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
@@ -35,6 +38,7 @@ import org.shredzone.acme4j.toolbox.JSON;
  * @param <T>
  *            {@link AcmeResource} type to iterate over
  */
+@ParametersAreNonnullByDefault
 public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
 
     private final Login login;
@@ -57,7 +61,7 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
      *            Creator for an {@link AcmeResource} that is bound to the given
      *            {@link Login} and {@link URL}.
      */
-    public ResourceIterator(Login login, String field, URL start, BiFunction<Login, URL, T> creator) {
+    public ResourceIterator(Login login, String field, @Nullable URL start, BiFunction<Login, URL, T> creator) {
         this.login = Objects.requireNonNull(login, "login");
         this.field = Objects.requireNonNull(field, "field");
         this.nextUrl = start;
@@ -144,7 +148,9 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
             conn.sendRequest(nextUrl, session);
 
             JSON json = conn.readJsonResponse();
-            fillUrlList(json);
+            if (json != null) {
+                fillUrlList(json);
+            }
 
             nextUrl = conn.getLinks("next").stream().findFirst().orElse(null);
         }

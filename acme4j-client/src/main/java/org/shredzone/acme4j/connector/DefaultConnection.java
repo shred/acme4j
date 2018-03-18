@@ -37,6 +37,10 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
@@ -60,6 +64,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Default implementation of {@link Connection}.
  */
+@ParametersAreNonnullByDefault
 public class DefaultConnection implements Connection {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultConnection.class);
 
@@ -163,7 +168,7 @@ public class DefaultConnection implements Connection {
         return sendSignedRequest(url, claims, session, keypair, null);
     }
 
-    private int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair, URL accountLocation)
+    private int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair, @Nullable URL accountLocation)
                 throws AcmeException {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(claims, "claims");
@@ -189,6 +194,7 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
+    @CheckForNull
     public JSON readJsonResponse() throws AcmeException {
         assertConnectionIsOpen();
 
@@ -250,6 +256,7 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
+    @CheckForNull
     public String getNonce() {
         assertConnectionIsOpen();
 
@@ -268,6 +275,7 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
+    @CheckForNull
     public URL getLocation() {
         assertConnectionIsOpen();
 
@@ -308,7 +316,8 @@ public class DefaultConnection implements Connection {
      *            the public key is set as "jwk" header.
      * @return HTTP 200 class status that was returned
      */
-    private int performRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair, URL accountLocation)
+    private int performRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair,
+                @Nullable URL accountLocation)
                 throws AcmeException {
         try {
             if (session.getNonce() == null) {
@@ -412,11 +421,11 @@ public class DefaultConnection implements Connection {
                 throw new AcmeException("HTTP " + conn.getResponseCode() + ": " + conn.getResponseMessage());
             }
 
-            Problem problem = new Problem(readJsonResponse(), conn.getURL());
-
-            if (problem.getType() == null) {
-                throw new AcmeException(problem.getDetail());
+            JSON problemJson = readJsonResponse();
+            if (problemJson == null) {
+                throw new AcmeProtocolException("Empty problem response");
             }
+            Problem problem = new Problem(problemJson, conn.getURL());
 
             String error = AcmeUtils.stripErrorPrefix(problem.getType().toString());
 
@@ -514,7 +523,8 @@ public class DefaultConnection implements Connection {
      * @return Absolute URL of the given link, or {@code null} if the link was
      *         {@code null}.
      */
-    private URL resolveRelative(String link) {
+    @CheckForNull
+    private URL resolveRelative(@Nullable String link) {
         if (link == null) {
             return null;
         }
@@ -535,7 +545,8 @@ public class DefaultConnection implements Connection {
      * @return Absolute URI of the given link, or {@code null} if the URI was
      *         {@code null}.
      */
-    private URI resolveUri(String uri) {
+    @CheckForNull
+    private URI resolveUri(@Nullable String uri) {
         if (uri == null) {
             return null;
         }

@@ -41,23 +41,34 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.WillClose;
+import javax.annotation.concurrent.Immutable;
+
 import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 /**
  * A model containing a JSON result. The content is immutable.
  */
 @SuppressWarnings("unchecked")
+@ParametersAreNonnullByDefault
+@Immutable
 public final class JSON implements Serializable {
     private static final long serialVersionUID = 3091273044605709204L;
 
     private static final JSON EMPTY_JSON = new JSON(new HashMap<String, Object>());
 
     private final String path;
-    private Map<String, Object> data;
+
+    @SuppressFBWarnings("JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS")
+    private transient Map<String, Object> data; // Must not be final for deserialization
 
     /**
      * Creates a new {@link JSON} root object.
@@ -89,7 +100,7 @@ public final class JSON implements Serializable {
      *            {@link InputStream} to read from. Will be closed after use.
      * @return {@link JSON} of the read content.
      */
-    public static JSON parse(InputStream in) throws IOException {
+    public static JSON parse(@WillClose InputStream in) throws IOException {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, "utf-8"))) {
             String json = reader.lines().map(String::trim).collect(joining());
             return parse(json);
@@ -184,6 +195,8 @@ public final class JSON implements Serializable {
     /**
      * Represents a JSON array.
      */
+    @ParametersAreNonnullByDefault
+    @Immutable
     public static final class Array implements Iterable<Value> {
         private final String path;
         private final List<Object> data;
@@ -252,6 +265,8 @@ public final class JSON implements Serializable {
      * All return values are never {@code null} unless specified otherwise. For optional
      * parameters, use {@link Value#optional()}.
      */
+    @ParametersAreNonnullByDefault
+    @Immutable
     public static final class Value {
         private final String path;
         private final Object val;
@@ -264,7 +279,7 @@ public final class JSON implements Serializable {
          * @param val
          *            Value, may be {@code null}
          */
-        private Value(String path, Object val) {
+        private Value(String path, @Nullable Object val) {
             this.path = path;
             this.val = val;
         }
@@ -455,6 +470,7 @@ public final class JSON implements Serializable {
     /**
      * An {@link Iterator} over array {@link Value}.
      */
+    @ParametersAreNonnullByDefault
     private static class ValueIterator implements Iterator<Value> {
         private final Array array;
         private int index = 0;

@@ -27,6 +27,11 @@ import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.StreamSupport;
 
+import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.concurrent.ThreadSafe;
+
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
@@ -36,6 +41,8 @@ import org.shredzone.acme4j.toolbox.JSON.Value;
 /**
  * A session stores the ACME server URI. It also tracks communication parameters.
  */
+@ParametersAreNonnullByDefault
+@ThreadSafe
 public class Session {
     private final AtomicReference<Map<Resource, URL>> resourceMap = new AtomicReference<>();
     private final AtomicReference<Metadata> metadata = new AtomicReference<>();
@@ -105,6 +112,7 @@ public class Session {
     /**
      * Gets the last base64 encoded nonce, or {@code null} if the session is new.
      */
+    @CheckForNull
     public String getNonce() {
         return nonce;
     }
@@ -112,7 +120,7 @@ public class Session {
     /**
      * Sets the base64 encoded nonce received by the server.
      */
-    public void setNonce(String nonce) {
+    public void setNonce(@Nullable String nonce) {
         this.nonce = nonce;
     }
 
@@ -127,8 +135,8 @@ public class Session {
      * Sets the locale used in this session. The locale is passed to the server as
      * Accept-Language header. The server <em>may</em> respond with localized messages.
      */
-    public void setLocale(Locale locale) {
-        this.locale = locale;
+    public void setLocale(@Nullable Locale locale) {
+        this.locale = locale != null ? locale : Locale.getDefault();
     }
 
     /**
@@ -142,7 +150,7 @@ public class Session {
      * Sets a {@link Proxy} that is to be used for all connections. If {@code null},
      * {@link Proxy#NO_PROXY} is used, which is also the default.
      */
-    public void setProxy(Proxy proxy) {
+    public void setProxy(@Nullable Proxy proxy) {
         this.proxy = proxy != null ? proxy : Proxy.NO_PROXY;
     }
 
@@ -161,11 +169,17 @@ public class Session {
      *
      * @param resource
      *            {@link Resource} to get the {@link URL} of
-     * @return {@link URL}, or {@code null} if the server does not offer that resource
+     * @return {@link URL} of the resource
+     * @throws AcmeException
+     *             if the server does not offer the {@link Resource}
      */
     public URL resourceUrl(Resource resource) throws AcmeException {
         readDirectory();
-        return resourceMap.get().get(Objects.requireNonNull(resource, "resource"));
+        URL result = resourceMap.get().get(Objects.requireNonNull(resource, "resource"));
+        if (result == null) {
+            throw new AcmeException("Server does not offer " + resource.path());
+        }
+        return result;
     }
 
     /**

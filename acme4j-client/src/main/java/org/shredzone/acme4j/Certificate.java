@@ -25,6 +25,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.WillNotClose;
+
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -41,6 +45,7 @@ import org.slf4j.LoggerFactory;
  * Note that a certificate is immutable once it is issued. For renewal, a new certificate
  * must be ordered.
  */
+@ParametersAreNonnullByDefault
 public class Certificate extends AcmeResource {
     private static final long serialVersionUID = 7381527770159084201L;
     private static final Logger LOG = LoggerFactory.getLogger(Certificate.class);
@@ -116,7 +121,7 @@ public class Certificate extends AcmeResource {
      * @param out
      *            {@link Writer} to write to. The writer is not closed after use.
      */
-    public void writeCertificate(Writer out) throws IOException {
+    public void writeCertificate(@WillNotClose Writer out) throws IOException {
         try {
             for (X509Certificate cert : getCertificateChain()) {
                 AcmeUtils.writeToPem(cert.getEncoded(), AcmeUtils.PemLabel.CERTIFICATE, out);
@@ -141,12 +146,9 @@ public class Certificate extends AcmeResource {
      *            used when generating OCSP responses and CRLs. {@code null} to give no
      *            reason.
      */
-    public void revoke(RevocationReason reason) throws AcmeException {
+    public void revoke(@Nullable RevocationReason reason) throws AcmeException {
         LOG.debug("revoke");
         URL resUrl = getSession().resourceUrl(Resource.REVOKE_CERT);
-        if (resUrl == null) {
-            throw new AcmeException("Server does not allow certificate revocation");
-        }
 
         try (Connection conn = connect()) {
             JSONBuilder claims = new JSONBuilder();
@@ -177,7 +179,7 @@ public class Certificate extends AcmeResource {
      *            reason.
      */
     public static void revoke(Session session, KeyPair domainKeyPair, X509Certificate cert,
-            RevocationReason reason) throws AcmeException {
+            @Nullable RevocationReason reason) throws AcmeException {
         LOG.debug("revoke immediately");
 
         URL resUrl = session.resourceUrl(Resource.REVOKE_CERT);

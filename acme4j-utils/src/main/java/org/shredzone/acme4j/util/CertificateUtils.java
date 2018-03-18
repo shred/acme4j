@@ -18,6 +18,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.WillClose;
+
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 
@@ -26,6 +29,7 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
  * <p>
  * Requires {@code Bouncy Castle}. This class is part of the {@code acme4j-utils} module.
  */
+@ParametersAreNonnullByDefault
 public final class CertificateUtils {
 
     private CertificateUtils() {
@@ -40,7 +44,7 @@ public final class CertificateUtils {
      *            closed after use.
      * @return CSR that was read
      */
-    public static PKCS10CertificationRequest readCSR(InputStream in) throws IOException {
+    public static PKCS10CertificationRequest readCSR(@WillClose InputStream in) throws IOException {
         try (PEMParser pemParser = new PEMParser(new InputStreamReader(in, StandardCharsets.US_ASCII))) {
             Object parsedObj = pemParser.readObject();
             if (!(parsedObj instanceof PKCS10CertificationRequest)) {

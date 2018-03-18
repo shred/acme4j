@@ -29,6 +29,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.WillClose;
+
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
@@ -51,6 +54,7 @@ import org.bouncycastle.util.io.pem.PemWriter;
  * <p>
  * Requires {@code Bouncy Castle}. This class is part of the {@code acme4j-utils} module.
  */
+@ParametersAreNonnullByDefault
 public class CSRBuilder {
     private static final String SIGNATURE_ALG = "SHA256withRSA";
     private static final String EC_SIGNATURE_ALG = "SHA256withECDSA";
@@ -210,7 +214,7 @@ public class CSRBuilder {
      *            {@link Writer} to write the PEM file to. The {@link Writer} is closed
      *            after use.
      */
-    public void write(Writer w) throws IOException {
+    public void write(@WillClose Writer w) throws IOException {
         if (csr == null) {
             throw new IllegalStateException("sign CSR first");
         }
@@ -227,7 +231,7 @@ public class CSRBuilder {
      *            {@link OutputStream} to write the PEM file to. The {@link OutputStream}
      *            is closed after use.
      */
-    public void write(OutputStream out) throws IOException {
+    public void write(@WillClose OutputStream out) throws IOException {
         write(new OutputStreamWriter(out, "utf-8"));
     }
 

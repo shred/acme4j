@@ -24,6 +24,8 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.concurrent.ThreadSafe;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
@@ -35,6 +37,8 @@ import org.shredzone.acme4j.connector.HttpConnector;
  * {@link HttpConnector} to be used for Pebble. Pebble uses a static, self signed SSL
  * certificate.
  */
+@ParametersAreNonnullByDefault
+@ThreadSafe
 public class PebbleHttpConnector extends HttpConnector {
 
     private static SSLSocketFactory sslSocketFactory;

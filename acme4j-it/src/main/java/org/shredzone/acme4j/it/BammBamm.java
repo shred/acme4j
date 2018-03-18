@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.ResourceBundle;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.shredzone.acme4j.it.server.DnsServer;
 import org.shredzone.acme4j.it.server.HttpServer;
 import org.slf4j.Logger;
@@ -32,6 +34,7 @@ import fi.iki.elonen.router.RouterNanoHTTPD;
  * <em>WARNING:</em> This is a very simple server that is only meant to be used for
  * integration tests. Do not use in the outside world!
  */
+@ParametersAreNonnullByDefault
 public class BammBamm {
     private static final Logger LOG = LoggerFactory.getLogger(BammBamm.class);
 

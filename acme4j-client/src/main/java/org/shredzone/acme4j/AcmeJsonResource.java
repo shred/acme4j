@@ -16,6 +16,8 @@ package org.shredzone.acme4j;
 import java.net.URL;
 import java.util.Objects;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
@@ -27,6 +29,7 @@ import org.slf4j.LoggerFactory;
 /**
  * An ACME resource that stores its state in a JSON structure.
  */
+@ParametersAreNonnullByDefault
 public abstract class AcmeJsonResource extends AcmeResource {
     private static final long serialVersionUID = -5060364275766082345L;
     private static final Logger LOG = LoggerFactory.getLogger(AcmeJsonResource.class);
@@ -114,7 +117,10 @@ public abstract class AcmeJsonResource extends AcmeResource {
         LOG.debug("update {}", resourceType);
         try (Connection conn = connect()) {
             conn.sendRequest(getLocation(), getSession());
-            setJSON(conn.readJsonResponse());
+            JSON json = conn.readJsonResponse();
+            if (json != null) {
+                setJSON(json);
+            }
             conn.handleRetryAfter(resourceType + " is not completed yet");
         }
     }
