@@ -19,6 +19,10 @@
   <publishDate position="right"/>
   <version position="right"/>
   <body>
+    <head>
+      <!-- Workaround for https://issues.apache.org/jira/browse/DOXIA-571 -->
+      <![CDATA[<script type="text/javascript">$(document).ready(function(){$(".source").addClass("prettyprint");prettyPrint();});</script>]]>
+    </head>
     <links>
       <item name="GitHub" href="https://github.com/shred/acme4j"/>
     </links>
