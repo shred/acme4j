@@ -233,7 +233,7 @@ public class DefaultConnection implements Connection {
             throw new AcmeProtocolException("Unexpected content type: " + contentType);
         }
 
-        try (InputStream in = conn.getInputStream()) {
+        try (InputStream in = new TrimmingInputStream(conn.getInputStream())) {
             CertificateFactory cf = CertificateFactory.getInstance("X.509");
             return cf.generateCertificates(in).stream()
                     .map(c -> (X509Certificate) c)
