@@ -69,6 +69,8 @@ Now you have a key pair and the account's location URL. This is all you need for
 Even if it is tempting to do so, you should not invoke `agreeToTermsOfService()` automatically, but let the user confirm the terms of service first. To get a link to the current terms of service, you can invoke `session.getMetadata().getTermsOfService()`.
 </div>
 
+If the CA changes the terms of service and requires an explicit agreement to the new terms, an `AcmeUserActionRequiredException` is thrown. Its `getInstance()` method returns the URL of a document that gives instructions about how to agree to the new terms of service. There is no way to automatize this process.
+
 ## Find out Your Account's Location URL
 
 If you only have your account's `KeyPair`, you can use the `AccountBuilder` to find out the location `URL` of your account.

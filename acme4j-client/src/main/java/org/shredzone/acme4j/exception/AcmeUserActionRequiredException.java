@@ -26,6 +26,9 @@ import org.shredzone.acme4j.Problem;
 
 /**
  * An exception that is thrown when the user is required to take action as indicated.
+ * <p>
+ * Usually this exception is thrown when the terms of service have changed, and the CA
+ * requires an agreement to the new terms before proceeding.
  */
 @ParametersAreNonnullByDefault
 @Immutable
@@ -57,15 +60,14 @@ public class AcmeUserActionRequiredException extends AcmeServerException {
     }
 
     /**
-     * Returns the {@link URL} of a document indicating the action required by the user,
-     * or {@code null} if the server did not provide such a link.
+     * Returns the {@link URL} of a document that gives instructions on the actions to
+     * be taken by a human.
      */
-    @CheckForNull
     public URL getInstance() {
         URI instance = getProblem().getInstance();
 
         if (instance == null) {
-            return null;
+            throw new AcmeProtocolException("Instance URL required, but missing.");
         }
 
         try {

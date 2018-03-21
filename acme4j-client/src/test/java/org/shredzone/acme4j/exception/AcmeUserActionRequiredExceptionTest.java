@@ -54,11 +54,12 @@ public class AcmeUserActionRequiredExceptionTest {
      * Test that optional parameters are null-safe.
      */
     @Test
-    public void testNullAcmeUserActionRequiredException() {
+    public void testNullAcmeUserActionRequiredException() throws MalformedURLException {
         URI type = URI.create("urn:ietf:params:acme:error:userActionRequired");
         String detail = "Call our service";
+        URL instanceUrl = new URL("http://example.com/howToContactUs.html");
 
-        Problem problem = createProblem(type, detail, null);
+        Problem problem = createProblem(type, detail, instanceUrl);
 
         AcmeUserActionRequiredException ex
             = new AcmeUserActionRequiredException(problem, null);
@@ -66,7 +67,7 @@ public class AcmeUserActionRequiredExceptionTest {
         assertThat(ex.getType(), is(type));
         assertThat(ex.getMessage(), is(detail));
         assertThat(ex.getTermsOfServiceUri(), nullValue());
-        assertThat(ex.getInstance(), nullValue());
+        assertThat(ex.getInstance(), is(instanceUrl));
     }
 
 }
