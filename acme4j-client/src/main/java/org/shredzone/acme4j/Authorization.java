@@ -66,7 +66,8 @@ public class Authorization extends AcmeJsonResource {
      * Gets the authorization status.
      * <p>
      * Possible values are: {@link Status#PENDING}, {@link Status#VALID},
-     * {@link Status#INVALID}, {@link Status#DEACTIVATED}, {@link Status#REVOKED}.
+     * {@link Status#INVALID}, {@link Status#DEACTIVATED}, {@link Status#EXPIRED},
+     * {@link Status#REVOKED}.
      */
     public Status getStatus() {
         return getJSON().get("status").asStatus();
