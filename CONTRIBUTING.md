@@ -21,7 +21,7 @@ Our style guide bases on [Oracle's Code conventions for the Java Programming Lan
 * Remove trailing spaces.
 * Line length is 90 characters. You may exceed this length by a few characters if it is easier to read than a wrapped line.
 * `if`, `for` and `while` statements always use blocks, even for a single statement.
-* All types and methods must have a descriptive JavaDoc, except of `@Override` annotated methods. For plain getter and setter methods, `@param` and '@return' can be omitted.
+* All types and methods must have a descriptive JavaDoc, except of `@Override` annotated methods. For plain getter and setter methods, `@param` and `@return` can be omitted.
 
 ## Unit Tests
 
