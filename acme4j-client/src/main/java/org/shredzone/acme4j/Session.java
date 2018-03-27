@@ -35,6 +35,7 @@ import javax.annotation.concurrent.ThreadSafe;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
+import org.shredzone.acme4j.provider.GenericAcmeProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 
@@ -44,6 +45,9 @@ import org.shredzone.acme4j.toolbox.JSON.Value;
 @ParametersAreNonnullByDefault
 @ThreadSafe
 public class Session {
+
+    private static final GenericAcmeProvider GENERIC_PROVIDER = new GenericAcmeProvider();
+
     private final AtomicReference<Map<Resource, URL>> resourceMap = new AtomicReference<>();
     private final AtomicReference<Metadata> metadata = new AtomicReference<>();
     private final URI serverUri;
@@ -74,6 +78,11 @@ public class Session {
      */
     public Session(URI serverUri) {
         this.serverUri = Objects.requireNonNull(serverUri, "serverUri");
+
+        if (GENERIC_PROVIDER.accepts(serverUri)) {
+            provider = GENERIC_PROVIDER;
+            return;
+        }
 
         final URI localServerUri = serverUri;
 

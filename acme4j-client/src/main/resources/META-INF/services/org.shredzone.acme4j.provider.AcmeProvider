@@ -1,5 +1,3 @@
-# Generic
-org.shredzone.acme4j.provider.GenericAcmeProvider
 
 # Let's Encrypt: https://letsencrypt.org
 org.shredzone.acme4j.provider.letsencrypt.LetsEncryptAcmeProvider
