@@ -115,16 +115,50 @@ public class Certificate extends AcmeResource {
     }
 
     /**
-     * Writes the certificate to the given writer. It is written in PEM format, with the
-     * end-entity cert coming first, followed by the intermediate ceritificates.
+     * Writes the certificate and the intermediate certificates to the given writer.
+     * They are written in PEM format, with the end-entity cert coming first, followed
+     * by the intermediate certificates.
+     *
+     * @param out
+     *            {@link Writer} to write to. The writer is not closed after use.
+     */
+    public void writeCertificateAndChain(@WillNotClose Writer out) throws IOException {
+        try {
+            for (X509Certificate cert : getCertificateChain()) {
+                AcmeUtils.writeToPem(cert.getEncoded(), AcmeUtils.PemLabel.CERTIFICATE, out);
+            }
+        } catch (CertificateEncodingException ex) {
+            throw new IOException("Encoding error", ex);
+        }
+    }
+
+    /**
+     * Writes the certificate to the given writer. It is written in PEM format.
      *
      * @param out
      *            {@link Writer} to write to. The writer is not closed after use.
      */
     public void writeCertificate(@WillNotClose Writer out) throws IOException {
         try {
+            AcmeUtils.writeToPem(getCertificate().getEncoded(), AcmeUtils.PemLabel.CERTIFICATE, out);
+        } catch (CertificateEncodingException ex) {
+            throw new IOException("Encoding error", ex);
+        }
+    }
+
+    /**
+     * Writes the intermediate certificates to the given writer. They are written in
+     * PEM format. The list is sorted, following certificates certify preceding ones.
+     *
+     * @param out
+     *            {@link Writer} to write to. The writer is not closed after use.
+     */
+    public void writeChain(@WillNotClose Writer out) throws IOException {
+        try {
             for (X509Certificate cert : getCertificateChain()) {
-                AcmeUtils.writeToPem(cert.getEncoded(), AcmeUtils.PemLabel.CERTIFICATE, out);
+                if (cert != getCertificate()) {
+                    AcmeUtils.writeToPem(cert.getEncoded(), AcmeUtils.PemLabel.CERTIFICATE, out);
+                }
             }
         } catch (CertificateEncodingException ex) {
             throw new IOException("Encoding error", ex);
