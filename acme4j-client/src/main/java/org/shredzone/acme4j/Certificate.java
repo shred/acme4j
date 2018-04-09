@@ -118,6 +118,21 @@ public class Certificate extends AcmeResource {
      * Writes the certificate and the intermediate certificates to the given writer.
      * They are written in PEM format, with the end-entity cert coming first, followed
      * by the intermediate certificates.
+     * This method just calls writeCertificateAndChain.
+     * 
+     * @see #writeCertificateAndChain
+     *
+     * @param out
+     *            {@link Writer} to write to. The writer is not closed after use.
+     */
+    public void writeCertificate(@WillNotClose Writer out) throws IOException {
+        writeCertificateAndChain(out);
+    }
+
+    /**
+     * Writes the certificate and the intermediate certificates to the given writer.
+     * They are written in PEM format, with the end-entity cert coming first, followed
+     * by the intermediate certificates.
      *
      * @param out
      *            {@link Writer} to write to. The writer is not closed after use.
@@ -138,7 +153,7 @@ public class Certificate extends AcmeResource {
      * @param out
      *            {@link Writer} to write to. The writer is not closed after use.
      */
-    public void writeCertificate(@WillNotClose Writer out) throws IOException {
+    public void writeCertificateOnly(@WillNotClose Writer out) throws IOException {
         try {
             AcmeUtils.writeToPem(getCertificate().getEncoded(), AcmeUtils.PemLabel.CERTIFICATE, out);
         } catch (CertificateEncodingException ex) {
