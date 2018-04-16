@@ -157,7 +157,7 @@ public class Certificate extends AcmeResource {
                 claims.put("reason", reason.getReasonCode());
             }
 
-            conn.sendSignedRequest(resUrl, claims, getSession(), getLogin().getKeyPair());
+            conn.sendSignedRequest(resUrl, claims, getLogin());
         } catch (CertificateEncodingException ex) {
             throw new AcmeProtocolException("Invalid certificate", ex);
         }
