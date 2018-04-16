@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
+import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
@@ -66,6 +67,11 @@ public class AuthorizationTest {
         Challenge c3 = authorization.findChallenge(Dns01Challenge.TYPE);
         assertThat(c3, is(notNullValue()));
         assertThat(c3, is(instanceOf(Dns01Challenge.class)));
+
+        // TlsAlpn01Challenge is available
+        Challenge c4 = authorization.findChallenge(TlsAlpn01Challenge.TYPE);
+        assertThat(c4, is(notNullValue()));
+        assertThat(c4, is(instanceOf(TlsAlpn01Challenge.class)));
     }
 
     /**
@@ -104,6 +110,7 @@ public class AuthorizationTest {
 
         provider.putTestChallenge("http-01", Http01Challenge::new);
         provider.putTestChallenge("dns-01", Dns01Challenge::new);
+        provider.putTestChallenge("tls-alpn-01", TlsAlpn01Challenge::new);
 
         Authorization auth = new Authorization(login, locationUrl);
         auth.update();
@@ -116,7 +123,8 @@ public class AuthorizationTest {
 
         assertThat(auth.getChallenges(), containsInAnyOrder(
                         provider.getChallenge(Http01Challenge.TYPE),
-                        provider.getChallenge(Dns01Challenge.TYPE)));
+                        provider.getChallenge(Dns01Challenge.TYPE),
+                        provider.getChallenge(TlsAlpn01Challenge.TYPE)));
 
         provider.close();
     }
@@ -191,6 +199,7 @@ public class AuthorizationTest {
 
         provider.putTestChallenge("http-01", Http01Challenge::new);
         provider.putTestChallenge("dns-01", Dns01Challenge::new);
+        provider.putTestChallenge("tls-alpn-01", TlsAlpn01Challenge::new);
 
         Authorization auth = new Authorization(login, locationUrl);
 
@@ -238,6 +247,7 @@ public class AuthorizationTest {
 
         provider.putTestChallenge("http-01", Http01Challenge::new);
         provider.putTestChallenge("dns-01", Dns01Challenge::new);
+        provider.putTestChallenge("tls-alpn-01", TlsAlpn01Challenge::new);
 
         Authorization auth = new Authorization(login, locationUrl);
 
@@ -256,7 +266,8 @@ public class AuthorizationTest {
 
         assertThat(auth.getChallenges(), containsInAnyOrder(
                         provider.getChallenge(Http01Challenge.TYPE),
-                        provider.getChallenge(Dns01Challenge.TYPE)));
+                        provider.getChallenge(Dns01Challenge.TYPE),
+                        provider.getChallenge(TlsAlpn01Challenge.TYPE)));
 
         provider.close();
     }
@@ -286,6 +297,7 @@ public class AuthorizationTest {
 
         provider.putTestChallenge("http-01", Http01Challenge::new);
         provider.putTestChallenge("dns-01", Dns01Challenge::new);
+        provider.putTestChallenge("tls-alpn-01", TlsAlpn01Challenge::new);
 
         Authorization auth = new Authorization(login, locationUrl);
         auth.deactivate();
@@ -302,6 +314,7 @@ public class AuthorizationTest {
 
             provider.putTestChallenge(Http01Challenge.TYPE, Http01Challenge::new);
             provider.putTestChallenge(Dns01Challenge.TYPE, Dns01Challenge::new);
+            provider.putTestChallenge(TlsAlpn01Challenge.TYPE, TlsAlpn01Challenge::new);
             provider.putTestChallenge(DUPLICATE_TYPE, Challenge::new);
 
             Authorization authorization = new Authorization(login, locationUrl);

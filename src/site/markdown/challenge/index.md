@@ -8,3 +8,7 @@ The ACME specifications define these standard challenges:
 
 * [http-01](./http-01.html)
 * [dns-01](./dns-01.html)
+
+_acme4j_ also supports these non-standard challenges:
+
+* [tls-alpn-01](./tls-alpn-01.html)

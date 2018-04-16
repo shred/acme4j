@@ -17,6 +17,12 @@
       "status": "pending",
       "url": "https://example.com/authz/asdf/1",
       "token": "DGyRejmCefe7v4NfDGDKfA"
-    }
+    },
+    {
+      "type": "tls-alpn-01",
+      "status": "pending",
+      "url": "https://example.com/authz/asdf/2",
+      "token": "evaGxfADs6pSRb2LAv9IZf17Dt3juxGJ-PCt92wr-oA"
+   }
   ]
 }

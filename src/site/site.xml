@@ -45,6 +45,7 @@
       <item name="Challenges" href="challenge/index.html">
         <item name="http-01" href="challenge/http-01.html"/>
         <item name="dns-01" href="challenge/dns-01.html"/>
+        <item name="tls-alpn-01" href="challenge/tls-alpn-01.html"/>
       </item>
       <item name="CAs" href="ca/index.html">
         <item name="Let's Encrypt" href="ca/letsencrypt.html"/>

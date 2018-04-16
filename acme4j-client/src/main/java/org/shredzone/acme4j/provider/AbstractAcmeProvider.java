@@ -27,6 +27,7 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
+import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 import org.shredzone.acme4j.challenge.TokenChallenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
@@ -71,6 +72,7 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
 
         map.put(Dns01Challenge.TYPE, Dns01Challenge::new);
         map.put(Http01Challenge.TYPE, Http01Challenge::new);
+        map.put(TlsAlpn01Challenge.TYPE, TlsAlpn01Challenge::new);
 
         return Collections.unmodifiableMap(map);
     }
