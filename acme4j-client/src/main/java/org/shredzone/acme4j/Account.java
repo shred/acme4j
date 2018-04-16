@@ -134,6 +134,8 @@ public class Account extends AcmeJsonResource {
      * certification, and returns the necessary challenges.
      * <p>
      * Some servers may not allow pre-authorization.
+     * <p>
+     * It is not possible to pre-authorize wildcard domains.
      *
      * @param domain
      *            Domain name to be pre-authorized. IDN names are accepted and will be ACE
