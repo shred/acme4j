@@ -210,7 +210,6 @@ public class AccountIT extends PebbleITBase {
      * Deactivate an account.
      */
     @Test
-    @Ignore // TODO PEBBLE: missing
     public void testDeactivate() throws AcmeException {
         KeyPair keyPair = createKeyPair();
         Session session = new Session(pebbleURI());
@@ -223,10 +222,18 @@ public class AccountIT extends PebbleITBase {
 
         acct.deactivate();
 
-        Session session2 = new Session(pebbleURI());
-        Account acct2 = session2.login(location, keyPair).getAccount();
-        assertThat(acct2.getLocation(), is(location));
-        assertThat(acct2.getStatus(), is(Status.DEACTIVATED));
+        // Make sure it is deactivated now...
+        assertThat(acct.getStatus(), is(Status.DEACTIVATED));
+
+        // Make sure account cannot be accessed any more...
+        try {
+            Session session2 = new Session(pebbleURI());
+            Account acct2 = session2.login(location, keyPair).getAccount();
+            acct2.update();
+            fail("Account can still be accessed");
+        } catch (AcmeUnauthorizedException ex) {
+            assertThat(ex.getMessage(), is("Account has been deactivated"));
+        }
     }
 
 }
