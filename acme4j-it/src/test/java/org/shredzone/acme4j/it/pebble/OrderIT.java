@@ -180,8 +180,11 @@ public class OrderIT extends PebbleITBase {
             .pollInterval(1, SECONDS)
             .timeout(30, SECONDS)
             .conditionEvaluationListener(cond -> updateOrder(order))
-            .until(order::getStatus, not(isOneOf(Status.PENDING, Status.PROCESSING)));
+            .until(order::getStatus, not(isOneOf(Status.PENDING, Status.PROCESSING, Status.READY)));
 
+        if (order.getStatus() != Status.VALID) {
+            fail("Order failed");
+        }
 
         Certificate certificate = order.getCertificate();
         X509Certificate cert = certificate.getCertificate();
