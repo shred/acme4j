@@ -10,7 +10,7 @@ This challenge is not part of the ACME specifications. It is specified [in a sep
 `TlsAlpn01Challenge` provides a byte array called `acmeValidationV1`:
 
 ```java
-TlsSni02Challenge challenge = auth.findChallenge(TlsSni02Challenge.TYPE);
+TlsAlpn01Challenge challenge = auth.findChallenge(TlsAlpn01Challenge.TYPE);
 
 byte[] acmeValidationV1 = challenge.getAcmeValidationV1();
 ```

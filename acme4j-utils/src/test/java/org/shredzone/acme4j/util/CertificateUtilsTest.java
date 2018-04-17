@@ -86,7 +86,7 @@ public class CertificateUtilsTest {
      * creates a good certificate.
      */
     @Test
-    public void testCreateTlsSni02Certificate() throws IOException, CertificateParsingException {
+    public void testCreateTlsAlpn01Certificate() throws IOException, CertificateParsingException {
         KeyPair keypair = KeyPairUtils.createKeyPair(2048);
         String subject = "example.com";
         byte[] acmeValidationV1 = AcmeUtils.sha256hash("rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ");
