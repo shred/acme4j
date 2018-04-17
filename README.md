@@ -11,6 +11,7 @@ It is an independent open source implementation that is not affiliated with or e
 ## Features
 
 * Fully supports the ACME v2 protocol up to [draft 11](https://tools.ietf.org/html/draft-ietf-acme-acme-11)
+* Supports all ACME challenges and the `tls-alpn-01` challenge
 * Easy to use Java API
 * Requires JRE 8 (update 101) or higher
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
