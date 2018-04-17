@@ -98,10 +98,11 @@ public class Account extends AcmeJsonResource {
      * <p>
      * Using the iterator will initiate one or more requests to the ACME server.
      *
-     * @return {@link Iterator} instance that returns {@link Order} objects.
-     *         {@link Iterator#hasNext()} and {@link Iterator#next()} may throw
+     * @return {@link Iterator} instance that returns {@link Order} objects in no specific
+     *         order. {@link Iterator#hasNext()} and {@link Iterator#next()} may throw
      *         {@link AcmeProtocolException} if a batch of authorization URIs could not be
-     *         fetched from the server.
+     *         fetched from the server. Each {@link Iterator} instance may provide the
+     *         {@link Order} objects in a different order.
      */
     public Iterator<Order> getOrders() throws AcmeException {
         URL ordersUrl = getJSON().get(KEY_ORDERS).asURL();

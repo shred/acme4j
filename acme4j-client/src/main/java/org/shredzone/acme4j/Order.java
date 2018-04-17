@@ -97,7 +97,7 @@ public class Order extends AcmeJsonResource {
     }
 
     /**
-     * Gets the {@link Authorization} required for this order.
+     * Gets the {@link Authorization} required for this order, in no specific order.
      */
     public List<Authorization> getAuthorizations() {
         Login login = getLogin();

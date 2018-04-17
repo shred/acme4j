@@ -95,7 +95,7 @@ public class Authorization extends AcmeJsonResource {
     }
 
     /**
-     * Gets a list of all challenges offered by the server.
+     * Gets a list of all challenges offered by the server, in no specific order.
      */
     public List<Challenge> getChallenges() {
         Login login = getLogin();
