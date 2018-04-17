@@ -29,6 +29,11 @@
     <description>acme4j Integration Tests</description>
 
     <properties>
+        <!-- alpn-boot version must match the java version used in bammbamm -->
+        <!-- see: https://www.eclipse.org/jetty/documentation/9.4.x/alpn-chapter.html#alpn-versions -->
+        <alpn-java.version>8u162</alpn-java.version>
+        <alpn-boot.version>8.1.12.v20180117</alpn-boot.version>
+
         <skipITs>true</skipITs>
         <sonar.coverage.exclusions>src/main/java/org/shredzone/acme4j/**</sonar.coverage.exclusions>
     </properties>
@@ -175,15 +180,16 @@
                             <name>acme4j/bammbamm:${project.version}</name>
 
                             <build>
-                                <from>openjdk:8-jre</from>
+                                <from>openjdk:${alpn-java.version}-jre</from>
                                 <ports>
                                     <port>53/udp</port>
+                                    <port>5001</port>
                                     <port>5002</port>
                                     <port>14001</port>
                                 </ports>
                                 <cmd>
                                     <shell>
-                                        java -cp "/maven/*" org.shredzone.acme4j.it.BammBamm
+                                        java -Xbootclasspath/p:/maven/alpn-boot-${alpn-boot.version}.jar -cp "/maven/*" org.shredzone.acme4j.it.BammBamm
                                     </shell>
                                 </cmd>
                                 <assembly>
@@ -220,6 +226,11 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.mortbay.jetty.alpn</groupId>
+            <artifactId>alpn-boot</artifactId>
+            <version>${alpn-boot.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.nanohttpd</groupId>
             <artifactId>nanohttpd</artifactId>

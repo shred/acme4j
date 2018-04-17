@@ -17,7 +17,12 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.security.PrivateKey;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Base64.Encoder;
 import java.util.List;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -135,6 +140,41 @@ public class BammBammClient {
     }
 
     /**
+     * Adds a certificate for TLS-ALPN tests.
+     *
+     * @param alias
+     *            An alias to be used for removal, for example the domain name being
+     *            validated.
+     * @param privateKey
+     *            {@link PrivateKey} of the certificate
+     * @param cert
+     *            {@link X509Certificate} containing the domain name to respond to
+     */
+    public void tlsAlpnAddCertificate(String alias, PrivateKey privateKey, X509Certificate cert) throws IOException {
+        try {
+            createRequest(TlsAlpnHandler.ADD)
+                    .arg(":alias", alias)
+                    .param("privateKey", privateKey.getEncoded())
+                    .param("cert", cert.getEncoded())
+                    .submit();
+        } catch (CertificateEncodingException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    /**
+     * Removes a certificate.
+     *
+     * @param alias
+     *            Certificate alias to remove
+     */
+    public void tlsAlpnRemoveCertificate(String alias) throws IOException {
+        createRequest(TlsAlpnHandler.REMOVE)
+                .arg(":alias", alias)
+                .submit();
+    }
+
+    /**
      * Creates a new {@link Request} object.
      *
      * @param call
@@ -151,6 +191,7 @@ public class BammBammClient {
     @ParametersAreNonnullByDefault
     private static class Request {
         private static final HttpClient CLIENT = HttpClients.createDefault();
+        private static final Encoder BASE64 = Base64.getEncoder();
         private static final Charset UTF8 = Charset.forName("utf-8");
 
         private final List<NameValuePair> params = new ArrayList<>();
@@ -200,6 +241,19 @@ public class BammBammClient {
         public Request param(String key, String value) {
             params.add(new BasicNameValuePair(key, value));
             return this;
+        }
+
+        /**
+         * Adds a binary form parameter. It will be sent in the request body.
+         *
+         * @param key
+         *            Parameter name
+         * @param value
+         *            Parameter value. It will be Base64 encoded.
+         * @return itself
+         */
+        public Request param(String key, byte[] value) {
+            return param(key, BASE64.encodeToString(value));
         }
 
         /**

@@ -35,8 +35,10 @@ import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
+import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 import org.shredzone.acme4j.it.BammBammClient;
 import org.shredzone.acme4j.util.CSRBuilder;
+import org.shredzone.acme4j.util.CertificateUtils;
 
 /**
  * Tests a complete certificate order with different challenges.
@@ -82,6 +84,32 @@ public class OrderIT extends PebbleITBase {
             client.dnsAddTxtRecord(challengeDomainName, challenge.getDigest());
 
             cleanup(() -> client.dnsRemoveTxtRecord(challengeDomainName));
+
+            return challenge;
+        });
+    }
+
+    /**
+     * Test if a certificate can be ordered via tns-alpn-01 challenge.
+     */
+    @Test
+    public void testTlsAlpnValidation() throws Exception {
+        orderCertificate(TEST_DOMAIN, auth -> {
+            BammBammClient client = getBammBammClient();
+
+            TlsAlpn01Challenge challenge = auth.findChallenge(TlsAlpn01Challenge.TYPE);
+            assertThat(challenge, is(notNullValue()));
+
+            KeyPair challengeKey = createKeyPair();
+
+            X509Certificate cert = CertificateUtils.createTlsAlpn01Certificate(
+                        challengeKey, auth.getDomain(), challenge.getAcmeValidationV1());
+
+            client.dnsAddARecord(TEST_DOMAIN, getBammBammHostname());
+            client.tlsAlpnAddCertificate(auth.getDomain(), challengeKey.getPrivate(), cert);
+
+            cleanup(() -> client.dnsRemoveARecord(TEST_DOMAIN));
+            cleanup(() -> client.tlsAlpnRemoveCertificate(auth.getDomain()));
 
             return challenge;
         });

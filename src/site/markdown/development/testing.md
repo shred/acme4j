@@ -14,15 +14,16 @@ The `acme4j-it` module contains a small and very simple test server called _Bamm
 
 * 14001: Provides a simple REST-like interface for adding and removing challenge tokens and DNS records. This port is exposed.
 * 53 (UDP): A simple DNS server for resolving test domain names, and providing `TXT` records for `dns-01` challenges.
-* 5002: A simple HTTP server that responses with tokens for `http-01` challenges.
+* 5001: A simple TLS-ALPN server that responds with certificates for `tls-alpn-01` challenges.
+* 5002: A simple HTTP server that responds with tokens for `http-01` challenges.
 
-To run this server, you can use the Docker image mentioned above. You could also run the server directly, but since the DNS server is listening on a privileged port, it would need to be reconfigured first.
+To run this server, you can use the Docker image mentioned above. You could also run the server directly, but since the DNS server is listening on a privileged port, it would need to be reconfigured first. Also, if you run BammBamm with OpenJDK 8, make sure to [add the correct `alpn-boot.jar` version to your boot classpath](https://www.eclipse.org/jetty/documentation/9.4.x/alpn-chapter.html#alpn-versions) in order to use the TLS-ALPN server.
 
 The `BammBammClient` class can be used to set the challenge responses and DNS records via the REST interface on port 14001.
 
 <div class="alert alert-danger" role="alert">
 
-Do not use _Bammbamm_ in production environments! It has its main focus on simplicity, and is only meant as a server for integration test purposes. It is neither hardened, nor feature complete.
+Do not use _BammBamm_ in production environments! It has its main focus on simplicity, and is only meant as a server for integration test purposes. It is neither hardened, nor feature complete.
 </div>
 
 ## Boulder
@@ -39,4 +40,4 @@ Now set up a Docker instance of Boulder. Follow the instructions in the [Boulder
 
 The Boulder integration tests can now be run with `mvn -P boulder verify`.
 
-For a local Boulder installation, just make sure that `FAKE_DNS` is set to `127.0.0.1`. You'll also need to expose the port 5002 of _BammBamm_ by changing the `acme4j-it/pom.xml` accordingly.
+For a local Boulder installation, just make sure that `FAKE_DNS` is set to `127.0.0.1`. You'll also need to expose the ports 5001 and 5002 of _BammBamm_ by changing the `acme4j-it/pom.xml` accordingly.
