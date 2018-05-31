@@ -29,13 +29,16 @@ import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Certificate;
+import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Order;
+import org.shredzone.acme4j.RevocationReason;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
+import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.it.BammBammClient;
 import org.shredzone.acme4j.util.CSRBuilder;
 import org.shredzone.acme4j.util.CertificateUtils;
@@ -192,6 +195,18 @@ public class OrderIT extends PebbleITBase {
         assertThat(cert.getNotAfter(), not(nullValue()));
         assertThat(cert.getNotBefore(), not(nullValue()));
         assertThat(cert.getSubjectX500Principal().getName(), containsString("CN=" + domain));
+
+        certificate.revoke(RevocationReason.KEY_COMPROMISE);
+
+        // Make sure certificate is revoked
+        try {
+            Login login2 = session.login(account.getLocation(), keyPair);
+            Certificate cert2 = login2.bindCertificate(certificate.getLocation());
+            cert2.download();
+            fail("Could download revoked cert");
+        } catch (AcmeException ex) {
+            assertThat(ex.getMessage(), is("HTTP 404: Not Found"));
+        }
     }
 
     @FunctionalInterface
