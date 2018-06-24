@@ -15,7 +15,7 @@ TlsAlpn01Challenge challenge = auth.findChallenge(TlsAlpn01Challenge.TYPE);
 byte[] acmeValidationV1 = challenge.getAcmeValidationV1();
 ```
 
-You need to create a self-signed certificate with the domain to be validated set as the only _Subject Alternative Name_. The `acmeValidationV1` must be set as octet string extension with the object id `1.3.6.1.5.5.7.1.30.1`. It is required to set this extension as critical.
+You need to create a self-signed certificate with the domain to be validated set as the only _Subject Alternative Name_. The `acmeValidationV1` must be set as DER encoded `OCTET STRING` extension with the object id `1.3.6.1.5.5.7.1.30.1`. It is required to set this extension as critical.
 
 After that, configure your web server so it will use this certificate on an incoming TLS request having the SNI `subject` and the ALPN protocol `acme-tls/1`.
 

@@ -32,6 +32,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.WillClose;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
@@ -120,7 +121,7 @@ public final class CertificateUtils {
             gns[0] = new GeneralName(GeneralName.dNSName, subject);
             certBuilder.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(gns));
 
-            certBuilder.addExtension(ACME_VALIDATION_V1, true, acmeValidationV1);
+            certBuilder.addExtension(ACME_VALIDATION_V1, true, new DEROctetString(acmeValidationV1));
 
             JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlg);
 

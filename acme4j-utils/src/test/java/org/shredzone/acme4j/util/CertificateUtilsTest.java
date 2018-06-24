@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.BERTags;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
@@ -111,7 +112,13 @@ public class CertificateUtilsTest {
 
         try (ASN1InputStream asn = new ASN1InputStream(new ByteArrayInputStream(encodedExtensionValue))) {
             DEROctetString derOctetString = (DEROctetString) asn.readObject();
-            assertThat(derOctetString.getOctets(), is(acmeValidationV1));
+
+            byte[] test = new byte[acmeValidationV1.length + 2];
+            test[0] = BERTags.OCTET_STRING;
+            test[1] = (byte) acmeValidationV1.length;
+            System.arraycopy(acmeValidationV1, 0, test, 2, acmeValidationV1.length);
+
+            assertThat(derOctetString.getOctets(), is(test));
         }
     }
 
