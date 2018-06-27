@@ -136,8 +136,7 @@
                                 </ports>
                                 <cmd>
                                     <shell>
-                                        echo "nameserver $(grep 'bammbamm' /etc/hosts|cut -f1)"&gt;/etc/resolv.conf; \
-                                        pebble -strict -config /etc/pebble/pebble-config.json
+                                        pebble -strict -dnsserver bammbamm:53 -config /etc/pebble/pebble-config.json
                                     </shell>
                                 </cmd>
                                 <assembly>
@@ -163,12 +162,6 @@
                                 <wait>
                                     <log>Pebble running</log>
                                 </wait>
-                                <!-- DNS must point to bammbamm, but we need the IP here...
-                                     See the "echo" line in the build/cmd above.
-                                <dns>
-                                    <host>bammbamm</host>
-                                </dns>
-                                -->
                                 <!-- Comment out to perform tests with validation delays. -->
                                 <env>
                                     <PEBBLE_VA_NOSLEEP>1</PEBBLE_VA_NOSLEEP>
