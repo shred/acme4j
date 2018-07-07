@@ -113,12 +113,11 @@ public class ClientTest {
         LOG.info("Certificate URL: " + certificate.getLocation());
 
         // Download the leaf certificate and certificate chain.
-        X509Certificate cert = certificate.download();
-        X509Certificate[] chain = certificate.downloadChain();
+        X509Certificate[] fullChain = certificate.downloadFullChain();
 
         // Write a combined file containing the certificate and chain.
         try (FileWriter fw = new FileWriter(DOMAIN_CHAIN_FILE)) {
-            CertificateUtils.writeX509CertificateChain(fw, cert, chain);
+            CertificateUtils.writeX509Certificates(fw, fullChain);
         }
 
         // That's all! Configure your web server to use the DOMAIN_KEY_FILE and

@@ -87,6 +87,7 @@ public class CertificateUtilsTest {
      * writes a correct chain.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testWriteX509CertificateChain() throws IOException, CertificateException {
         X509Certificate leaf = createCertificate();
         X509Certificate chain1 = createCertificate();
@@ -116,6 +117,25 @@ public class CertificateUtilsTest {
             out = w.toString();
         }
         assertThat(countCertificates(out), is(3));
+
+        try (StringWriter w = new StringWriter()) {
+            CertificateUtils.writeX509Certificates(w, leaf);
+            out = w.toString();
+        }
+        assertThat(countCertificates(out), is(1));
+
+        try (StringWriter w = new StringWriter()) {
+            CertificateUtils.writeX509Certificates(w, leaf, chain1);
+            out = w.toString();
+        }
+        assertThat(countCertificates(out), is(2));
+
+        try (StringWriter w = new StringWriter()) {
+            CertificateUtils.writeX509Certificates(w,
+                    new X509Certificate[] { leaf, chain1 });
+            out = w.toString();
+        }
+        assertThat(countCertificates(out), is(2));
     }
 
     /**

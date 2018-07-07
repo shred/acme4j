@@ -65,15 +65,7 @@ Most web servers, like _Apache_, _nginx_, but also other servers like _postfix_ 
 
 ```java
 try (FileWriter fw = new FileWriter("cert-chain.crt")) {
-    CertificateUtils.writeX509CertificateChain(fw, cert, chain);
-}
-```
-
-Alternatively:
-
-```java
-try (FileWriter fw = new FileWriter("cert-chain.crt")) {
-    CertificateUtils.writeX509CertificateChain(fw, null, fullChain);
+    CertificateUtils.writeX509Certificates(fw, fullChain);
 }
 ```
 
@@ -84,7 +76,7 @@ try (FileWriter fw = new FileWriter("cert.pem")) {
     CertificateUtils.writeX509Certificate(cert, fw);
 }
 try (FileWriter fw = new FileWriter("chain.pem")) {
-    CertificateUtils.writeX509CertificateChain(fw, null, chain);
+    CertificateUtils.writeX509Certificates(fw, chain);
 }
 ```
 

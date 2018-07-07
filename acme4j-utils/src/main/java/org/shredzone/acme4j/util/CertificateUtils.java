@@ -39,6 +39,7 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.shredzone.acme4j.Certificate;
 
 /**
  * Utility class offering convenience methods for certificates.
@@ -107,7 +108,10 @@ public final class CertificateUtils {
      * @param chain
      *            {@link X509Certificate} chain to add to the certificate. {@code null}
      *            values are ignored, array may be empty.
+     * @deprecated use {@link Certificate#downloadFullChain()} and
+     *             {@link #writeX509Certificates(Writer, X509Certificate[])} instead
      */
+    @Deprecated
     public static void writeX509CertificateChain(Writer w, X509Certificate cert, X509Certificate... chain)
                 throws IOException {
         try (JcaPEMWriter jw = new JcaPEMWriter(w)) {
@@ -116,6 +120,22 @@ public final class CertificateUtils {
                 writeCertIfNotNull(jw, c);
             }
         }
+    }
+
+    /**
+     * Writes multiple X.509 certificates to a PEM file.
+     *
+     * @param w
+     *            {@link Writer} to write the certificate chain to. The {@link Writer} is
+     *            closed after use.
+     * @param certs
+     *            {@link X509Certificate} certificates to add to the certificate.
+     *            {@code null} values are ignored, array may be empty.
+     * @since 1.1
+     */
+    public static void writeX509Certificates(Writer w, X509Certificate... certs)
+                throws IOException {
+        writeX509CertificateChain(w, null, certs);
     }
 
     /**
