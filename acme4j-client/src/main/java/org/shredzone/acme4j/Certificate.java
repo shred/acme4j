@@ -77,7 +77,10 @@ public class Certificate extends AcmeResource {
     }
 
     /**
-     * Downloads the certificate. The result is cached.
+     * Downloads the certificate. The result is only the end-entity certificate, without
+     * the issuer chain.
+     * <p>
+     * The result is cached.
      *
      * @return {@link X509Certificate} that was downloaded
      * @throws AcmeRetryAfterException
@@ -85,6 +88,7 @@ public class Certificate extends AcmeResource {
      *             estimated date when it will be ready for download. You should wait for
      *             the date given in {@link AcmeRetryAfterException#getRetryAfter()}
      *             before trying again.
+     * @see #downloadFullChain()
      */
     public X509Certificate download() throws AcmeException {
         if (cert == null) {
@@ -102,7 +106,9 @@ public class Certificate extends AcmeResource {
     }
 
     /**
-     * Downloads the certificate chain. The result is cached.
+     * Downloads the issuer chain. The result does not contain the end-entity certificate.
+     * <p>
+     * The result is cached.
      *
      * @return Chain of {@link X509Certificate}s
      * @throws AcmeRetryAfterException
@@ -142,6 +148,30 @@ public class Certificate extends AcmeResource {
             chain = certChain.toArray(new X509Certificate[certChain.size()]);
         }
         return Arrays.copyOf(chain, chain.length);
+    }
+
+    /**
+     * Downloads the certificate and the corresponding issuer chain. The issued
+     * certificate is always on index 0, followed by the CA certificates, with the root CA
+     * being at the last index.
+     * <p>
+     * The result is cached.
+     *
+     * @return Chain of {@link X509Certificate}s
+     * @throws AcmeRetryAfterException
+     *             the certificate is still being created, and the server returned an
+     *             estimated date when it will be ready for download. You should wait for
+     *             the date given in {@link AcmeRetryAfterException#getRetryAfter()}
+     *             before trying again.
+     * @since 1.1
+     */
+    public X509Certificate[] downloadFullChain() throws AcmeException {
+        downloadChain();
+
+        X509Certificate[] result = new X509Certificate[chain.length + 1];
+        result[0] = cert;
+        System.arraycopy(chain, 0, result, 1, chain.length);
+        return result;
     }
 
     /**

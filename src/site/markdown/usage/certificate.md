@@ -41,7 +41,12 @@ The `Certificate` object offers methods to download the certificate and the cert
 ```java
 X509Certificate cert = cert.download();
 X509Certificate[] chain = cert.downloadChain();
+X509Certificate[] fullChain = cert.downloadFullChain();
 ```
+
+* `cert` is the issued certificate.
+* `chain` is the issuer chain that corresponds to `cert`.
+* `fullChain` is the issued certificate (at index 0), followed by the issuer chain.
 
 Congratulations! You have just created your first certificate via _acme4j_.
 
@@ -61,6 +66,14 @@ Most web servers, like _Apache_, _nginx_, but also other servers like _postfix_ 
 ```java
 try (FileWriter fw = new FileWriter("cert-chain.crt")) {
     CertificateUtils.writeX509CertificateChain(fw, cert, chain);
+}
+```
+
+Alternatively:
+
+```java
+try (FileWriter fw = new FileWriter("cert-chain.crt")) {
+    CertificateUtils.writeX509CertificateChain(fw, null, fullChain);
 }
 ```
 

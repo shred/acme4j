@@ -242,6 +242,21 @@ public final class TestUtils {
     }
 
     /**
+     * Creates the issuer certificate for testing. This certificate is read from a test
+     * resource and is guaranteed not to change between test runs.
+     *
+     * @return {@link X509Certificate} for testing
+     */
+    public static X509Certificate createIssuerCertificate() throws IOException {
+        try (InputStream cert = TestUtils.class.getResourceAsStream("/issuer.pem")) {
+            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+            return (X509Certificate) certificateFactory.generateCertificate(cert);
+        } catch (CertificateException ex) {
+            throw new IOException(ex);
+        }
+    }
+
+    /**
      * Creates a matcher that matches an array of int primitives. The array must contain
      * exactly all of the given values, in any order.
      *

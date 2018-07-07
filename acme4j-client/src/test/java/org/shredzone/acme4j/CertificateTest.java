@@ -49,6 +49,7 @@ public class CertificateTest {
     @Test
     public void testDownload() throws AcmeException, IOException {
         final X509Certificate originalCert = TestUtils.createCertificate();
+        final X509Certificate issuerCert = TestUtils.createIssuerCertificate();
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             private boolean isLocationUrl;
@@ -75,7 +76,11 @@ public class CertificateTest {
 
             @Override
             public X509Certificate readCertificate() {
-                return originalCert;
+                if (isLocationUrl) {
+                    return originalCert;
+                } else {
+                    return issuerCert;
+                }
             }
 
             @Override
@@ -99,12 +104,23 @@ public class CertificateTest {
 
         X509Certificate[] downloadedChain = cert.downloadChain();
         assertThat(downloadedChain.length, is(1));
-        assertThat(downloadedChain[0], is(sameInstance(originalCert)));
+        assertThat(downloadedChain[0], is(sameInstance(issuerCert)));
 
-        // Make sure the chain array is a local copy
+        X509Certificate[] downloadedFullChain = cert.downloadFullChain();
+        assertThat(downloadedFullChain.length, is(2));
+        assertThat(downloadedFullChain[0], is(sameInstance(originalCert)));
+        assertThat(downloadedFullChain[1], is(sameInstance(issuerCert)));
+
+        // Make sure the chain arrays are a local copy
         downloadedChain[0] = null;
         X509Certificate[] downloadedChain2 = cert.downloadChain();
-        assertThat(downloadedChain2[0], is(sameInstance(originalCert)));
+        assertThat(downloadedChain2[0], is(sameInstance(issuerCert)));
+
+        downloadedFullChain[0] = null;
+        downloadedFullChain[1] = null;
+        X509Certificate[] downloadedFullChain2 = cert.downloadFullChain();
+        assertThat(downloadedFullChain2[0], is(sameInstance(originalCert)));
+        assertThat(downloadedFullChain2[1], is(sameInstance(issuerCert)));
 
         provider.close();
     }
