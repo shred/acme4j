@@ -101,6 +101,11 @@ public class CertificateTest {
         assertThat(downloadedChain.length, is(1));
         assertThat(downloadedChain[0], is(sameInstance(originalCert)));
 
+        // Make sure the chain array is a local copy
+        downloadedChain[0] = null;
+        X509Certificate[] downloadedChain2 = cert.downloadChain();
+        assertThat(downloadedChain2[0], is(sameInstance(originalCert)));
+
         provider.close();
     }
 

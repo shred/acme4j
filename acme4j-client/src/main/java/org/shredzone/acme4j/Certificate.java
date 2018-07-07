@@ -19,6 +19,7 @@ import java.net.URL;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.shredzone.acme4j.connector.Connection;
@@ -140,7 +141,7 @@ public class Certificate extends AcmeResource {
 
             chain = certChain.toArray(new X509Certificate[certChain.size()]);
         }
-        return chain;
+        return Arrays.copyOf(chain, chain.length);
     }
 
     /**
