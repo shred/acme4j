@@ -114,6 +114,12 @@ public class CertificateUtilsTest {
         assertThat(countCertificates(out), is(3));
 
         try (StringWriter w = new StringWriter()) {
+            CertificateUtils.writeX509Certificates(w);
+            out = w.toString();
+        }
+        assertThat(countCertificates(out), is(0));
+
+        try (StringWriter w = new StringWriter()) {
             CertificateUtils.writeX509Certificates(w, leaf);
             out = w.toString();
         }
