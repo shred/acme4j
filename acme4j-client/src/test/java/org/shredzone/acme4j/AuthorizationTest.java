@@ -68,7 +68,6 @@ public class AuthorizationTest {
      * combinations.
      */
     @Test
-    @SuppressWarnings("unchecked")
     public void testFindCombination() throws IOException {
         Authorization authorization = createChallengeAuthorization();
 

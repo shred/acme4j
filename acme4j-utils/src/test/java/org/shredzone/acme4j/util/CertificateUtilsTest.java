@@ -26,13 +26,8 @@ import java.lang.reflect.Modifier;
 import java.security.KeyPair;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
-import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.junit.Before;
 import org.junit.Test;
@@ -202,25 +197,6 @@ public class CertificateUtilsTest {
             pos++;
         }
         return count;
-    }
-
-    /**
-     * Extracts all DNSName SANs from a certificate.
-     *
-     * @param cert
-     *            {@link X509Certificate}
-     * @return Set of DNSName
-     */
-    private Set<String> getSANs(X509Certificate cert) throws CertificateParsingException {
-        Set<String> result = new HashSet<>();
-
-        for (List<?> list : cert.getSubjectAlternativeNames()) {
-            if (((Number) list.get(0)).intValue() == GeneralName.dNSName) {
-                result.add((String) list.get(1));
-            }
-        }
-
-        return result;
     }
 
 }
