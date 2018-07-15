@@ -51,10 +51,10 @@
     </developers>
 
     <properties>
-        <bouncycastle.version>1.59</bouncycastle.version>
+        <bouncycastle.version>1.60</bouncycastle.version>
         <dnsjava.version>2.1.8</dnsjava.version>
-        <httpclient.version>4.5.5</httpclient.version>
-        <jose4j.version>0.6.3</jose4j.version>
+        <httpclient.version>4.5.6</httpclient.version>
+        <jose4j.version>0.6.4</jose4j.version>
         <nanohttpd.version>2.3.1</nanohttpd.version>
         <slf4j.version>1.7.25</slf4j.version>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
