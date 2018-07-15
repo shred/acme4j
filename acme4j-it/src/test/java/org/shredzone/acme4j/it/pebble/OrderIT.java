@@ -68,7 +68,7 @@ public class OrderIT extends PebbleITBase {
             cleanup(() -> client.httpRemoveToken(challenge.getToken()));
 
             return challenge;
-        });
+        }, OrderIT::standardRevoker);
     }
 
     /**
@@ -89,7 +89,7 @@ public class OrderIT extends PebbleITBase {
             cleanup(() -> client.dnsRemoveTxtRecord(challengeDomainName));
 
             return challenge;
-        });
+        }, OrderIT::standardRevoker);
     }
 
     /**
@@ -115,7 +115,28 @@ public class OrderIT extends PebbleITBase {
             cleanup(() -> client.tlsAlpnRemoveCertificate(auth.getDomain()));
 
             return challenge;
-        });
+        }, OrderIT::standardRevoker);
+    }
+
+    /**
+     * Test if a certificate can be revoked by its domain key.
+     */
+    @Test
+    public void testDomainKeyRevocation() throws Exception {
+        orderCertificate(TEST_DOMAIN, auth -> {
+            BammBammClient client = getBammBammClient();
+
+            Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
+            assertThat(challenge, is(notNullValue()));
+
+            client.dnsAddARecord(TEST_DOMAIN, getBammBammHostname());
+            client.httpAddToken(challenge.getToken(), challenge.getAuthorization());
+
+            cleanup(() -> client.dnsRemoveARecord(TEST_DOMAIN));
+            cleanup(() -> client.httpRemoveToken(challenge.getToken()));
+
+            return challenge;
+        }, OrderIT::domainKeyRevoker);
     }
 
     /**
@@ -126,8 +147,11 @@ public class OrderIT extends PebbleITBase {
      * @param validator
      *            {@link Validator} that finds and prepares a {@link Challenge} for domain
      *            validation
+     * @param revoker
+     *            {@link Revoker} that finally revokes the certificate
      */
-    private void orderCertificate(String domain, Validator validator) throws Exception {
+    private void orderCertificate(String domain, Validator validator, Revoker revoker)
+            throws Exception {
         KeyPair keyPair = createKeyPair();
         Session session = new Session(pebbleURI());
 
@@ -196,7 +220,7 @@ public class OrderIT extends PebbleITBase {
         assertThat(cert.getNotBefore(), not(nullValue()));
         assertThat(cert.getSubjectX500Principal().getName(), containsString("CN=" + domain));
 
-        certificate.revoke(RevocationReason.KEY_COMPROMISE);
+        revoker.revoke(session, certificate, keyPair, domainKeyPair);
 
         // Make sure certificate is revoked
         try {
@@ -209,9 +233,35 @@ public class OrderIT extends PebbleITBase {
         }
     }
 
+    /**
+     * Revokes a certificate by calling {@link Certificate#revoke(RevocationReason)}.
+     * This is the standard way to revoke a certificate.
+     */
+    private static void standardRevoker(Session session, Certificate certificate,
+            KeyPair keyPair, KeyPair domainKeyPair) throws Exception {
+        certificate.revoke(RevocationReason.KEY_COMPROMISE);
+    }
+
+    /**
+     * Revokes a certificate by calling
+     * {@link Certificate#revoke(Session, KeyPair, X509Certificate, RevocationReason)}.
+     * This way can be used when the account key was lost.
+     */
+    private static void domainKeyRevoker(Session session, Certificate certificate,
+            KeyPair keyPair, KeyPair domainKeyPair) throws Exception {
+        Certificate.revoke(session, domainKeyPair, certificate.getCertificate(),
+                RevocationReason.KEY_COMPROMISE);
+    }
+
     @FunctionalInterface
     private static interface Validator {
         Challenge prepare(Authorization auth) throws Exception;
+    }
+
+    @FunctionalInterface
+    private static interface Revoker {
+        void revoke(Session session, Certificate certificate, KeyPair keyPair,
+            KeyPair domainKeyPair) throws Exception;
     }
 
 }
