@@ -4,7 +4,7 @@ With the `tls-alpn-01` challenge, you prove to the CA that you are able to contr
 
 <div class="alert alert-info" role="alert">
 
-This challenge is not part of the ACME specifications. It is specified [in a separate IETF document](https://tools.ietf.org/html/draft-shoemaker-acme-tls-alpn-00) and is still work in progress.
+This challenge is not part of the ACME specifications. It is specified [in a separate IETF document](https://tools.ietf.org/html/draft-ietf-acme-tls-alpn) and is still work in progress.
 </div>
 
 `TlsAlpn01Challenge` provides a byte array called `acmeValidationV1`:
