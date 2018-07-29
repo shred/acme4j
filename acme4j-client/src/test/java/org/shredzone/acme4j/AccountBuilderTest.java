@@ -220,32 +220,4 @@ public class AccountBuilderTest {
         provider.close();
     }
 
-    @Test
-    public void testEmailAddresses() {
-        AccountBuilder builder = new AccountBuilder();
-
-        builder.addContact("mailto:foo@example.com");
-
-        try {
-            builder.addContact("mailto:foo@example.com,bar@example.com");
-            fail("multiple recipients are accepted");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
-
-        try {
-            builder.addContact("mailto:foo@example.com?to=bar@example.com");
-            fail("hfields are accepted");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
-
-        try {
-            builder.addContact("mailto:?to=foo@example.com");
-            fail("hfields are accepted");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
-    }
-
 }

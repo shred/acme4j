@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.IDN;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -64,6 +65,8 @@ public final class AcmeUtils {
 
     private static final Pattern CONTENT_TYPE_PATTERN = Pattern.compile(
                 "([^;]+)(?:;.*?charset=(\"?)([a-z0-9_-]+)(\\2))?.*", Pattern.CASE_INSENSITIVE);
+
+    private static final Pattern MAIL_PATTERN = Pattern.compile("\\?|@.*,");
 
     private static final Base64.Encoder PEM_ENCODER = Base64.getMimeEncoder(64,
                 "\n".getBytes(StandardCharsets.US_ASCII));
@@ -344,6 +347,24 @@ public final class AcmeUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Validates a contact {@link URI}.
+     *
+     * @param contact
+     *            Contact {@link URI} to validate
+     * @throws IllegalArgumentException
+     *             if the contact {@link URI} is not suitable for account contacts.
+     */
+    public static void validateContact(URI contact) {
+        if ("mailto".equalsIgnoreCase(contact.getScheme())) {
+            String address = contact.toString().substring(7);
+            if (MAIL_PATTERN.matcher(address).find()) {
+                throw new IllegalArgumentException(
+                        "multiple recipients or hfields are not allowed: " + contact);
+            }
+        }
     }
 
 }

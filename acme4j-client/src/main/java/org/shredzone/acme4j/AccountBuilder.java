@@ -23,7 +23,6 @@ import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.crypto.SecretKey;
@@ -49,8 +48,6 @@ import org.slf4j.LoggerFactory;
 public class AccountBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(AccountBuilder.class);
 
-    private static final Pattern MAIL_PATTERN = Pattern.compile("\\?|@.*,");
-
     private List<URI> contacts = new ArrayList<>();
     private Boolean termsOfServiceAgreed;
     private Boolean onlyExisting;
@@ -66,14 +63,7 @@ public class AccountBuilder {
      * @return itself
      */
     public AccountBuilder addContact(URI contact) {
-        if ("mailto".equalsIgnoreCase(contact.getScheme())) {
-            String address = contact.toString().substring(7);
-            if (MAIL_PATTERN.matcher(address).find()) {
-                throw new IllegalArgumentException(
-                        "multiple recipients or hfields are not allowed: " + contact);
-            }
-        }
-
+        AcmeUtils.validateContact(contact);
         contacts.add(contact);
         return this;
     }

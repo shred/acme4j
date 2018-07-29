@@ -38,6 +38,7 @@ import org.shredzone.acme4j.connector.ResourceIterator;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeServerException;
+import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -283,6 +284,7 @@ public class Account extends AcmeJsonResource {
          * @return itself
          */
         public EditableAccount addContact(URI contact) {
+            AcmeUtils.validateContact(contact);
             editContacts.add(contact);
             return this;
         }

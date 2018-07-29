@@ -24,6 +24,7 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.net.URI;
 import java.security.KeyPair;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
@@ -311,6 +312,36 @@ public class AcmeUtilsTest {
             AcmeUtils.getContentType("application/json; charset=\"iso-8859-1\"");
             fail("Accepted bad charset");
         } catch (AcmeProtocolException ex) {
+            // expected
+        }
+    }
+
+    /**
+     * Test that {@link AcmeUtils#validateContact(java.net.URI)} refuses invalid
+     * contacts.
+     */
+    @Test
+    public void testValidateContact() {
+        AcmeUtils.validateContact(URI.create("mailto:foo@example.com"));
+
+        try {
+            AcmeUtils.validateContact(URI.create("mailto:foo@example.com,bar@example.com"));
+            fail("multiple recipients are accepted");
+        } catch (IllegalArgumentException ex) {
+            // expected
+        }
+
+        try {
+            AcmeUtils.validateContact(URI.create("mailto:foo@example.com?to=bar@example.com"));
+            fail("hfields are accepted");
+        } catch (IllegalArgumentException ex) {
+            // expected
+        }
+
+        try {
+            AcmeUtils.validateContact(URI.create("mailto:?to=foo@example.com"));
+            fail("hfields are accepted");
+        } catch (IllegalArgumentException ex) {
             // expected
         }
     }
