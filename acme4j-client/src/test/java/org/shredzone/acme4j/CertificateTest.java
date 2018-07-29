@@ -61,7 +61,7 @@ public class CertificateTest {
             }
 
             @Override
-            public List<X509Certificate> readCertificates() throws AcmeException {
+            public List<X509Certificate> readCertificates() {
                 return originalCert;
             }
 
@@ -140,7 +140,7 @@ public class CertificateTest {
             }
 
             @Override
-            public List<X509Certificate> readCertificates() throws AcmeException {
+            public List<X509Certificate> readCertificates() {
                 assertThat(certRequested, is(true));
                 return originalCert;
             }
@@ -187,7 +187,7 @@ public class CertificateTest {
             }
 
             @Override
-            public List<X509Certificate> readCertificates() throws AcmeException {
+            public List<X509Certificate> readCertificates() {
                 assertThat(certRequested, is(true));
                 return originalCert;
             }

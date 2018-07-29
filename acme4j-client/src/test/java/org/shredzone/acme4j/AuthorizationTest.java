@@ -101,7 +101,7 @@ public class AuthorizationTest {
             }
 
             @Override
-            public void handleRetryAfter(String message) throws AcmeException {
+            public void handleRetryAfter(String message) {
                 // Just do nothing
             }
         };
@@ -146,7 +146,7 @@ public class AuthorizationTest {
             }
 
             @Override
-            public void handleRetryAfter(String message) throws AcmeException {
+            public void handleRetryAfter(String message) {
                 // Just do nothing
             }
         };
@@ -190,7 +190,7 @@ public class AuthorizationTest {
             }
 
             @Override
-            public void handleRetryAfter(String message) throws AcmeException {
+            public void handleRetryAfter(String message) {
                 // Just do nothing
             }
         };

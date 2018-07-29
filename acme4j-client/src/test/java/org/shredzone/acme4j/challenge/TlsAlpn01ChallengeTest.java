@@ -18,8 +18,6 @@ import static org.junit.Assert.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
-import java.io.IOException;
-
 import org.junit.Test;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Status;
@@ -42,7 +40,7 @@ public class TlsAlpn01ChallengeTest {
      * Test that {@link TlsAlpn01Challenge} generates a correct authorization key.
      */
     @Test
-    public void testTlsAlpn01Challenge() throws IOException {
+    public void testTlsAlpn01Challenge() {
         TlsAlpn01Challenge challenge = new TlsAlpn01Challenge(login, getJSON("tlsAlpnChallenge"));
 
         assertThat(challenge.getType(), is(TlsAlpn01Challenge.TYPE));

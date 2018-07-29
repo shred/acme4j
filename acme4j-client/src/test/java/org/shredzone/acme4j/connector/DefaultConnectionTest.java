@@ -99,7 +99,7 @@ public class DefaultConnectionTest {
      * {@code Replay-Nonce} header.
      */
     @Test
-    public void testNoNonceFromHeader() throws AcmeException {
+    public void testNoNonceFromHeader() {
         when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(null);
 
         assertThat(session.getNonce(), is(nullValue()));
@@ -300,7 +300,7 @@ public class DefaultConnectionTest {
      * Test that no Location header returns {@code null}.
      */
     @Test
-    public void testNoLocation() throws Exception {
+    public void testNoLocation() {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             URL location = conn.getLocation();
@@ -561,7 +561,7 @@ public class DefaultConnectionTest {
                 result.put("type", "urn:zombie:error:apocalypse");
                 result.put("detail", "Zombie apocalypse in progress");
                 return result.toJSON();
-            };
+            }
         }) {
             conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             fail("Expected to fail");
@@ -597,7 +597,7 @@ public class DefaultConnectionTest {
             @Override
             public JSON readJsonResponse() {
                 return JSON.empty();
-            };
+            }
         }) {
             conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             fail("Expected to fail");
@@ -675,7 +675,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
-            public void resetNonce(Session session) throws AcmeException {
+            public void resetNonce(Session session) {
                 assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
                 if (session.getNonce() == null) {
                     session.setNonce(nonce1);
@@ -750,7 +750,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
-            public void resetNonce(Session session) throws AcmeException {
+            public void resetNonce(Session session) {
                 assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
                 if (session.getNonce() == null) {
                     session.setNonce(nonce1);

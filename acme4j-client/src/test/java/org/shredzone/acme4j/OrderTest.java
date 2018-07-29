@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
-import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -57,7 +56,7 @@ public class OrderTest {
             }
 
             @Override
-            public void handleRetryAfter(String message) throws AcmeException {
+            public void handleRetryAfter(String message) {
                 assertThat(message, not(nullValue()));
             }
         };
@@ -111,7 +110,7 @@ public class OrderTest {
             }
 
             @Override
-            public void handleRetryAfter(String message) throws AcmeException {
+            public void handleRetryAfter(String message) {
                 assertThat(message, not(nullValue()));
             }
         };
@@ -165,7 +164,7 @@ public class OrderTest {
             }
 
             @Override
-            public void handleRetryAfter(String message) throws AcmeException {
+            public void handleRetryAfter(String message) {
                 assertThat(message, not(nullValue()));
             }
         };

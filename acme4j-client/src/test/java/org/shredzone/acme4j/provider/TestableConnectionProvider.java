@@ -109,7 +109,7 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
     }
 
     @Override
-    public JSON directory(Session session, URI serverUri) throws AcmeException {
+    public JSON directory(Session session, URI serverUri) {
         if (directory.toMap().isEmpty()) {
             throw new UnsupportedOperationException();
         }

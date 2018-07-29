@@ -84,7 +84,7 @@ public class JSONBuilderTest {
 
         JSONBuilder cb = new JSONBuilder();
         cb.put("fooDate", date);
-        cb.put("fooNull", (Instant) null);
+        cb.put("fooNull", null);
 
         assertThat(cb.toString(), is("{\"fooDate\":\"2016-06-01T03:13:46Z\",\"fooNull\":null}"));
     }
@@ -109,7 +109,7 @@ public class JSONBuilderTest {
      */
     @Test
     @SuppressWarnings("unchecked")
-    public void testKey() throws IOException, NoSuchAlgorithmException, JoseException {
+    public void testKey() throws IOException, JoseException {
         KeyPair keyPair = TestUtils.createKeyPair();
 
         JSONBuilder res;

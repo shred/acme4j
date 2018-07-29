@@ -24,7 +24,6 @@ import org.junit.Test;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
-import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 
@@ -88,7 +87,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public JSON directory(Session session, URI serverUri) throws AcmeException {
+        public JSON directory(Session session, URI serverUri) {
             throw new UnsupportedOperationException();
         }
 
@@ -116,7 +115,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public JSON directory(Session session, URI serverUri) throws AcmeException {
+        public JSON directory(Session session, URI serverUri) {
             throw new UnsupportedOperationException();
         }
 

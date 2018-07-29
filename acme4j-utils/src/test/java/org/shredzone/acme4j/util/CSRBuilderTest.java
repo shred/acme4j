@@ -36,7 +36,6 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.openssl.PEMException;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.hamcrest.BaseMatcher;
@@ -158,7 +157,7 @@ public class CSRBuilderTest {
      * Checks if the {@link CSRBuilder#write(java.io.Writer)} method generates a correct
      * CSR PEM file.
      */
-    private void writerTest(CSRBuilder builder) throws IOException, PEMException {
+    private void writerTest(CSRBuilder builder) throws IOException {
         // Write CSR to PEM
         String pem;
         try (StringWriter out = new StringWriter()) {

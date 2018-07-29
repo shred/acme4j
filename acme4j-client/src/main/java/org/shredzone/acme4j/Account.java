@@ -105,7 +105,7 @@ public class Account extends AcmeJsonResource {
      *         fetched from the server. Each {@link Iterator} instance may provide the
      *         {@link Order} objects in a different order.
      */
-    public Iterator<Order> getOrders() throws AcmeException {
+    public Iterator<Order> getOrders() {
         URL ordersUrl = getJSON().get(KEY_ORDERS).asURL();
         return new ResourceIterator<>(getLogin(), KEY_ORDERS, ordersUrl, Login::bindOrder);
     }
@@ -127,7 +127,7 @@ public class Account extends AcmeJsonResource {
      *
      * @return {@link OrderBuilder} object
      */
-    public OrderBuilder newOrder() throws AcmeException {
+    public OrderBuilder newOrder() {
         return new OrderBuilder(getLogin());
     }
 
