@@ -1,6 +1,6 @@
 # ACME Java Client ![build status](https://shredzone.org/badge/acme4j.svg) ![maven central](https://shredzone.org/maven-central/org.shredzone.acme4j/acme4j/badge.svg)
 
-This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme-12) protocol.
+This is a Java client for the [Automatic Certificate Management Environment (ACME)](https://tools.ietf.org/html/draft-ietf-acme-acme) protocol.
 
 ACME is a protocol that a certificate authority (CA) and an applicant can use to automate the process of verification and certificate issuance.
 
@@ -10,7 +10,7 @@ It is an independent open source implementation that is not affiliated with or e
 
 ## Features
 
-* Fully supports the ACME v2 protocol up to [draft 12](https://tools.ietf.org/html/draft-ietf-acme-acme-12)
+* Fully supports the ACME v2 protocol up to [draft 13](https://tools.ietf.org/html/draft-ietf-acme-acme-13)
 * Supports all ACME challenges and the `tls-alpn-01` challenge
 * Easy to use Java API
 * Requires JRE 8 (update 101) or higher
