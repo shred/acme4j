@@ -85,6 +85,23 @@ public class AccountBuilder {
     }
 
     /**
+     * Add a email address to the list of contacts.
+     * <p>
+     * This is a convenience call for {@link #addContact(String)} that doesn't
+     * require from you attach "mailto" scheme before email address.
+     *
+     * @param email
+     *             Contact email without "mailto" scheme (e.g. test@gmail.com)
+     * @throws IllegalArgumentException
+     *             if there is a syntax error in the URI string
+     * @return itself
+     */
+    public AccountBuilder addEmail(String email) {
+        addContact("mailto:" + email);
+        return this;
+    }
+
+    /**
      * Signals that the user agrees to the terms of service.
      *
      * @return itself
