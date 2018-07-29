@@ -21,7 +21,6 @@ import static org.mockito.Mockito.*;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.Proxy;
-import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.junit.Test;
@@ -38,7 +37,7 @@ public class HttpConnectorTest {
      * This is just a mock to check that the parameters are properly set.
      */
     @Test
-    public void testMockOpenConnection() throws IOException, URISyntaxException {
+    public void testMockOpenConnection() {
         HttpURLConnection conn = mock(HttpURLConnection.class);
 
         HttpConnector connector = new HttpConnector();

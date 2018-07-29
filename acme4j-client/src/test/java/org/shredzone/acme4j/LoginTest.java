@@ -130,7 +130,7 @@ public class LoginTest {
         Login login = new Login(location, keypair, session);
         Challenge challenge = login.createChallenge(data);
         assertThat(challenge, is(instanceOf(Http01Challenge.class)));
-        assertThat(challenge, is(sameInstance((Challenge) mockChallenge)));
+        assertThat(challenge, is(sameInstance(mockChallenge)));
 
         verify(mockProvider).createChallenge(login, data);
     }

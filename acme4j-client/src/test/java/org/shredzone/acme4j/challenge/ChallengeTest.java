@@ -21,12 +21,10 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.jose4j.lang.JoseException;
 import org.junit.Test;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
@@ -50,7 +48,7 @@ public class ChallengeTest {
      * Test that after unmarshaling, the challenge properties are set correctly.
      */
     @Test
-    public void testUnmarshal() throws URISyntaxException {
+    public void testUnmarshal() {
         Challenge challenge = new Challenge(TestUtils.login(), getJSON("genericChallenge"));
 
         // Test unmarshalled values
@@ -72,7 +70,7 @@ public class ChallengeTest {
      * Test that {@link Challenge#prepareResponse(JSONBuilder)} contains the type.
      */
     @Test
-    public void testRespond() throws JoseException {
+    public void testRespond() {
         Challenge challenge = new Challenge(TestUtils.login(), getJSON("genericChallenge"));
 
         JSONBuilder response = new JSONBuilder();
@@ -85,7 +83,7 @@ public class ChallengeTest {
      * Test that an exception is thrown on challenge type mismatch.
      */
     @Test(expected = AcmeProtocolException.class)
-    public void testNotAcceptable() throws URISyntaxException {
+    public void testNotAcceptable() {
         new Http01Challenge(TestUtils.login(), getJSON("dnsChallenge"));
     }
 
@@ -138,7 +136,7 @@ public class ChallengeTest {
             }
 
             @Override
-            public void handleRetryAfter(String message) throws AcmeException {
+            public void handleRetryAfter(String message) {
                 // Just do nothing
             }
         };

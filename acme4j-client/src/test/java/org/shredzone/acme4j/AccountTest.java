@@ -59,7 +59,7 @@ public class AccountTest {
      * Test that a account can be updated.
      */
     @Test
-    public void testUpdateAccount() throws AcmeException, IOException, URISyntaxException {
+    public void testUpdateAccount() throws AcmeException, IOException {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             private JSON jsonResponse;
 

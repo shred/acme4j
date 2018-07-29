@@ -43,7 +43,7 @@ public class SessionTest {
      * Test constructor
      */
     @Test
-    public void testConstructor() throws IOException {
+    public void testConstructor() {
         URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
 
         try {
@@ -73,7 +73,7 @@ public class SessionTest {
      * Test getters and setters.
      */
     @Test
-    public void testGettersAndSetters() throws IOException {
+    public void testGettersAndSetters() {
         URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
 
         Session session = new Session(serverUri);

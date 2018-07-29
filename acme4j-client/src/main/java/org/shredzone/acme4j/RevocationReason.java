@@ -42,7 +42,7 @@ public enum RevocationReason {
 
     private final int reasonCode;
 
-    private RevocationReason(int reasonCode) {
+    RevocationReason(int reasonCode) {
         this.reasonCode = reasonCode;
     }
 

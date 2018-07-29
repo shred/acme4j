@@ -32,7 +32,7 @@ public enum Resource {
 
     private final String path;
 
-    private Resource(String path) {
+    Resource(String path) {
         this.path = path;
     }
 

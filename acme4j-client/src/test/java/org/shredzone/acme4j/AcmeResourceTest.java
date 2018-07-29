@@ -63,7 +63,7 @@ public class AcmeResourceTest {
         assertThat(challenge.getLogin(), is(login));
 
         // Serialize it
-        byte[] serialized = null;
+        byte[] serialized;
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
             try (ObjectOutputStream out = new ObjectOutputStream(baos)) {
                 out.writeObject(challenge);
@@ -78,7 +78,7 @@ public class AcmeResourceTest {
         }
 
         // Deserialize to new object
-        DummyResource restored = null;
+        DummyResource restored;
         try (ByteArrayInputStream bais = new ByteArrayInputStream(serialized);
                 ObjectInputStream in = new ObjectInputStream(bais)) {
             Object obj = in.readObject();

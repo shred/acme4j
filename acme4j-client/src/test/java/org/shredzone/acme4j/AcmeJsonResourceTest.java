@@ -36,7 +36,7 @@ public class AcmeJsonResourceTest {
      * Test {@link AcmeJsonResource#AcmeJsonResource(Login, URL)}.
      */
     @Test
-    public void testLoginConstructor() throws Exception {
+    public void testLoginConstructor() {
         Login login = TestUtils.login();
 
         AcmeJsonResource resource = new DummyJsonResource(login, LOCATION_URL);
@@ -55,7 +55,7 @@ public class AcmeJsonResourceTest {
      * Test {@link AcmeJsonResource#setJSON(JSON)}.
      */
     @Test
-    public void testSetJson() throws Exception {
+    public void testSetJson() {
         Login login = TestUtils.login();
 
         JSON jsonData2 = getJSON("requestOrderResponse");
@@ -79,7 +79,7 @@ public class AcmeJsonResourceTest {
      * Test {@link AcmeJsonResource#invalidate()}.
      */
     @Test
-    public void testInvalidate() throws Exception {
+    public void testInvalidate() {
         Login login = TestUtils.login();
 
         AcmeJsonResource resource = new DummyJsonResource(login, LOCATION_URL);
