@@ -320,10 +320,10 @@ public class AccountTest {
                     StringBuilder expectedPayload = new StringBuilder();
                     expectedPayload.append('{');
                     expectedPayload.append("\"account\":\"").append(locationUrl).append("\",");
-                    expectedPayload.append("\"newKey\":{");
-                    expectedPayload.append("\"kty\":\"").append(TestUtils.D_KTY).append("\",");
-                    expectedPayload.append("\"e\":\"").append(TestUtils.D_E).append("\",");
-                    expectedPayload.append("\"n\":\"").append(TestUtils.D_N).append("\"");
+                    expectedPayload.append("\"oldKey\":{");
+                    expectedPayload.append("\"kty\":\"").append(TestUtils.KTY).append("\",");
+                    expectedPayload.append("\"e\":\"").append(TestUtils.E).append("\",");
+                    expectedPayload.append("\"n\":\"").append(TestUtils.N).append("\"");
                     expectedPayload.append("}}");
                     assertThat(decodedPayload, sameJSONAs(expectedPayload.toString()));
                 } catch (JoseException ex) {

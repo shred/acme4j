@@ -203,7 +203,7 @@ public class Account extends AcmeJsonResource {
 
             JSONBuilder payloadClaim = new JSONBuilder();
             payloadClaim.put("account", getLocation());
-            payloadClaim.putKey("newKey", newKeyPair.getPublic());
+            payloadClaim.putKey("oldKey", getLogin().getKeyPair().getPublic());
 
             JsonWebSignature innerJws = new JsonWebSignature();
             innerJws.setPayload(payloadClaim.toString());
