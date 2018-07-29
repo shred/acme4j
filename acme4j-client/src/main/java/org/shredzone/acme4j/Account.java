@@ -304,6 +304,21 @@ public class Account extends AcmeJsonResource {
         }
 
         /**
+         * Adds a new Contact email to the account.
+         * <p>
+         * This is a convenience call for {@link #addContact(String)} hat doesn't
+         * require from you attach "mailto" scheme before email address.
+         *
+         * @param email
+         *            Contact email without "mailto" scheme (e.g. test@gmail.com)
+         * @return itself
+         */
+        public EditableAccount addEmail(String email) {
+            addContact("mailto:" + email);
+            return this;
+        }
+
+        /**
          * Commits the changes and updates the account.
          */
         public void commit() throws AcmeException {

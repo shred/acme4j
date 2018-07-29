@@ -28,6 +28,7 @@ import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.CompactSerializer;
 import org.jose4j.lang.JoseException;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
@@ -220,4 +221,10 @@ public class AccountBuilderTest {
         provider.close();
     }
 
+    @Test
+    public void testEmailAddresses() {
+        AccountBuilder builder = Mockito.spy(AccountBuilder.class);
+        builder.addEmail("foo@example.com");
+        Mockito.verify(builder).addContact(Mockito.eq("mailto:foo@example.com"));
+    }
 }
