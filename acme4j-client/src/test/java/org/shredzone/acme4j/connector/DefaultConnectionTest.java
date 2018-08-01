@@ -188,6 +188,7 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection, atLeastOnce()).connect();
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Replay-Nonce");
+        verify(mockUrlConnection, atLeastOnce()).getHeaderFields();
         verifyNoMoreInteractions(mockUrlConnection);
     }
 
