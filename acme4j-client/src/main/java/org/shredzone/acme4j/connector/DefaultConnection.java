@@ -106,10 +106,14 @@ public class DefaultConnection implements Connection {
 
             URL newNonceUrl = session.resourceUrl(Resource.NEW_NONCE);
 
+            LOG.debug("HEAD {}", newNonceUrl);
+
             conn = httpConnector.openConnection(newNonceUrl, session.getProxy());
             conn.setRequestMethod("HEAD");
             conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
             conn.connect();
+
+            logHeaders();
 
             int rc = conn.getResponseCode();
             if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_NO_CONTENT) {
