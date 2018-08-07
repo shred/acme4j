@@ -6,11 +6,11 @@ Thank you for taking your time to contribute!
 
 These criteria must be met for a successful pull request:
 
-* Follow the [Style Guide](#Style-Guide).
-* If you add code, remember to add [unit tests](#Unit-Tests) that test your code.
+* Follow the [Style Guide](#style-guide).
+* If you add code, remember to add [unit tests](#unit-tests) that test your code.
 * All unit tests must run successfully.
 * Integration tests should run successfully, unless there is a good reason (e.g. waiting for a pending change in Pebble).
-* Your commits follow the [git commit](#git-Commits) guide.
+* Your commits follow the [git commit](#git-commits) guide.
 * You accept that your code is distributed under the terms of [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
 ## Style Guide
