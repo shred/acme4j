@@ -20,6 +20,7 @@ import static org.shredzone.acme4j.toolbox.TestUtils.*;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.URL;
 import java.time.Instant;
 import java.util.Arrays;
@@ -80,7 +81,7 @@ public class OrderBuilderTest {
                         .identifier(Identifier.dns("d.example.com"))
                         .identifiers(Arrays.asList(
                                     Identifier.dns("d2.example.com"),
-                                    new Identifier("ip", "192.168.1.2")))
+                                    Identifier.ip(InetAddress.getByName("192.168.1.2"))))
                         .notBefore(notBefore)
                         .notAfter(notAfter)
                         .create();
@@ -99,7 +100,7 @@ public class OrderBuilderTest {
                         Identifier.dns("m.example.org"),
                         Identifier.dns("d.example.com"),
                         Identifier.dns("d2.example.com"),
-                        new Identifier("ip", "192.168.1.2")));
+                        Identifier.ip(InetAddress.getByName("192.168.1.2"))));
         assertThat(order.getNotBefore(), is(parseTimestamp("2016-01-01T00:10:00Z")));
         assertThat(order.getNotAfter(), is(parseTimestamp("2016-01-08T00:10:00Z")));
         assertThat(order.getExpires(), is(parseTimestamp("2016-01-10T00:00:00Z")));

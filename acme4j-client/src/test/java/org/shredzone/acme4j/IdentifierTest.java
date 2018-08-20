@@ -16,6 +16,8 @@ package org.shredzone.acme4j;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 
 import org.junit.Test;
@@ -30,6 +32,7 @@ public class IdentifierTest {
     @Test
     public void testConstants() {
         assertThat(Identifier.DNS, is("dns"));
+        assertThat(Identifier.IP, is("ip"));
     }
 
     @Test
@@ -72,6 +75,24 @@ public class IdentifierTest {
     @Test(expected = AcmeProtocolException.class)
     public void testNoDns() {
         new Identifier("foo", "example.com").getDomain();
+    }
+
+    @Test
+    public void testIp() throws UnknownHostException {
+        Identifier id1 = Identifier.ip(InetAddress.getByName("192.168.1.2"));
+        assertThat(id1.getType(), is(Identifier.IP));
+        assertThat(id1.getValue(), is("192.168.1.2"));
+        assertThat(id1.getIP().getHostAddress(), is("192.168.1.2"));
+
+        Identifier id2 = Identifier.ip(InetAddress.getByName("2001:db8:85a3::8a2e:370:7334"));
+        assertThat(id2.getType(), is(Identifier.IP));
+        assertThat(id2.getValue(), is("2001:db8:85a3:0:0:8a2e:370:7334"));
+        assertThat(id2.getIP().getHostAddress(), is("2001:db8:85a3:0:0:8a2e:370:7334"));
+    }
+
+    @Test(expected = AcmeProtocolException.class)
+    public void testNoIp() {
+        new Identifier("foo", "example.com").getIP();
     }
 
     @Test

@@ -17,6 +17,8 @@ import static java.util.Objects.requireNonNull;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.toAce;
 
 import java.io.Serializable;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -30,6 +32,7 @@ import org.shredzone.acme4j.toolbox.JSONBuilder;
  * Represents an identifier.
  * <p>
  * The ACME protocol only defines the DNS identifier, which identifies a domain name.
+ * acme4j also supports IP identifiers.
  * <p>
  * CAs may define further, proprietary identifier types.
  *
@@ -44,6 +47,13 @@ public class Identifier implements Serializable {
      * Type constant for DNS identifiers.
      */
     public static final String DNS = "dns";
+
+    /**
+     * Type constant for IP identifiers.
+     *
+     * @see <a href="https://tools.ietf.org/html/draft-ietf-acme-ip">draft-ietf-acme-ip</a>
+     */
+    public static final String IP = "ip";
 
     private static final String KEY_TYPE = "type";
     private static final String KEY_VALUE = "value";
@@ -60,6 +70,17 @@ public class Identifier implements Serializable {
      */
     public static Identifier dns(String domain) {
         return new Identifier(DNS, toAce(domain));
+    }
+
+    /**
+     * Creates a new IP identifier for the given {@link InetAddress}.
+     *
+     * @param ip
+     *            {@link InetAddress}
+     * @return New {@link Identifier}
+     */
+    public static Identifier ip(InetAddress ip) {
+        return new Identifier(IP, ip.getHostAddress());
     }
 
     /**
@@ -117,6 +138,24 @@ public class Identifier implements Serializable {
             throw new AcmeProtocolException("expected 'dns' identifier, but found '" + type + "'");
         }
         return value;
+    }
+
+    /**
+     * Returns the IP address if this is an IP identifier.
+     *
+     * @return {@link InetAddress}
+     * @throws AcmeProtocolException
+     *             if this is not a DNS identifier.
+     */
+    public InetAddress getIP() {
+        if (!IP.equals(type)) {
+            throw new AcmeProtocolException("expected 'ip' identifier, but found '" + type + "'");
+        }
+        try {
+            return InetAddress.getByName(value);
+        } catch (UnknownHostException ex) {
+            throw new AcmeProtocolException("bad ip identifier value", ex);
+        }
     }
 
     /**
