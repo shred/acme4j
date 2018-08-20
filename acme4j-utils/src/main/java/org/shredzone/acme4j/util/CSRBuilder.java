@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.util;
 
+import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.toAce;
 
@@ -76,7 +77,7 @@ public class CSRBuilder {
      *            Domain name to add
      */
     public void addDomain(String domain) {
-        String ace = toAce(domain);
+        String ace = toAce(requireNonNull(domain));
         if (namelist.isEmpty()) {
             namebuilder.addRDN(BCStyle.CN, ace);
         }
@@ -113,7 +114,7 @@ public class CSRBuilder {
      * Note that it is at the discretion of the ACME server to accept this parameter.
      */
     public void setOrganization(String o) {
-        namebuilder.addRDN(BCStyle.O, o);
+        namebuilder.addRDN(BCStyle.O, requireNonNull(o));
     }
 
     /**
@@ -122,7 +123,7 @@ public class CSRBuilder {
      * Note that it is at the discretion of the ACME server to accept this parameter.
      */
     public void setOrganizationalUnit(String ou) {
-        namebuilder.addRDN(BCStyle.OU, ou);
+        namebuilder.addRDN(BCStyle.OU, requireNonNull(ou));
     }
 
     /**
@@ -131,7 +132,7 @@ public class CSRBuilder {
      * Note that it is at the discretion of the ACME server to accept this parameter.
      */
     public void setLocality(String l) {
-        namebuilder.addRDN(BCStyle.L, l);
+        namebuilder.addRDN(BCStyle.L, requireNonNull(l));
     }
 
     /**
@@ -140,7 +141,7 @@ public class CSRBuilder {
      * Note that it is at the discretion of the ACME server to accept this parameter.
      */
     public void setState(String st) {
-        namebuilder.addRDN(BCStyle.ST, st);
+        namebuilder.addRDN(BCStyle.ST, requireNonNull(st));
     }
 
     /**
@@ -149,7 +150,7 @@ public class CSRBuilder {
      * Note that it is at the discretion of the ACME server to accept this parameter.
      */
     public void setCountry(String c) {
-        namebuilder.addRDN(BCStyle.C, c);
+        namebuilder.addRDN(BCStyle.C, requireNonNull(c));
     }
 
     /**
