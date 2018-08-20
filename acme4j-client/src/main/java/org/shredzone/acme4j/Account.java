@@ -154,13 +154,36 @@ public class Account extends AcmeJsonResource {
         if (domain.isEmpty()) {
             throw new IllegalArgumentException("domain must not be empty");
         }
+        return preAuthorize(Identifier.dns(domain));
+    }
+
+    /**
+     * Pre-authorizes an {@link Identifier}. The CA will check if it accepts the
+     * identifier for certification, and returns the necessary challenges.
+     * <p>
+     * Some servers may not allow pre-authorization.
+     * <p>
+     * It is not possible to pre-authorize wildcard domains.
+     *
+     * @param identifier
+     *            {@link Identifier} to be pre-authorized.
+     * @return {@link Authorization} object for this identifier
+     * @throws AcmeException
+     *             if the server does not allow pre-authorization
+     * @throws AcmeServerException
+     *             if the server allows pre-authorization, but will refuse to issue a
+     *             certificate for this identifier
+     * @since 2.3
+     */
+    public Authorization preAuthorize(Identifier identifier) throws AcmeException {
+        Objects.requireNonNull(identifier, "identifier");
 
         URL newAuthzUrl = getSession().resourceUrl(Resource.NEW_AUTHZ);
 
-        LOG.debug("preAuthorizeDomain {}", domain);
+        LOG.debug("preAuthorize {}", identifier);
         try (Connection conn = connect()) {
             JSONBuilder claims = new JSONBuilder();
-            claims.put("identifier", Identifier.dns(domain).toMap());
+            claims.put("identifier", identifier.toMap());
 
             conn.sendSignedRequest(newAuthzUrl, claims, getLogin());
 

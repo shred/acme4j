@@ -43,6 +43,7 @@ public class OrderBuilderTest {
      * Test that a new {@link Order} can be created.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testOrderCertificate() throws Exception {
         Instant notBefore = parseTimestamp("2016-01-01T00:00:00Z");
         Instant notAfter = parseTimestamp("2016-01-08T00:00:00Z");
@@ -76,6 +77,10 @@ public class OrderBuilderTest {
                         .domains("example.com", "www.example.com")
                         .domain("example.org")
                         .domains(Arrays.asList("m.example.com", "m.example.org"))
+                        .identifier(Identifier.dns("d.example.com"))
+                        .identifiers(Arrays.asList(
+                                    Identifier.dns("d2.example.com"),
+                                    new Identifier("ip", "192.168.1.2")))
                         .notBefore(notBefore)
                         .notAfter(notAfter)
                         .create();
@@ -83,7 +88,18 @@ public class OrderBuilderTest {
         assertThat(order.getDomains(), containsInAnyOrder(
                         "example.com", "www.example.com",
                         "example.org",
-                        "m.example.com", "m.example.org"));
+                        "m.example.com", "m.example.org",
+                        "d.example.com",
+                        "d2.example.com"));
+        assertThat(order.getIdentifiers(), containsInAnyOrder(
+                        Identifier.dns("example.com"),
+                        Identifier.dns("www.example.com"),
+                        Identifier.dns("example.org"),
+                        Identifier.dns("m.example.com"),
+                        Identifier.dns("m.example.org"),
+                        Identifier.dns("d.example.com"),
+                        Identifier.dns("d2.example.com"),
+                        new Identifier("ip", "192.168.1.2")));
         assertThat(order.getNotBefore(), is(parseTimestamp("2016-01-01T00:10:00Z")));
         assertThat(order.getNotAfter(), is(parseTimestamp("2016-01-08T00:10:00Z")));
         assertThat(order.getExpires(), is(parseTimestamp("2016-01-10T00:00:00Z")));

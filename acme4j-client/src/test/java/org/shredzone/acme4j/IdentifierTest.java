@@ -14,7 +14,7 @@
 package org.shredzone.acme4j;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 import java.util.Map;
 
@@ -92,6 +92,23 @@ public class IdentifierTest {
 
         assertThat(idRef.equals(new Object()), is(false));
         assertThat(idRef.equals(null), is(false));
+    }
+
+    @Test
+    public void testNull() {
+        try {
+            new Identifier(null, "123.456");
+            fail("accepted null");
+        } catch (NullPointerException ex) {
+            // expected
+        }
+
+        try {
+            new Identifier("foo", null);
+            fail("accepted null");
+        } catch (NullPointerException ex) {
+            // expected
+        }
     }
 
 }

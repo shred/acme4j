@@ -65,8 +65,7 @@ public class OrderBuilder {
      * @return itself
      */
     public OrderBuilder domain(String domain) {
-        identifierSet.add(Identifier.dns(domain));
-        return this;
+        return identifier(Identifier.dns(domain));
     }
 
     /**
@@ -96,6 +95,32 @@ public class OrderBuilder {
      */
     public OrderBuilder domains(Collection<String> domains) {
         requireNonNull(domains, "domains").forEach(this::domain);
+        return this;
+    }
+
+    /**
+     * Adds an {@link Identifier} to the order.
+     *
+     * @param identifier
+     *            {@link Identifier} to be added to the order.
+     * @return itself
+     * @since 2.3
+     */
+    public OrderBuilder identifier(Identifier identifier) {
+        identifierSet.add(requireNonNull(identifier, "identifier"));
+        return this;
+    }
+
+    /**
+     * Adds a collection of {@link Identifier} to the order.
+     *
+     * @param identifiers
+     *            Collection of {@link Identifier} to be added to the order.
+     * @return itself
+     * @since 2.3
+     */
+    public OrderBuilder identifiers(Collection<Identifier> identifiers) {
+        requireNonNull(identifiers, "identifiers").forEach(this::identifier);
         return this;
     }
 

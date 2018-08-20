@@ -19,6 +19,18 @@
     {
       "type": "dns",
       "value": "m.example.org"
+    },
+    {
+      "type": "dns",
+      "value": "d.example.com"
+    },
+    {
+      "type": "dns",
+      "value": "d2.example.com"
+    },
+    {
+      "type": "ip",
+      "value": "192.168.1.2"
     }
   ],
   "notBefore": "2016-01-01T00:00:00Z",
