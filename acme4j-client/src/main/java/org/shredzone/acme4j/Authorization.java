@@ -52,14 +52,25 @@ public class Authorization extends AcmeJsonResource {
      * For wildcard domain orders, the domain itself (without wildcard prefix) is returned
      * here. To find out if this {@link Authorization} is related to a wildcard domain
      * order, check the {@link #isWildcard()} method.
+     *
+     * @deprecated Use {@link #getIdentifier()}.
      */
+    @Deprecated
     public String getDomain() {
-        JSON jsonIdentifier = getJSON().get("identifier").asObject();
-        String type = jsonIdentifier.get("type").asString();
-        if (!"dns".equals(type)) {
-            throw new AcmeProtocolException("Unknown authorization type: " + type);
-        }
-        return jsonIdentifier.get("value").asString();
+        return getIdentifier().getDomain();
+    }
+
+    /**
+     * Gets the {@link Identifier} to be authorized.
+     * <p>
+     * For wildcard domain orders, the domain itself (without wildcard prefix) is returned
+     * here. To find out if this {@link Authorization} is related to a wildcard domain
+     * order, check the {@link #isWildcard()} method.
+     *
+     * @since 2.3
+     */
+    public Identifier getIdentifier() {
+        return getJSON().get("identifier").asIdentifier();
     }
 
     /**

@@ -145,7 +145,7 @@ public class ResourceIteratorTest {
                 int end = (ix + 1) * RESOURCES_PER_PAGE;
 
                 JSONBuilder cb = new JSONBuilder();
-                cb.array(TYPE, resourceURLs.subList(start, end).toArray());
+                cb.array(TYPE, resourceURLs.subList(start, end));
 
                 return JSON.parse(cb.toString());
             }

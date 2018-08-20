@@ -75,7 +75,7 @@ public class AccountTest {
             public void sendRequest(URL url, Session session) {
                 if (url("https://example.com/acme/acct/1/orders").equals(url)) {
                     jsonResponse = new JSONBuilder()
-                                .array("orders", "https://example.com/acme/order/1")
+                                .array("orders", Arrays.asList("https://example.com/acme/order/1"))
                                 .toJSON();
                 }
             }
@@ -169,6 +169,7 @@ public class AccountTest {
      * Test that a domain can be pre-authorized.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testPreAuthorizeDomain() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
@@ -202,6 +203,7 @@ public class AccountTest {
         Authorization auth = account.preAuthorizeDomain(domainName);
 
         assertThat(auth.getDomain(), is(domainName));
+        assertThat(auth.getIdentifier().getDomain(), is(domainName));
         assertThat(auth.getStatus(), is(Status.PENDING));
         assertThat(auth.getExpires(), is(nullValue()));
         assertThat(auth.getLocation(), is(locationUrl));

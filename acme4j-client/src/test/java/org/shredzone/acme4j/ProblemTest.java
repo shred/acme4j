@@ -44,7 +44,7 @@ public class ProblemTest {
         assertThat(problem.getTitle(), is("Some of the identifiers requested were rejected"));
         assertThat(problem.getDetail(), is("Identifier \"abc12_\" is malformed"));
         assertThat(problem.getInstance(), is(URI.create("https://example.com/documents/error.html")));
-        assertThat(problem.getDomain(), is(nullValue()));
+        assertThat(problem.getIdentifier(), is(nullValue()));
         assertThat(problem.asJSON().toString(), is(sameJSONAs(original.toString())));
         assertThat(problem.toString(), is(
                 "Identifier \"abc12_\" is malformed ("
@@ -59,14 +59,14 @@ public class ProblemTest {
         assertThat(p1.getType(), is(URI.create("urn:ietf:params:acme:error:malformed")));
         assertThat(p1.getTitle(), is(nullValue()));
         assertThat(p1.getDetail(), is("Invalid underscore in DNS name \"_example.com\""));
-        assertThat(p1.getDomain(), is("_example.com"));
+        assertThat(p1.getIdentifier().getDomain(), is("_example.com"));
         assertThat(p1.toString(), is("Invalid underscore in DNS name \"_example.com\""));
 
         Problem p2 = subs.get(1);
         assertThat(p2.getType(), is(URI.create("urn:ietf:params:acme:error:rejectedIdentifier")));
         assertThat(p2.getTitle(), is(nullValue()));
         assertThat(p2.getDetail(), is("This CA will not issue for \"example.net\""));
-        assertThat(p2.getDomain(), is("example.net"));
+        assertThat(p2.getIdentifier().getDomain(), is("example.net"));
         assertThat(p2.toString(), is("This CA will not issue for \"example.net\""));
     }
 

@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Base64;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -166,14 +167,10 @@ public final class AcmeUtils {
      *
      * @param domain
      *            Domain name to encode
-     * @return Encoded domain name, white space trimmed and lower cased. {@code null} if
-     *         {@code null} was passed in.
+     * @return Encoded domain name, white space trimmed and lower cased.
      */
-    @CheckForNull
-    public static String toAce(@Nullable String domain) {
-        if (domain == null) {
-            return null;
-        }
+    public static String toAce(String domain) {
+        Objects.requireNonNull(domain, "domain");
         return IDN.toASCII(domain.trim()).toLowerCase();
     }
 

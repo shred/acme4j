@@ -21,6 +21,8 @@ import java.security.KeyPair;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 import org.jose4j.json.JsonUtil;
@@ -152,17 +154,17 @@ public class JSONBuilderTest {
         JSONBuilder res;
 
         JSONBuilder cb1 = new JSONBuilder();
-        res = cb1.array("ar", new Object[0]);
+        res = cb1.array("ar", Collections.emptyList());
         assertThat(res, is(sameInstance(cb1)));
         assertThat(cb1.toString(), is("{\"ar\":[]}"));
 
         JSONBuilder cb2 = new JSONBuilder();
-        res = cb2.array("ar", 123);
+        res = cb2.array("ar", Arrays.asList(123));
         assertThat(res, is(sameInstance(cb2)));
         assertThat(cb2.toString(), is("{\"ar\":[123]}"));
 
         JSONBuilder cb3 = new JSONBuilder();
-        res = cb3.array("ar", 123, "foo", 456);
+        res = cb3.array("ar", Arrays.asList(123, "foo", 456));
         assertThat(res, is(sameInstance(cb3)));
         assertThat(cb3.toString(), is("{\"ar\":[123,\"foo\",456]}"));
     }

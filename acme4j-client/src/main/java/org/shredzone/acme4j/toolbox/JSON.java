@@ -48,6 +48,7 @@ import javax.annotation.concurrent.Immutable;
 
 import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
+import org.shredzone.acme4j.Identifier;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -347,6 +348,16 @@ public final class JSON implements Serializable {
         public Problem asProblem(URL baseUrl) {
             required();
             return new Problem(asObject(), baseUrl);
+        }
+
+        /**
+         * Returns the value as {@link Identifier}.
+         *
+         * @since 2.3
+         */
+        public Identifier asIdentifier() {
+            required();
+            return new Identifier(asObject());
         }
 
         /**

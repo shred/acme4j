@@ -19,6 +19,7 @@ import java.security.Key;
 import java.security.PublicKey;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -137,10 +138,10 @@ public class JSONBuilder {
      * @param key
      *            Property key
      * @param values
-     *            Array of property values
+     *            Collection of property values
      * @return {@code this}
      */
-    public JSONBuilder array(String key, Object... values) {
+    public JSONBuilder array(String key, Collection<?> values) {
         data.put(key, values);
         return this;
     }

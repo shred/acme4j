@@ -114,22 +114,27 @@ public class Problem implements Serializable {
 
     /**
      * Returns the domain this problem relates to. May be {@code null}.
+     *
+     * @deprecated Use {@link #getIdentifier()}.
      */
+    @Deprecated
     @CheckForNull
     public String getDomain() {
-        Value identifier = problemJson.get("identifier");
-        if (!identifier.isPresent()) {
-            return null;
-        }
+        Identifier identifier = getIdentifier();
+        return identifier != null ? identifier.getDomain() : null;
+    }
 
-        JSON json = identifier.asObject();
-
-        String type = json.get("type").asString();
-        if (!"dns".equals(type)) {
-            throw new AcmeProtocolException("Cannot process a " + type + " identifier");
-        }
-
-        return json.get("value").asString();
+    /**
+     * Returns the {@link Identifier} this problem relates to. May be {@code null}.
+     *
+     * @since 2.3
+     */
+    @CheckForNull
+    public Identifier getIdentifier() {
+        return problemJson.get("identifier")
+                        .optional()
+                        .map(Value::asIdentifier)
+                        .orElse(null);
     }
 
     /**

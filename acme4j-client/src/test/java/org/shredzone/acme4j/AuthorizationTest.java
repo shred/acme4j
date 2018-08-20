@@ -88,6 +88,7 @@ public class AuthorizationTest {
      * Test that authorization is properly updated.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testUpdate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
@@ -116,6 +117,7 @@ public class AuthorizationTest {
         auth.update();
 
         assertThat(auth.getDomain(), is("example.org"));
+        assertThat(auth.getIdentifier().getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));
         assertThat(auth.isWildcard(), is(false));
         assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
@@ -158,7 +160,7 @@ public class AuthorizationTest {
         Authorization auth = new Authorization(login, locationUrl);
         auth.update();
 
-        assertThat(auth.getDomain(), is("example.org"));
+        assertThat(auth.getIdentifier().getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));
         assertThat(auth.isWildcard(), is(true));
         assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
@@ -205,12 +207,12 @@ public class AuthorizationTest {
 
         // Lazy loading
         assertThat(requestWasSent.get(), is(false));
-        assertThat(auth.getDomain(), is("example.org"));
+        assertThat(auth.getIdentifier().getDomain(), is("example.org"));
         assertThat(requestWasSent.get(), is(true));
 
         // Subsequent queries do not trigger another load
         requestWasSent.set(false);
-        assertThat(auth.getDomain(), is("example.org"));
+        assertThat(auth.getIdentifier().getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));
         assertThat(auth.isWildcard(), is(false));
         assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
@@ -258,7 +260,7 @@ public class AuthorizationTest {
             assertThat(ex.getRetryAfter(), is(retryAfter));
         }
 
-        assertThat(auth.getDomain(), is("example.org"));
+        assertThat(auth.getIdentifier().getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));
         assertThat(auth.isWildcard(), is(false));
         assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));

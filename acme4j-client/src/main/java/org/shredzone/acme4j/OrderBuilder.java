@@ -14,12 +14,11 @@
 package org.shredzone.acme4j;
 
 import static java.util.Objects.requireNonNull;
-import static org.shredzone.acme4j.toolbox.AcmeUtils.toAce;
+import static java.util.stream.Collectors.toList;
 
 import java.net.URL;
 import java.time.Instant;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -43,7 +42,7 @@ public class OrderBuilder {
 
     private final Login login;
 
-    private final Set<String> domainSet = new LinkedHashSet<>();
+    private final Set<Identifier> identifierSet = new LinkedHashSet<>();
     private Instant notBefore;
     private Instant notAfter;
 
@@ -66,7 +65,7 @@ public class OrderBuilder {
      * @return itself
      */
     public OrderBuilder domain(String domain) {
-        domainSet.add(toAce(requireNonNull(domain, "domain")));
+        identifierSet.add(Identifier.dns(domain));
         return this;
     }
 
@@ -128,25 +127,16 @@ public class OrderBuilder {
      * @return {@link Order} that was created
      */
     public Order create() throws AcmeException {
-        if (domainSet.isEmpty()) {
-            throw new IllegalArgumentException("At least one domain is required");
+        if (identifierSet.isEmpty()) {
+            throw new IllegalArgumentException("At least one identifer is required");
         }
 
         Session session = login.getSession();
 
-        Object[] identifiers = new Object[domainSet.size()];
-        Iterator<String> di = domainSet.iterator();
-        for (int ix = 0; ix < identifiers.length; ix++) {
-            identifiers[ix] = new JSONBuilder()
-                            .put("type", "dns")
-                            .put("value", di.next())
-                            .toMap();
-        }
-
         LOG.debug("create");
         try (Connection conn = session.provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
-            claims.array("identifiers", identifiers);
+            claims.array("identifiers", identifierSet.stream().map(Identifier::toMap).collect(toList()));
 
             if (notBefore != null) {
                 claims.put("notBefore", notBefore);

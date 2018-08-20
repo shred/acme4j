@@ -115,9 +115,6 @@ public class AcmeUtilsTest {
         // Test ACE encoded domains, they must not change
         assertThat(toAce("xn--exmle-hra7p.xn--m-7ba6w"),
                                   is("xn--exmle-hra7p.xn--m-7ba6w"));
-
-        // Test null
-        assertThat(toAce(null), is(nullValue()));
     }
 
     /**
