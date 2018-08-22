@@ -18,6 +18,7 @@ import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.security.KeyPair;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -82,12 +83,14 @@ public class JSONBuilderTest {
     @Test
     public void testDate() {
         Instant date = ZonedDateTime.of(2016, 6, 1, 5, 13, 46, 0, ZoneId.of("GMT+2")).toInstant();
+        Duration duration = Duration.ofMinutes(5);
 
         JSONBuilder cb = new JSONBuilder();
         cb.put("fooDate", date);
-        cb.put("fooNull", null);
+        cb.put("fooDuration", duration);
+        cb.put("fooNull", (Object) null);
 
-        assertThat(cb.toString(), is("{\"fooDate\":\"2016-06-01T03:13:46Z\",\"fooNull\":null}"));
+        assertThat(cb.toString(), is("{\"fooDate\":\"2016-06-01T03:13:46Z\",\"fooDuration\":300,\"fooNull\":null}"));
     }
 
     /**

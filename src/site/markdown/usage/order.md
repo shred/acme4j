@@ -168,3 +168,33 @@ auth.deactivate();
 <div class="alert alert-info" role="alert">
 It is not documented if the deactivation of an authorization also revokes the related certificate. If the certificate should be revoked, revoke it manually before deactivation.
 </div>
+
+## Short-Term Automatic Renewal
+
+_acme4j_ supports the [ACME STAR](https://tools.ietf.org/html/draft-ietf-acme-star) extension for short-term automatic renewal of certificates.
+
+To find out if the CA supports the STAR extension, check the metadata:
+
+```java
+if (session.getMetadata().isStarEnabled()) {
+  // CA supports STAR!
+}
+```
+
+If STAR is supported, you can enable recurrent renewals by adding `recurrent()` to the order parameters:
+
+```java
+Order order = account.newOrder()
+        .domain("example.org")
+        .recurrent()
+        .create();
+```
+
+You can use `recurrentStart()`, `recurrentEnd()` and `recurrentCertificateValidity()` to change the time span and frequency of automatic renewals. You cannot use `notBefore()` and `notAfter()` in combination with `recurrent()` though.
+
+The `Metadata` object also holds the accepted renewal limits (see `Metadata.getStarMinCertValidity()` and `Metadata.getStarMaxRenewal()`).
+
+<div class="alert alert-info" role="alert">
+
+The _ACME STAR_ support is experimental. There is currently no known ACME server implementing this extension.
+</div>

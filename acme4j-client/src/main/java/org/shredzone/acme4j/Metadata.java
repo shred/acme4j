@@ -17,6 +17,7 @@ import static java.util.stream.Collectors.toList;
 
 import java.net.URI;
 import java.net.URL;
+import java.time.Duration;
 import java.util.Collection;
 
 import javax.annotation.CheckForNull;
@@ -80,6 +81,36 @@ public class Metadata {
      */
     public boolean isExternalAccountRequired() {
         return meta.get("externalAccountRequired").map(Value::asBoolean).orElse(false);
+    }
+
+    /**
+     * Returns whether the CA supports short-term auto renewal of certificates.
+     *
+     * @since 2.3
+     */
+    public boolean isStarEnabled() {
+        return meta.get("star-enabled").map(Value::asBoolean).orElse(false);
+    }
+
+    /**
+     * Returns the minimum acceptable value for the maximum validity of a certificate
+     * before auto renewal. {@code null} if the CA does not support short-term auto
+     * renewal.
+     *
+     * @since 2.3
+     */
+    public Duration getStarMinCertValidity() {
+        return meta.get("star-min-cert-validity").map(Value::asDuration).orElse(null);
+    }
+
+    /**
+     * Returns the maximum delta between recurrent end date and recurrent start date.
+     * {@code null} if the CA does not support short-term auto renewal.
+     *
+     * @since 2.3
+     */
+    public Duration getStarMaxRenewal() {
+        return meta.get("star-max-renewal").map(Value::asDuration).orElse(null);
     }
 
     /**

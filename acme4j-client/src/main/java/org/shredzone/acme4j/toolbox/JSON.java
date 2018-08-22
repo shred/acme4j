@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
@@ -435,6 +436,20 @@ public final class JSON implements Serializable {
                 return parseTimestamp(val.toString());
             } catch (IllegalArgumentException ex) {
                 throw new AcmeProtocolException(path + ": bad date " + val, ex);
+            }
+        }
+
+        /**
+         * Returns the value as {@link Duration}.
+         *
+         * @since 2.3
+         */
+        public Duration asDuration() {
+            required();
+            try {
+                return Duration.ofSeconds(((Number) val).longValue());
+            } catch (ClassCastException ex) {
+                throw new AcmeProtocolException(path + ": bad duration " + val, ex);
             }
         }
 

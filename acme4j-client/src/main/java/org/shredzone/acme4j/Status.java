@@ -68,6 +68,13 @@ public enum Status {
     EXPIRED,
 
     /**
+     * A recurrent {@link Order} is canceled.
+     *
+     * @since 2.3
+     */
+    CANCELED,
+
+    /**
      * The server did not provide a status, or the provided status is not a specified ACME
      * status.
      */

@@ -27,6 +27,7 @@ import java.io.ObjectOutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -91,7 +92,7 @@ public class JSONTest {
 
         assertThat(json.keySet(), containsInAnyOrder(
                     "text", "number", "boolean", "uri", "url", "date", "array",
-                    "collect", "status", "binary", "problem"));
+                    "collect", "status", "binary", "duration", "problem"));
         assertThat(json.contains("text"), is(true));
         assertThat(json.contains("music"), is(false));
         assertThat(json.get("text"), is(notNullValue()));
@@ -201,6 +202,7 @@ public class JSONTest {
         assertThat(json.get("date").asInstant(), is(date));
         assertThat(json.get("status").asStatus(), is(Status.VALID));
         assertThat(json.get("binary").asBinary(), is("Chainsaw".getBytes()));
+        assertThat(json.get("duration").asDuration(), is(Duration.ofSeconds(86400)));
 
         assertThat(json.get("text").isPresent(), is(true));
         assertThat(json.get("text").optional().isPresent(), is(true));
@@ -261,6 +263,13 @@ public class JSONTest {
         try {
             json.get("none").asInstant();
             fail("asInstant did not fail");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
+
+        try {
+            json.get("none").asDuration();
+            fail("asDuration did not fail");
         } catch (AcmeProtocolException ex) {
             // expected
         }
@@ -352,6 +361,13 @@ public class JSONTest {
 
         try {
             json.get("text").asInstant();
+            fail("no exception was thrown");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
+
+        try {
+            json.get("text").asDuration();
             fail("no exception was thrown");
         } catch (AcmeProtocolException ex) {
             // expected

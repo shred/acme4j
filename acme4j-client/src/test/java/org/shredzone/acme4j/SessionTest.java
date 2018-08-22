@@ -25,6 +25,7 @@ import java.net.Proxy.Type;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
+import java.time.Duration;
 import java.time.Instant;
 
 import org.junit.Test;
@@ -179,6 +180,9 @@ public class SessionTest {
         assertThat(meta.getTermsOfService(), is(nullValue()));
         assertThat(meta.getWebsite(), is(nullValue()));
         assertThat(meta.getCaaIdentities(), is(empty()));
+        assertThat(meta.isStarEnabled(), is(false));
+        assertThat(meta.getStarMaxRenewal(), is(nullValue()));
+        assertThat(meta.getStarMinCertValidity(), is(nullValue()));
     }
 
     /**
@@ -208,6 +212,9 @@ public class SessionTest {
         assertThat(meta.getTermsOfService(), is(URI.create("https://example.com/acme/terms")));
         assertThat(meta.getWebsite(), is(url("https://www.example.com/")));
         assertThat(meta.getCaaIdentities(), containsInAnyOrder("example.com"));
+        assertThat(meta.isStarEnabled(), is(true));
+        assertThat(meta.getStarMaxRenewal(), is(Duration.ofDays(365)));
+        assertThat(meta.getStarMinCertValidity(), is(Duration.ofHours(24)));
         assertThat(meta.isExternalAccountRequired(), is(true));
         assertThat(meta.getJSON(), is(notNullValue()));
     }

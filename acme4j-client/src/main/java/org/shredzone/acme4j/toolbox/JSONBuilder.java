@@ -17,6 +17,7 @@ import static org.shredzone.acme4j.toolbox.AcmeUtils.base64UrlEncode;
 
 import java.security.Key;
 import java.security.PublicKey;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -81,6 +82,27 @@ public class JSONBuilder {
         }
 
         put(key, DateTimeFormatter.ISO_INSTANT.format(value));
+        return this;
+    }
+
+    /**
+     * Puts a {@link Duration} to the JSON. If a property with the key exists, it will be
+     * replaced.
+     *
+     * @param key
+     *            Property key
+     * @param value
+     *            Property {@link Duration} value
+     * @return {@code this}
+     * @since 2.3
+     */
+    public JSONBuilder put(String key, @Nullable Duration value) {
+        if (value == null) {
+            put(key, (Object) null);
+            return this;
+        }
+
+        put(key, value.getSeconds());
         return this;
     }
 

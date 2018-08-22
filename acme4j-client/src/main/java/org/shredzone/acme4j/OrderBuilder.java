@@ -17,6 +17,7 @@ import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
 import java.net.URL;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -45,6 +46,10 @@ public class OrderBuilder {
     private final Set<Identifier> identifierSet = new LinkedHashSet<>();
     private Instant notBefore;
     private Instant notAfter;
+    private boolean recurrent;
+    private Instant recurrentStart;
+    private Instant recurrentEnd;
+    private Duration recurrentValidity;
 
     /**
      * Create a new {@link OrderBuilder}.
@@ -131,6 +136,9 @@ public class OrderBuilder {
      * @return itself
      */
     public OrderBuilder notBefore(Instant notBefore) {
+        if (recurrent) {
+            throw new IllegalArgumentException("cannot combine notBefore with recurrent");
+        }
         this.notBefore = requireNonNull(notBefore, "notBefore");
         return this;
     }
@@ -142,7 +150,81 @@ public class OrderBuilder {
      * @return itself
      */
     public OrderBuilder notAfter(Instant notAfter) {
+        if (recurrent) {
+            throw new IllegalArgumentException("cannot combine notAfter with recurrent");
+        }
         this.notAfter = requireNonNull(notAfter, "notAfter");
+        return this;
+    }
+
+    /**
+     * Enables short-term automatic renewal of the certificate. Must be supported by the
+     * CA.
+     * <p>
+     * Recurrent renewals cannot be combined with {@link #notBefore(Instant)} or
+     * {@link #notAfter(Instant)}.
+     *
+     * @return itself
+     * @since 2.3
+     */
+    public OrderBuilder recurrent() {
+        if (notBefore != null || notAfter != null) {
+            throw new IllegalArgumentException("cannot combine notBefore/notAfter with recurrent");
+        }
+        this.recurrent = true;
+        return this;
+    }
+
+    /**
+     * Sets the earliest date of validity of the first issued certificate. If not set,
+     * the start date is the earliest possible date.
+     * <p>
+     * Implies {@link #recurrent()}.
+     *
+     * @param start
+     *            Start date of validity
+     * @return itself
+     * @since 2.3
+     */
+    public OrderBuilder recurrentStart(Instant start) {
+        recurrent();
+        this.recurrentStart = requireNonNull(start, "start");
+        return this;
+    }
+
+    /**
+     * Sets the latest date of validity of the last issued certificate. If not set, the
+     * CA's default is used.
+     * <p>
+     * Implies {@link #recurrent()}.
+     *
+     * @param end
+     *            End date of validity
+     * @return itself
+     * @see Metadata#getStarMaxRenewal()
+     * @since 2.3
+     */
+    public OrderBuilder recurrentEnd(Instant end) {
+        recurrent();
+        this.recurrentEnd = requireNonNull(end, "end");
+        return this;
+    }
+
+    /**
+     * Sets the maximum validity period of each certificate. If not set, the CA's
+     * default is used.
+     * <p>
+     * Implies {@link #recurrent()}.
+     *
+     * @param duration
+     *            Duration of validity of each certificate
+     * @return itself
+     * @see Metadata#getStarMinCertValidity()
+     * @since 2.3
+     */
+    public OrderBuilder recurrentCertificateValidity(Duration duration) {
+        recurrent();
+        this.recurrentValidity = requireNonNull(duration, "duration");
         return this;
     }
 
@@ -158,6 +240,10 @@ public class OrderBuilder {
 
         Session session = login.getSession();
 
+        if (recurrent && !session.getMetadata().isStarEnabled()) {
+            throw new AcmeException("CA does not support short-term automatic renewals");
+        }
+
         LOG.debug("create");
         try (Connection conn = session.provider().connect()) {
             JSONBuilder claims = new JSONBuilder();
@@ -168,6 +254,19 @@ public class OrderBuilder {
             }
             if (notAfter != null) {
                 claims.put("notAfter", notAfter);
+            }
+
+            if (recurrent) {
+                claims.put("recurrent", true);
+                if (recurrentStart != null) {
+                    claims.put("recurrent-start-date", recurrentStart);
+                }
+                if (recurrentStart != null) {
+                    claims.put("recurrent-end-date", recurrentEnd);
+                }
+                if (recurrentValidity != null) {
+                    claims.put("recurrent-certificate-validity", recurrentValidity);
+                }
             }
 
             conn.sendSignedRequest(session.resourceUrl(Resource.NEW_ORDER), claims, login);

@@ -38,6 +38,7 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
     private final Map<String, BiFunction<Login, JSON, Challenge>> creatorMap = new HashMap<>();
     private final Map<String, Challenge> createdMap = new HashMap<>();
     private final JSONBuilder directory = new JSONBuilder();
+    private JSONBuilder metadata = null;
 
     /**
      * Register a {@link Resource} mapping.
@@ -49,6 +50,21 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
      */
     public void putTestResource(Resource r, URL u) {
         directory.put(r.path(), u);
+    }
+
+    /**
+     * Add a property to the metadata registry.
+     *
+     * @param key
+     *            Metadata key
+     * @param value
+     *            Metadata value
+     */
+    public void putMetadata(String key, Object value) {
+        if (metadata == null) {
+            metadata = directory.object("meta");
+        }
+        metadata.put(key, value);
     }
 
     /**

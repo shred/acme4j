@@ -16,6 +16,7 @@ package org.shredzone.acme4j;
 import static java.util.stream.Collectors.toList;
 
 import java.net.URL;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +26,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
@@ -167,6 +169,83 @@ public class Order extends AcmeJsonResource {
             conn.sendSignedRequest(getFinalizeLocation(), claims, getLogin());
         }
         invalidate();
+    }
+
+    /**
+     * Checks if this order is recurrent, according to the ACME STAR specifications.
+     *
+     * @since 2.3
+     */
+    public boolean isRecurrent() {
+        return getJSON().get("recurrent")
+                    .optional()
+                    .map(Value::asBoolean)
+                    .orElse(false);
+    }
+
+    /**
+     * Returns the earliest date of validity of the first certificate issued, or
+     * {@code null}.
+     *
+     * @since 2.3
+     */
+    @CheckForNull
+    public Instant getRecurrentStart() {
+        return getJSON().get("recurrent-start-date")
+                    .optional()
+                    .map(Value::asInstant)
+                    .orElse(null);
+    }
+
+    /**
+     * Returns the latest date of validity of the last certificate issued, or
+     * {@code null}.
+     *
+     * @since 2.3
+     */
+    @CheckForNull
+    public Instant getRecurrentEnd() {
+        return getJSON().get("recurrent-end-date")
+                    .optional()
+                    .map(Value::asInstant)
+                    .orElse(null);
+    }
+
+    /**
+     * Returns the maximum validity period of each certificate, or {@code null}.
+     *
+     * @since 2.3
+     */
+    @CheckForNull
+    public Duration getRecurrentCertificateValidity() {
+        return getJSON().get("recurrent-certificate-validity")
+                    .optional()
+                    .map(Value::asDuration)
+                    .orElse(null);
+    }
+
+    /**
+     * Cancels a recurrent order.
+     *
+     * @since 2.3
+     */
+    public void cancelRecurrent() throws AcmeException {
+        if (!getSession().getMetadata().isStarEnabled()) {
+            throw new AcmeException("CA does not support short-term automatic renewals");
+        }
+
+        LOG.debug("cancel");
+        try (Connection conn = connect()) {
+            JSONBuilder claims = new JSONBuilder();
+            claims.put("status", "canceled");
+
+            conn.sendSignedRequest(getLocation(), claims, getLogin());
+
+            JSON json = conn.readJsonResponse();
+            if (json != null) {
+                setJSON(json);
+            }
+        }
     }
 
 }

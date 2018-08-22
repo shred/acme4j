@@ -9,6 +9,7 @@
   "collect": ["foo", "bar", "barfoo"],
   "status": "VALID",
   "binary": "Q2hhaW5zYXc",
+  "duration": 86400,
   "problem": {
     "type": "urn:ietf:params:acme:error:rateLimited",
     "detail": "too many requests",
