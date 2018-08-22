@@ -10,7 +10,7 @@ It is an independent open source implementation that is not affiliated with or e
 
 ## Features
 
-* Fully supports the ACME v2 protocol up to [draft 13](https://tools.ietf.org/html/draft-ietf-acme-acme-13)
+* Fully supports the ACME v2 protocol up to [draft 14](https://tools.ietf.org/html/draft-ietf-acme-acme-14)
 * Supports all ACME challenges and the `tls-alpn-01` challenge
 * Supports the [acme-ip draft](https://tools.ietf.org/html/draft-ietf-acme-ip)
 * Supports the [acme-star draft](https://tools.ietf.org/html/draft-ietf-acme-star) for short-term automatic certificate renewal (experimental)
