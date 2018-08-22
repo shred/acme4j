@@ -78,7 +78,7 @@ public class OrderWildcardIT extends PebbleITBase {
         assertThat(order.getStatus(), is(Status.PENDING));
 
         for (Authorization auth : order.getAuthorizations()) {
-            assertThat(auth.getDomain(), is(TEST_DOMAIN));
+            assertThat(auth.getIdentifier().getDomain(), is(TEST_DOMAIN));
             assertThat(auth.getStatus(), is(Status.PENDING));
 
             if (auth.getStatus() == Status.VALID) {

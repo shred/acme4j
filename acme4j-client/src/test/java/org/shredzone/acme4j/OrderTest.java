@@ -43,6 +43,7 @@ public class OrderTest {
      * Test that order is properly updated.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testUpdate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
@@ -71,6 +72,9 @@ public class OrderTest {
         assertThat(order.getLocation(), is(locationUrl));
 
         assertThat(order.getDomains(), containsInAnyOrder("example.com", "www.example.com"));
+        assertThat(order.getIdentifiers(), containsInAnyOrder(
+                    Identifier.dns("example.com"),
+                    Identifier.dns("www.example.com")));
         assertThat(order.getNotBefore(), is(parseTimestamp("2016-01-01T00:00:00Z")));
         assertThat(order.getNotAfter(), is(parseTimestamp("2016-01-08T00:00:00Z")));
         assertThat(order.getCertificate().getLocation(), is(url("https://example.com/acme/cert/1234")));
@@ -138,6 +142,7 @@ public class OrderTest {
      * Test that order is properly finalized.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testFinalize() throws Exception {
         byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
 
@@ -179,6 +184,9 @@ public class OrderTest {
         assertThat(order.getLocation(), is(locationUrl));
 
         assertThat(order.getDomains(), containsInAnyOrder("example.com", "www.example.com"));
+        assertThat(order.getIdentifiers(), containsInAnyOrder(
+                        Identifier.dns("example.com"),
+                        Identifier.dns("www.example.com")));
         assertThat(order.getNotBefore(), is(parseTimestamp("2016-01-01T00:00:00Z")));
         assertThat(order.getNotAfter(), is(parseTimestamp("2016-01-08T00:00:00Z")));
         assertThat(order.getCertificate().getLocation(), is(url("https://example.com/acme/cert/1234")));

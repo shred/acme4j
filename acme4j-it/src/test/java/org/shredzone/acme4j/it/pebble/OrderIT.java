@@ -106,13 +106,18 @@ public class OrderIT extends PebbleITBase {
             KeyPair challengeKey = createKeyPair();
 
             X509Certificate cert = CertificateUtils.createTlsAlpn01Certificate(
-                        challengeKey, auth.getDomain(), challenge.getAcmeValidation());
+                        challengeKey,
+                        auth.getIdentifier().getDomain(),
+                        challenge.getAcmeValidation());
 
             client.dnsAddARecord(TEST_DOMAIN, getBammBammHostname());
-            client.tlsAlpnAddCertificate(auth.getDomain(), challengeKey.getPrivate(), cert);
+            client.tlsAlpnAddCertificate(
+                        auth.getIdentifier().getDomain(),
+                        challengeKey.getPrivate(),
+                        cert);
 
             cleanup(() -> client.dnsRemoveARecord(TEST_DOMAIN));
-            cleanup(() -> client.tlsAlpnRemoveCertificate(auth.getDomain()));
+            cleanup(() -> client.tlsAlpnRemoveCertificate(auth.getIdentifier().getDomain()));
 
             return challenge;
         }, OrderIT::standardRevoker);
@@ -175,7 +180,7 @@ public class OrderIT extends PebbleITBase {
         assertThat(order.getStatus(), is(Status.PENDING));
 
         for (Authorization auth : order.getAuthorizations()) {
-            assertThat(auth.getDomain(), is(domain));
+            assertThat(auth.getIdentifier().getDomain(), is(domain));
             assertThat(auth.getStatus(), is(Status.PENDING));
 
             if (auth.getStatus() == Status.VALID) {
