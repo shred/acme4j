@@ -20,7 +20,6 @@ import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.AccountBuilder;
@@ -179,7 +178,6 @@ public class AccountIT extends PebbleITBase {
      * Change the account key.
      */
     @Test
-    @Ignore // TODO PEBBLE: missing
     public void testKeyChange() throws AcmeException {
         KeyPair keyPair = createKeyPair();
         Session session = new Session(pebbleURI());
@@ -197,7 +195,8 @@ public class AccountIT extends PebbleITBase {
             Session sessionOldKey = new Session(pebbleURI());
             Account oldAccount = sessionOldKey.login(location, keyPair).getAccount();
             oldAccount.update();
-        } catch (AcmeUnauthorizedException ex) {
+            fail("Old account key is still accessible");
+        } catch (AcmeServerException ex) {
             // Expected
         }
 
