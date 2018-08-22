@@ -77,7 +77,7 @@ public class Order extends AcmeJsonResource {
     @Deprecated
     public List<String> getDomains() {
         return getIdentifiers().stream()
-                    .filter(i -> Identifier.DNS.equals(i.getType()))
+                    .filter(i -> Identifier.TYPE_DNS.equals(i.getType()))
                     .map(Identifier::getDomain)
                     .collect(toList());
     }

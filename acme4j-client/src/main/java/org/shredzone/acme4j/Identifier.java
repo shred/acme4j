@@ -46,42 +46,20 @@ public class Identifier implements Serializable {
     /**
      * Type constant for DNS identifiers.
      */
-    public static final String DNS = "dns";
+    public static final String TYPE_DNS = "dns";
 
     /**
      * Type constant for IP identifiers.
      *
      * @see <a href="https://tools.ietf.org/html/draft-ietf-acme-ip">draft-ietf-acme-ip</a>
      */
-    public static final String IP = "ip";
+    public static final String TYPE_IP = "ip";
 
     private static final String KEY_TYPE = "type";
     private static final String KEY_VALUE = "value";
 
     private final String type;
     private final String value;
-
-    /**
-     * Creates a new DNS identifier for the given domain name.
-     *
-     * @param domain
-     *            Domain name. Unicode domains are automatically ASCII encoded.
-     * @return New {@link Identifier}
-     */
-    public static Identifier dns(String domain) {
-        return new Identifier(DNS, toAce(domain));
-    }
-
-    /**
-     * Creates a new IP identifier for the given {@link InetAddress}.
-     *
-     * @param ip
-     *            {@link InetAddress}
-     * @return New {@link Identifier}
-     */
-    public static Identifier ip(InetAddress ip) {
-        return new Identifier(IP, ip.getHostAddress());
-    }
 
     /**
      * Creates a new {@link Identifier}.
@@ -113,6 +91,28 @@ public class Identifier implements Serializable {
     }
 
     /**
+     * Creates a new DNS identifier for the given domain name.
+     *
+     * @param domain
+     *            Domain name. Unicode domains are automatically ASCII encoded.
+     * @return New {@link Identifier}
+     */
+    public static Identifier dns(String domain) {
+        return new Identifier(TYPE_DNS, toAce(domain));
+    }
+
+    /**
+     * Creates a new IP identifier for the given {@link InetAddress}.
+     *
+     * @param ip
+     *            {@link InetAddress}
+     * @return New {@link Identifier}
+     */
+    public static Identifier ip(InetAddress ip) {
+        return new Identifier(TYPE_IP, ip.getHostAddress());
+    }
+
+    /**
      * Returns the identifier type.
      */
     public String getType() {
@@ -134,7 +134,7 @@ public class Identifier implements Serializable {
      *             if this is not a DNS identifier.
      */
     public String getDomain() {
-        if (!DNS.equals(type)) {
+        if (!TYPE_DNS.equals(type)) {
             throw new AcmeProtocolException("expected 'dns' identifier, but found '" + type + "'");
         }
         return value;
@@ -148,7 +148,7 @@ public class Identifier implements Serializable {
      *             if this is not a DNS identifier.
      */
     public InetAddress getIP() {
-        if (!IP.equals(type)) {
+        if (!TYPE_IP.equals(type)) {
             throw new AcmeProtocolException("expected 'ip' identifier, but found '" + type + "'");
         }
         try {
@@ -183,6 +183,6 @@ public class Identifier implements Serializable {
     @Override
     public int hashCode() {
         return type.hashCode() ^ value.hashCode();
-    };
+    }
 
 }

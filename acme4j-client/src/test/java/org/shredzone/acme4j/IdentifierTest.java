@@ -31,8 +31,8 @@ public class IdentifierTest {
 
     @Test
     public void testConstants() {
-        assertThat(Identifier.DNS, is("dns"));
-        assertThat(Identifier.IP, is("ip"));
+        assertThat(Identifier.TYPE_DNS, is("dns"));
+        assertThat(Identifier.TYPE_IP, is("ip"));
     }
 
     @Test
@@ -62,12 +62,12 @@ public class IdentifierTest {
     @Test
     public void testDns() {
         Identifier id1 = Identifier.dns("example.com");
-        assertThat(id1.getType(), is(Identifier.DNS));
+        assertThat(id1.getType(), is(Identifier.TYPE_DNS));
         assertThat(id1.getValue(), is("example.com"));
         assertThat(id1.getDomain(), is("example.com"));
 
         Identifier id2 = Identifier.dns("ëxämþlë.com");
-        assertThat(id2.getType(), is(Identifier.DNS));
+        assertThat(id2.getType(), is(Identifier.TYPE_DNS));
         assertThat(id2.getValue(), is("xn--xml-qla7ae5k.com"));
         assertThat(id2.getDomain(), is("xn--xml-qla7ae5k.com"));
     }
@@ -80,12 +80,12 @@ public class IdentifierTest {
     @Test
     public void testIp() throws UnknownHostException {
         Identifier id1 = Identifier.ip(InetAddress.getByName("192.168.1.2"));
-        assertThat(id1.getType(), is(Identifier.IP));
+        assertThat(id1.getType(), is(Identifier.TYPE_IP));
         assertThat(id1.getValue(), is("192.168.1.2"));
         assertThat(id1.getIP().getHostAddress(), is("192.168.1.2"));
 
         Identifier id2 = Identifier.ip(InetAddress.getByName("2001:db8:85a3::8a2e:370:7334"));
-        assertThat(id2.getType(), is(Identifier.IP));
+        assertThat(id2.getType(), is(Identifier.TYPE_IP));
         assertThat(id2.getValue(), is("2001:db8:85a3:0:0:8a2e:370:7334"));
         assertThat(id2.getIP().getHostAddress(), is("2001:db8:85a3:0:0:8a2e:370:7334"));
     }
