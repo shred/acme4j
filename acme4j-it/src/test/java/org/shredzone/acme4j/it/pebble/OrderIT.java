@@ -225,6 +225,12 @@ public class OrderIT extends PebbleITBase {
         assertThat(cert.getNotBefore(), not(nullValue()));
         assertThat(cert.getSubjectX500Principal().getName(), containsString("CN=" + domain));
 
+        for (Authorization auth :  order.getAuthorizations()) {
+            assertThat(auth.getStatus(), is(Status.VALID));
+            auth.deactivate();
+            assertThat(auth.getStatus(), is(Status.DEACTIVATED));
+        }
+
         revoker.revoke(session, certificate, keyPair, domainKeyPair);
 
         // Make sure certificate is revoked
