@@ -169,6 +169,19 @@ auth.deactivate();
 It is not documented if the deactivation of an authorization also revokes the related certificate. If the certificate should be revoked, revoke it manually before deactivation.
 </div>
 
+## Use IP Identifiers
+
+_acme4j_ supports the [ACME IP](https://tools.ietf.org/html/draft-ietf-acme-ip) extension. It permits validation of IP addresses instead of domain names. If your CA offers ACME IP support, you can add IP `Identifier` objects to the order:
+
+```java
+Order order = account.newOrder()
+        .identifier(Identifier.ip(InetAddress.getByName("192.168.1.2")))
+        .identifier(Identifier.dns("example.org"))
+        .create();
+```
+
+The example also shows how to add domain names as DNS `Identifier` objects. Adding domain names via `domain()` is just a shortcut notation for it.
+
 ## Short-Term Automatic Renewal
 
 _acme4j_ supports the [ACME STAR](https://tools.ietf.org/html/draft-ietf-acme-star) extension for short-term automatic renewal of certificates.
