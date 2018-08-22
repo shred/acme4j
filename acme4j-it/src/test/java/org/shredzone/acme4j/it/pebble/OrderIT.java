@@ -106,7 +106,7 @@ public class OrderIT extends PebbleITBase {
             KeyPair challengeKey = createKeyPair();
 
             X509Certificate cert = CertificateUtils.createTlsAlpn01Certificate(
-                        challengeKey, auth.getDomain(), challenge.getAcmeValidationV1());
+                        challengeKey, auth.getDomain(), challenge.getAcmeValidation());
 
             client.dnsAddARecord(TEST_DOMAIN, getBammBammHostname());
             client.tlsAlpnAddCertificate(auth.getDomain(), challengeKey.getPrivate(), cert);

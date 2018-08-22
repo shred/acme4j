@@ -105,9 +105,9 @@ public class CertificateUtilsTest {
         assertThat(cert.getSubjectX500Principal().getName(), is("CN=acme.invalid"));
         assertThat(getSANs(cert), contains(subject));
 
-        assertThat(cert.getCriticalExtensionOIDs(), hasItem(TlsAlpn01Challenge.ACME_VALIDATION_V1_OID));
+        assertThat(cert.getCriticalExtensionOIDs(), hasItem(TlsAlpn01Challenge.ACME_VALIDATION_OID));
 
-        byte[] encodedExtensionValue = cert.getExtensionValue(TlsAlpn01Challenge.ACME_VALIDATION_V1_OID);
+        byte[] encodedExtensionValue = cert.getExtensionValue(TlsAlpn01Challenge.ACME_VALIDATION_OID);
         assertThat(encodedExtensionValue, is(notNullValue()));
 
         try (ASN1InputStream asn = new ASN1InputStream(new ByteArrayInputStream(encodedExtensionValue))) {

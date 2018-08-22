@@ -7,15 +7,15 @@ With the `tls-alpn-01` challenge, you prove to the CA that you are able to contr
 This challenge is not part of the ACME specifications. It is specified [in a separate IETF document](https://tools.ietf.org/html/draft-ietf-acme-tls-alpn) and is still work in progress.
 </div>
 
-`TlsAlpn01Challenge` provides a byte array called `acmeValidationV1`:
+`TlsAlpn01Challenge` provides a byte array called `acmeValidation`:
 
 ```java
 TlsAlpn01Challenge challenge = auth.findChallenge(TlsAlpn01Challenge.TYPE);
 
-byte[] acmeValidationV1 = challenge.getAcmeValidationV1();
+byte[] acmeValidation = challenge.getAcmeValidation();
 ```
 
-You need to create a self-signed certificate with the domain to be validated set as the only _Subject Alternative Name_. The `acmeValidationV1` must be set as DER encoded `OCTET STRING` extension with the object id `1.3.6.1.5.5.7.1.30.1`. It is required to set this extension as critical.
+You need to create a self-signed certificate with the domain to be validated set as the only _Subject Alternative Name_. The `acmeValidation` must be set as DER encoded `OCTET STRING` extension with the object id `1.3.6.1.5.5.7.1.31`. It is required to set this extension as critical.
 
 After that, configure your web server so it will use this certificate on an incoming TLS request having the SNI `subject` and the ALPN protocol `acme-tls/1`.
 
@@ -26,7 +26,7 @@ String subject = auth.getDomain();
 KeyPair certKeyPair = KeyPairUtils.createKeyPair(2048);
 
 X509Certificate cert = CertificateUtils.
-    createTlsAlpn01Certificate(certKeyPair, subject, acmeValidationV1);
+    createTlsAlpn01Certificate(certKeyPair, subject, acmeValidation);
 ```
 
 Now use `cert` and `certKeyPair` to let your web server respond to TLS requests containing an ALPN extension with the value `acme-tls/1` and a SNI extension containing `subject`.

@@ -53,12 +53,12 @@ import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 public final class CertificateUtils {
 
     /**
-     * The {@code acmeValidation-v1} object identifier.
+     * The {@code acmeValidation} object identifier.
      *
      * @since 2.1
      */
-    public static final ASN1ObjectIdentifier ACME_VALIDATION_V1 =
-                    new ASN1ObjectIdentifier(TlsAlpn01Challenge.ACME_VALIDATION_V1_OID).intern();
+    public static final ASN1ObjectIdentifier ACME_VALIDATION =
+                    new ASN1ObjectIdentifier(TlsAlpn01Challenge.ACME_VALIDATION_OID).intern();
 
     private CertificateUtils() {
         // utility class without constructor
@@ -90,18 +90,18 @@ public final class CertificateUtils {
      *            A domain {@link KeyPair} to be used for the challenge
      * @param subject
      *            The subject (domain name) that is to be validated
-     * @param acmeValidationV1
+     * @param acmeValidation
      *            The value that is returned by
-     *            {@link TlsAlpn01Challenge#getAcmeValidationV1()}
+     *            {@link TlsAlpn01Challenge#getAcmeValidation()}
      * @return Created certificate
      * @since 2.1
      */
-    public static X509Certificate createTlsAlpn01Certificate(KeyPair keypair, String subject, byte[] acmeValidationV1)
+    public static X509Certificate createTlsAlpn01Certificate(KeyPair keypair, String subject, byte[] acmeValidation)
                 throws IOException {
         Objects.requireNonNull(keypair, "keypair");
         Objects.requireNonNull(subject, "subject");
-        if (acmeValidationV1 == null || acmeValidationV1.length != 32) {
-            throw new IllegalArgumentException("Bad acmeValidationV1 parameter");
+        if (acmeValidation == null || acmeValidation.length != 32) {
+            throw new IllegalArgumentException("Bad acmeValidation parameter");
         }
 
         final long now = System.currentTimeMillis();
@@ -121,7 +121,7 @@ public final class CertificateUtils {
             gns[0] = new GeneralName(GeneralName.dNSName, subject);
             certBuilder.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(gns));
 
-            certBuilder.addExtension(ACME_VALIDATION_V1, true, new DEROctetString(acmeValidationV1));
+            certBuilder.addExtension(ACME_VALIDATION, true, new DEROctetString(acmeValidation));
 
             JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder(signatureAlg);
 

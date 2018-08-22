@@ -47,7 +47,7 @@ public class TlsAlpn01ChallengeTest {
         assertThat(challenge.getStatus(), is(Status.PENDING));
         assertThat(challenge.getToken(), is(TOKEN));
         assertThat(challenge.getAuthorization(), is(KEY_AUTHORIZATION));
-        assertThat(challenge.getAcmeValidationV1(), is(AcmeUtils.sha256hash(KEY_AUTHORIZATION)));
+        assertThat(challenge.getAcmeValidation(), is(AcmeUtils.sha256hash(KEY_AUTHORIZATION)));
 
         JSONBuilder response = new JSONBuilder();
         challenge.prepareResponse(response);

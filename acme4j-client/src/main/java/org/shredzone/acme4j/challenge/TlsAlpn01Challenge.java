@@ -35,9 +35,9 @@ public class TlsAlpn01Challenge extends TokenChallenge {
     public static final String TYPE = "tls-alpn-01";
 
     /**
-     * OID of the {@code acmeValidation-v1} extension.
+     * OID of the {@code acmeValidation} extension.
      */
-    public static final String ACME_VALIDATION_V1_OID = "1.3.6.1.5.5.7.1.30.1";
+    public static final String ACME_VALIDATION_OID = "1.3.6.1.5.5.7.1.31";
 
     /**
      * {@code acme-tls/1} protocol.
@@ -57,10 +57,10 @@ public class TlsAlpn01Challenge extends TokenChallenge {
     }
 
     /**
-     * Returns the value that is to be used as {@code acmeValidation-v1} extension in
+     * Returns the value that is to be used as {@code acmeValidation} extension in
      * the test certificate.
      */
-    public byte[] getAcmeValidationV1() {
+    public byte[] getAcmeValidation() {
         return sha256hash(getAuthorization());
     }
 
