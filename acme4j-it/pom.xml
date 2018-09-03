@@ -31,7 +31,7 @@
     <properties>
         <!-- alpn-boot version must match the java version used in bammbamm -->
         <!-- see: https://www.eclipse.org/jetty/documentation/9.4.x/alpn-chapter.html#alpn-versions -->
-        <alpn-java.version>8u162</alpn-java.version>
+        <alpn-java.version>8u181</alpn-java.version>
         <alpn-boot.version>8.1.12.v20180117</alpn-boot.version>
 
         <skipITs>true</skipITs>
@@ -109,7 +109,7 @@
             <plugin>
                 <groupId>io.fabric8</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-                <version>0.21.0</version>
+                <version>0.26.1</version>
 
                 <configuration>
                     <logStdout>true</logStdout>
@@ -122,7 +122,7 @@
                             <name>acme4j/pebble:${project.version}</name>
 
                             <build>
-                                <from>golang:1.10</from>
+                                <from>golang:1.11</from>
                                 <optimise>true</optimise>
                                 <runCmds>
                                     <run>go get -u -v -d gopkg.in/square/go-jose.v2</run>
