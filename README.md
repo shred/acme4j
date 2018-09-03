@@ -11,7 +11,7 @@ It is an independent open source implementation that is not affiliated with or e
 ## Features
 
 * Fully supports the ACME v2 protocol up to [draft 14](https://tools.ietf.org/html/draft-ietf-acme-acme-14)
-* Supports all ACME challenges and the `tls-alpn-01` challenge
+* Supports the `http-01`, `dns-01` and `tls-alpn-01` challenges
 * Supports the [acme-ip draft](https://tools.ietf.org/html/draft-ietf-acme-ip)
 * Supports the [acme-star draft](https://tools.ietf.org/html/draft-ietf-acme-star) for short-term automatic certificate renewal (experimental)
 * Easy to use Java API
@@ -25,11 +25,6 @@ It is an independent open source implementation that is not affiliated with or e
 * See the [online documentation](https://shredzone.org/maven/acme4j/) about how to use _acme4j_.
 * For a quick start, have a look at [the source code of an example](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/ClientTest.java).
 * The previous ACME v1 protocol is still supported by [_acme4j_ version 1](https://shredzone.org/maven/acme4j-acmev1/index.html).
-
-## Known Issues
-
-* The _acme4j_ v2 API is still subject to change.
-* Integration tests do not fully cover all functions. The standard methods for creating an account, ordering, and downloading a certificate are tested. Other methods are not tested yet, and may not work as expected.
 
 ## Contribute
 
