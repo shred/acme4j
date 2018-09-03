@@ -66,6 +66,8 @@ The CA server may start the validation immediately after `trigger()` is invoked,
 
 When the authorization status is `VALID`, you have successfully authorized your domain.
 
+The response you have set up before is not needed any more. You can (and should) remove it now.
+
 ## Finalize the Order
 
 After successfully completing all authorizations, the order needs to be finalized by providing PKCS#10 CSR file. A single domain may be set as _Common Name_. Multiple domains must be provided as _Subject Alternative Name_. You must provide exactly the domains that you had passed to the `order()` method above, otherwise the finalization will fail. It depends on the CA if other CSR properties (_Organization_, _Organization Unit_ etc.) are accepted. Some may require these properties to be set, while others may ignore them when generating the certificate.

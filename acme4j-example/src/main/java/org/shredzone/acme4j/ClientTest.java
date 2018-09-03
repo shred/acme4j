@@ -283,6 +283,9 @@ public class ClientTest {
             throw new AcmeException("Failed to pass the challenge for domain "
                     + auth.getIdentifier().getDomain() + ", ... Giving up.");
         }
+
+        LOG.info("Challenge has been completed. Remember to remove the validation resource.");
+        completeChallenge("Challenge has been completed.\nYou can remove the resource again now.");
     }
 
     /**
@@ -380,6 +383,20 @@ public class ClientTest {
         if (option == JOptionPane.CANCEL_OPTION) {
             throw new AcmeException("User cancelled the challenge");
         }
+    }
+
+    /**
+     * Presents the instructions for removing the challenge validation, and waits for
+     * dismissal.
+     *
+     * @param message
+     *            Instructions to be shown in the dialog
+     */
+    public void completeChallenge(String message) throws AcmeException {
+        JOptionPane.showMessageDialog(null,
+                        message,
+                        "Complete Challenge",
+                        JOptionPane.INFORMATION_MESSAGE);
     }
 
     /**
