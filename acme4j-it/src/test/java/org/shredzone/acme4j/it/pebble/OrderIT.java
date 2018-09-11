@@ -18,6 +18,7 @@ import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.*;
 
+import java.net.URI;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
@@ -39,6 +40,7 @@ import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.it.BammBammClient;
 import org.shredzone.acme4j.util.CSRBuilder;
 import org.shredzone.acme4j.util.CertificateUtils;
@@ -241,6 +243,14 @@ public class OrderIT extends PebbleITBase {
             fail("Could download revoked cert");
         } catch (AcmeException ex) {
             assertThat(ex.getMessage(), is("HTTP 404: Not Found"));
+        }
+
+        // Try to revoke again
+        try {
+            certificate.revoke();
+            fail("Could revoke again");
+        } catch (AcmeServerException ex) {
+            assertThat(ex.getProblem().getType(), is(URI.create("urn:ietf:params:acme:error:alreadyRevoked")));
         }
     }
 
