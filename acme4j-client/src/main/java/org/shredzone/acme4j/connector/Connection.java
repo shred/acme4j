@@ -58,6 +58,19 @@ public interface Connection extends AutoCloseable {
     void sendRequest(URL url, Session session) throws AcmeException;
 
     /**
+     * Sends a request for a certificate resource.
+     * <p>
+     * If the response code was not {@link HttpURLConnection#HTTP_OK}, an
+     * {@link AcmeException} matching the error is raised.
+     *
+     * @param url
+     *            {@link URL} to send the request to.
+     * @param session
+     *            {@link Session} instance to be used for tracking
+     */
+    void sendCertificateRequest(URL url, Session session) throws AcmeException;
+
+    /**
      * Sends a signed POST request. Requires a {@link Login} for the session and
      * {@link KeyPair}. The {@link Login} account location is sent in a "kid" protected
      * header.

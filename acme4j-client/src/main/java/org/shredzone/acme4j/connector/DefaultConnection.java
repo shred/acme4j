@@ -78,6 +78,9 @@ public class DefaultConnection implements Connection {
     private static final String REPLAY_NONCE_HEADER = "Replay-Nonce";
     private static final String RETRY_AFTER_HEADER = "Retry-After";
     private static final String DEFAULT_CHARSET = "utf-8";
+    private static final String MIME_JSON = "application/json";
+    private static final String MIME_JSON_PROBLEM = "application/problem+json";
+    private static final String MIME_CERTIFICATE_CHAIN = "application/pem-certificate-chain";
 
     private static final Pattern BASE64URL_PATTERN = Pattern.compile("[0-9A-Za-z_-]+");
 
@@ -134,6 +137,15 @@ public class DefaultConnection implements Connection {
 
     @Override
     public void sendRequest(URL url, Session session) throws AcmeException {
+        sendRequest(url, session, MIME_JSON);
+    }
+
+    @Override
+    public void sendCertificateRequest(URL url, Session session) throws AcmeException {
+        sendRequest(url, session, MIME_CERTIFICATE_CHAIN);
+    }
+
+    private void sendRequest(URL url, Session session, String accept) throws AcmeException {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(session, "session");
         assertConnectionIsClosed();
@@ -143,6 +155,7 @@ public class DefaultConnection implements Connection {
         try {
             conn = httpConnector.openConnection(url, session.getProxy());
             conn.setRequestMethod("GET");
+            conn.setRequestProperty(ACCEPT_HEADER, accept);
             conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
             conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
             conn.setDoOutput(false);
@@ -207,8 +220,7 @@ public class DefaultConnection implements Connection {
         }
 
         String contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
-        if (!("application/json".equals(contentType)
-                    || "application/problem+json".equals(contentType))) {
+        if (!(MIME_JSON.equals(contentType) || MIME_JSON_PROBLEM.equals(contentType))) {
             throw new AcmeProtocolException("Unexpected content type: " + contentType);
         }
 
@@ -233,7 +245,7 @@ public class DefaultConnection implements Connection {
         assertConnectionIsOpen();
 
         String contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
-        if (!("application/pem-certificate-chain".equals(contentType))) {
+        if (!(MIME_CERTIFICATE_CHAIN.equals(contentType))) {
             throw new AcmeProtocolException("Unexpected content type: " + contentType);
         }
 
@@ -330,7 +342,7 @@ public class DefaultConnection implements Connection {
 
             conn = httpConnector.openConnection(url, session.getProxy());
             conn.setRequestMethod("POST");
-            conn.setRequestProperty(ACCEPT_HEADER, "application/json");
+            conn.setRequestProperty(ACCEPT_HEADER, MIME_JSON);
             conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
             conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
             conn.setRequestProperty(CONTENT_TYPE_HEADER, "application/jose+json");

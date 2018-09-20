@@ -55,7 +55,7 @@ public class CertificateTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URL url, Session session) {
+            public void sendCertificateRequest(URL url, Session session) {
                 assertThat(url, is(locationUrl));
                 assertThat(session, is(notNullValue()));
             }
@@ -124,7 +124,7 @@ public class CertificateTest {
             private boolean certRequested = false;
 
             @Override
-            public void sendRequest(URL url, Session session) {
+            public void sendCertificateRequest(URL url, Session session) {
                 assertThat(url, is(locationUrl));
                 assertThat(session, is(notNullValue()));
                 certRequested = true;
@@ -171,7 +171,7 @@ public class CertificateTest {
             private boolean certRequested = false;
 
             @Override
-            public void sendRequest(URL url, Session session) {
+            public void sendCertificateRequest(URL url, Session session) {
                 assertThat(url, is(locationUrl));
                 assertThat(session, is(notNullValue()));
                 certRequested = true;

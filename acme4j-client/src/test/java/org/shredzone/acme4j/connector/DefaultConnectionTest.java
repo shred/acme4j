@@ -653,6 +653,29 @@ public class DefaultConnectionTest {
         }
 
         verify(mockUrlConnection).setRequestMethod("GET");
+        verify(mockUrlConnection).setRequestProperty("Accept", "application/json");
+        verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
+        verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
+        verify(mockUrlConnection).setDoOutput(false);
+        verify(mockUrlConnection).connect();
+        verify(mockUrlConnection).getResponseCode();
+        verify(mockUrlConnection, atLeast(0)).getHeaderFields();
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    /**
+     * Test certificate GET requests.
+     */
+    @Test
+    public void testSendCertificateRequest() throws Exception {
+        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.sendCertificateRequest(requestUrl, session);
+        }
+
+        verify(mockUrlConnection).setRequestMethod("GET");
+        verify(mockUrlConnection).setRequestProperty("Accept", "application/pem-certificate-chain");
         verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
         verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
         verify(mockUrlConnection).setDoOutput(false);
