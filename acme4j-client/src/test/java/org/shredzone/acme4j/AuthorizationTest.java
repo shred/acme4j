@@ -88,7 +88,6 @@ public class AuthorizationTest {
      * Test that authorization is properly updated.
      */
     @Test
-    @SuppressWarnings("deprecation")
     public void testUpdate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
@@ -117,7 +116,6 @@ public class AuthorizationTest {
         Authorization auth = new Authorization(login, locationUrl);
         auth.update();
 
-        assertThat(auth.getDomain(), is("example.org"));
         assertThat(auth.getIdentifier().getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));
         assertThat(auth.isWildcard(), is(false));

@@ -71,20 +71,6 @@ public class Order extends AcmeJsonResource {
     }
 
     /**
-     * Gets the list of domain names to be ordered.
-     *
-     * @deprecated Use {@link #getIdentifiers()}. This method only returns DNS type
-     *             identifiers for compatibility reasons.
-     */
-    @Deprecated
-    public List<String> getDomains() {
-        return getIdentifiers().stream()
-                    .filter(i -> Identifier.TYPE_DNS.equals(i.getType()))
-                    .map(Identifier::getDomain)
-                    .collect(toList());
-    }
-
-    /**
      * Gets the list of {@link Identifier} to be ordered.
      *
      * @since 2.3

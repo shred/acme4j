@@ -44,7 +44,6 @@ public class OrderTest {
      * Test that order is properly updated.
      */
     @Test
-    @SuppressWarnings("deprecation")
     public void testUpdate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
@@ -73,7 +72,6 @@ public class OrderTest {
         assertThat(order.getExpires(), is(parseTimestamp("2015-03-01T14:09:00Z")));
         assertThat(order.getLocation(), is(locationUrl));
 
-        assertThat(order.getDomains(), containsInAnyOrder("example.com", "www.example.com"));
         assertThat(order.getIdentifiers(), containsInAnyOrder(
                     Identifier.dns("example.com"),
                     Identifier.dns("www.example.com")));
@@ -150,7 +148,6 @@ public class OrderTest {
      * Test that order is properly finalized.
      */
     @Test
-    @SuppressWarnings("deprecation")
     public void testFinalize() throws Exception {
         byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
 
@@ -192,7 +189,6 @@ public class OrderTest {
         assertThat(order.getExpires(), is(parseTimestamp("2015-03-01T14:09:00Z")));
         assertThat(order.getLocation(), is(locationUrl));
 
-        assertThat(order.getDomains(), containsInAnyOrder("example.com", "www.example.com"));
         assertThat(order.getIdentifiers(), containsInAnyOrder(
                         Identifier.dns("example.com"),
                         Identifier.dns("www.example.com")));

@@ -169,7 +169,6 @@ public class AccountTest {
      * Test that a domain can be pre-authorized.
      */
     @Test
-    @SuppressWarnings("deprecation")
     public void testPreAuthorizeDomain() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
@@ -202,7 +201,6 @@ public class AccountTest {
         Account account = new Account(login);
         Authorization auth = account.preAuthorizeDomain(domainName);
 
-        assertThat(auth.getDomain(), is(domainName));
         assertThat(auth.getIdentifier().getDomain(), is(domainName));
         assertThat(auth.getStatus(), is(Status.PENDING));
         assertThat(auth.getExpires(), is(nullValue()));

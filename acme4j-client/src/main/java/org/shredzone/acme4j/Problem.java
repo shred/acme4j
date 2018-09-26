@@ -113,18 +113,6 @@ public class Problem implements Serializable {
     }
 
     /**
-     * Returns the domain this problem relates to. May be {@code null}.
-     *
-     * @deprecated Use {@link #getIdentifier()}.
-     */
-    @Deprecated
-    @CheckForNull
-    public String getDomain() {
-        Identifier identifier = getIdentifier();
-        return identifier != null ? identifier.getDomain() : null;
-    }
-
-    /**
      * Returns the {@link Identifier} this problem relates to. May be {@code null}.
      *
      * @since 2.3

@@ -47,20 +47,6 @@ public class Authorization extends AcmeJsonResource {
     }
 
     /**
-     * Gets the domain name to be authorized.
-     * <p>
-     * For wildcard domain orders, the domain itself (without wildcard prefix) is returned
-     * here. To find out if this {@link Authorization} is related to a wildcard domain
-     * order, check the {@link #isWildcard()} method.
-     *
-     * @deprecated Use {@link #getIdentifier()}.
-     */
-    @Deprecated
-    public String getDomain() {
-        return getIdentifier().getDomain();
-    }
-
-    /**
      * Gets the {@link Identifier} to be authorized.
      * <p>
      * For wildcard domain orders, the domain itself (without wildcard prefix) is returned

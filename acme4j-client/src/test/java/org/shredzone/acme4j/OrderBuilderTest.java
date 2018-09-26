@@ -46,7 +46,6 @@ public class OrderBuilderTest {
      * Test that a new {@link Order} can be created.
      */
     @Test
-    @SuppressWarnings("deprecation")
     public void testOrderCertificate() throws Exception {
         Instant notBefore = parseTimestamp("2016-01-01T00:00:00Z");
         Instant notAfter = parseTimestamp("2016-01-08T00:00:00Z");
@@ -88,12 +87,6 @@ public class OrderBuilderTest {
                         .notAfter(notAfter)
                         .create();
 
-        assertThat(order.getDomains(), containsInAnyOrder(
-                        "example.com", "www.example.com",
-                        "example.org",
-                        "m.example.com", "m.example.org",
-                        "d.example.com",
-                        "d2.example.com"));
         assertThat(order.getIdentifiers(), containsInAnyOrder(
                         Identifier.dns("example.com"),
                         Identifier.dns("www.example.com"),
