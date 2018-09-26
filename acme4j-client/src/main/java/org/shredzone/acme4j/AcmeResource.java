@@ -19,8 +19,6 @@ import java.util.Objects;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import org.shredzone.acme4j.connector.Connection;
-
 /**
  * A generic ACME resource.
  */
@@ -59,13 +57,6 @@ public abstract class AcmeResource implements Serializable {
      */
     protected Session getSession() {
         return getLogin().getSession();
-    }
-
-    /**
-     * Opens a {@link Connection} to the provider.
-     */
-    protected Connection connect() {
-        return getSession().provider().connect();
     }
 
     /**

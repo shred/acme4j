@@ -144,7 +144,7 @@ public class Authorization extends AcmeJsonResource {
      */
     public void deactivate() throws AcmeException {
         LOG.debug("deactivate");
-        try (Connection conn = connect()) {
+        try (Connection conn = getSession().connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.put("status", "deactivated");
 

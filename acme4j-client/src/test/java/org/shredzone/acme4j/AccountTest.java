@@ -39,7 +39,6 @@ import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeServerException;
-import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -343,13 +342,7 @@ public class AccountTest {
 
         provider.putTestResource(Resource.KEY_CHANGE, locationUrl);
 
-        Session session = new Session(new URI(TestUtils.ACME_SERVER_URI)) {
-            @Override
-            public AcmeProvider provider() {
-                return provider;
-            };
-        };
-
+        Session session = TestUtils.session(provider);
         Login login = new Login(locationUrl, oldKeyPair, session);
 
         assertThat(login.getKeyPair(), is(sameInstance(oldKeyPair)));

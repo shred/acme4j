@@ -67,7 +67,7 @@ public class LetsEncryptAcmeProvider extends AbstractAcmeProvider {
 
     @Override
     @SuppressWarnings("deprecation")
-    public Connection connect() {
+    public Connection connect(URI serverUri) {
         return new org.shredzone.acme4j.connector.PreDraft15Connection(createHttpConnector());
     }
 

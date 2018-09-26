@@ -70,7 +70,7 @@ public class Certificate extends AcmeResource {
     public void download() throws AcmeException {
         if (certChain == null) {
             LOG.debug("download");
-            try (Connection conn = connect()) {
+            try (Connection conn = getSession().connect()) {
                 conn.sendCertificateRequest(getLocation(), getLogin());
                 alternates = new ArrayList<>(conn.getLinks("alternate"));
                 certChain = new ArrayList<>(conn.readCertificates());
@@ -150,7 +150,7 @@ public class Certificate extends AcmeResource {
         LOG.debug("revoke");
         URL resUrl = getSession().resourceUrl(Resource.REVOKE_CERT);
 
-        try (Connection conn = connect()) {
+        try (Connection conn = getSession().connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.putBase64("certificate", getCertificate().getEncoded());
             if (reason != null) {
@@ -187,7 +187,7 @@ public class Certificate extends AcmeResource {
             throw new AcmeException("Server does not allow certificate revocation");
         }
 
-        try (Connection conn = session.provider().connect()) {
+        try (Connection conn = session.connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.putBase64("certificate", cert.getEncoded());
             if (reason != null) {

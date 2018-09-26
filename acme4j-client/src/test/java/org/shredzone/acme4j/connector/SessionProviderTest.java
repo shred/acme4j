@@ -77,7 +77,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public Connection connect() {
+        public Connection connect(URI serverUri) {
             throw new UnsupportedOperationException();
         }
 
@@ -105,7 +105,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public Connection connect() {
+        public Connection connect(URI serverUri) {
             throw new UnsupportedOperationException();
         }
 

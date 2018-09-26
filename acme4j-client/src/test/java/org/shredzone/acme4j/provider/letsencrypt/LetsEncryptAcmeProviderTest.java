@@ -75,7 +75,7 @@ public class LetsEncryptAcmeProviderTest {
     @SuppressWarnings("deprecation")
     public void testConnect() {
         LetsEncryptAcmeProvider provider = new LetsEncryptAcmeProvider();
-        Connection connection = provider.connect();
+        Connection connection = provider.connect(URI.create("acme://letsencrypt.org"));
         assertThat(connection, is(instanceOf(org.shredzone.acme4j.connector.PreDraft15Connection.class)));
     }
 

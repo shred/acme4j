@@ -119,7 +119,7 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
     }
 
     @Override
-    public Connection connect() {
+    public Connection connect(URI serverUri) {
         return this;
     }
 

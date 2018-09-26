@@ -54,6 +54,7 @@ import org.jose4j.keys.HmacKey;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
+import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.provider.AcmeProvider;
 
 /**
@@ -161,6 +162,11 @@ public final class TestUtils {
             public AcmeProvider provider() {
                 return provider;
             };
+
+            @Override
+            public Connection connect() {
+                return provider.connect(getServerUri());
+            }
         };
     }
 

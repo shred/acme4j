@@ -60,9 +60,11 @@ public interface AcmeProvider {
     /**
      * Creates a {@link Connection} for communication with the ACME server.
      *
+     * @param serverUri
+     *            Server {@link URI}
      * @return {@link Connection} that was generated
      */
-    Connection connect();
+    Connection connect(URI serverUri);
 
     /**
      * Returns the provider's directory. The structure must contain resource URLs, and may

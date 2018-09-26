@@ -50,6 +50,8 @@ public class AbstractAcmeProviderTest {
      */
     @Test
     public void testConnect() {
+        final URI testServerUri = URI.create("http://example.com/acme");
+
         final AtomicBoolean invoked = new AtomicBoolean();
 
         AbstractAcmeProvider provider = new AbstractAcmeProvider() {
@@ -70,7 +72,7 @@ public class AbstractAcmeProviderTest {
             }
         };
 
-        Connection connection = provider.connect();
+        Connection connection = provider.connect(testServerUri);
         assertThat(connection, not(nullValue()));
         assertThat(connection, instanceOf(DefaultConnection.class));
         assertThat(invoked.get(), is(true));
@@ -90,7 +92,8 @@ public class AbstractAcmeProviderTest {
 
         AbstractAcmeProvider provider = new AbstractAcmeProvider() {
             @Override
-            public Connection connect() {
+            public Connection connect(URI serverUri) {
+                assertThat(serverUri, is(testServerUri));
                 return connection;
             }
 

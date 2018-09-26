@@ -198,7 +198,7 @@ public class AccountBuilder {
 
         LOG.debug("create");
 
-        try (Connection conn = session.provider().connect()) {
+        try (Connection conn = session.connect()) {
             URL resourceUrl = session.resourceUrl(Resource.NEW_ACCOUNT);
 
             JSONBuilder claims = new JSONBuilder();

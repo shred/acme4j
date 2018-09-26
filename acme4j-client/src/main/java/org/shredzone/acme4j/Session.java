@@ -32,6 +32,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.ThreadSafe;
 
+import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
@@ -170,6 +171,15 @@ public class Session {
      */
     public AcmeProvider provider() {
         return provider;
+    }
+
+    /**
+     * Returns a new {@link Connection} to the ACME server.
+     *
+     * @return {@link Connection}
+     */
+    public Connection connect() {
+        return provider.connect(getServerUri());
     }
 
     /**

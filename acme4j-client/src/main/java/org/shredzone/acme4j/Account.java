@@ -113,7 +113,7 @@ public class Account extends AcmeJsonResource {
     @Override
     public void update() throws AcmeException {
         LOG.debug("update Account");
-        try (Connection conn = connect()) {
+        try (Connection conn = getSession().connect()) {
             conn.sendSignedRequest(getLocation(), new JSONBuilder(), getLogin());
             JSON json = conn.readJsonResponse();
             if (json != null) {
@@ -181,7 +181,7 @@ public class Account extends AcmeJsonResource {
         URL newAuthzUrl = getSession().resourceUrl(Resource.NEW_AUTHZ);
 
         LOG.debug("preAuthorize {}", identifier);
-        try (Connection conn = connect()) {
+        try (Connection conn = getSession().connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.put("identifier", identifier.toMap());
 
@@ -219,7 +219,7 @@ public class Account extends AcmeJsonResource {
 
         LOG.debug("key-change");
 
-        try (Connection conn = connect()) {
+        try (Connection conn = getSession().connect()) {
             URL keyChangeUrl = getSession().resourceUrl(Resource.KEY_CHANGE);
             PublicJsonWebKey newKeyJwk = PublicJsonWebKey.Factory.newPublicJwk(newKeyPair.getPublic());
 
@@ -256,7 +256,7 @@ public class Account extends AcmeJsonResource {
      */
     public void deactivate() throws AcmeException {
         LOG.debug("deactivate");
-        try (Connection conn = connect()) {
+        try (Connection conn = getSession().connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.put(KEY_STATUS, "deactivated");
 
@@ -344,7 +344,7 @@ public class Account extends AcmeJsonResource {
          */
         public void commit() throws AcmeException {
             LOG.debug("modify/commit");
-            try (Connection conn = connect()) {
+            try (Connection conn = getSession().connect()) {
                 JSONBuilder claims = new JSONBuilder();
                 if (!editContacts.isEmpty()) {
                     claims.put(KEY_CONTACT, editContacts);

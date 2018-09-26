@@ -48,13 +48,13 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
     private static final Map<String, BiFunction<Login, JSON, Challenge>> CHALLENGES = challengeMap();
 
     @Override
-    public Connection connect() {
+    public Connection connect(URI serverUri) {
         return new DefaultConnection(createHttpConnector());
     }
 
     @Override
     public JSON directory(Session session, URI serverUri) throws AcmeException {
-        try (Connection conn = connect()) {
+        try (Connection conn = connect(serverUri)) {
             conn.sendRequest(resolve(serverUri), session);
 
             // use nonce header if there is one, saves a HEAD request...

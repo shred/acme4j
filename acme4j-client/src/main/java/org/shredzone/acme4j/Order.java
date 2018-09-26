@@ -162,7 +162,7 @@ public class Order extends AcmeJsonResource {
      */
     public void execute(byte[] csr) throws AcmeException {
         LOG.debug("finalize");
-        try (Connection conn = connect()) {
+        try (Connection conn = getSession().connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.putBase64("csr", csr);
 
@@ -235,7 +235,7 @@ public class Order extends AcmeJsonResource {
         }
 
         LOG.debug("cancel");
-        try (Connection conn = connect()) {
+        try (Connection conn = getSession().connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.put("status", "canceled");
 

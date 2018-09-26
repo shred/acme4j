@@ -245,7 +245,7 @@ public class OrderBuilder {
         }
 
         LOG.debug("create");
-        try (Connection conn = session.provider().connect()) {
+        try (Connection conn = session.connect()) {
             JSONBuilder claims = new JSONBuilder();
             claims.array("identifiers", identifierSet.stream().map(Identifier::toMap).collect(toList()));
 
