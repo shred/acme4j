@@ -648,7 +648,12 @@ public class DefaultConnectionTest {
     public void testSendRequest() throws Exception {
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
 
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
+            @Override
+            public String getNonce() {
+                return null;
+            }
+        }) {
             conn.sendRequest(requestUrl, session);
         }
 

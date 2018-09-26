@@ -19,6 +19,7 @@ import java.net.URL;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
+import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AbstractAcmeProvider;
 import org.shredzone.acme4j.provider.AcmeProvider;
@@ -62,6 +63,12 @@ public class LetsEncryptAcmeProvider extends AbstractAcmeProvider {
         } catch (MalformedURLException ex) {
             throw new AcmeProtocolException(directoryUrl, ex);
         }
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public Connection connect() {
+        return new org.shredzone.acme4j.connector.PreDraft15Connection(createHttpConnector());
     }
 
 }

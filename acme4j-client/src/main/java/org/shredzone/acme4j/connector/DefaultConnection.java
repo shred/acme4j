@@ -137,32 +137,7 @@ public class DefaultConnection implements Connection {
 
     @Override
     public void sendRequest(URL url, Session session) throws AcmeException {
-        Objects.requireNonNull(url, "url");
-        Objects.requireNonNull(session, "session");
-        assertConnectionIsClosed();
-
-        LOG.debug("GET {}", url);
-
-        try {
-            conn = httpConnector.openConnection(url, session.getProxy());
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty(ACCEPT_HEADER, MIME_JSON);
-            conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
-            conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
-            conn.setDoOutput(false);
-
-            conn.connect();
-
-            logHeaders();
-
-            int rc = conn.getResponseCode();
-            if (rc != HttpURLConnection.HTTP_OK) {
-                throwAcmeException();
-            }
-
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
-        }
+        sendRequest(url, session, MIME_JSON);
     }
 
     @Override
@@ -187,31 +162,6 @@ public class DefaultConnection implements Connection {
     public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair)
                 throws AcmeException {
         return sendSignedRequest(url, claims, session, keypair, null, MIME_JSON);
-    }
-
-    private int sendSignedRequest(URL url, @Nullable JSONBuilder claims, Session session,
-            KeyPair keypair, @Nullable URL accountLocation, String accept) throws AcmeException {
-        Objects.requireNonNull(url, "url");
-        Objects.requireNonNull(session, "session");
-        Objects.requireNonNull(keypair, "keypair");
-        Objects.requireNonNull(accept, "accept");
-        assertConnectionIsClosed();
-
-        AcmeException lastException = null;
-
-        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-            try {
-                return performRequest(url, claims, session, keypair, accountLocation, accept);
-            } catch (AcmeServerException ex) {
-                if (!BAD_NONCE_ERROR.equals(ex.getType())) {
-                    throw ex;
-                }
-                lastException = ex;
-                LOG.info("Bad Replay Nonce, trying again (attempt {}/{})", attempt, MAX_ATTEMPTS);
-            }
-        }
-
-        throw new AcmeException("Too many reattempts", lastException);
     }
 
     @Override
@@ -318,6 +268,96 @@ public class DefaultConnection implements Connection {
     @Override
     public void close() {
         conn = null;
+    }
+
+    /**
+     * Sends an unsigned GET request.
+     *
+     * @param url
+     *            {@link URL} to send the request to.
+     * @param session
+     *            {@link Session} instance to be used for signing and tracking
+     * @param accept
+     *            Accept header
+     * @return HTTP 200 class status that was returned
+     */
+    protected int sendRequest(URL url, Session session, String accept) throws AcmeException {
+        Objects.requireNonNull(url, "url");
+        Objects.requireNonNull(session, "session");
+        Objects.requireNonNull(accept, "accept");
+        assertConnectionIsClosed();
+
+        LOG.debug("GET {}", url);
+
+        try {
+            conn = httpConnector.openConnection(url, session.getProxy());
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty(ACCEPT_HEADER, accept);
+            conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
+            conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
+            conn.setDoOutput(false);
+
+            conn.connect();
+
+            logHeaders();
+
+            String nonce = getNonce();
+            if (nonce != null) {
+                session.setNonce(nonce);
+            }
+
+            int rc = conn.getResponseCode();
+            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_CREATED) {
+                throwAcmeException();
+            }
+            return rc;
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
+        }
+    }
+
+    /**
+     * Sends a signed POST request.
+     *
+     * @param url
+     *            {@link URL} to send the request to.
+     * @param claims
+     *            {@link JSONBuilder} containing claims. {@code null} for POST-as-GET
+     *            request.
+     * @param session
+     *            {@link Session} instance to be used for signing and tracking
+     * @param keypair
+     *            {@link KeyPair} to be used for signing
+     * @param accountLocation
+     *            If set, the account location is set as "kid" header. If {@code null},
+     *            the public key is set as "jwk" header.
+     * @param accept
+     *            Accept header
+     * @return HTTP 200 class status that was returned
+     */
+    protected int sendSignedRequest(URL url, @Nullable JSONBuilder claims, Session session,
+                KeyPair keypair, @Nullable URL accountLocation, String accept) throws AcmeException {
+        Objects.requireNonNull(url, "url");
+        Objects.requireNonNull(session, "session");
+        Objects.requireNonNull(keypair, "keypair");
+        Objects.requireNonNull(accept, "accept");
+        assertConnectionIsClosed();
+
+        AcmeException lastException = null;
+
+        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+            try {
+                return performRequest(url, claims, session, keypair, accountLocation, accept);
+            } catch (AcmeServerException ex) {
+                if (!BAD_NONCE_ERROR.equals(ex.getType())) {
+                    throw ex;
+                }
+                lastException = ex;
+                LOG.info("Bad Replay Nonce, trying again (attempt {}/{})", attempt, MAX_ATTEMPTS);
+            }
+        }
+
+        throw new AcmeException("Too many reattempts", lastException);
     }
 
     /**
