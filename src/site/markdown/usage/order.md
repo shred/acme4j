@@ -184,6 +184,15 @@ Order order = account.newOrder()
 
 The example also shows how to add domain names as DNS `Identifier` objects. Adding domain names via `domain()` is just a shortcut notation for it.
 
+The `CSRBuilder` also accepts IP addresses for generating the CSR:
+
+```java
+CSRBuilder csrb = new CSRBuilder();
+csrb.addIP(InetAddress.getByName("192.168.1.2"));
+csrb.sign(domainKeyPair);
+byte[] csr = csrb.getEncoded();
+```
+
 ## Short-Term Automatic Renewal
 
 _acme4j_ supports the [ACME STAR](https://tools.ietf.org/html/draft-ietf-acme-star) extension for short-term automatic renewal of certificates.

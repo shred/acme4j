@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.InetAddress;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.interfaces.ECKey;
@@ -62,6 +63,7 @@ public class CSRBuilder {
 
     private final X500NameBuilder namebuilder = new X500NameBuilder(X500Name.getDefaultStyle());
     private final List<String> namelist = new ArrayList<>();
+    private final List<InetAddress> iplist = new ArrayList<>();
     private PKCS10CertificationRequest csr = null;
 
     /**
@@ -106,6 +108,40 @@ public class CSRBuilder {
      */
     public void addDomains(String... domains) {
         Arrays.stream(domains).forEach(this::addDomain);
+    }
+
+    /**
+     * Adds an {@link InetAddress}. All IP addresses will be set as iPAddress <em>Subject
+     * Alternative Name</em>.
+     *
+     * @param address
+     *            {@link InetAddress} to add
+     * @since 2.4
+     */
+    public void addIP(InetAddress address) {
+        iplist.add(requireNonNull(address));
+    }
+
+    /**
+     * Adds a {@link Collection} of IP addresses.
+     *
+     * @param ips
+     *            Collection of IP addresses to add
+     * @since 2.4
+     */
+    public void addIPs(Collection<InetAddress> ips) {
+        ips.forEach(this::addIP);
+    }
+
+    /**
+     * Adds multiple IP addresses.
+     *
+     * @param ips
+     *            IP addresses to add
+     * @since 2.4
+     */
+    public void addIPs(InetAddress... ips) {
+        Arrays.stream(ips).forEach(this::addIP);
     }
 
     /**
@@ -161,14 +197,18 @@ public class CSRBuilder {
      */
     public void sign(KeyPair keypair) throws IOException {
         Objects.requireNonNull(keypair, "keypair");
-        if (namelist.isEmpty()) {
-            throw new IllegalStateException("No domain was set");
+        if (namelist.isEmpty() && iplist.isEmpty()) {
+            throw new IllegalStateException("No domain or IP address was set");
         }
 
         try {
-            GeneralName[] gns = new GeneralName[namelist.size()];
-            for (int ix = 0; ix < namelist.size(); ix++) {
-                gns[ix] = new GeneralName(GeneralName.dNSName, namelist.get(ix));
+            int ix = 0;
+            GeneralName[] gns = new GeneralName[namelist.size() + iplist.size()];
+            for (String name : namelist) {
+                gns[ix++] = new GeneralName(GeneralName.dNSName, name);
+            }
+            for (InetAddress ip : iplist) {
+                gns[ix++] = new GeneralName(GeneralName.iPAddress, ip.getHostAddress());
             }
             GeneralNames subjectAltName = new GeneralNames(gns);
 
@@ -241,6 +281,9 @@ public class CSRBuilder {
         StringBuilder sb = new StringBuilder();
         sb.append(namebuilder.build());
         sb.append(namelist.stream().collect(joining(",DNS=", ",DNS=", "")));
+        sb.append(iplist.stream()
+                    .map(InetAddress::getHostAddress)
+                    .collect(joining(",IP=", ",IP=", "")));
         return sb.toString();
     }
 

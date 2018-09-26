@@ -20,12 +20,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.KeyPair;
 import java.security.Security;
 import java.util.Arrays;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.RDN;
@@ -72,6 +75,10 @@ public class CSRBuilderTest {
         builder.addDomains("jklm.no", "pqr.st");
         builder.addDomains(Arrays.asList("uv.wx", "y.z"));
         builder.addDomain("*.wild.card");
+        builder.addIP(InetAddress.getByName("192.168.0.1"));
+        builder.addIP(InetAddress.getByName("192.168.0.2"));
+        builder.addIPs(InetAddress.getByName("10.0.0.1"), InetAddress.getByName("10.0.0.2"));
+        builder.addIPs(Arrays.asList(InetAddress.getByName("fd00::1"), InetAddress.getByName("fd00::2")));
 
         builder.setCountry("XX");
         builder.setLocality("Testville");
@@ -81,7 +88,9 @@ public class CSRBuilderTest {
 
         assertThat(builder.toString(), is("CN=abc.de,C=XX,L=Testville,O=Testing Co,"
                         + "OU=Testunit,ST=ABC,"
-                        + "DNS=abc.de,DNS=fg.hi,DNS=jklm.no,DNS=pqr.st,DNS=uv.wx,DNS=y.z,DNS=*.wild.card"));
+                        + "DNS=abc.de,DNS=fg.hi,DNS=jklm.no,DNS=pqr.st,DNS=uv.wx,DNS=y.z,DNS=*.wild.card,"
+                        + "IP=192.168.0.1,IP=192.168.0.2,IP=10.0.0.1,IP=10.0.0.2,"
+                        + "IP=fd00:0:0:0:0:0:0:1,IP=fd00:0:0:0:0:0:0:2"));
 
         builder.sign(testKey);
 
@@ -104,6 +113,10 @@ public class CSRBuilderTest {
         builder.addDomains("jklm.no", "pqr.st");
         builder.addDomains(Arrays.asList("uv.wx", "y.z"));
         builder.addDomain("*.wild.card");
+        builder.addIP(InetAddress.getByName("192.168.0.1"));
+        builder.addIP(InetAddress.getByName("192.168.0.2"));
+        builder.addIPs(InetAddress.getByName("10.0.0.1"), InetAddress.getByName("10.0.0.2"));
+        builder.addIPs(Arrays.asList(InetAddress.getByName("fd00::1"), InetAddress.getByName("fd00::2")));
 
         builder.setCountry("XX");
         builder.setLocality("Testville");
@@ -113,7 +126,9 @@ public class CSRBuilderTest {
 
         assertThat(builder.toString(), is("CN=abc.de,C=XX,L=Testville,O=Testing Co,"
                         + "OU=Testunit,ST=ABC,"
-                        + "DNS=abc.de,DNS=fg.hi,DNS=jklm.no,DNS=pqr.st,DNS=uv.wx,DNS=y.z,DNS=*.wild.card"));
+                        + "DNS=abc.de,DNS=fg.hi,DNS=jklm.no,DNS=pqr.st,DNS=uv.wx,DNS=y.z,DNS=*.wild.card,"
+                        + "IP=192.168.0.1,IP=192.168.0.2,IP=10.0.0.1,IP=10.0.0.2,"
+                        + "IP=fd00:0:0:0:0:0:0:1,IP=fd00:0:0:0:0:0:0:2"));
 
         builder.sign(testEcKey);
 
@@ -147,10 +162,20 @@ public class CSRBuilderTest {
         ASN1Encodable[] extensions = attr[0].getAttrValues().toArray();
         assertThat(extensions.length, is(1));
         GeneralNames names = GeneralNames.fromExtensions((Extensions) extensions[0], Extension.subjectAlternativeName);
-        assertThat(names.getNames(), arrayContaining(new GeneralNameMatcher("abc.de"),
-                        new GeneralNameMatcher("fg.hi"), new GeneralNameMatcher("jklm.no"),
-                        new GeneralNameMatcher("pqr.st"), new GeneralNameMatcher("uv.wx"),
-                        new GeneralNameMatcher("y.z"), new GeneralNameMatcher("*.wild.card")));
+        assertThat(names.getNames(), arrayContaining(
+                        new GeneralNameMatcher("abc.de", GeneralName.dNSName),
+                        new GeneralNameMatcher("fg.hi", GeneralName.dNSName),
+                        new GeneralNameMatcher("jklm.no", GeneralName.dNSName),
+                        new GeneralNameMatcher("pqr.st", GeneralName.dNSName),
+                        new GeneralNameMatcher("uv.wx", GeneralName.dNSName),
+                        new GeneralNameMatcher("y.z", GeneralName.dNSName),
+                        new GeneralNameMatcher("*.wild.card", GeneralName.dNSName),
+                        new GeneralNameMatcher("192.168.0.1", GeneralName.iPAddress),
+                        new GeneralNameMatcher("192.168.0.2", GeneralName.iPAddress),
+                        new GeneralNameMatcher("10.0.0.1", GeneralName.iPAddress),
+                        new GeneralNameMatcher("10.0.0.2", GeneralName.iPAddress),
+                        new GeneralNameMatcher("fd00:0:0:0:0:0:0:1", GeneralName.iPAddress),
+                        new GeneralNameMatcher("fd00:0:0:0:0:0:0:2", GeneralName.iPAddress)));
     }
 
     /**
@@ -266,8 +291,10 @@ public class CSRBuilderTest {
      */
     private static class GeneralNameMatcher extends BaseMatcher<GeneralName> {
         private final String expectedValue;
+        private final int expectedTag;
 
-        public GeneralNameMatcher(String expectedValue) {
+        public GeneralNameMatcher(String expectedValue, int expectedTag) {
+            this.expectedTag = expectedTag;
             this.expectedValue = expectedValue;
         }
 
@@ -279,8 +306,19 @@ public class CSRBuilderTest {
 
             GeneralName gn = (GeneralName) item;
 
-            return gn.getTagNo() == GeneralName.dNSName
-                            && expectedValue.equals(DERIA5String.getInstance(gn.getName()).getString());
+            if (gn.getTagNo() != expectedTag) {
+                return false;
+            }
+
+            if (gn.getTagNo() == GeneralName.dNSName) {
+                return expectedValue.equals(DERIA5String.getInstance(gn.getName()).getString());
+            }
+
+            if (gn.getTagNo() == GeneralName.iPAddress) {
+                return expectedValue.equals(getIP(gn.getName()).getHostAddress());
+            }
+
+            return false;
         }
 
         @Override
@@ -296,10 +334,29 @@ public class CSRBuilderTest {
             }
 
             GeneralName gn = (GeneralName) item;
-            if (gn.getTagNo() != GeneralName.dNSName) {
-                description.appendText("is not DNS");
+            if (gn.getTagNo() == GeneralName.dNSName) {
+                description.appendText("was DNS ").appendValue(DERIA5String.getInstance(gn.getName()).getString());
+            } else if (gn.getTagNo() == GeneralName.iPAddress) {
+                description.appendText("was IP ").appendValue(getIP(gn.getName()).getHostAddress());
             } else {
-                description.appendText("was ").appendValue(DERIA5String.getInstance(gn.getName()).getString());
+                description.appendText("is neither DNS nor IP, but has tag " + gn.getTagNo());
+            }
+        }
+
+        /**
+         * Fetches the {@link InetAddress} from the given iPAddress record.
+         *
+         * @param name
+         *            Name to convert
+         * @return {@link InetAddress}
+         * @throws IllegalArgumentException
+         *             if the IP address could not be read
+         */
+        private InetAddress getIP(ASN1Encodable name) {
+            try {
+                return InetAddress.getByAddress(DEROctetString.getInstance(name).getOctets());
+            } catch (UnknownHostException ex) {
+                throw new IllegalArgumentException(ex);
             }
         }
     }
