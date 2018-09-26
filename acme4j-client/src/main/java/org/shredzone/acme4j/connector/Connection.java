@@ -58,17 +58,36 @@ public interface Connection extends AutoCloseable {
     void sendRequest(URL url, Session session) throws AcmeException;
 
     /**
-     * Sends a request for a certificate resource.
+     * Sends a signed POST-as-GET request for a certificate resource. Requires a
+     * {@link Login} for the session and {@link KeyPair}. The {@link Login} account
+     * location is sent in a "kid" protected header.
      * <p>
-     * If the response code was not {@link HttpURLConnection#HTTP_OK}, an
-     * {@link AcmeException} matching the error is raised.
+     * If the server does not return a 200 class status code, an {@link AcmeException} is
+     * raised matching the error.
      *
      * @param url
      *            {@link URL} to send the request to.
-     * @param session
-     *            {@link Session} instance to be used for tracking
+     * @param login
+     *            {@link Login} instance to be used for signing and tracking.
+     * @return HTTP 200 class status that was returned
      */
-    void sendCertificateRequest(URL url, Session session) throws AcmeException;
+    int sendCertificateRequest(URL url, Login login) throws AcmeException;
+
+    /**
+     * Sends a signed POST-as-GET request. Requires a {@link Login} for the session and
+     * {@link KeyPair}. The {@link Login} account location is sent in a "kid" protected
+     * header.
+     * <p>
+     * If the server does not return a 200 class status code, an {@link AcmeException} is
+     * raised matching the error.
+     *
+     * @param url
+     *            {@link URL} to send the request to.
+     * @param login
+     *            {@link Login} instance to be used for signing and tracking.
+     * @return HTTP 200 class status that was returned
+     */
+    int sendSignedPostAsGetRequest(URL url, Login login) throws AcmeException;
 
     /**
      * Sends a signed POST request. Requires a {@link Login} for the session and

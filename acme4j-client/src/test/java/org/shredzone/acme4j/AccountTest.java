@@ -72,12 +72,13 @@ public class AccountTest {
             }
 
             @Override
-            public void sendRequest(URL url, Session session) {
+            public int sendSignedPostAsGetRequest(URL url, Login login) {
                 if (url("https://example.com/acme/acct/1/orders").equals(url)) {
                     jsonResponse = new JSONBuilder()
                                 .array("orders", Arrays.asList("https://example.com/acme/order/1"))
                                 .toJSON();
                 }
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override

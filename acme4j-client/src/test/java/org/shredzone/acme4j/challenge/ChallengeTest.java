@@ -28,7 +28,6 @@ import java.time.Instant;
 import org.junit.Test;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
-import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -126,8 +125,9 @@ public class ChallengeTest {
     public void testUpdate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URL url, Session session) {
+            public int sendSignedPostAsGetRequest(URL url, Login login) {
                 assertThat(url, is(locationUrl));
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
@@ -162,8 +162,9 @@ public class ChallengeTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URL url, Session session) {
+            public int sendSignedPostAsGetRequest(URL url, Login login) {
                 assertThat(url, is(locationUrl));
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override

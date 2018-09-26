@@ -116,7 +116,7 @@ public abstract class AcmeJsonResource extends AcmeResource {
         String resourceType = getClass().getSimpleName();
         LOG.debug("update {}", resourceType);
         try (Connection conn = connect()) {
-            conn.sendRequest(getLocation(), getSession());
+            conn.sendSignedPostAsGetRequest(getLocation(), getLogin());
             JSON json = conn.readJsonResponse();
             if (json != null) {
                 setJSON(json);

@@ -42,7 +42,12 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public void sendCertificateRequest(URL url, Session session) throws AcmeException {
+    public int sendCertificateRequest(URL url, Login login) throws AcmeException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int sendSignedPostAsGetRequest(URL url, Login login) throws AcmeException {
         throw new UnsupportedOperationException();
     }
 

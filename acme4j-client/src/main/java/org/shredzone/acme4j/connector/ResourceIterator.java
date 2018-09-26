@@ -145,7 +145,7 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
     private void readAndQueue() throws AcmeException {
         Session session = login.getSession();
         try (Connection conn = session.provider().connect()) {
-            conn.sendRequest(nextUrl, session);
+            conn.sendSignedPostAsGetRequest(nextUrl, login);
 
             JSON json = conn.readJsonResponse();
             if (json != null) {

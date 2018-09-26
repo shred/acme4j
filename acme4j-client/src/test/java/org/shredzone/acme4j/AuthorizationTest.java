@@ -92,8 +92,9 @@ public class AuthorizationTest {
     public void testUpdate() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URL url, Session session) {
+            public int sendSignedPostAsGetRequest(URL url, Login login) {
                 assertThat(url, is(locationUrl));
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
@@ -138,8 +139,9 @@ public class AuthorizationTest {
     public void testWildcard() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URL url, Session session) {
+            public int sendSignedPostAsGetRequest(URL url, Login login) {
                 assertThat(url, is(locationUrl));
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
@@ -181,9 +183,10 @@ public class AuthorizationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URL url, Session session) {
+            public int sendSignedPostAsGetRequest(URL url, Login login) {
                 requestWasSent.set(true);
                 assertThat(url, is(locationUrl));
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
@@ -230,8 +233,9 @@ public class AuthorizationTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public void sendRequest(URL url, Session session) {
+            public int sendSignedPostAsGetRequest(URL url, Login login) {
                 assertThat(url, is(locationUrl));
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override

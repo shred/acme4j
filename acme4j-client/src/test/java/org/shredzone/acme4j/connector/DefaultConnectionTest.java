@@ -664,28 +664,6 @@ public class DefaultConnectionTest {
     }
 
     /**
-     * Test certificate GET requests.
-     */
-    @Test
-    public void testSendCertificateRequest() throws Exception {
-        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
-
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.sendCertificateRequest(requestUrl, session);
-        }
-
-        verify(mockUrlConnection).setRequestMethod("GET");
-        verify(mockUrlConnection).setRequestProperty("Accept", "application/pem-certificate-chain");
-        verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
-        verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
-        verify(mockUrlConnection).setDoOutput(false);
-        verify(mockUrlConnection).connect();
-        verify(mockUrlConnection).getResponseCode();
-        verify(mockUrlConnection, atLeast(0)).getHeaderFields();
-        verifyNoMoreInteractions(mockUrlConnection);
-    }
-
-    /**
      * Test signed POST requests.
      */
     @Test
@@ -758,6 +736,130 @@ public class DefaultConnectionTest {
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
         jws.setKey(login.getKeyPair().getPublic());
         assertThat(jws.verifySignature(), is(true));
+    }
+
+    /**
+     * Test signed POST-as-GET requests.
+     */
+    @Test
+    public void testSendSignedPostAsGetRequest() throws Exception {
+        final String nonce1 = Base64Url.encode("foo-nonce-1-foo".getBytes());
+        final String nonce2 = Base64Url.encode("foo-nonce-2-foo".getBytes());
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+        when(mockUrlConnection.getOutputStream()).thenReturn(outputStream);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
+            @Override
+            public void resetNonce(Session session) {
+                assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
+                if (session.getNonce() == null) {
+                    session.setNonce(nonce1);
+                } else {
+                    fail("unknown nonce");
+                }
+            }
+
+            @Override
+            public String getNonce() {
+                assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
+                if (session.getNonce() == nonce1) {
+                    return nonce2;
+                } else {
+                    fail("unknown nonce");
+                    return null;
+                }
+            }
+        }) {
+            conn.sendSignedPostAsGetRequest(requestUrl, login);
+        }
+
+        verify(mockUrlConnection).setRequestMethod("POST");
+        verify(mockUrlConnection).setRequestProperty("Accept", "application/json");
+        verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
+        verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
+        verify(mockUrlConnection).setRequestProperty("Content-Type", "application/jose+json");
+        verify(mockUrlConnection).connect();
+        verify(mockUrlConnection).setDoOutput(true);
+        verify(mockUrlConnection).setFixedLengthStreamingMode(outputStream.toByteArray().length);
+        verify(mockUrlConnection).getResponseCode();
+        verify(mockUrlConnection).getOutputStream();
+        verify(mockUrlConnection, atLeast(0)).getHeaderFields();
+        verifyNoMoreInteractions(mockUrlConnection);
+
+        JSON data = JSON.parse(new String(outputStream.toByteArray(), "utf-8"));
+        String encodedHeader = data.get("protected").asString();
+        String encodedSignature = data.get("signature").asString();
+        String encodedPayload = data.get("payload").asString();
+
+        StringBuilder expectedHeader = new StringBuilder();
+        expectedHeader.append('{');
+        expectedHeader.append("\"nonce\":\"").append(nonce1).append("\",");
+        expectedHeader.append("\"url\":\"").append(requestUrl).append("\",");
+        expectedHeader.append("\"alg\":\"RS256\",");
+        expectedHeader.append("\"kid\":\"").append(accountUrl).append('"');
+        expectedHeader.append('}');
+
+        assertThat(Base64Url.decodeToUtf8String(encodedHeader), sameJSONAs(expectedHeader.toString()));
+        assertThat(Base64Url.decodeToUtf8String(encodedPayload), is(""));
+        assertThat(encodedSignature, not(isEmptyOrNullString()));
+
+        JsonWebSignature jws = new JsonWebSignature();
+        jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
+        jws.setKey(login.getKeyPair().getPublic());
+        assertThat(jws.verifySignature(), is(true));
+    }
+
+    /**
+     * Test certificate POST-as-GET requests.
+     */
+    @Test
+    public void testSendCertificateRequest() throws Exception {
+        final String nonce1 = Base64Url.encode("foo-nonce-1-foo".getBytes());
+        final String nonce2 = Base64Url.encode("foo-nonce-2-foo".getBytes());
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+        when(mockUrlConnection.getOutputStream()).thenReturn(outputStream);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
+            @Override
+            public void resetNonce(Session session) {
+                assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
+                if (session.getNonce() == null) {
+                    session.setNonce(nonce1);
+                } else {
+                    fail("unknown nonce");
+                }
+            }
+
+            @Override
+            public String getNonce() {
+                assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
+                if (session.getNonce() == nonce1) {
+                    return nonce2;
+                } else {
+                    fail("unknown nonce");
+                    return null;
+                }
+            }
+        }) {
+            conn.sendCertificateRequest(requestUrl, login);
+        }
+
+        verify(mockUrlConnection).setRequestMethod("POST");
+        verify(mockUrlConnection).setRequestProperty("Accept", "application/pem-certificate-chain");
+        verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
+        verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
+        verify(mockUrlConnection).setRequestProperty("Content-Type", "application/jose+json");
+        verify(mockUrlConnection).setDoOutput(true);
+        verify(mockUrlConnection).connect();
+        verify(mockUrlConnection).setFixedLengthStreamingMode(outputStream.toByteArray().length);
+        verify(mockUrlConnection).getResponseCode();
+        verify(mockUrlConnection).getOutputStream();
+        verify(mockUrlConnection, atLeast(0)).getHeaderFields();
+        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**

@@ -137,15 +137,6 @@ public class DefaultConnection implements Connection {
 
     @Override
     public void sendRequest(URL url, Session session) throws AcmeException {
-        sendRequest(url, session, MIME_JSON);
-    }
-
-    @Override
-    public void sendCertificateRequest(URL url, Session session) throws AcmeException {
-        sendRequest(url, session, MIME_CERTIFICATE_CHAIN);
-    }
-
-    private void sendRequest(URL url, Session session, String accept) throws AcmeException {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(session, "session");
         assertConnectionIsClosed();
@@ -155,7 +146,7 @@ public class DefaultConnection implements Connection {
         try {
             conn = httpConnector.openConnection(url, session.getProxy());
             conn.setRequestMethod("GET");
-            conn.setRequestProperty(ACCEPT_HEADER, accept);
+            conn.setRequestProperty(ACCEPT_HEADER, MIME_JSON);
             conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
             conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
             conn.setDoOutput(false);
@@ -175,29 +166,42 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
+    public int sendCertificateRequest(URL url, Login login) throws AcmeException {
+        return sendSignedRequest(url, null, login.getSession(), login.getKeyPair(),
+                login.getAccountLocation(), MIME_CERTIFICATE_CHAIN);
+    }
+
+    @Override
+    public int sendSignedPostAsGetRequest(URL url, Login login) throws AcmeException {
+        return sendSignedRequest(url, null, login.getSession(), login.getKeyPair(),
+                login.getAccountLocation(), MIME_JSON);
+    }
+
+    @Override
     public int sendSignedRequest(URL url, JSONBuilder claims, Login login) throws AcmeException {
-        return sendSignedRequest(url, claims, login.getSession(), login.getKeyPair(), login.getAccountLocation());
+        return sendSignedRequest(url, claims, login.getSession(), login.getKeyPair(),
+                login.getAccountLocation(), MIME_JSON);
     }
 
     @Override
     public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair)
                 throws AcmeException {
-        return sendSignedRequest(url, claims, session, keypair, null);
+        return sendSignedRequest(url, claims, session, keypair, null, MIME_JSON);
     }
 
-    private int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair, @Nullable URL accountLocation)
-                throws AcmeException {
+    private int sendSignedRequest(URL url, @Nullable JSONBuilder claims, Session session,
+            KeyPair keypair, @Nullable URL accountLocation, String accept) throws AcmeException {
         Objects.requireNonNull(url, "url");
-        Objects.requireNonNull(claims, "claims");
         Objects.requireNonNull(session, "session");
         Objects.requireNonNull(keypair, "keypair");
+        Objects.requireNonNull(accept, "accept");
         assertConnectionIsClosed();
 
         AcmeException lastException = null;
 
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             try {
-                return performRequest(url, claims, session, keypair, accountLocation);
+                return performRequest(url, claims, session, keypair, accountLocation, accept);
             } catch (AcmeServerException ex) {
                 if (!BAD_NONCE_ERROR.equals(ex.getType())) {
                     throw ex;
@@ -322,7 +326,8 @@ public class DefaultConnection implements Connection {
      * @param url
      *            {@link URL} to send the request to.
      * @param claims
-     *            {@link JSONBuilder} containing claims. Must not be {@code null}.
+     *            {@link JSONBuilder} containing claims. {@code null} for POST-as-GET
+     *            request.
      * @param session
      *            {@link Session} instance to be used for signing and tracking
      * @param keypair
@@ -330,19 +335,23 @@ public class DefaultConnection implements Connection {
      * @param accountLocation
      *            If set, the account location is set as "kid" header. If {@code null},
      *            the public key is set as "jwk" header.
+     * @param accept
+     *            Accept header
      * @return HTTP 200 class status that was returned
      */
-    private int performRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair,
-                @Nullable URL accountLocation)
+    private int performRequest(URL url, @Nullable JSONBuilder claims, Session session,
+                KeyPair keypair, @Nullable URL accountLocation, String accept)
                 throws AcmeException {
         try {
             if (session.getNonce() == null) {
                 resetNonce(session);
             }
 
+            String claimJson = claims != null ? claims.toString() : "";
+
             conn = httpConnector.openConnection(url, session.getProxy());
             conn.setRequestMethod("POST");
-            conn.setRequestProperty(ACCEPT_HEADER, MIME_JSON);
+            conn.setRequestProperty(ACCEPT_HEADER, accept);
             conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
             conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
             conn.setRequestProperty(CONTENT_TYPE_HEADER, "application/jose+json");
@@ -350,7 +359,7 @@ public class DefaultConnection implements Connection {
 
             final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(keypair.getPublic());
             JsonWebSignature jws = new JsonWebSignature();
-            jws.setPayload(claims.toString());
+            jws.setPayload(claimJson);
             jws.getHeaders().setObjectHeaderValue("nonce", session.getNonce());
             jws.getHeaders().setObjectHeaderValue("url", url);
             if (accountLocation == null) {
@@ -364,8 +373,10 @@ public class DefaultConnection implements Connection {
             jws.sign();
 
             if (LOG.isDebugEnabled()) {
-                LOG.debug("POST {}", url);
-                LOG.debug("  Payload: {}", claims.toString());
+                LOG.debug("{} {}", claims != null ? "POST" : "POST-as-GET", url);
+                if (claims != null) {
+                    LOG.debug("  Payload: {}", claimJson);
+                }
                 LOG.debug("  JWS Header: {}", jws.getHeaders().getFullHeaderAsJsonString());
             }
 

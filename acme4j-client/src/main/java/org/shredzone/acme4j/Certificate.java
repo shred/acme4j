@@ -71,7 +71,7 @@ public class Certificate extends AcmeResource {
         if (certChain == null) {
             LOG.debug("download");
             try (Connection conn = connect()) {
-                conn.sendCertificateRequest(getLocation(), getSession());
+                conn.sendCertificateRequest(getLocation(), getLogin());
                 alternates = new ArrayList<>(conn.getLinks("alternate"));
                 certChain = new ArrayList<>(conn.readCertificates());
             }

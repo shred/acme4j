@@ -18,6 +18,7 @@ import static org.junit.Assert.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +32,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Login;
-import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -134,9 +134,10 @@ public class ResourceIteratorTest {
             private int ix;
 
             @Override
-            public void sendRequest(URL url, Session session) {
+            public int sendSignedPostAsGetRequest(URL url, Login login) {
                 ix = pageURLs.indexOf(url);
                 assertThat(ix, is(greaterThanOrEqualTo(0)));
+                return HttpURLConnection.HTTP_OK;
             }
 
             @Override
