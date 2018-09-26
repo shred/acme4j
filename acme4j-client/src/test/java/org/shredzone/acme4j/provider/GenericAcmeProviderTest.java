@@ -21,6 +21,8 @@ import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.junit.Test;
+import org.shredzone.acme4j.connector.Connection;
+import org.shredzone.acme4j.connector.DefaultConnection;
 
 /**
  * Unit tests for {@link GenericAcmeProvider}.
@@ -50,6 +52,27 @@ public class GenericAcmeProviderTest {
 
         URL resolvedUrl = provider.resolve(serverUri);
         assertThat(resolvedUrl.toString(), is(equalTo(serverUri.toString())));
+
+        Connection connection = provider.connect(serverUri);
+        assertThat(connection, is(instanceOf(DefaultConnection.class)));
+    }
+
+    /**
+     * Test if the postasget parameter is accepted.
+     */
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testPostAsGet() throws URISyntaxException {
+        URI serverUri = new URI("http://example.com/acme?postasget=false");
+        URI serverUriWithoutQuery = new URI("http://example.com/acme");
+
+        GenericAcmeProvider provider = new GenericAcmeProvider();
+
+        URL resolvedUrl = provider.resolve(serverUri);
+        assertThat(resolvedUrl.toString(), is(equalTo(serverUriWithoutQuery.toString())));
+
+        Connection connection = provider.connect(serverUri);
+        assertThat(connection, is(instanceOf(org.shredzone.acme4j.connector.PreDraft15Connection.class)));
     }
 
 }
