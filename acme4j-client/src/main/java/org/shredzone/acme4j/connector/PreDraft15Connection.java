@@ -17,6 +17,7 @@ import java.net.URL;
 
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.toolbox.JSONBuilder;
 
 /**
  * This {@link Connection} is used for servers that do not implement the POST-as-GET
@@ -43,6 +44,11 @@ public class PreDraft15Connection extends DefaultConnection {
 
     @Override
     public int sendSignedPostAsGetRequest(URL url, Login login) throws AcmeException {
+        // Account resources must be updated by a signed POST request with empty JSON body
+        if (login.getAccountLocation().toExternalForm().equals(url.toExternalForm())) {
+            return sendSignedRequest(url, new JSONBuilder(), login);
+        }
+
         return sendRequest(url, login.getSession(), MIME_JSON);
     }
 

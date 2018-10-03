@@ -13,6 +13,9 @@
  */
 package org.shredzone.acme4j.connector;
 
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 
 import java.io.IOException;
@@ -22,6 +25,7 @@ import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jose4j.base64url.Base64Url;
 import org.junit.Before;
@@ -31,6 +35,7 @@ import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
+import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
@@ -93,6 +98,29 @@ public class PreDraft15ConnectionTest {
         verify(mockUrlConnection).getResponseCode();
         verify(mockUrlConnection, atLeast(0)).getHeaderFields();
         verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    /**
+     * Test update requests to Account in compatibility mode.
+     */
+    @Test
+    public void testUpdateAccountRequest() throws Exception {
+        final AtomicBoolean wasInvoked = new AtomicBoolean();
+
+        try (PreDraft15Connection conn = new PreDraft15Connection(mockHttpConnection) {
+            @Override
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) throws AcmeException {
+                assertThat(url, is(accountUrl));
+                assertThat(claims.toString(), is("{}"));
+                assertThat(login, is(sameInstance(PreDraft15ConnectionTest.this.login)));
+                wasInvoked.set(true);
+                return HttpURLConnection.HTTP_OK;
+            };
+        }) {
+            conn.sendSignedPostAsGetRequest(accountUrl, login);
+        }
+
+        assertThat(wasInvoked.get(), is(true));
     }
 
     /**

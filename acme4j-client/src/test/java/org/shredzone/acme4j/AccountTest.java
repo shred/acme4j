@@ -76,6 +76,8 @@ public class AccountTest {
                     jsonResponse = new JSONBuilder()
                                 .array("orders", Arrays.asList("https://example.com/acme/order/1"))
                                 .toJSON();
+                } else {
+                    jsonResponse = getJSON("updateAccountResponse");
                 }
                 return HttpURLConnection.HTTP_OK;
             }
@@ -93,6 +95,11 @@ public class AccountTest {
             @Override
             public Collection<URL> getLinks(String relation) {
                 return Collections.emptyList();
+            }
+
+            @Override
+            public void handleRetryAfter(String message) throws AcmeException {
+                // do nothing
             }
         };
 
@@ -124,7 +131,7 @@ public class AccountTest {
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
+            public int sendSignedPostAsGetRequest(URL url, Login login) {
                 requestWasSent.set(true);
                 assertThat(url, is(locationUrl));
                 return HttpURLConnection.HTTP_OK;
@@ -146,6 +153,11 @@ public class AccountTest {
                     case "termsOfService": return Arrays.asList(agreementUrl);
                     default: return null;
                 }
+            }
+
+            @Override
+            public void handleRetryAfter(String message) throws AcmeException {
+                // do nothing
             }
         };
 

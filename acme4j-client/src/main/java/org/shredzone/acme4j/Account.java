@@ -110,18 +110,6 @@ public class Account extends AcmeJsonResource {
         return new ResourceIterator<>(getLogin(), KEY_ORDERS, ordersUrl, Login::bindOrder);
     }
 
-    @Override
-    public void update() throws AcmeException {
-        LOG.debug("update Account");
-        try (Connection conn = getSession().connect()) {
-            conn.sendSignedRequest(getLocation(), new JSONBuilder(), getLogin());
-            JSON json = conn.readJsonResponse();
-            if (json != null) {
-                setJSON(json);
-            }
-        }
-    }
-
     /**
      * Creates a builder for a new {@link Order}.
      *
