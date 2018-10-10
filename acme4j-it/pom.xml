@@ -160,7 +160,7 @@
                                     <link>bammbamm</link>
                                 </links>
                                 <wait>
-                                    <log>Pebble running</log>
+                                    <log>Listening</log>
                                 </wait>
                                 <!-- Comment out to perform tests with validation delays. -->
                                 <env>
