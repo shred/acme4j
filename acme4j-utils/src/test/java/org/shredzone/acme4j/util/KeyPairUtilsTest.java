@@ -30,8 +30,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.jcabi.matchers.RegexMatchers;
-
 /**
  * Unit tests for {@link KeyPairUtils}.
  */
@@ -73,7 +71,7 @@ public class KeyPairUtilsTest {
         }
 
         // Make sure PEM file is properly formatted
-        assertThat(pem, RegexMatchers.matchesPattern(
+        assertThat(pem, matchesPattern(
                   "-----BEGIN RSA PRIVATE KEY-----[\\r\\n]+"
                 + "([a-zA-Z0-9/+=]+[\\r\\n]+)+"
                 + "-----END RSA PRIVATE KEY-----[\\r\\n]*"));
@@ -116,7 +114,7 @@ public class KeyPairUtilsTest {
         }
 
         // Make sure PEM file is properly formatted
-        assertThat(pem, RegexMatchers.matchesPattern(
+        assertThat(pem, matchesPattern(
                   "-----BEGIN EC PRIVATE KEY-----[\\r\\n]+"
                 + "([a-zA-Z0-9/+=]+[\\r\\n]+)+"
                 + "-----END EC PRIVATE KEY-----[\\r\\n]*"));

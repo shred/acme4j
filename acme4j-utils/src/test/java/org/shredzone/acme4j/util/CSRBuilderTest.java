@@ -46,8 +46,6 @@ import org.hamcrest.Description;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.jcabi.matchers.RegexMatchers;
-
 /**
  * Unit tests for {@link CSRBuilder}.
  */
@@ -191,7 +189,7 @@ public class CSRBuilderTest {
         }
 
         // Make sure PEM file is properly formatted
-        assertThat(pem, RegexMatchers.matchesPattern(
+        assertThat(pem, matchesPattern(
                   "-----BEGIN CERTIFICATE REQUEST-----[\\r\\n]+"
                 + "([a-zA-Z0-9/+=]+[\\r\\n]+)+"
                 + "-----END CERTIFICATE REQUEST-----[\\r\\n]*"));
