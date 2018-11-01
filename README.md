@@ -8,6 +8,8 @@ This Java client helps connecting to an ACME server, and performing all necessar
 
 It is an independent open source implementation that is not affiliated with or endorsed by _Let's Encrypt_.
 
+**Note:** Make sure to use _acme4j_ 2.5 or higher, before November 1st 2019. Due to a change in the ACME protocol, _acme4j_ < 2.5 will fail to connect to servers after that date. _acme4j_ v1 is not affected. See [here](https://community.letsencrypt.org/t/acme-v2-scheduled-deprecation-of-unauthenticated-resource-gets/74380) for details.
+
 ## Features
 
 * Fully supports the ACME v2 protocol up to [draft 16](https://tools.ietf.org/html/draft-ietf-acme-acme-16)
