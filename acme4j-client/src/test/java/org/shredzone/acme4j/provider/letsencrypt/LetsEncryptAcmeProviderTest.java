@@ -13,7 +13,6 @@
  */
 package org.shredzone.acme4j.provider.letsencrypt;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
@@ -22,7 +21,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 import org.junit.Test;
-import org.shredzone.acme4j.connector.Connection;
 
 /**
  * Unit tests for {@link LetsEncryptAcmeProvider}.
@@ -66,17 +64,6 @@ public class LetsEncryptAcmeProviderTest {
         } catch (IllegalArgumentException ex) {
             // expected
         }
-    }
-
-    /**
-     * Test that Boulder is still having pre draft-15 connections.
-     */
-    @Test
-    @SuppressWarnings("deprecation")
-    public void testConnect() {
-        LetsEncryptAcmeProvider provider = new LetsEncryptAcmeProvider();
-        Connection connection = provider.connect(URI.create("acme://letsencrypt.org"));
-        assertThat(connection, is(instanceOf(org.shredzone.acme4j.connector.PreDraft15Connection.class)));
     }
 
 }

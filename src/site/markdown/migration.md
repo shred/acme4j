@@ -2,6 +2,15 @@
 
 This document will help you migrate your code to the latest _acme4j_ version.
 
+## Migration to Version 2.5
+
+- The GET compatibility mode has been removed. It also means that the `postasget=false` parameter is ignored from now on. If you need it to connect to your ACME server, do not update to this version until your ACME server has been fixed to support ACME draft 15.
+
+<div class="alert alert-info" role="alert">
+
+I recommend to update to this _acme4j_ version as soon as possible! _Let's Encrypt_ has [announced a sunset date for GET requests](https://community.letsencrypt.org/t/acme-v2-scheduled-deprecation-of-unauthenticated-resource-gets/74380) on November 1st, 2019. _acme4j_ v2.4 and older will break after that date!
+</div>
+
 ## Migration to Version 2.4
 
 - There was a major change in ACME draft 15. If you use _acme4j_ in a common way, it will transparently take care of everything in the background, so you won't even notice the change.

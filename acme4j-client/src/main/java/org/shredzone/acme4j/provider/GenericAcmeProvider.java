@@ -16,11 +16,8 @@ package org.shredzone.acme4j.provider;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.regex.Pattern;
 
 import javax.annotation.ParametersAreNonnullByDefault;
-
-import org.shredzone.acme4j.connector.Connection;
 
 /**
  * A generic {@link AcmeProvider}. It should be working for all ACME servers complying to
@@ -30,9 +27,6 @@ import org.shredzone.acme4j.connector.Connection;
  */
 @ParametersAreNonnullByDefault
 public class GenericAcmeProvider extends AbstractAcmeProvider {
-
-    private static final Pattern PARAM_POST_AS_GET =
-                Pattern.compile("(^|.*?&)postasget=false(&.*|$)");
 
     @Override
     public boolean accepts(URI serverUri) {
@@ -46,17 +40,6 @@ public class GenericAcmeProvider extends AbstractAcmeProvider {
             return new URL(serverUri.getScheme(), serverUri.getHost(), serverUri.getPort(), serverUri.getPath());
         } catch (MalformedURLException ex) {
             throw new IllegalArgumentException("Bad generic server URI", ex);
-        }
-    }
-
-    @Override
-    @SuppressWarnings("deprecation")
-    public Connection connect(URI serverUri) {
-        String query = serverUri.getQuery();
-        if (query != null && PARAM_POST_AS_GET.matcher(query).matches()) {
-            return new org.shredzone.acme4j.connector.PreDraft15Connection(createHttpConnector());
-        } else {
-            return super.connect(serverUri);
         }
     }
 
