@@ -173,7 +173,7 @@
                             <name>acme4j/bammbamm:${project.version}</name>
 
                             <build>
-                                <from>openjdk:${alpn-java.version}-jre</from>
+                                <from>openjdk:${alpn-java.version}-jre-alpine</from>
                                 <ports>
                                     <port>53/udp</port>
                                     <port>5001</port>
