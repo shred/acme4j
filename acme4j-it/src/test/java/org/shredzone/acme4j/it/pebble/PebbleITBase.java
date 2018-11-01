@@ -106,7 +106,7 @@ public abstract class PebbleITBase {
         assertThat(url.getProtocol(), is("https"));
         assertThat(url.getHost(), is(pebbleHost));
         assertThat(url.getPort(), is(pebblePort));
-        assertThat(url.getPath(), not(isEmptyOrNullString()));
+        assertThat(url.getPath(), not(emptyOrNullString()));
     }
 
     /**

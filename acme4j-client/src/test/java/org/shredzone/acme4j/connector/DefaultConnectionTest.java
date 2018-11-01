@@ -603,7 +603,7 @@ public class DefaultConnectionTest {
             conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             fail("Expected to fail");
         } catch (AcmeProtocolException ex) {
-            assertThat(ex.getMessage(), not(isEmptyOrNullString()));
+            assertThat(ex.getMessage(), not(emptyOrNullString()));
         } catch (AcmeException ex) {
             fail("Did not expect an AcmeException");
         }
@@ -735,7 +735,7 @@ public class DefaultConnectionTest {
 
         assertThat(Base64Url.decodeToUtf8String(encodedHeader), sameJSONAs(expectedHeader.toString()));
         assertThat(Base64Url.decodeToUtf8String(encodedPayload), sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
-        assertThat(encodedSignature, not(isEmptyOrNullString()));
+        assertThat(encodedSignature, not(emptyOrNullString()));
 
         JsonWebSignature jws = new JsonWebSignature();
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
@@ -808,7 +808,7 @@ public class DefaultConnectionTest {
 
         assertThat(Base64Url.decodeToUtf8String(encodedHeader), sameJSONAs(expectedHeader.toString()));
         assertThat(Base64Url.decodeToUtf8String(encodedPayload), is(""));
-        assertThat(encodedSignature, not(isEmptyOrNullString()));
+        assertThat(encodedSignature, not(emptyOrNullString()));
 
         JsonWebSignature jws = new JsonWebSignature();
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
@@ -937,7 +937,7 @@ public class DefaultConnectionTest {
 
         assertThat(Base64Url.decodeToUtf8String(encodedHeader), sameJSONAs(expectedHeader.toString()));
         assertThat(Base64Url.decodeToUtf8String(encodedPayload), sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
-        assertThat(encodedSignature, not(isEmptyOrNullString()));
+        assertThat(encodedSignature, not(emptyOrNullString()));
 
         JsonWebSignature jws = new JsonWebSignature();
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));

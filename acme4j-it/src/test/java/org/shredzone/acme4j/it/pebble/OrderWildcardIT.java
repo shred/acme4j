@@ -99,7 +99,7 @@ public class OrderWildcardIT extends PebbleITBase {
                 .pollInterval(1, SECONDS)
                 .timeout(30, SECONDS)
                 .conditionEvaluationListener(cond -> updateAuth(auth))
-                .until(auth::getStatus, not(isOneOf(Status.PENDING, Status.PROCESSING)));
+                .until(auth::getStatus, not(oneOf(Status.PENDING, Status.PROCESSING)));
 
             if (auth.getStatus() != Status.VALID) {
                 fail("Authorization failed");
@@ -118,7 +118,7 @@ public class OrderWildcardIT extends PebbleITBase {
             .pollInterval(1, SECONDS)
             .timeout(30, SECONDS)
             .conditionEvaluationListener(cond -> updateOrder(order))
-            .until(order::getStatus, not(isOneOf(Status.PENDING, Status.PROCESSING)));
+            .until(order::getStatus, not(oneOf(Status.PENDING, Status.PROCESSING)));
 
 
         Certificate certificate = order.getCertificate();

@@ -406,7 +406,7 @@ public class JSONTest {
         }
 
         assertThat(testJson, not(sameInstance(originalJson)));
-        assertThat(testJson.toString(), not(isEmptyOrNullString()));
+        assertThat(testJson.toString(), not(emptyOrNullString()));
         assertThat(testJson.toString(), is(sameJSONAs(originalJson.toString())));
     }
 
