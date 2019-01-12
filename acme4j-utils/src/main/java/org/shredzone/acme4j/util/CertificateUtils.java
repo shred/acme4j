@@ -42,6 +42,8 @@ import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.shredzone.acme4j.Authorization;
+import org.shredzone.acme4j.Identifier;
 import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 
 /**
@@ -95,11 +97,36 @@ public final class CertificateUtils {
      *            {@link TlsAlpn01Challenge#getAcmeValidation()}
      * @return Created certificate
      * @since 2.1
+     * @deprecated Use {@link #createTlsAlpn01Certificate(KeyPair, Identifier, byte[])}
+     *             and {@link Identifier#dns(String)}. If an {@link Authorization}
+     *             instance is at hand, you can also use
+     *             {@link Authorization#getIdentifier()}.
      */
+    @Deprecated
     public static X509Certificate createTlsAlpn01Certificate(KeyPair keypair, String subject, byte[] acmeValidation)
                 throws IOException {
-        Objects.requireNonNull(keypair, "keypair");
         Objects.requireNonNull(subject, "subject");
+        return createTlsAlpn01Certificate(keypair, Identifier.dns(subject), acmeValidation);
+    }
+
+    /**
+     * Creates a self-signed {@link X509Certificate} that can be used for the
+     * {@link TlsAlpn01Challenge}. The certificate is valid for 7 days.
+     *
+     * @param keypair
+     *            A domain {@link KeyPair} to be used for the challenge
+     * @param id
+     *            The {@link Identifier} that is to be validated
+     * @param acmeValidation
+     *            The value that is returned by
+     *            {@link TlsAlpn01Challenge#getAcmeValidation()}
+     * @return Created certificate
+     * @since 2.6
+     */
+    public static X509Certificate createTlsAlpn01Certificate(KeyPair keypair, Identifier id, byte[] acmeValidation)
+                throws IOException {
+        Objects.requireNonNull(keypair, "keypair");
+        Objects.requireNonNull(id, "id");
         if (acmeValidation == null || acmeValidation.length != 32) {
             throw new IllegalArgumentException("Bad acmeValidation parameter");
         }
@@ -118,7 +145,19 @@ public final class CertificateUtils {
                         issuer, keypair.getPublic());
 
             GeneralName[] gns = new GeneralName[1];
-            gns[0] = new GeneralName(GeneralName.dNSName, subject);
+
+            switch (id.getType()) {
+                case Identifier.TYPE_DNS:
+                    gns[0] = new GeneralName(GeneralName.dNSName, id.getDomain());
+                    break;
+
+                case Identifier.TYPE_IP:
+                    gns[0] = new GeneralName(GeneralName.iPAddress, id.getIP().getHostAddress());
+                    break;
+
+                default:
+                    throw new IllegalArgumentException("Unsupported Identifier type " + id.getType());
+            }
             certBuilder.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(gns));
 
             certBuilder.addExtension(ACME_VALIDATION, true, new DEROctetString(acmeValidation));

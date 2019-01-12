@@ -2,6 +2,10 @@
 
 This document will help you migrate your code to the latest _acme4j_ version.
 
+## Migration to Version 2.6
+
+- If you use the `tls-alpn-01` challenge and `CertificateUtils.createTlsAlpn01Certificate()` for generating its test certificate, you need to pass the domain name as an `Identifier` object instead of a `String` now. You can use `Identifier.dns(subject)` for conversion. You can also use `Authorization.getIdentifier()` to get the `Identifier` object immediately.
+
 ## Migration to Version 2.5
 
 - The GET compatibility mode has been removed. It also means that the `postasget=false` parameter is ignored from now on. If you need it to connect to your ACME server, do not update to this version until your ACME server has been fixed to support ACME draft 15.

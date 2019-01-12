@@ -22,14 +22,14 @@ After that, configure your web server so it will use this certificate on an inco
 The `TlsAlpn01Challenge` class does not generate a self-signed certificate, as it would require _Bouncy Castle_. However, there is a utility method in the _acme4j-utils_ module for this use case:
 
 ```java
-String subject = auth.getDomain();
+Identifier identifier = auth.getIdentifier();
 KeyPair certKeyPair = KeyPairUtils.createKeyPair(2048);
 
 X509Certificate cert = CertificateUtils.
-    createTlsAlpn01Certificate(certKeyPair, subject, acmeValidation);
+    createTlsAlpn01Certificate(certKeyPair, identifier, acmeValidation);
 ```
 
-Now use `cert` and `certKeyPair` to let your web server respond to TLS requests containing an ALPN extension with the value `acme-tls/1` and a SNI extension containing `subject`.
+Now use `cert` and `certKeyPair` to let your web server respond to TLS requests containing an ALPN extension with the value `acme-tls/1` and a SNI extension containing your subject.
 
 <div class="alert alert-info" role="alert">
 The request is sent to port 443 only. If your domain has multiple IP addresses, the CA randomly selects one of them. There is no way to choose a different port or a fixed IP address.

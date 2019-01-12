@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.KeyPair;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
@@ -38,6 +40,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.junit.Test;
+import org.shredzone.acme4j.Identifier;
 import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
 
@@ -83,8 +86,8 @@ public class CertificateUtilsTest {
 
     /**
      * Test if
-     * {@link CertificateUtils#createTlsAlpn01Certificate(KeyPair, String, byte[])}
-     * creates a good certificate.
+     * {@link CertificateUtils#createTlsAlpn01Certificate(KeyPair, Identifier, byte[])}
+     * with domain name creates a good certificate.
      */
     @Test
     public void testCreateTlsAlpn01Certificate() throws IOException, CertificateParsingException {
@@ -92,7 +95,7 @@ public class CertificateUtilsTest {
         String subject = "example.com";
         byte[] acmeValidationV1 = AcmeUtils.sha256hash("rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ");
 
-        X509Certificate cert = CertificateUtils.createTlsAlpn01Certificate(keypair, subject, acmeValidationV1);
+        X509Certificate cert = CertificateUtils.createTlsAlpn01Certificate(keypair, Identifier.dns(subject), acmeValidationV1);
 
         Instant now = Instant.now();
         Instant end = now.plus(Duration.ofDays(8));
@@ -123,6 +126,23 @@ public class CertificateUtilsTest {
     }
 
     /**
+     * Test if
+     * {@link CertificateUtils#createTlsAlpn01Certificate(KeyPair, Identifier, byte[])}
+     * with IP creates a good certificate.
+     */
+    @Test
+    public void testCreateTlsAlpn01CertificateWithIp() throws IOException, CertificateParsingException {
+        KeyPair keypair = KeyPairUtils.createKeyPair(2048);
+        InetAddress subject = InetAddress.getLocalHost();
+        byte[] acmeValidationV1 = AcmeUtils.sha256hash("rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ");
+
+        X509Certificate cert = CertificateUtils.createTlsAlpn01Certificate(keypair, Identifier.ip(subject), acmeValidationV1);
+
+        assertThat(cert.getSubjectX500Principal().getName(), is("CN=acme.invalid"));
+        assertThat(getIpSANs(cert), contains(subject));
+    }
+
+    /**
      * Extracts all DNSName SANs from a certificate.
      *
      * @param cert
@@ -135,6 +155,25 @@ public class CertificateUtilsTest {
         for (List<?> list : cert.getSubjectAlternativeNames()) {
             if (((Number) list.get(0)).intValue() == GeneralName.dNSName) {
                 result.add((String) list.get(1));
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Extracts all IPAddress SANs from a certificate.
+     *
+     * @param cert
+     *            {@link X509Certificate}
+     * @return Set of IPAddresses
+     */
+    private Set<InetAddress> getIpSANs(X509Certificate cert) throws CertificateParsingException, UnknownHostException {
+        Set<InetAddress> result = new HashSet<>();
+
+        for (List<?> list : cert.getSubjectAlternativeNames()) {
+            if (((Number) list.get(0)).intValue() == GeneralName.iPAddress) {
+                result.add(InetAddress.getByName(list.get(1).toString()));
             }
         }
 
