@@ -13,6 +13,7 @@
     "star-enabled": true,
     "star-min-cert-validity": 86400,
     "star-max-renewal": 31536000,
+    "star-allow-certificate-get": true,
     "xTestString": "foobar",
     "xTestUri": "https://www.example.org",
     "xTestArray": [

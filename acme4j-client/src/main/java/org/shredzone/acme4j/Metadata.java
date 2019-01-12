@@ -114,6 +114,15 @@ public class Metadata {
     }
 
     /**
+     * Returns whether the CA also allows to fetch STAR certificates via GET request.
+     *
+     * @since 2.6
+     */
+    public boolean isStarCertificateGetAllowed() {
+        return meta.get("star-allow-certificate-get").map(Value::asBoolean).orElse(false);
+    }
+
+    /**
      * Returns the JSON representation of the metadata. This is useful for reading
      * proprietary metadata properties.
      */

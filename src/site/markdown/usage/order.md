@@ -218,7 +218,29 @@ You can use `recurrentStart()`, `recurrentEnd()` and `recurrentCertificateValidi
 
 The `Metadata` object also holds the accepted renewal limits (see `Metadata.getStarMinCertValidity()` and `Metadata.getStarMaxRenewal()`).
 
+After the validation process is completed and the order is finalized, the STAR certificate is available via `Order.getStarCertificate()` (_not_ `Order.getCertificate()`)!
+
+Use `Certificate.getLocation()` to retrieve the URL of your certificate. It is renewed automatically, so you will always be able to download the latest issue of the certificate from this URL.
+
 <div class="alert alert-info" role="alert">
+STAR based certificates cannot be revoked. However, as it is the nature of these certs to be short-lived, this does not pose an actual security issue.
+</div>
+
+To download the latest certificate issue, you can bind the certificate URL to your `Login` and then use the `Certificate` object.
+
+```java
+URL certificateUrl = ... // URL of the certificate
+
+Certificate cert = login.bindCertificate(certificateUrl);
+X509Certificate latestCertificate = cert.getCertificate();
+
+```
+
+If supported by the CA, it is possible to negotiate that the certificate can also be downloaded via `GET` request. First use `Metadata.isStarCertificateGetAllowed()` to check if this option is supported by the CA. If it is, add `recurrentEnableGet()` to the order parameters to enable it. After the order was finalized, you can use any HTTP client to download the latest certificate from the certificate URL by a `GET` request.
+
+Use `Order.cancelRecurrent()` to terminate automatical certificate renewals.
+
+<div class="alert alert-warning" role="alert">
 
 The _ACME STAR_ support is experimental. There is currently no known ACME server implementing this extension.
 </div>

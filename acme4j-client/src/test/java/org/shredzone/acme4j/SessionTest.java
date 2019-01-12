@@ -183,6 +183,7 @@ public class SessionTest {
         assertThat(meta.isStarEnabled(), is(false));
         assertThat(meta.getStarMaxRenewal(), is(nullValue()));
         assertThat(meta.getStarMinCertValidity(), is(nullValue()));
+        assertThat(meta.isStarCertificateGetAllowed(), is(false));
     }
 
     /**
@@ -215,6 +216,7 @@ public class SessionTest {
         assertThat(meta.isStarEnabled(), is(true));
         assertThat(meta.getStarMaxRenewal(), is(Duration.ofDays(365)));
         assertThat(meta.getStarMinCertValidity(), is(Duration.ofHours(24)));
+        assertThat(meta.isStarCertificateGetAllowed(), is(true));
         assertThat(meta.isExternalAccountRequired(), is(true));
         assertThat(meta.getJSON(), is(notNullValue()));
     }

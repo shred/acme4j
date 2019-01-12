@@ -133,6 +133,20 @@ public class Order extends AcmeJsonResource {
     }
 
     /**
+     * Gets the STAR extension's {@link Certificate} if it is available. {@code null}
+     * otherwise.
+     *
+     * @since 2.6
+     */
+    @CheckForNull
+    public Certificate getStarCertificate() {
+        return getJSON().get("star-certificate")
+                    .map(Value::asURL)
+                    .map(getLogin()::bindCertificate)
+                    .orElse(null);
+    }
+
+    /**
      * Finalizes the order, by providing a CSR.
      * <p>
      * After a successful finalization, the certificate is available at
@@ -208,6 +222,19 @@ public class Order extends AcmeJsonResource {
                     .optional()
                     .map(Value::asDuration)
                     .orElse(null);
+    }
+
+    /**
+     * Returns {@code true} if STAR certificates from this order can also be fetched via
+     * GET requests.
+     *
+     * @since 2.6
+     */
+    public boolean isRecurrentGetEnabled() {
+        return getJSON().get("recurrent-certificate-get")
+                    .optional()
+                    .map(Value::asBoolean)
+                    .orElse(false);
     }
 
     /**

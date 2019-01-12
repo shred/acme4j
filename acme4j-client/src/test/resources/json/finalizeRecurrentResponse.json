@@ -1,10 +1,14 @@
 {
-  "status": "pending",
-  "expires": "2016-01-10T00:00:00Z",
+  "status": "valid",
+  "expires": "2015-03-01T14:09:00Z",
   "identifiers": [
     {
       "type": "dns",
-      "value": "example.org"
+      "value": "example.com"
+    },
+    {
+      "type": "dns",
+      "value": "www.example.com"
     }
   ],
   "recurrent": true,
@@ -16,5 +20,6 @@
     "https://example.com/acme/authz/1234",
     "https://example.com/acme/authz/2345"
   ],
-  "finalize": "https://example.com/acme/acct/1/order/1/finalize"
+  "finalize": "https://example.com/acme/acct/1/order/1/finalize",
+  "star-certificate": "https://example.com/acme/cert/1234"
 }

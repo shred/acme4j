@@ -148,6 +148,7 @@ public class OrderBuilderTest {
                         .recurrentStart(recurrentStart)
                         .recurrentEnd(recurrentEnd)
                         .recurrentCertificateValidity(validity)
+                        .recurrentEnableGet()
                         .create();
 
         assertThat(order.getIdentifiers(), containsInAnyOrder(Identifier.dns("example.org")));
@@ -157,6 +158,7 @@ public class OrderBuilderTest {
         assertThat(order.getRecurrentStart(), is(recurrentStart));
         assertThat(order.getRecurrentEnd(), is(recurrentEnd));
         assertThat(order.getRecurrentCertificateValidity(), is(validity));
+        assertThat(order.isRecurrentGetEnabled(), is(true));
         assertThat(order.getLocation(), is(locationUrl));
 
         provider.close();

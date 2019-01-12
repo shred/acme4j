@@ -50,6 +50,7 @@ public class OrderBuilder {
     private Instant recurrentStart;
     private Instant recurrentEnd;
     private Duration recurrentValidity;
+    private boolean recurrentGet;
 
     /**
      * Create a new {@link OrderBuilder}.
@@ -229,6 +230,26 @@ public class OrderBuilder {
     }
 
     /**
+     * Announces that the client wishes to fetch the recurring certificate via GET
+     * request. If not used, the STAR certificate can only be fetched via POST-as-GET
+     * request. {@link Metadata#isStarCertificateGetAllowed()} must return {@code true} in
+     * order for this option to work.
+     * <p>
+     * This option is only needed if you plan to fetch the STAR certificate via other
+     * means than by using acme4j.
+     * <p>
+     * Implies {@link #recurrent()}.
+     *
+     * @return itself
+     * @since 2.6
+     */
+    public OrderBuilder recurrentEnableGet() {
+        recurrent();
+        this.recurrentGet = true;
+        return this;
+    }
+
+    /**
      * Sends a new order to the server, and returns an {@link Order} object.
      *
      * @return {@link Order} that was created
@@ -266,6 +287,9 @@ public class OrderBuilder {
                 }
                 if (recurrentValidity != null) {
                     claims.put("recurrent-certificate-validity", recurrentValidity);
+                }
+                if (recurrentGet) {
+                    claims.put("recurrent-certificate-get", recurrentGet);
                 }
             }
 

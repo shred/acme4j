@@ -8,5 +8,6 @@
   "recurrent": true,
   "recurrent-start-date": "2018-01-01T00:00:00Z",
   "recurrent-end-date": "2019-01-01T00:00:00Z",
-  "recurrent-certificate-validity": 604800
+  "recurrent-certificate-validity": 604800,
+  "recurrent-certificate-get": true
 }
