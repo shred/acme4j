@@ -74,6 +74,15 @@ Optionally, you can provide a revocation reason that the ACME server may use whe
 cert.revoke(RevocationReason.KEY_COMPROMISE);
 ```
 
+If you cannot create a `Certificate` object because you don't know the certificate's location URL, you can also use an alternative method that only requires a `Login` and the certificate itself:
+
+```java
+Login login = ...           // login to your account
+X509Certificate cert = ...  // certificate to revoke
+
+Certificate.revoke(login, cert, RevocationReason.KEY_COMPROMISE);
+```
+
 ## Revocation without Account Key Pair
 
 If you have lost your account key, you can still revoke a certificate as long as you still own the domain key pair that was used for signing the CSR. `Certificate` provides a special method for this case.
@@ -85,4 +94,6 @@ X509Certificate cert = ...  // certificate to revoke
 Certificate.revoke(session, domainKeyPair, cert, RevocationReason.KEY_COMPROMISE);
 ```
 
-Note that there is no way to revoke a certificate if you have lost both your account's key pair and your domain's key pair.
+<div class="alert alert-danger" role="alert">
+There is no way to revoke a certificate if you have lost both your account's key pair and your domain's key pair.
+</div>
