@@ -23,6 +23,7 @@ import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
+import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.JSON;
 
 /**
@@ -51,7 +52,11 @@ public class TokenChallenge extends Challenge {
      * Gets the token.
      */
     protected String getToken() {
-        return getJSON().get(KEY_TOKEN).asString();
+        String token = getJSON().get(KEY_TOKEN).asString();
+        if (!AcmeUtils.isValidBase64Url(token)) {
+            throw new AcmeProtocolException("Invalid token: " + token);
+        }
+        return token;
     }
 
     /**

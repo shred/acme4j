@@ -69,6 +69,8 @@ public final class AcmeUtils {
 
     private static final Pattern MAIL_PATTERN = Pattern.compile("\\?|@.*,");
 
+    private static final Pattern BASE64URL_PATTERN = Pattern.compile("[0-9A-Za-z_-]*");
+
     private static final Base64.Encoder PEM_ENCODER = Base64.getMimeEncoder(64,
                 "\n".getBytes(StandardCharsets.US_ASCII));
 
@@ -154,6 +156,20 @@ public final class AcmeUtils {
      */
     public static byte[] base64UrlDecode(String base64) {
         return Base64Url.decode(base64);
+    }
+
+    /**
+     * Validates that the given {@link String} is a valid base64url encoded value.
+     *
+     * @param base64
+     *            {@link String} to validate
+     * @return {@code true}: String contains a valid base64url encoded value.
+     *         {@code false} if the {@link String} was {@code null} or contained illegal
+     *         characters.
+     * @since 2.6
+     */
+    public static boolean isValidBase64Url(@Nullable String base64) {
+        return base64 != null && BASE64URL_PATTERN.matcher(base64).matches();
     }
 
     /**

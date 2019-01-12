@@ -93,6 +93,22 @@ public class AcmeUtilsTest {
     }
 
     /**
+     * Test base64 URL validation.
+     */
+    @Test
+    public void testBase64UrlValidate() {
+        assertThat(isValidBase64Url(null), is(false));
+        assertThat(isValidBase64Url(""), is(true));
+        assertThat(isValidBase64Url("         "), is(false));
+        assertThat(isValidBase64Url("Zg"), is(true));
+        assertThat(isValidBase64Url("Zg="), is(false));
+        assertThat(isValidBase64Url("Zg=="), is(false));
+        assertThat(isValidBase64Url("Zm9v"), is(true));
+        assertThat(isValidBase64Url("   Zm9v   "), is(false));
+        assertThat(isValidBase64Url("<some>.illegal#Text"), is(false));
+    }
+
+    /**
      * Test ACE conversion.
      */
     @Test

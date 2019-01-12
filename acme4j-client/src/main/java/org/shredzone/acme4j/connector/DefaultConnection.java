@@ -82,8 +82,6 @@ public class DefaultConnection implements Connection {
     private static final String MIME_JSON_PROBLEM = "application/problem+json";
     private static final String MIME_CERTIFICATE_CHAIN = "application/pem-certificate-chain";
 
-    private static final Pattern BASE64URL_PATTERN = Pattern.compile("[0-9A-Za-z_-]+");
-
     private static final URI BAD_NONCE_ERROR = URI.create("urn:ietf:params:acme:error:badNonce");
     private static final int MAX_ATTEMPTS = 10;
 
@@ -235,7 +233,7 @@ public class DefaultConnection implements Connection {
             return null;
         }
 
-        if (!BASE64URL_PATTERN.matcher(nonceHeader).matches()) {
+        if (!AcmeUtils.isValidBase64Url(nonceHeader)) {
             throw new AcmeProtocolException("Invalid replay nonce: " + nonceHeader);
         }
 
