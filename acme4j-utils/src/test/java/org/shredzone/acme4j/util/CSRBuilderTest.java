@@ -145,7 +145,6 @@ public class CSRBuilderTest {
      * {@link PKCS10CertificationRequest} contains the right parameters, we assume that
      * Bouncy Castle encodes it properly.
      */
-    @SuppressWarnings("unchecked")
     private void csrTest(PKCS10CertificationRequest csr) {
         X500Name name = csr.getSubject();
         assertThat(name.getRDNs(BCStyle.CN), arrayContaining(new RDNMatcher("abc.de")));
