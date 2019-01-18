@@ -29,10 +29,7 @@
     <description>acme4j Integration Tests</description>
 
     <properties>
-        <!-- alpn-boot version must match the java version used in bammbamm -->
-        <!-- see: https://www.eclipse.org/jetty/documentation/9.4.x/alpn-chapter.html#alpn-versions -->
-        <alpn-java.version>8u181</alpn-java.version>
-        <alpn-boot.version>8.1.12.v20180117</alpn-boot.version>
+        <pebble.version>latest</pebble.version>
 
         <skipITs>true</skipITs>
         <sonar.coverage.exclusions>src/main/java/org/shredzone/acme4j/**</sonar.coverage.exclusions>
@@ -119,38 +116,7 @@
                     <images>
                         <image>
                             <alias>pebble</alias>
-                            <name>acme4j/pebble:${project.version}</name>
-
-                            <build>
-                                <from>golang:1.11</from>
-                                <optimise>true</optimise>
-                                <runCmds>
-                                    <run>go get -u -v -d gopkg.in/square/go-jose.v2</run>
-                                    <run>go get -u -v -d github.com/jmhodges/clock</run>
-                                    <run>go get -u -v -d github.com/letsencrypt/pebble || true</run>
-                                    <run>go test github.com/letsencrypt/pebble/...</run>
-                                    <run>go install github.com/letsencrypt/pebble/...</run>
-                                </runCmds>
-                                <ports>
-                                    <port>14000</port>
-                                </ports>
-                                <cmd>
-                                    <shell>
-                                        pebble -strict -dnsserver bammbamm:53 -config /etc/pebble/pebble-config.json
-                                    </shell>
-                                </cmd>
-                                <assembly>
-                                    <mode>dir</mode>
-                                    <targetDir>/etc/pebble</targetDir>
-                                    <inline>
-                                        <fileSet>
-                                            <directory>src/test/pebble</directory>
-                                            <outputDirectory>.</outputDirectory>
-                                        </fileSet>
-                                    </inline>
-                                </assembly>
-                            </build>
-
+                            <name>letsencrypt/pebble:${pebble.version}</name>
                             <run>
                                 <namingStrategy>alias</namingStrategy>
                                 <ports>
@@ -159,6 +125,13 @@
                                 <links>
                                     <link>bammbamm</link>
                                 </links>
+                                <cmd>
+                                    <exec>
+                                        <arg>sh</arg>
+                                        <arg>-c</arg>
+                                        <arg>pebble -strict -dnsserver $(getent hosts bammbamm|cut -d' ' -f1):8053 -config /test/config/pebble-config.json</arg>
+                                    </exec>
+                                </cmd>
                                 <wait>
                                     <log>Listening</log>
                                 </wait>
@@ -170,34 +143,22 @@
                         </image>
                         <image>
                             <alias>bammbamm</alias>
-                            <name>acme4j/bammbamm:${project.version}</name>
-
-                            <build>
-                                <from>openjdk:${alpn-java.version}-jre-alpine</from>
-                                <ports>
-                                    <port>53/udp</port>
-                                    <port>5001</port>
-                                    <port>5002</port>
-                                    <port>14001</port>
-                                </ports>
-                                <cmd>
-                                    <shell>
-                                        java -Xbootclasspath/p:/maven/alpn-boot-${alpn-boot.version}.jar -cp "/maven/*" org.shredzone.acme4j.it.BammBamm
-                                    </shell>
-                                </cmd>
-                                <assembly>
-                                    <descriptorRef>artifact-with-dependencies</descriptorRef>
-                                </assembly>
-                            </build>
-
+                            <name>letsencrypt/pebble-challtestsrv:${pebble.version}</name>
                             <run>
                                 <namingStrategy>alias</namingStrategy>
                                 <hostname>bammbamm</hostname>
                                 <ports>
-                                    <port>14001:14001</port>
+                                    <port>8055:8055</port>
                                 </ports>
+                                <cmd>
+                                    <exec>
+                                        <arg>sh</arg>
+                                        <arg>-c</arg>
+                                        <arg>pebble-challtestsrv -defaultIPv6 "" -defaultIPv4 $(getent hosts bammbamm|cut -d' ' -f1)</arg>
+                                    </exec>
+                                </cmd>
                                 <wait>
-                                    <log>Bammbamm running</log>
+                                    <log>Starting management server</log>
                                 </wait>
                             </run>
                         </image>
@@ -219,26 +180,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.mortbay.jetty.alpn</groupId>
-            <artifactId>alpn-boot</artifactId>
-            <version>${alpn-boot.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.nanohttpd</groupId>
-            <artifactId>nanohttpd</artifactId>
-            <version>${nanohttpd.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.nanohttpd</groupId>
-            <artifactId>nanohttpd-nanolets</artifactId>
-            <version>${nanohttpd.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>dnsjava</groupId>
-            <artifactId>dnsjava</artifactId>
-            <version>${dnsjava.version}</version>
-        </dependency>
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>

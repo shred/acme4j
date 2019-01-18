@@ -65,7 +65,7 @@ public class TokenChallenge extends Challenge {
      * The default is {@code token + '.' + base64url(jwkThumbprint)}. Subclasses may
      * override this method if a different algorithm is used.
      */
-    protected String getAuthorization() {
+    public String getAuthorization() {
         try {
             PublicKey pk = getLogin().getKeyPair().getPublic();
             PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(pk);

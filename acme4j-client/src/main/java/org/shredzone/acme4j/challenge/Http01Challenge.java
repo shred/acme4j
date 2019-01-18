@@ -50,18 +50,6 @@ public class Http01Challenge extends TokenChallenge {
         return super.getToken();
     }
 
-    /**
-     * Returns the authorization string to be used for the response.
-     * <p>
-     * <em>NOTE:</em> The response file must only contain the returned String (UTF-8
-     * or ASCII encoded). There must not be any other leading or trailing characters
-     * (like white-spaces or line breaks). Otherwise the challenge will fail.
-     */
-    @Override
-    public String getAuthorization() {
-        return super.getAuthorization();
-    }
-
     @Override
     protected boolean acceptable(String type) {
         return TYPE.equals(type);

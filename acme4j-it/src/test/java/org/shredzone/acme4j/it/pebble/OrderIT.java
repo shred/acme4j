@@ -43,7 +43,6 @@ import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.it.BammBammClient;
 import org.shredzone.acme4j.util.CSRBuilder;
-import org.shredzone.acme4j.util.CertificateUtils;
 
 /**
  * Tests a complete certificate order with different challenges.
@@ -63,10 +62,8 @@ public class OrderIT extends PebbleITBase {
             Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
             assertThat(challenge, is(notNullValue()));
 
-            client.dnsAddARecord(TEST_DOMAIN, getBammBammHostname());
             client.httpAddToken(challenge.getToken(), challenge.getAuthorization());
 
-            cleanup(() -> client.dnsRemoveARecord(TEST_DOMAIN));
             cleanup(() -> client.httpRemoveToken(challenge.getToken()));
 
             return challenge;
@@ -105,20 +102,10 @@ public class OrderIT extends PebbleITBase {
             TlsAlpn01Challenge challenge = auth.findChallenge(TlsAlpn01Challenge.TYPE);
             assertThat(challenge, is(notNullValue()));
 
-            KeyPair challengeKey = createKeyPair();
-
-            X509Certificate cert = CertificateUtils.createTlsAlpn01Certificate(
-                        challengeKey,
-                        auth.getIdentifier().getDomain(),
-                        challenge.getAcmeValidation());
-
-            client.dnsAddARecord(TEST_DOMAIN, getBammBammHostname());
             client.tlsAlpnAddCertificate(
                         auth.getIdentifier().getDomain(),
-                        challengeKey.getPrivate(),
-                        cert);
+                        challenge.getAuthorization());
 
-            cleanup(() -> client.dnsRemoveARecord(TEST_DOMAIN));
             cleanup(() -> client.tlsAlpnRemoveCertificate(auth.getIdentifier().getDomain()));
 
             return challenge;
@@ -136,10 +123,8 @@ public class OrderIT extends PebbleITBase {
             Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
             assertThat(challenge, is(notNullValue()));
 
-            client.dnsAddARecord(TEST_DOMAIN, getBammBammHostname());
             client.httpAddToken(challenge.getToken(), challenge.getAuthorization());
 
-            cleanup(() -> client.dnsRemoveARecord(TEST_DOMAIN));
             cleanup(() -> client.httpRemoveToken(challenge.getToken()));
 
             return challenge;
