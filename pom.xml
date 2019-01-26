@@ -71,7 +71,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.7.0</version>
+                <version>3.8.0</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -102,7 +102,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <version>2.20.1</version>
+                <version>2.22.1</version>
                 <executions>
                     <execution>
                         <goals>
@@ -115,7 +115,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.0.2</version>
+                <version>3.1.1</version>
                 <configuration>
                     <excludes>
                         <exclude>**/.gitignore</exclude>
@@ -125,7 +125,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.7</version>
+                <version>3.7.1</version>
                 <configuration>
                     <outputEncoding>UTF-8</outputEncoding>
                 </configuration>
@@ -202,7 +202,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>3.1.6</version>
+                <version>3.1.10</version>
             </plugin>
         </plugins>
     </reporting>
