@@ -12,7 +12,7 @@ test:
     - docker
   script:
     - (cd acme4j-it; mvn -B docker:remove)
-    - mvn -B -P ci org.jacoco:jacoco-maven-plugin:prepare-agent verify
+    - mvn -B -P ci org.jacoco:jacoco-maven-plugin:0.8.3:prepare-agent verify
     - mvn -B sonar:sonar -Dsonar.gitlab.commit_sha=$CI_BUILD_REF -Dsonar.gitlab.ref_name=$CI_BUILD_REF_NAME
 
 deploy:
