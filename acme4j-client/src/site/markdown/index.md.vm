@@ -15,3 +15,12 @@ _acme4j_ is availabe at Maven Central. Just add this snippet to your `pom.xml`:
   <version>${project.version}</version>
 </dependency>
 ```
+
+Java Module
+-----------
+
+Add this line to your module descriptor:
+
+```java
+requires org.shredzone.acme4j;
+```
