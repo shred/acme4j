@@ -45,6 +45,7 @@ import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.shredzone.acme4j.Identifier;
 
 /**
  * Unit tests for {@link CSRBuilder}.
@@ -77,6 +78,10 @@ public class CSRBuilderTest {
         builder.addIP(InetAddress.getByName("192.168.0.2"));
         builder.addIPs(InetAddress.getByName("10.0.0.1"), InetAddress.getByName("10.0.0.2"));
         builder.addIPs(Arrays.asList(InetAddress.getByName("fd00::1"), InetAddress.getByName("fd00::2")));
+        builder.addIdentifier(Identifier.dns("ide1.nt"));
+        builder.addIdentifier(Identifier.ip("192.168.5.5"));
+        builder.addIdentifiers(Identifier.dns("ide2.nt"), Identifier.ip("192.168.5.6"));
+        builder.addIdentifiers(Arrays.asList(Identifier.dns("ide3.nt"), Identifier.ip("192.168.5.7")));
 
         builder.setCountry("XX");
         builder.setLocality("Testville");
@@ -87,8 +92,10 @@ public class CSRBuilderTest {
         assertThat(builder.toString(), is("CN=abc.de,C=XX,L=Testville,O=Testing Co,"
                         + "OU=Testunit,ST=ABC,"
                         + "DNS=abc.de,DNS=fg.hi,DNS=jklm.no,DNS=pqr.st,DNS=uv.wx,DNS=y.z,DNS=*.wild.card,"
+                        + "DNS=ide1.nt,DNS=ide2.nt,DNS=ide3.nt,"
                         + "IP=192.168.0.1,IP=192.168.0.2,IP=10.0.0.1,IP=10.0.0.2,"
-                        + "IP=fd00:0:0:0:0:0:0:1,IP=fd00:0:0:0:0:0:0:2"));
+                        + "IP=fd00:0:0:0:0:0:0:1,IP=fd00:0:0:0:0:0:0:2,"
+                        + "IP=192.168.5.5,IP=192.168.5.6,IP=192.168.5.7"));
 
         builder.sign(testKey);
 
@@ -115,6 +122,10 @@ public class CSRBuilderTest {
         builder.addIP(InetAddress.getByName("192.168.0.2"));
         builder.addIPs(InetAddress.getByName("10.0.0.1"), InetAddress.getByName("10.0.0.2"));
         builder.addIPs(Arrays.asList(InetAddress.getByName("fd00::1"), InetAddress.getByName("fd00::2")));
+        builder.addIdentifier(Identifier.dns("ide1.nt"));
+        builder.addIdentifier(Identifier.ip("192.168.5.5"));
+        builder.addIdentifiers(Identifier.dns("ide2.nt"), Identifier.ip("192.168.5.6"));
+        builder.addIdentifiers(Arrays.asList(Identifier.dns("ide3.nt"), Identifier.ip("192.168.5.7")));
 
         builder.setCountry("XX");
         builder.setLocality("Testville");
@@ -125,8 +136,10 @@ public class CSRBuilderTest {
         assertThat(builder.toString(), is("CN=abc.de,C=XX,L=Testville,O=Testing Co,"
                         + "OU=Testunit,ST=ABC,"
                         + "DNS=abc.de,DNS=fg.hi,DNS=jklm.no,DNS=pqr.st,DNS=uv.wx,DNS=y.z,DNS=*.wild.card,"
+                        + "DNS=ide1.nt,DNS=ide2.nt,DNS=ide3.nt,"
                         + "IP=192.168.0.1,IP=192.168.0.2,IP=10.0.0.1,IP=10.0.0.2,"
-                        + "IP=fd00:0:0:0:0:0:0:1,IP=fd00:0:0:0:0:0:0:2"));
+                        + "IP=fd00:0:0:0:0:0:0:1,IP=fd00:0:0:0:0:0:0:2,"
+                        + "IP=192.168.5.5,IP=192.168.5.6,IP=192.168.5.7"));
 
         builder.sign(testEcKey);
 
@@ -167,12 +180,18 @@ public class CSRBuilderTest {
                         new GeneralNameMatcher("uv.wx", GeneralName.dNSName),
                         new GeneralNameMatcher("y.z", GeneralName.dNSName),
                         new GeneralNameMatcher("*.wild.card", GeneralName.dNSName),
+                        new GeneralNameMatcher("ide1.nt", GeneralName.dNSName),
+                        new GeneralNameMatcher("ide2.nt", GeneralName.dNSName),
+                        new GeneralNameMatcher("ide3.nt", GeneralName.dNSName),
                         new GeneralNameMatcher("192.168.0.1", GeneralName.iPAddress),
                         new GeneralNameMatcher("192.168.0.2", GeneralName.iPAddress),
                         new GeneralNameMatcher("10.0.0.1", GeneralName.iPAddress),
                         new GeneralNameMatcher("10.0.0.2", GeneralName.iPAddress),
                         new GeneralNameMatcher("fd00:0:0:0:0:0:0:1", GeneralName.iPAddress),
-                        new GeneralNameMatcher("fd00:0:0:0:0:0:0:2", GeneralName.iPAddress)));
+                        new GeneralNameMatcher("fd00:0:0:0:0:0:0:2", GeneralName.iPAddress),
+                        new GeneralNameMatcher("192.168.5.5", GeneralName.iPAddress),
+                        new GeneralNameMatcher("192.168.5.6", GeneralName.iPAddress),
+                        new GeneralNameMatcher("192.168.5.7", GeneralName.iPAddress)));
     }
 
     /**
@@ -219,6 +238,15 @@ public class CSRBuilderTest {
     public void testNoDomain() throws IOException {
         CSRBuilder builder = new CSRBuilder();
         builder.sign(testKey);
+    }
+
+    /**
+     * Make sure an exception is thrown when an unknown identifier type is used.
+     */
+    @Test(expected = IllegalArgumentException.class)
+    public void testUnknownType() {
+        CSRBuilder builder = new CSRBuilder();
+        builder.addIdentifier(new Identifier("UnKnOwN", "123"));
     }
 
     /**

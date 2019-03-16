@@ -50,6 +50,7 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
+import org.shredzone.acme4j.Identifier;
 
 /**
  * Generator for a CSR (Certificate Signing Request) suitable for ACME servers.
@@ -142,6 +143,46 @@ public class CSRBuilder {
      */
     public void addIPs(InetAddress... ips) {
         Arrays.stream(ips).forEach(this::addIP);
+    }
+
+    /**
+     * Adds an {@link Identifier}. Only DNS and IP types are supported.
+     *
+     * @param id
+     *            {@link Identifier} to add
+     * @since 2.7
+     */
+    public void addIdentifier(Identifier id) {
+        requireNonNull(id);
+        if (Identifier.TYPE_DNS.equals(id.getType())) {
+            addDomain(id.getDomain());
+        } else if (Identifier.TYPE_IP.equals(id.getType())) {
+            addIP(id.getIP());
+        } else {
+            throw new IllegalArgumentException("Unknown identifier type: " + id.getType());
+        }
+    }
+
+    /**
+     * Adds a {@link Collection} of {@link Identifier}.
+     *
+     * @param ids
+     *            Collection of Identifiers to add
+     * @since 2.7
+     */
+    public void addIdentifiers(Collection<Identifier> ids) {
+        ids.forEach(this::addIdentifier);
+    }
+
+    /**
+     * Adds multiple {@link Identifier}.
+     *
+     * @param ids
+     *            Identifiers to add
+     * @since 2.7
+     */
+    public void addIdentifiers(Identifier... ids) {
+        Arrays.stream(ids).forEach(this::addIdentifier);
     }
 
     /**
