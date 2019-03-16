@@ -113,6 +113,22 @@ public class Identifier implements Serializable {
     }
 
     /**
+     * Creates a new IP identifier for the given {@link InetAddress}.
+     *
+     * @param ip
+     *            IP address as {@link String}
+     * @return New {@link Identifier}
+     * @since 2.7
+     */
+    public static Identifier ip(String ip) {
+        try {
+            return ip(InetAddress.getByName(ip));
+        } catch (UnknownHostException ex) {
+            throw new IllegalArgumentException("Bad IP: " + ip, ex);
+        }
+    }
+
+    /**
      * Returns the identifier type.
      */
     public String getType() {

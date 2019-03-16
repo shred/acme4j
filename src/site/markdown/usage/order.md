@@ -178,17 +178,19 @@ _acme4j_ supports the [ACME IP](https://tools.ietf.org/html/draft-ietf-acme-ip) 
 ```java
 Order order = account.newOrder()
         .identifier(Identifier.ip(InetAddress.getByName("192.168.1.2")))
+        .identifier(Identifier.ip("192.168.2.3"))   // for your convenience
         .identifier(Identifier.dns("example.org"))
         .create();
 ```
 
 The example also shows how to add domain names as DNS `Identifier` objects. Adding domain names via `domain()` is just a shortcut notation for it.
 
-The `CSRBuilder` also accepts IP addresses for generating the CSR:
+The `CSRBuilder` also accepts IP addresses and `Identifier` for generating the CSR:
 
 ```java
 CSRBuilder csrb = new CSRBuilder();
 csrb.addIP(InetAddress.getByName("192.168.1.2"));
+csrb.addIdentifier(Identifier.ip("192.168.2.3"));
 csrb.sign(domainKeyPair);
 byte[] csr = csrb.getEncoded();
 ```

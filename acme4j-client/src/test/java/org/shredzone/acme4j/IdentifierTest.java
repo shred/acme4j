@@ -88,6 +88,11 @@ public class IdentifierTest {
         assertThat(id2.getType(), is(Identifier.TYPE_IP));
         assertThat(id2.getValue(), is("2001:db8:85a3:0:0:8a2e:370:7334"));
         assertThat(id2.getIP().getHostAddress(), is("2001:db8:85a3:0:0:8a2e:370:7334"));
+
+        Identifier id3 = Identifier.ip("192.168.2.99");
+        assertThat(id3.getType(), is(Identifier.TYPE_IP));
+        assertThat(id3.getValue(), is("192.168.2.99"));
+        assertThat(id3.getIP().getHostAddress(), is("192.168.2.99"));
     }
 
     @Test(expected = AcmeProtocolException.class)
