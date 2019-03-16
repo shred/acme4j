@@ -1,7 +1,7 @@
 acme4j
 ======
 
-A Java client for the _Automatic Certificate Management Environment_ (ACME) protocol.
+A Java client for the _Automatic Certificate Management Environment_ (ACME) protocol as specified in [RFC 8555](https://tools.ietf.org/html/rfc8555).
 
 ACME is a protocol that a certificate authority (CA) and an applicant can use to automate the process of verification and certificate issuance.
 
