@@ -45,3 +45,4 @@ Good programming does not end with a clean source code, but should have pretty c
 * Always give meaningful commit messages (not just "bugfix").
 * The commit message must be concise and should not exceed 50 characters. Further explanations may follow in subsequent lines, with an empty line as separator.
 * Commits must compile and must not break unit tests.
+* Do not commit IDE generated files and directories (like `.project` or `.idea`).
