@@ -4,6 +4,8 @@ This document will help you migrate your code to the latest _acme4j_ version.
 
 ## Migration to Version 2.7
 
+- Note that _acme4j_ has an `Automatic-Module-Name` set in the acme-client and acme-utils modules now. If you have added _acme4j_ to your Java 9+ module dependencies, you'll need to fix your dependency declaration to `org.shredzone.acme4j` (acme-client) and `org.shredzone.acme4j.utils` (acme-utils).
+
 - There are no breaking API changes in this version, except of the removal of `CertificateUtils.createTlsAlpn01Certificate(KeyPair, String, byte[])` which has been marked as deprecated in v2.6.
 
 - The ACME draft has been finalized and is now called [RFC 8555](https://tools.ietf.org/html/rfc8555). For this reason, the _acme4j_ API is now stable. There won't be breaking changes to the public API in the future, unless absolutely necessary.
