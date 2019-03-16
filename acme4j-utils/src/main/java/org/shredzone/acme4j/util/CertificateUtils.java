@@ -90,31 +90,6 @@ public final class CertificateUtils {
      *
      * @param keypair
      *            A domain {@link KeyPair} to be used for the challenge
-     * @param subject
-     *            The subject (domain name) that is to be validated
-     * @param acmeValidation
-     *            The value that is returned by
-     *            {@link TlsAlpn01Challenge#getAcmeValidation()}
-     * @return Created certificate
-     * @since 2.1
-     * @deprecated Use {@link #createTlsAlpn01Certificate(KeyPair, Identifier, byte[])}
-     *             and {@link Identifier#dns(String)}. If an {@link Authorization}
-     *             instance is at hand, you can also use
-     *             {@link Authorization#getIdentifier()}.
-     */
-    @Deprecated
-    public static X509Certificate createTlsAlpn01Certificate(KeyPair keypair, String subject, byte[] acmeValidation)
-                throws IOException {
-        Objects.requireNonNull(subject, "subject");
-        return createTlsAlpn01Certificate(keypair, Identifier.dns(subject), acmeValidation);
-    }
-
-    /**
-     * Creates a self-signed {@link X509Certificate} that can be used for the
-     * {@link TlsAlpn01Challenge}. The certificate is valid for 7 days.
-     *
-     * @param keypair
-     *            A domain {@link KeyPair} to be used for the challenge
      * @param id
      *            The {@link Identifier} that is to be validated
      * @param acmeValidation
