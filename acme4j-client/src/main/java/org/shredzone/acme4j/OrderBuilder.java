@@ -50,6 +50,7 @@ public class OrderBuilder {
     private Instant recurrentStart;
     private Instant recurrentEnd;
     private Duration recurrentValidity;
+    private Duration recurrentPredate;
     private boolean recurrentGet;
 
     /**
@@ -230,6 +231,23 @@ public class OrderBuilder {
     }
 
     /**
+     * Sets the amount of pre-dating each certificate. If not set, the CA's
+     * default (0) is used.
+     * <p>
+     * Implies {@link #recurrent()}.
+     *
+     * @param duration
+     *            Duration of certificate pre-dating
+     * @return itself
+     * @since 2.7
+     */
+    public OrderBuilder recurrentCertificatePredate(Duration duration) {
+        recurrent();
+        this.recurrentPredate = requireNonNull(duration, "duration");
+        return this;
+    }
+
+    /**
      * Announces that the client wishes to fetch the recurring certificate via GET
      * request. If not used, the STAR certificate can only be fetched via POST-as-GET
      * request. {@link Metadata#isStarCertificateGetAllowed()} must return {@code true} in
@@ -287,6 +305,9 @@ public class OrderBuilder {
                 }
                 if (recurrentValidity != null) {
                     claims.put("recurrent-certificate-validity", recurrentValidity);
+                }
+                if (recurrentPredate != null) {
+                    claims.put("recurrent-certificate-predate", recurrentPredate);
                 }
                 if (recurrentGet) {
                     claims.put("recurrent-certificate-get", recurrentGet);

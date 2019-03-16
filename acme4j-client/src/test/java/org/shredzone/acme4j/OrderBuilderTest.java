@@ -115,6 +115,7 @@ public class OrderBuilderTest {
         Instant recurrentStart = parseTimestamp("2018-01-01T00:00:00Z");
         Instant recurrentEnd = parseTimestamp("2019-01-01T00:00:00Z");
         Duration validity = Duration.ofDays(7);
+        Duration predate = Duration.ofDays(6);
 
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
@@ -148,6 +149,7 @@ public class OrderBuilderTest {
                         .recurrentStart(recurrentStart)
                         .recurrentEnd(recurrentEnd)
                         .recurrentCertificateValidity(validity)
+                        .recurrentCertificatePredate(predate)
                         .recurrentEnableGet()
                         .create();
 
@@ -158,6 +160,7 @@ public class OrderBuilderTest {
         assertThat(order.getRecurrentStart(), is(recurrentStart));
         assertThat(order.getRecurrentEnd(), is(recurrentEnd));
         assertThat(order.getRecurrentCertificateValidity(), is(validity));
+        assertThat(order.getRecurrentCertificatePredate(), is(predate));
         assertThat(order.isRecurrentGetEnabled(), is(true));
         assertThat(order.getLocation(), is(locationUrl));
 

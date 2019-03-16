@@ -197,6 +197,11 @@ byte[] csr = csrb.getEncoded();
 
 _acme4j_ supports the [ACME STAR](https://tools.ietf.org/html/draft-ietf-acme-star) extension for short-term automatic renewal of certificates.
 
+<div class="alert alert-warning" role="alert">
+
+The _ACME STAR_ support is experimental. There is currently no known ACME server implementing this extension.
+</div>
+
 To find out if the CA supports the STAR extension, check the metadata:
 
 ```java
@@ -214,7 +219,7 @@ Order order = account.newOrder()
         .create();
 ```
 
-You can use `recurrentStart()`, `recurrentEnd()` and `recurrentCertificateValidity()` to change the time span and frequency of automatic renewals. You cannot use `notBefore()` and `notAfter()` in combination with `recurrent()` though.
+You can use `recurrentStart()`, `recurrentEnd()`, `recurrentCertificateValidity()` and `recurrentCertificatePredate()` to change the time span and frequency of automatic renewals. You cannot use `notBefore()` and `notAfter()` in combination with `recurrent()` though.
 
 The `Metadata` object also holds the accepted renewal limits (see `Metadata.getStarMinCertValidity()` and `Metadata.getStarMaxRenewal()`).
 
@@ -239,8 +244,3 @@ X509Certificate latestCertificate = cert.getCertificate();
 If supported by the CA, it is possible to negotiate that the certificate can also be downloaded via `GET` request. First use `Metadata.isStarCertificateGetAllowed()` to check if this option is supported by the CA. If it is, add `recurrentEnableGet()` to the order parameters to enable it. After the order was finalized, you can use any HTTP client to download the latest certificate from the certificate URL by a `GET` request.
 
 Use `Order.cancelRecurrent()` to terminate automatical certificate renewals.
-
-<div class="alert alert-warning" role="alert">
-
-The _ACME STAR_ support is experimental. There is currently no known ACME server implementing this extension.
-</div>

@@ -84,6 +84,7 @@ public class OrderTest {
         assertThat(order.getRecurrentStart(), is(nullValue()));
         assertThat(order.getRecurrentEnd(), is(nullValue()));
         assertThat(order.getRecurrentCertificateValidity(), is(nullValue()));
+        assertThat(order.getRecurrentCertificatePredate(), is(nullValue()));
         assertThat(order.isRecurrentGetEnabled(), is(false));
 
         assertThat(order.getError(), is(notNullValue()));
@@ -243,6 +244,7 @@ public class OrderTest {
         assertThat(order.getRecurrentStart(), is(parseTimestamp("2016-01-01T00:00:00Z")));
         assertThat(order.getRecurrentEnd(), is(parseTimestamp("2017-01-01T00:00:00Z")));
         assertThat(order.getRecurrentCertificateValidity(), is(Duration.ofHours(168)));
+        assertThat(order.getRecurrentCertificatePredate(), is(Duration.ofDays(6)));
         assertThat(order.getNotBefore(), is(nullValue()));
         assertThat(order.getNotAfter(), is(nullValue()));
         assertThat(order.isRecurrentGetEnabled(), is(true));
@@ -282,6 +284,7 @@ public class OrderTest {
         assertThat(order.getRecurrentStart(), is(parseTimestamp("2018-01-01T00:00:00Z")));
         assertThat(order.getRecurrentEnd(), is(parseTimestamp("2019-01-01T00:00:00Z")));
         assertThat(order.getRecurrentCertificateValidity(), is(Duration.ofHours(168)));
+        assertThat(order.getRecurrentCertificatePredate(), is(Duration.ofDays(6)));
         assertThat(order.getNotBefore(), is(nullValue()));
         assertThat(order.getNotAfter(), is(nullValue()));
         assertThat(order.isRecurrentGetEnabled(), is(true));

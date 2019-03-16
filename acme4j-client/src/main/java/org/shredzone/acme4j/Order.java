@@ -225,6 +225,19 @@ public class Order extends AcmeJsonResource {
     }
 
     /**
+     * Returns the predate period of each certificate, or {@code null}.
+     *
+     * @since 2.7
+     */
+    @CheckForNull
+    public Duration getRecurrentCertificatePredate() {
+        return getJSON().get("recurrent-certificate-predate")
+                .optional()
+                .map(Value::asDuration)
+                .orElse(null);
+    }
+
+    /**
      * Returns {@code true} if STAR certificates from this order can also be fetched via
      * GET requests.
      *
