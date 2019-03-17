@@ -40,13 +40,13 @@ import java.security.spec.ECGenParameterSpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 import javax.crypto.SecretKey;
 
-import org.jose4j.base64url.Base64Url;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
@@ -74,7 +74,7 @@ public final class TestUtils {
     public static final String ACME_SERVER_URI = "https://example.com/acme";
     public static final String ACCOUNT_URL = "https://example.com/acme/account/1";
 
-    public static final String DUMMY_NONCE = Base64Url.encode("foo-nonce-foo".getBytes());
+    public static final String DUMMY_NONCE = Base64.getEncoder().withoutPadding().encodeToString("foo-nonce-foo".getBytes());
 
 
     private TestUtils() {
@@ -161,7 +161,7 @@ public final class TestUtils {
             @Override
             public AcmeProvider provider() {
                 return provider;
-            };
+            }
 
             @Override
             public Connection connect() {
@@ -325,7 +325,7 @@ public final class TestUtils {
         System.out.println("N = " + params.get("n"));
         System.out.println("E = " + params.get("e"));
         System.out.println("KTY = " + params.get("kty"));
-        System.out.println("THUMBPRINT = " + Base64Url.encode(thumbprint));
+        System.out.println("THUMBPRINT = " + Base64.getEncoder().withoutPadding().encodeToString(thumbprint));
     }
 
 }

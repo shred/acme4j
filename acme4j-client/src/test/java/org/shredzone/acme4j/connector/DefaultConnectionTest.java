@@ -13,8 +13,10 @@
  */
 package org.shredzone.acme4j.connector;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
@@ -33,13 +35,13 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import org.jose4j.base64url.Base64Url;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.CompactSerializer;
 import org.junit.Before;
@@ -64,6 +66,9 @@ import org.shredzone.acme4j.toolbox.TestUtils;
  * Unit tests for {@link DefaultConnection}.
  */
 public class DefaultConnectionTest {
+
+    private static final Base64.Encoder URL_ENCODER = Base64.getUrlEncoder().withoutPadding();
+    private static final Base64.Decoder URL_DECODER = Base64.getUrlDecoder();
 
     private URL requestUrl = TestUtils.url("http://example.com/acme/");
     private URL accountUrl = TestUtils.url(TestUtils.ACCOUNT_URL);
@@ -673,8 +678,8 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testSendSignedRequest() throws Exception {
-        final String nonce1 = Base64Url.encode("foo-nonce-1-foo".getBytes());
-        final String nonce2 = Base64Url.encode("foo-nonce-2-foo".getBytes());
+        final String nonce1 = URL_ENCODER.encodeToString("foo-nonce-1-foo".getBytes());
+        final String nonce2 = URL_ENCODER.encodeToString("foo-nonce-2-foo".getBytes());
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
@@ -733,8 +738,8 @@ public class DefaultConnectionTest {
         expectedHeader.append("\"kid\":\"").append(accountUrl).append('"');
         expectedHeader.append('}');
 
-        assertThat(Base64Url.decodeToUtf8String(encodedHeader), sameJSONAs(expectedHeader.toString()));
-        assertThat(Base64Url.decodeToUtf8String(encodedPayload), sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
+        assertThat(new String(URL_DECODER.decode(encodedHeader), UTF_8), sameJSONAs(expectedHeader.toString()));
+        assertThat(new String(URL_DECODER.decode(encodedPayload), UTF_8), sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
         assertThat(encodedSignature, not(emptyOrNullString()));
 
         JsonWebSignature jws = new JsonWebSignature();
@@ -748,8 +753,8 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testSendSignedPostAsGetRequest() throws Exception {
-        final String nonce1 = Base64Url.encode("foo-nonce-1-foo".getBytes());
-        final String nonce2 = Base64Url.encode("foo-nonce-2-foo".getBytes());
+        final String nonce1 = URL_ENCODER.encodeToString("foo-nonce-1-foo".getBytes());
+        final String nonce2 = URL_ENCODER.encodeToString("foo-nonce-2-foo".getBytes());
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
@@ -806,8 +811,8 @@ public class DefaultConnectionTest {
         expectedHeader.append("\"kid\":\"").append(accountUrl).append('"');
         expectedHeader.append('}');
 
-        assertThat(Base64Url.decodeToUtf8String(encodedHeader), sameJSONAs(expectedHeader.toString()));
-        assertThat(Base64Url.decodeToUtf8String(encodedPayload), is(""));
+        assertThat(new String(URL_DECODER.decode(encodedHeader), UTF_8), sameJSONAs(expectedHeader.toString()));
+        assertThat(new String(URL_DECODER.decode(encodedPayload), UTF_8), is(""));
         assertThat(encodedSignature, not(emptyOrNullString()));
 
         JsonWebSignature jws = new JsonWebSignature();
@@ -821,8 +826,8 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testSendCertificateRequest() throws Exception {
-        final String nonce1 = Base64Url.encode("foo-nonce-1-foo".getBytes());
-        final String nonce2 = Base64Url.encode("foo-nonce-2-foo".getBytes());
+        final String nonce1 = URL_ENCODER.encodeToString("foo-nonce-1-foo".getBytes());
+        final String nonce2 = URL_ENCODER.encodeToString("foo-nonce-2-foo".getBytes());
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
@@ -872,8 +877,8 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testSendSignedRequestNoKid() throws Exception {
-        final String nonce1 = Base64Url.encode("foo-nonce-1-foo".getBytes());
-        final String nonce2 = Base64Url.encode("foo-nonce-2-foo".getBytes());
+        final String nonce1 = URL_ENCODER.encodeToString("foo-nonce-1-foo".getBytes());
+        final String nonce2 = URL_ENCODER.encodeToString("foo-nonce-2-foo".getBytes());
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
 
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
@@ -935,8 +940,8 @@ public class DefaultConnectionTest {
         expectedHeader.append("\"n\":\"").append(TestUtils.N).append("\"");
         expectedHeader.append("}}");
 
-        assertThat(Base64Url.decodeToUtf8String(encodedHeader), sameJSONAs(expectedHeader.toString()));
-        assertThat(Base64Url.decodeToUtf8String(encodedPayload), sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
+        assertThat(new String(URL_DECODER.decode(encodedHeader), UTF_8), sameJSONAs(expectedHeader.toString()));
+        assertThat(new String(URL_DECODER.decode(encodedPayload), UTF_8), sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
         assertThat(encodedSignature, not(emptyOrNullString()));
 
         JsonWebSignature jws = new JsonWebSignature();
@@ -1010,7 +1015,7 @@ public class DefaultConnectionTest {
         assertThat(downloaded.size(), is(original.size()));
         for (int ix = 0; ix < downloaded.size(); ix++) {
             assertThat(downloaded.get(ix).getEncoded(), is(original.get(ix).getEncoded()));
-        };
+        }
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verify(mockUrlConnection).getInputStream();

@@ -36,7 +36,6 @@ import javax.annotation.WillNotClose;
 import javax.annotation.concurrent.Immutable;
 import javax.crypto.SecretKey;
 
-import org.jose4j.base64url.Base64Url;
 import org.jose4j.jwk.EllipticCurveJsonWebKey;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.RsaJsonWebKey;
@@ -73,6 +72,8 @@ public final class AcmeUtils {
 
     private static final Base64.Encoder PEM_ENCODER = Base64.getMimeEncoder(64,
                 "\n".getBytes(StandardCharsets.US_ASCII));
+    private static final Base64.Encoder URL_ENCODER = Base64.getUrlEncoder().withoutPadding();
+    private static final Base64.Decoder URL_DECODER = Base64.getUrlDecoder();
 
     /**
      * Enumeration of PEM labels.
@@ -144,7 +145,7 @@ public final class AcmeUtils {
      * @return base64 encoded string
      */
     public static String base64UrlEncode(byte[] data) {
-        return Base64Url.encode(data);
+        return URL_ENCODER.encodeToString(data);
     }
 
     /**
@@ -155,7 +156,7 @@ public final class AcmeUtils {
      * @return decoded data
      */
     public static byte[] base64UrlDecode(String base64) {
-        return Base64Url.decode(base64);
+        return URL_DECODER.decode(base64);
     }
 
     /**
