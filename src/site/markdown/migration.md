@@ -2,6 +2,13 @@
 
 This document will help you migrate your code to the latest _acme4j_ version.
 
+<div class="alert alert-info" role="alert">
+
+**Starting on November 1st, 2019, all _acme4j_ versions before 2.5 will not work properly any more.**
+
+I recommend to update at least to this _acme4j_ version as soon as possible! _Let's Encrypt_ has [announced a sunset date for GET requests](https://community.letsencrypt.org/t/acme-v2-scheduled-deprecation-of-unauthenticated-resource-gets/74380) on November 1st, 2019. On the same day [access to the ACMEv1 servers](https://community.letsencrypt.org/t/end-of-life-plan-for-acmev1/88430) will be restricted.
+</div>
+
 ## Migration to Version 2.7
 
 - Note that _acme4j_ has an `Automatic-Module-Name` set in the acme-client and acme-utils modules now. If you have added _acme4j_ to your Java 9+ module dependencies, you'll need to fix your dependency declaration to `org.shredzone.acme4j` (acme-client) and `org.shredzone.acme4j.utils` (acme-utils).
@@ -18,11 +25,6 @@ This document will help you migrate your code to the latest _acme4j_ version.
 
 - The GET compatibility mode has been removed. It also means that the `postasget=false` parameter is ignored from now on. If you need it to connect to your ACME server, do not update to this version until your ACME server has been fixed to support ACME draft 15.
 
-<div class="alert alert-info" role="alert">
-
-I recommend to update to this _acme4j_ version as soon as possible! _Let's Encrypt_ has [announced a sunset date for GET requests](https://community.letsencrypt.org/t/acme-v2-scheduled-deprecation-of-unauthenticated-resource-gets/74380) on November 1st, 2019. _acme4j_ v2.4 and older will break after that date!
-</div>
-
 ## Migration to Version 2.4
 
 - There was a major change in ACME draft 15. If you use _acme4j_ in a common way, it will transparently take care of everything in the background, so you won't even notice the change.
@@ -35,6 +37,10 @@ I recommend to update to this _acme4j_ version as soon as possible! _Let's Encry
 
 - `Authorization.getDomain()`, `Order.getDomains()` and `Problem.getDomain()` are deprecated now, and will be removed in version 2.4. If you use these methods, use `getIdentifier()` (or `getIdentifiers()`) to get an `Identifier` object, then invoke `Identifier.getDomain()` to get the domain name.
 
+## Migration to Version 2.2
+
+- No migration steps are necessary.
+
 ## Migration to Version 2.1
 
 - This version adds [JSR 305](https://jcp.org/en/jsr/detail?id=305) annotations. If you use a null-safe language like Kotlin, or tools like SpotBugs, your code may fail to compile because of detected possible null pointer dereferences and unclosed streams. These are potential bugs that need to be resolved.
@@ -46,6 +52,8 @@ I recommend to update to this _acme4j_ version as soon as possible! _Let's Encry
 _acme4j_ 2.0 fully supports the ACMEv2 protocol. Sadly, the ACMEv2 protocol is a major change.
 
 There is no easy recipe to migrate your code to _acme4j_ 2.0. I recommend to have a look at the example, and read this documentation. Altogether, it shouldn't be too much work to update your code, though.
+
+ACMEv1 support will stop on November 1st, 2019!
 
 ### "Malformed account ID in KeyID header"
 

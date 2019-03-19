@@ -8,7 +8,7 @@ This Java client helps connecting to an ACME server, and performing all necessar
 
 It is an independent open source implementation that is not affiliated with or endorsed by _Let's Encrypt_.
 
-**Note:** Make sure to use _acme4j_ 2.5 or higher, before November 1st 2019. Due to a change in the ACME protocol, _acme4j_ < 2.5 will fail to connect to servers after that date. _acme4j_ v1 is not affected. See [here](https://community.letsencrypt.org/t/acme-v2-scheduled-deprecation-of-unauthenticated-resource-gets/74380) for details.
+**IMPORTANT: Starting November 1st, 2019, all _acme4j_ versions before v2.5 will not work properly any more.** Make sure to update to the latest _acme4j_ version in time. See [here](https://community.letsencrypt.org/t/acme-v2-scheduled-deprecation-of-unauthenticated-resource-gets/74380) and [here](https://community.letsencrypt.org/t/end-of-life-plan-for-acmev1/88430) for details. You will find help for migrating your code in the [migration guide](https://shredzone.org/maven/acme4j/migration.html).
 
 ## Features
 
@@ -26,7 +26,6 @@ It is an independent open source implementation that is not affiliated with or e
 
 * See the [online documentation](https://shredzone.org/maven/acme4j/) about how to use _acme4j_.
 * For a quick start, have a look at [the source code of an example](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/ClientTest.java).
-* The previous ACME v1 protocol is still supported by [_acme4j_ version 1](https://shredzone.org/maven/acme4j-acmev1/index.html).
 
 ## Contribute
 
