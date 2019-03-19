@@ -42,7 +42,6 @@ import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Identifier;
 import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 
