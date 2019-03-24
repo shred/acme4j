@@ -14,23 +14,17 @@
 package org.shredzone.acme4j;
 
 import static java.util.Objects.requireNonNull;
-import static org.shredzone.acme4j.toolbox.AcmeUtils.macKeyAlgorithm;
 
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
-import java.security.PublicKey;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
-import org.jose4j.jwk.PublicJsonWebKey;
-import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.keys.HmacKey;
-import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -38,6 +32,7 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
+import org.shredzone.acme4j.toolbox.JoseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -166,7 +161,7 @@ public class AccountBuilder {
      */
     public AccountBuilder withKeyIdentifier(String kid, String encodedMacKey) {
         byte[] encodedKey = AcmeUtils.base64UrlDecode(requireNonNull(encodedMacKey, "encodedMacKey"));
-        return withKeyIdentifier(kid, new HmacKey(encodedKey));
+        return withKeyIdentifier(kid, new SecretKeySpec(encodedKey, "HMAC"));
     }
 
     /**
@@ -209,7 +204,7 @@ public class AccountBuilder {
                 claims.put("termsOfServiceAgreed", termsOfServiceAgreed);
             }
             if (keyIdentifier != null) {
-                claims.put("externalAccountBinding", createExternalAccountBinding(
+                claims.put("externalAccountBinding", JoseUtils.createExternalAccountBinding(
                         keyIdentifier, keyPair.getPublic(), macKey, resourceUrl));
             }
             if (onlyExisting != null) {
@@ -229,44 +224,6 @@ public class AccountBuilder {
                 login.getAccount().setJSON(json);
             }
             return login;
-        }
-    }
-
-    /**
-     * Creates a JSON structure for external account binding.
-     *
-     * @param kid
-     *            Key Identifier provided by the CA
-     * @param accountKey
-     *            {@link PublicKey} of the account to register
-     * @param macKey
-     *            {@link SecretKey} to sign the key identifier with
-     * @param resource
-     *            "newAccount" resource URL
-     * @return Created JSON structure
-     */
-    private Map<String, Object> createExternalAccountBinding(String kid,
-                PublicKey accountKey, SecretKey macKey, URL resource)
-                throws AcmeException {
-        try {
-            PublicJsonWebKey keyJwk = PublicJsonWebKey.Factory.newPublicJwk(accountKey);
-
-            JsonWebSignature innerJws = new JsonWebSignature();
-            innerJws.setPayload(keyJwk.toJson());
-            innerJws.getHeaders().setObjectHeaderValue("url", resource);
-            innerJws.getHeaders().setObjectHeaderValue("kid", kid);
-            innerJws.setAlgorithmHeaderValue(macKeyAlgorithm(macKey));
-            innerJws.setKey(macKey);
-            innerJws.setDoKeyValidation(false);
-            innerJws.sign();
-
-            JSONBuilder outerClaim = new JSONBuilder();
-            outerClaim.put("protected", innerJws.getHeaders().getEncodedHeader());
-            outerClaim.put("signature", innerJws.getEncodedSignature());
-            outerClaim.put("payload", innerJws.getEncodedPayload());
-            return outerClaim.toMap();
-        } catch (JoseException ex) {
-            throw new AcmeException("Could not create external account binding", ex);
         }
     }
 

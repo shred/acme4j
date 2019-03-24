@@ -14,7 +14,6 @@
 package org.shredzone.acme4j.connector;
 
 import static java.util.stream.Collectors.toList;
-import static org.shredzone.acme4j.toolbox.AcmeUtils.keyAlgorithm;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +23,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -41,9 +41,6 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import org.jose4j.jwk.PublicJsonWebKey;
-import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
@@ -58,6 +55,7 @@ import org.shredzone.acme4j.exception.AcmeUserActionRequiredException;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
+import org.shredzone.acme4j.toolbox.JoseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -385,8 +383,6 @@ public class DefaultConnection implements Connection {
                 resetNonce(session);
             }
 
-            String claimJson = claims != null ? claims.toString() : "";
-
             conn = httpConnector.openConnection(url, session.getProxy());
             conn.setRequestMethod("POST");
             conn.setRequestProperty(ACCEPT_HEADER, accept);
@@ -395,34 +391,15 @@ public class DefaultConnection implements Connection {
             conn.setRequestProperty(CONTENT_TYPE_HEADER, "application/jose+json");
             conn.setDoOutput(true);
 
-            final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(keypair.getPublic());
-            JsonWebSignature jws = new JsonWebSignature();
-            jws.setPayload(claimJson);
-            jws.getHeaders().setObjectHeaderValue("nonce", session.getNonce());
-            jws.getHeaders().setObjectHeaderValue("url", url);
-            if (accountLocation == null) {
-                jws.getHeaders().setJwkHeaderValue("jwk", jwk);
-            } else {
-                jws.getHeaders().setObjectHeaderValue("kid", accountLocation);
-            }
+            JSONBuilder jose = JoseUtils.createJoseRequest(
+                    url,
+                    keypair,
+                    claims,
+                    session.getNonce(),
+                    accountLocation != null ? accountLocation.toString() : null
+            );
 
-            jws.setAlgorithmHeaderValue(keyAlgorithm(jwk));
-            jws.setKey(keypair.getPrivate());
-            jws.sign();
-
-            if (LOG.isDebugEnabled()) {
-                LOG.debug("{} {}", claims != null ? "POST" : "POST-as-GET", url);
-                if (claims != null) {
-                    LOG.debug("  Payload: {}", claimJson);
-                }
-                LOG.debug("  JWS Header: {}", jws.getHeaders().getFullHeaderAsJsonString());
-            }
-
-            JSONBuilder jb = new JSONBuilder();
-            jb.put("protected", jws.getHeaders().getEncodedHeader());
-            jb.put("payload", jws.getEncodedPayload());
-            jb.put("signature", jws.getEncodedSignature());
-            byte[] outputData = jb.toString().getBytes(DEFAULT_CHARSET);
+            byte[] outputData = jose.toString().getBytes(StandardCharsets.UTF_8);
 
             conn.setFixedLengthStreamingMode(outputData.length);
             conn.connect();
@@ -442,8 +419,6 @@ public class DefaultConnection implements Connection {
             return rc;
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
-        } catch (JoseException ex) {
-            throw new AcmeProtocolException("Failed to generate a JSON request", ex);
         }
     }
 

@@ -13,9 +13,11 @@
  */
 package org.shredzone.acme4j;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
-import static org.shredzone.acme4j.toolbox.TestUtils.*;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
+import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.HttpURLConnection;
@@ -24,9 +26,7 @@ import java.security.KeyPair;
 
 import javax.crypto.SecretKey;
 
-import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.CompactSerializer;
-import org.jose4j.lang.JoseException;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.shredzone.acme4j.connector.Resource;
@@ -34,6 +34,7 @@ import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
+import org.shredzone.acme4j.toolbox.JoseUtilsTest;
 import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
@@ -115,41 +116,20 @@ public class AccountBuilderTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
-                try {
-                    assertThat(session, is(notNullValue()));
-                    assertThat(url, is(resourceUrl));
-                    assertThat(keypair, is(accountKey));
+                assertThat(session, is(notNullValue()));
+                assertThat(url, is(resourceUrl));
+                assertThat(keypair, is(accountKey));
 
-                    JSON binding = claims.toJSON()
-                                    .get("externalAccountBinding")
-                                    .asObject();
+                JSON binding = claims.toJSON()
+                                .get("externalAccountBinding")
+                                .asObject();
 
-                    String encodedHeader = binding.get("protected").asString();
-                    String encodedSignature = binding.get("signature").asString();
-                    String encodedPayload = binding.get("payload").asString();
+                String encodedHeader = binding.get("protected").asString();
+                String encodedSignature = binding.get("signature").asString();
+                String encodedPayload = binding.get("payload").asString();
+                String serialized = CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature);
 
-                    String serialized = CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature);
-                    JsonWebSignature jws = new JsonWebSignature();
-                    jws.setCompactSerialization(serialized);
-                    jws.setKey(macKey);
-                    assertThat(jws.verifySignature(), is(true));
-
-                    assertThat(jws.getHeader("url"), is(resourceUrl.toString()));
-                    assertThat(jws.getHeader("kid"), is(keyIdentifier));
-                    assertThat(jws.getHeader("alg"), is("HS256"));
-
-                    String decodedPayload = jws.getPayload();
-                    StringBuilder expectedPayload = new StringBuilder();
-                    expectedPayload.append('{');
-                    expectedPayload.append("\"kty\":\"").append(TestUtils.KTY).append("\",");
-                    expectedPayload.append("\"e\":\"").append(TestUtils.E).append("\",");
-                    expectedPayload.append("\"n\":\"").append(TestUtils.N).append("\"");
-                    expectedPayload.append("}");
-                    assertThat(decodedPayload, sameJSONAs(expectedPayload.toString()));
-                } catch (JoseException ex) {
-                    ex.printStackTrace();
-                    fail("decoding inner payload failed");
-                }
+                JoseUtilsTest.assertExternalAccountBinding(serialized, resourceUrl, keyIdentifier, macKey);
 
                 return HttpURLConnection.HTTP_CREATED;
             }

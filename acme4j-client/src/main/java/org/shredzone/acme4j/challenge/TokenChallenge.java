@@ -19,12 +19,11 @@ import java.security.PublicKey;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import org.jose4j.jwk.PublicJsonWebKey;
-import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.toolbox.JoseUtils;
 
 /**
  * An extension of {@link Challenge} that handles challenges with a {@code token} and
@@ -66,15 +65,8 @@ public class TokenChallenge extends Challenge {
      * override this method if a different algorithm is used.
      */
     public String getAuthorization() {
-        try {
-            PublicKey pk = getLogin().getKeyPair().getPublic();
-            PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(pk);
-            return getToken()
-                        + '.'
-                        + base64UrlEncode(jwk.calculateThumbprint("SHA-256"));
-        } catch (JoseException ex) {
-            throw new AcmeProtocolException("Cannot compute key thumbprint", ex);
-        }
+        PublicKey pk = getLogin().getKeyPair().getPublic();
+        return getToken() + '.' + base64UrlEncode(JoseUtils.thumbprint(pk));
     }
 
 }

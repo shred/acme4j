@@ -14,7 +14,6 @@
 package org.shredzone.acme4j;
 
 import static java.util.stream.Collectors.toList;
-import static org.shredzone.acme4j.toolbox.AcmeUtils.keyAlgorithm;
 
 import java.net.URI;
 import java.net.URL;
@@ -29,9 +28,6 @@ import java.util.Objects;
 import javax.annotation.CheckForNull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-import org.jose4j.jwk.PublicJsonWebKey;
-import org.jose4j.jws.JsonWebSignature;
-import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.ResourceIterator;
@@ -42,6 +38,7 @@ import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
+import org.shredzone.acme4j.toolbox.JoseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -209,30 +206,17 @@ public class Account extends AcmeJsonResource {
 
         try (Connection conn = getSession().connect()) {
             URL keyChangeUrl = getSession().resourceUrl(Resource.KEY_CHANGE);
-            PublicJsonWebKey newKeyJwk = PublicJsonWebKey.Factory.newPublicJwk(newKeyPair.getPublic());
 
             JSONBuilder payloadClaim = new JSONBuilder();
             payloadClaim.put("account", getLocation());
             payloadClaim.putKey("oldKey", getLogin().getKeyPair().getPublic());
 
-            JsonWebSignature innerJws = new JsonWebSignature();
-            innerJws.setPayload(payloadClaim.toString());
-            innerJws.getHeaders().setObjectHeaderValue("url", keyChangeUrl);
-            innerJws.getHeaders().setJwkHeaderValue("jwk", newKeyJwk);
-            innerJws.setAlgorithmHeaderValue(keyAlgorithm(newKeyJwk));
-            innerJws.setKey(newKeyPair.getPrivate());
-            innerJws.sign();
+            JSONBuilder jose = JoseUtils.createJoseRequest(keyChangeUrl, newKeyPair,
+                    payloadClaim, null, null);
 
-            JSONBuilder outerClaim = new JSONBuilder();
-            outerClaim.put("protected", innerJws.getHeaders().getEncodedHeader());
-            outerClaim.put("signature", innerJws.getEncodedSignature());
-            outerClaim.put("payload", innerJws.getEncodedPayload());
-
-            conn.sendSignedRequest(keyChangeUrl, outerClaim, getLogin());
+            conn.sendSignedRequest(keyChangeUrl, jose, getLogin());
 
             getLogin().setKeyPair(newKeyPair);
-        } catch (JoseException ex) {
-            throw new AcmeProtocolException("Cannot sign key-change", ex);
         }
     }
 

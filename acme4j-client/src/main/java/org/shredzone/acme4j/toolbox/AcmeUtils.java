@@ -34,13 +34,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.WillNotClose;
 import javax.annotation.concurrent.Immutable;
-import javax.crypto.SecretKey;
 
-import org.jose4j.jwk.EllipticCurveJsonWebKey;
-import org.jose4j.jwk.JsonWebKey;
-import org.jose4j.jwk.RsaJsonWebKey;
-import org.jose4j.jws.AlgorithmIdentifiers;
-import org.jose4j.jws.JsonWebSignature;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
@@ -189,74 +183,6 @@ public final class AcmeUtils {
     public static String toAce(String domain) {
         Objects.requireNonNull(domain, "domain");
         return IDN.toASCII(domain.trim()).toLowerCase();
-    }
-
-    /**
-     * Analyzes the key used in the {@link JsonWebKey}, and returns the key algorithm
-     * identifier for {@link JsonWebSignature}.
-     *
-     * @param jwk
-     *            {@link JsonWebKey} to analyze
-     * @return algorithm identifier
-     * @throws IllegalArgumentException
-     *             there is no corresponding algorithm identifier for the key
-     */
-    public static String keyAlgorithm(JsonWebKey jwk) {
-        if (jwk instanceof EllipticCurveJsonWebKey) {
-            EllipticCurveJsonWebKey ecjwk = (EllipticCurveJsonWebKey) jwk;
-
-            switch (ecjwk.getCurveName()) {
-                case "P-256":
-                    return AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256;
-
-                case "P-384":
-                    return AlgorithmIdentifiers.ECDSA_USING_P384_CURVE_AND_SHA384;
-
-                case "P-521":
-                    return AlgorithmIdentifiers.ECDSA_USING_P521_CURVE_AND_SHA512;
-
-                default:
-                    throw new IllegalArgumentException("Unknown EC name "
-                        + ecjwk.getCurveName());
-            }
-
-        } else if (jwk instanceof RsaJsonWebKey) {
-            return AlgorithmIdentifiers.RSA_USING_SHA256;
-
-        } else {
-            throw new IllegalArgumentException("Unknown algorithm " + jwk.getAlgorithm());
-        }
-    }
-
-    /**
-     * Analyzes the {@link SecretKey}, and returns the key algorithm
-     * identifier for {@link JsonWebSignature}.
-     *
-     * @param macKey
-     *            {@link SecretKey} to analyze
-     * @return algorithm identifier
-     * @throws IllegalArgumentException
-     *             there is no corresponding algorithm identifier for the key
-     */
-    public static String macKeyAlgorithm(SecretKey macKey) {
-        if (!"HMAC".equals(macKey.getAlgorithm())) {
-            throw new IllegalArgumentException("Bad algorithm: " + macKey.getAlgorithm());
-        }
-
-        int size = macKey.getEncoded().length * 8;
-        switch (size) {
-            case 256:
-                return AlgorithmIdentifiers.HMAC_SHA256;
-
-            case 384:
-                return AlgorithmIdentifiers.HMAC_SHA384;
-
-            case 512:
-                return AlgorithmIdentifiers.HMAC_SHA512;
-
-            default:
-                throw new IllegalArgumentException("Bad key size: " + size);
-        }
     }
 
     /**

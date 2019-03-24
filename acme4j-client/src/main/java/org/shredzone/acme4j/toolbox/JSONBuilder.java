@@ -30,10 +30,6 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.jose4j.json.JsonUtil;
-import org.jose4j.jwk.JsonWebKey;
-import org.jose4j.jwk.PublicJsonWebKey;
-import org.jose4j.lang.JoseException;
-import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
  * Builder for JSON structures.
@@ -131,14 +127,8 @@ public class JSONBuilder {
     public JSONBuilder putKey(String key, PublicKey publickey) {
         Objects.requireNonNull(publickey, "publickey");
 
-        try {
-            final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(publickey);
-            Map<String, Object> jwkParams = jwk.toParams(JsonWebKey.OutputControlLevel.PUBLIC_ONLY);
-            object(key).data.putAll(jwkParams);
-            return this;
-        } catch (JoseException ex) {
-            throw new AcmeProtocolException("Invalid key", ex);
-        }
+        data.put(key, JoseUtils.publicKeyToJWK(publickey));
+        return this;
     }
 
     /**
