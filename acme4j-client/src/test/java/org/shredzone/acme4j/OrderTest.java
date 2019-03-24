@@ -16,7 +16,8 @@ package org.shredzone.acme4j;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
-import static org.shredzone.acme4j.toolbox.TestUtils.*;
+import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
+import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.HttpURLConnection;

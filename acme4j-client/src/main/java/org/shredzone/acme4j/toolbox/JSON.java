@@ -47,6 +47,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.WillClose;
 import javax.annotation.concurrent.Immutable;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Identifier;
@@ -54,18 +55,15 @@ import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-
 /**
  * A model containing a JSON result. The content is immutable.
  */
-@SuppressWarnings("unchecked")
 @ParametersAreNonnullByDefault
 @Immutable
 public final class JSON implements Serializable {
     private static final long serialVersionUID = 3091273044605709204L;
 
-    private static final JSON EMPTY_JSON = new JSON(new HashMap<String, Object>());
+    private static final JSON EMPTY_JSON = new JSON(new HashMap<>());
 
     private final String path;
 

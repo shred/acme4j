@@ -13,7 +13,8 @@
  */
 package org.shredzone.acme4j.challenge;
 
-import static org.shredzone.acme4j.toolbox.AcmeUtils.*;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.base64UrlEncode;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.sha256hash;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 

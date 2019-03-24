@@ -15,7 +15,8 @@ package org.shredzone.acme4j.exception;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.shredzone.acme4j.toolbox.TestUtils.*;
+import static org.shredzone.acme4j.toolbox.TestUtils.createProblem;
+import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.net.URI;
 import java.net.URL;

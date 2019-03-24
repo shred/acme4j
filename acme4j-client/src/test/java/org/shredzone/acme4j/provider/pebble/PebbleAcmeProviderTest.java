@@ -14,7 +14,8 @@
 package org.shredzone.acme4j.provider.pebble;
 
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.net.URI;
