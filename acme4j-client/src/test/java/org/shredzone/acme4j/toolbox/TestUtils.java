@@ -74,7 +74,7 @@ public final class TestUtils {
     public static final String ACME_SERVER_URI = "https://example.com/acme";
     public static final String ACCOUNT_URL = "https://example.com/acme/account/1";
 
-    public static final String DUMMY_NONCE = Base64.getEncoder().withoutPadding().encodeToString("foo-nonce-foo".getBytes());
+    public static final String DUMMY_NONCE = Base64.getUrlEncoder().withoutPadding().encodeToString("foo-nonce-foo".getBytes());
 
 
     private TestUtils() {
@@ -325,7 +325,7 @@ public final class TestUtils {
         System.out.println("N = " + params.get("n"));
         System.out.println("E = " + params.get("e"));
         System.out.println("KTY = " + params.get("kty"));
-        System.out.println("THUMBPRINT = " + Base64.getEncoder().withoutPadding().encodeToString(thumbprint));
+        System.out.println("THUMBPRINT = " + Base64.getUrlEncoder().withoutPadding().encodeToString(thumbprint));
     }
 
 }
