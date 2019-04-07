@@ -29,8 +29,6 @@ import org.jose4j.jwk.RsaJsonWebKey;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.lang.JoseException;
-import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +101,7 @@ public final class JoseUtils {
             jb.put("signature", jws.getEncodedSignature());
             return jb;
         } catch (JoseException ex) {
-            throw new AcmeProtocolException("Failed to sign a JSON request", ex);
+            throw new IllegalArgumentException("Could not create a JOSE request", ex);
         }
     }
 
@@ -121,7 +119,7 @@ public final class JoseUtils {
      * @return Created JSON structure
      */
     public static Map<String, Object> createExternalAccountBinding(String kid,
-            PublicKey accountKey, SecretKey macKey, URL resource) throws AcmeException {
+            PublicKey accountKey, SecretKey macKey, URL resource) {
         try {
             PublicJsonWebKey keyJwk = PublicJsonWebKey.Factory.newPublicJwk(accountKey);
 
@@ -140,7 +138,7 @@ public final class JoseUtils {
             outerClaim.put("payload", innerJws.getEncodedPayload());
             return outerClaim.toMap();
         } catch (JoseException ex) {
-            throw new AcmeException("Could not create external account binding", ex);
+            throw new IllegalArgumentException("Could not create external account binding", ex);
         }
     }
 
