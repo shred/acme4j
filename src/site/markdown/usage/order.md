@@ -33,10 +33,11 @@ The `Authorization` instance contains further details about how you can prove ow
 
 `getChallenges()` returns a collection of all `Challenge`s offered by the CA for domain ownership validation. You only need to complete _one_ of them to successfully authorize your domain.
 
-The simplest way is to invoke `findChallenge()`, stating the challenge type your system is able to provide:
+The simplest way is to invoke `findChallenge()`, stating the challenge type your system is able to provide (either as challenge name or challenge class type):
 
 ```java
-Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
+Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE); // by name
+Http01Challenge challenge = auth.findChallenge(Http01Challenge.class); // by type
 ```
 
 It returns a properly casted `Challenge` object, or `null` if your challenge type was not acceptable. In this example, your system is able to respond to a [http-01](../challenge/http-01.html) challenge.

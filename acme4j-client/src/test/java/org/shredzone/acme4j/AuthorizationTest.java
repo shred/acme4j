@@ -77,6 +77,30 @@ public class AuthorizationTest {
     }
 
     /**
+     * Test that {@link Authorization#findChallenge(Class)} finds challenges.
+     */
+    @Test
+    public void testFindChallengeByType() throws IOException {
+        Authorization authorization = createChallengeAuthorization();
+
+        // A snail mail challenge is not available at all
+        NonExistingChallenge c1 = authorization.findChallenge(NonExistingChallenge.class);
+        assertThat(c1, is(nullValue()));
+
+        // HttpChallenge is available
+        Http01Challenge c2 = authorization.findChallenge(Http01Challenge.class);
+        assertThat(c2, is(notNullValue()));
+
+        // Dns01Challenge is available
+        Dns01Challenge c3 = authorization.findChallenge(Dns01Challenge.class);
+        assertThat(c3, is(notNullValue()));
+
+        // TlsAlpn01Challenge is available
+        TlsAlpn01Challenge c4 = authorization.findChallenge(TlsAlpn01Challenge.class);
+        assertThat(c4, is(notNullValue()));
+    }
+
+    /**
      * Test that {@link Authorization#findChallenge(String)} fails on duplicate
      * challenges.
      */
@@ -326,6 +350,15 @@ public class AuthorizationTest {
             Authorization authorization = new Authorization(login, locationUrl);
             authorization.setJSON(getJSON("authorizationChallenges"));
             return authorization;
+        }
+    }
+
+    /**
+     * Dummy challenge that is never going to be created.
+     */
+    private static class NonExistingChallenge extends Challenge {
+        public NonExistingChallenge(Login login, JSON data) {
+            super(login, data);
         }
     }
 

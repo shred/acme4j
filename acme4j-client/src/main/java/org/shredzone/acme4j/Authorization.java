@@ -116,12 +116,30 @@ public class Authorization extends AcmeJsonResource {
      * @throws ClassCastException
      *             if the type does not match the expected Challenge class type
      */
-    @SuppressWarnings("unchecked")
     @CheckForNull
     public <T extends Challenge> T findChallenge(final String type) {
         return (T) getChallenges().stream()
                 .filter(ch -> type.equals(ch.getType()))
                 .reduce((a, b) -> {throw new AcmeProtocolException("Found more than one challenge of type " + type);})
+                .orElse(null);
+    }
+
+    /**
+     * Finds a {@link Challenge} of the given class type. Responding to this {@link
+     * Challenge} is sufficient for authorization.
+     *
+     * @param type
+     *         Challenge type (e.g. "Http01Challenge.class")
+     * @return {@link Challenge} of that type, or {@code null} if there is no such
+     * challenge, or if the challenge alone is not sufficient for authorization.
+     * @since 2.8
+     */
+    @CheckForNull
+    public <T extends Challenge> T findChallenge(Class<T> type) {
+        return getChallenges().stream()
+                .filter(type::isInstance)
+                .map(type::cast)
+                .reduce((a, b) -> {throw new AcmeProtocolException("Found more than one challenge of type " + type.getName());})
                 .orElse(null);
     }
 

@@ -304,7 +304,7 @@ public class ClientTest {
      */
     public Challenge httpChallenge(Authorization auth) throws AcmeException {
         // Find a single http-01 challenge
-        Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
+        Http01Challenge challenge = auth.findChallenge(Http01Challenge.class);
         if (challenge == null) {
             throw new AcmeException("Found no " + Http01Challenge.TYPE + " challenge, don't know what to do...");
         }
