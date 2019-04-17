@@ -108,6 +108,9 @@ public class Authorization extends AcmeJsonResource {
     /**
      * Finds a {@link Challenge} of the given type. Responding to this {@link Challenge}
      * is sufficient for authorization.
+     * <p>
+     * {@link Authorization#findChallenge(Class)} should be preferred, as this variant
+     * is not type safe.
      *
      * @param type
      *            Challenge name (e.g. "http-01")
