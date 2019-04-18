@@ -100,6 +100,26 @@ public class Session {
     }
 
     /**
+     * Creates a new {@link Session} using the given {@link AcmeProvider}.
+     * <p>
+     * This constructor should only be used for testing purposes.
+     *
+     * @param serverUri
+     *         {@link URI} of the ACME server
+     * @param provider
+     *         {@link AcmeProvider} to be used
+     * @since 2.8
+     */
+    public Session(URI serverUri, AcmeProvider provider) {
+        this.serverUri = Objects.requireNonNull(serverUri, "serverUri");
+        this.provider = Objects.requireNonNull(provider, "provider");
+
+        if (!provider.accepts(serverUri)) {
+            throw new IllegalArgumentException("Provider does not accept " + serverUri);
+        }
+    }
+
+    /**
      * Logs into an existing account.
      *
      * @param accountLocation

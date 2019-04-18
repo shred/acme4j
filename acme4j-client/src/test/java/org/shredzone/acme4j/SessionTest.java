@@ -34,6 +34,7 @@ import org.mockito.ArgumentMatchers;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
+import org.shredzone.acme4j.provider.GenericAcmeProvider;
 import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
@@ -63,9 +64,20 @@ public class SessionTest {
         assertThat(session2, not(nullValue()));
         assertThat(session2.getServerUri(), is(serverUri));
 
+        Session session3 = new Session(serverUri, new GenericAcmeProvider());
+        assertThat(session3, not(nullValue()));
+        assertThat(session3.getServerUri(), is(serverUri));
+
         try {
             new Session("#*aBaDuRi*#");
             fail("accepted bad URI in constructor");
+        } catch (IllegalArgumentException ex) {
+            // expected
+        }
+
+        try {
+            new Session(URI.create("acme://invalid"), new GenericAcmeProvider());
+            fail("Provider accepted unsupported URI");
         } catch (IllegalArgumentException ex) {
             // expected
         }
@@ -189,7 +201,7 @@ public class SessionTest {
 
     /**
      * Asserts that the {@link Session} returns correct
-     * {@link Session#resourceUri(Resource)} and {@link Session#getMetadata()}.
+     * {@link Session#resourceUrl(Resource)} and {@link Session#getMetadata()}.
      *
      * @param session
      *            {@link Session} to assert
