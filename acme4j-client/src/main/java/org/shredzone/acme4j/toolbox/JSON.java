@@ -173,6 +173,15 @@ public final class JSON implements Serializable {
     }
 
     /**
+     * Returns the content as unmodifiable Map.
+     *
+     * @since 2.8
+     */
+    public Map<String,Object> toMap() {
+        return Collections.unmodifiableMap(data);
+    }
+
+    /**
      * Serialize the data map in JSON.
      */
     private void writeObject(ObjectOutputStream out) throws IOException {

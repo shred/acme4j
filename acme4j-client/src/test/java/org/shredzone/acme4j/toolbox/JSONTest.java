@@ -35,6 +35,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
@@ -58,6 +59,7 @@ public class JSONTest {
     public void testEmpty() {
         JSON empty = JSON.empty();
         assertThat(empty.toString(), is("{}"));
+        assertThat(empty.toMap().keySet(), is(empty()));
     }
 
     /**
@@ -69,10 +71,20 @@ public class JSONTest {
 
         JSON fromString = JSON.parse(json);
         assertThat(fromString.toString(), is(sameJSONAs(json)));
+        Map<String, Object> map = fromString.toMap();
+        assertThat(map.size(), is(2));
+        assertThat(map.keySet(), containsInAnyOrder("foo", "bar"));
+        assertThat(map.get("foo"), is("a-text"));
+        assertThat(map.get("bar"), is(123L));
 
         try (InputStream in = new ByteArrayInputStream(json.getBytes("utf-8"))) {
             JSON fromStream = JSON.parse(in);
             assertThat(fromStream.toString(), is(sameJSONAs(json)));
+            Map<String, Object> map2 = fromStream.toMap();
+            assertThat(map2.size(), is(2));
+            assertThat(map2.keySet(), containsInAnyOrder("foo", "bar"));
+            assertThat(map2.get("foo"), is("a-text"));
+            assertThat(map2.get("bar"), is(123L));
         }
     }
 
