@@ -353,7 +353,7 @@ public class DefaultConnection implements Connection {
             }
         }
 
-        throw new AcmeException("Too many reattempts", lastException);
+        throw lastException;
     }
 
     /**
