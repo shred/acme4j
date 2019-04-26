@@ -504,7 +504,7 @@ public class DefaultConnectionTest {
         String jsonData = "{\"type\":\"urn:ietf:params:acme:error:rateLimited\",\"detail\":\"Too many invocations\"}";
 
         Map<String, List<String>> linkHeader = new HashMap<>();
-        linkHeader.put("Link", Arrays.asList("<https://example.com/rates.pdf>; rel=\"urn:ietf:params:acme:documentation\""));
+        linkHeader.put("Link", Arrays.asList("<https://example.com/rates.pdf>; rel=\"help\""));
 
         Instant retryAfter = Instant.now().plusSeconds(30L).truncatedTo(ChronoUnit.MILLIS);
 

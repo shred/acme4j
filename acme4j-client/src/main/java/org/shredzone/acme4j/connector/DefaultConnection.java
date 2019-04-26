@@ -483,7 +483,7 @@ public class DefaultConnection implements Connection {
 
             if ("rateLimited".equals(error)) {
                 Optional<Instant> retryAfter = getRetryAfterHeader();
-                Collection<URL> rateLimits = getLinks("urn:ietf:params:acme:documentation");
+                Collection<URL> rateLimits = getLinks("help");
                 throw new AcmeRateLimitedException(problem, retryAfter.orElse(null), rateLimits);
             }
 
