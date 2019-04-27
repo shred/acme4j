@@ -339,21 +339,21 @@ public class DefaultConnection implements Connection {
         Objects.requireNonNull(accept, "accept");
         assertConnectionIsClosed();
 
-        AcmeException lastException = null;
-
-        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        int attempt = 1;
+        while (true) {
             try {
                 return performRequest(url, claims, session, keypair, accountLocation, accept);
             } catch (AcmeServerException ex) {
                 if (!BAD_NONCE_ERROR.equals(ex.getType())) {
                     throw ex;
                 }
-                lastException = ex;
+                if (attempt == MAX_ATTEMPTS) {
+                    throw ex;
+                }
                 LOG.info("Bad Replay Nonce, trying again (attempt {}/{})", attempt, MAX_ATTEMPTS);
+                attempt++;
             }
         }
-
-        throw lastException;
     }
 
     /**
