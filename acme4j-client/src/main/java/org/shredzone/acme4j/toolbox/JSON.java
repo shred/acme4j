@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -344,6 +345,21 @@ public final class JSON implements Serializable {
                 return new JSON(path, (Map<String, Object>) val);
             } catch (ClassCastException ex) {
                 throw new AcmeProtocolException(path + ": expected an object", ex);
+            }
+        }
+
+        /**
+         * Returns the value as JSON object that was Base64 URL encoded.
+         *
+         * @since 2.8
+         */
+        public JSON asEncodedObject() {
+            required();
+            try {
+                byte[] raw = AcmeUtils.base64UrlDecode(val.toString());
+                return new JSON(path, JsonUtil.parseJson(new String(raw, StandardCharsets.UTF_8)));
+            } catch (IllegalArgumentException | JoseException ex) {
+                throw new AcmeProtocolException(path + ": expected an encoded object", ex);
             }
         }
 

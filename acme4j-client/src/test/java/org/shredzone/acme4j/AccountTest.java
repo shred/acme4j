@@ -115,6 +115,8 @@ public class AccountTest {
         assertThat(account.getContacts(), hasSize(1));
         assertThat(account.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
         assertThat(account.getStatus(), is(Status.VALID));
+        assertThat(account.hasExternalAccountBinding(), is(true));
+        assertThat(account.getKeyIdentifier(), is("NCC-1701"));
 
         Iterator<Order> orderIt = account.getOrders();
         assertThat(orderIt, not(nullValue()));

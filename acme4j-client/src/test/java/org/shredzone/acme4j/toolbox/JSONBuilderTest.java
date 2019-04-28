@@ -112,7 +112,6 @@ public class JSONBuilderTest {
      * Test JWK.
      */
     @Test
-    @SuppressWarnings("unchecked")
     public void testKey() throws IOException, JoseException {
         KeyPair keyPair = TestUtils.createKeyPair();
 

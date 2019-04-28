@@ -4,5 +4,10 @@
     "mailto:foo2@example.com"
   ],
   "termsOfServiceAgreed": true,
-  "orders": "https://example.com/acme/acct/1/orders"
+  "orders": "https://example.com/acme/acct/1/orders",
+  "externalAccountBinding": {
+    "protected": "eyJ1cmwiOiJodHRwOi8vZXhhbXBsZS5jb20vYWNtZS9yZXNvdXJjZSIsImtpZCI6Ik5DQy0xNzAxIiwiYWxnIjoiSFMyNTYifQ",
+    "payload": "eyJrdHkiOiJSU0EiLCJuIjoicFpzVEtZNDF5X0N3Z0owVlg3Qm1tR3NfN1Vwcm1YUU1HUGNuU2JCZUpBalpIQTlTeXlKS2FXdjRmTlVkQklBWDNZMlFvWml4ajUwblFMeUx2Mm5nM3B2RW9STDBzeDlaSGdwNW5kQWpwSWlWUV84VjAxVFRZQ0VEVWM5aWk3YmpWa2dGQWI0VmFsWkdGSlo1NFBjQ25BSHZYaTVnMEVMT1J6R2NUdVJxSFZBVWNrTVYyb3RyMGcwdV81YldNbTZFTUFiQnJHUUNnVUdqYlpRSGphdmExWS01dEhYWmtQQmFoSjJMdktScU1tSlVscjBhbkt1Skp0SlVHMDNESllBeEFCdjhZQWFYRkJuR3c2a0tKUnBVRkFDNTVyeTRzcDRrR3kwTnJLMlRWV21aVzlrU3RuaVJ2NFJhSkdJOWFaR1l3UXkya1V5a2liQk5tV0VRVWxJd0l3IiwiZSI6IkFRQUIifQ",
+    "signature": "skPdpjTgx8zIGsNRtvv4zNlfp-uidFDgCMY3Z3ONLgw"
+  }
 }

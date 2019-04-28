@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
@@ -100,6 +99,8 @@ public class AccountBuilderTest {
         Account account = login.getAccount();
         assertThat(account.getTermsOfServiceAgreed(), is(true));
         assertThat(account.getLocation(), is(locationUrl));
+        assertThat(account.hasExternalAccountBinding(), is(false));
+        assertThat(account.getKeyIdentifier(), is(nullValue()));
 
         provider.close();
     }

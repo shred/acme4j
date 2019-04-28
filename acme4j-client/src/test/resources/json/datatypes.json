@@ -14,5 +14,6 @@
     "type": "urn:ietf:params:acme:error:rateLimited",
     "detail": "too many requests",
     "instance": "/documents/errors.html"
-  }
+  },
+  "encoded": "eyJrZXkiOiJ2YWx1ZSJ9"
 }

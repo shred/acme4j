@@ -105,7 +105,7 @@ public class JSONTest {
 
         assertThat(json.keySet(), containsInAnyOrder(
                     "text", "number", "boolean", "uri", "url", "date", "array",
-                    "collect", "status", "binary", "duration", "problem"));
+                    "collect", "status", "binary", "duration", "problem", "encoded"));
         assertThat(json.contains("text"), is(true));
         assertThat(json.contains("music"), is(false));
         assertThat(json.get("text"), is(notNullValue()));
@@ -233,6 +233,9 @@ public class JSONTest {
         JSON sub = array.get(3).asObject();
         assertThat(sub.get("test").asString(), is("ok"));
 
+        JSON encodedSub = json.get("encoded").asEncodedObject();
+        assertThat(encodedSub.toString(), is(sameJSONAs("{\"key\":\"value\"}")));
+
         Problem problem = json.get("problem").asProblem(BASE_URL);
         assertThat(problem, is(notNullValue()));
         assertThat(problem.getType(), is(URI.create("urn:ietf:params:acme:error:rateLimited")));
@@ -295,6 +298,13 @@ public class JSONTest {
         }
 
         try {
+            json.get("none").asEncodedObject();
+            fail("asEncodedObject did not fail");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
+
+        try {
             json.get("none").asStatus();
             fail("asStatus did not fail");
         } catch (AcmeProtocolException ex) {
@@ -339,6 +349,13 @@ public class JSONTest {
 
         try {
             json.get("text").asObject();
+            fail("no exception was thrown");
+        } catch (AcmeProtocolException ex) {
+            // expected
+        }
+
+        try {
+            json.get("text").asEncodedObject();
             fail("no exception was thrown");
         } catch (AcmeProtocolException ex) {
             // expected

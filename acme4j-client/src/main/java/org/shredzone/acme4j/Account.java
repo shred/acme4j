@@ -54,6 +54,7 @@ public class Account extends AcmeJsonResource {
     private static final String KEY_ORDERS = "orders";
     private static final String KEY_CONTACT = "contact";
     private static final String KEY_STATUS = "status";
+    private static final String KEY_EXTERNAL_ACCOUNT_BINDING = "externalAccountBinding";
 
     protected Account(Login login) {
         super(login, login.getAccountLocation());
@@ -89,6 +90,30 @@ public class Account extends AcmeJsonResource {
      */
     public Status getStatus() {
         return getJSON().get(KEY_STATUS).asStatus();
+    }
+
+    /**
+     * Returns {@code true} if the account is bound to an external non-ACME account.
+     *
+     * @since 2.8
+     */
+    public boolean hasExternalAccountBinding() {
+        return getJSON().contains(KEY_EXTERNAL_ACCOUNT_BINDING);
+    }
+
+    /**
+     * Returns the key identifier of the external non-ACME account. If this account is
+     * not bound to an external account, {@code null} is returned instead.
+     *
+     * @since 2.8
+     */
+    @CheckForNull
+    public String getKeyIdentifier() {
+        return getJSON().get(KEY_EXTERNAL_ACCOUNT_BINDING)
+                .optional().map(Value::asObject)
+                .map(j -> j.get("protected")).map(Value::asEncodedObject)
+                .map(j -> j.get("kid")).map(Value::asString)
+                .orElse(null);
     }
 
     /**
