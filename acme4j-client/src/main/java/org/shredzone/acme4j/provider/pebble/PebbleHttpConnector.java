@@ -26,10 +26,8 @@ import java.security.cert.CertificateException;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.ThreadSafe;
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
@@ -42,14 +40,6 @@ import org.shredzone.acme4j.connector.HttpConnector;
 @ParametersAreNonnullByDefault
 @ThreadSafe
 public class PebbleHttpConnector extends HttpConnector {
-
-    private static HostnameVerifier ALLOW_ALL_HOSTNAME_VERIFIER = new HostnameVerifier() {
-        @Override
-        public boolean verify(String hostname, SSLSession session) {
-            return true;
-        }
-    };
-
     private static SSLSocketFactory sslSocketFactory;
 
     @Override
@@ -58,7 +48,7 @@ public class PebbleHttpConnector extends HttpConnector {
         if (conn instanceof HttpsURLConnection) {
             HttpsURLConnection conns = (HttpsURLConnection) conn;
             conns.setSSLSocketFactory(createSocketFactory());
-            conns.setHostnameVerifier(ALLOW_ALL_HOSTNAME_VERIFIER);
+            conns.setHostnameVerifier((hostname, session) -> true);
         }
         return conn;
     }

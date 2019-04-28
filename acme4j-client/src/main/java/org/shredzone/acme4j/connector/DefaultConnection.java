@@ -457,7 +457,7 @@ public class DefaultConnection implements Connection {
     private void throwAcmeException() throws AcmeException {
         try {
             String contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
-            if (!"application/problem+json".equals(contentType)) {
+            if (!MIME_JSON_PROBLEM.equals(contentType)) {
                 throw new AcmeException("HTTP " + conn.getResponseCode() + ": " + conn.getResponseMessage());
             }
 

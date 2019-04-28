@@ -50,8 +50,8 @@ public class Certificate extends AcmeResource {
     private static final long serialVersionUID = 7381527770159084201L;
     private static final Logger LOG = LoggerFactory.getLogger(Certificate.class);
 
-    private ArrayList<X509Certificate> certChain = null;
-    private ArrayList<URL> alternates = null;
+    private ArrayList<X509Certificate> certChain;
+    private ArrayList<URL> alternates;
 
     protected Certificate(Login login, URL certUrl) {
         super(login, certUrl);
