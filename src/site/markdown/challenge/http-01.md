@@ -9,7 +9,7 @@ Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
 
 String token = challenge.getToken();
 String content = challenge.getAuthorization();
-String domain = auth.getDomain();
+String domain = auth.getIdentifier().getDomain();
 ```
 
 `token` is the name of the file that will be requested by the CA server. It must contain the `content` string, without any leading or trailing white spaces or line breaks. The `Content-Type` header must be either `text/plain` or absent.
