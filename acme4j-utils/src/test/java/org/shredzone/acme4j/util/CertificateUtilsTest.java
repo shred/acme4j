@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.util;
 
+import static java.time.temporal.ChronoUnit.SECONDS;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
@@ -25,6 +26,8 @@ import java.lang.reflect.Modifier;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
@@ -140,6 +143,101 @@ public class CertificateUtilsTest {
 
         assertThat(cert.getSubjectX500Principal().getName(), is("CN=acme.invalid"));
         assertThat(getIpSANs(cert), contains(subject));
+    }
+
+    /**
+     * Test if {@link CertificateUtils#createTestRootCertificate(String, Instant, Instant,
+     * KeyPair)} generates a valid root certificate.
+     */
+    @Test
+    public void testCreateTestRootCertificate() throws Exception {
+        KeyPair keypair = KeyPairUtils.createKeyPair(2048);
+        String subject = "CN=Test Root Certificate";
+        Instant notBefore = Instant.now().truncatedTo(SECONDS);
+        Instant notAfter = notBefore.plus(Duration.ofDays(14)).truncatedTo(SECONDS);
+
+        X509Certificate cert = CertificateUtils.createTestRootCertificate(subject,
+                notBefore, notAfter, keypair);
+
+        assertThat(cert.getIssuerX500Principal().getName(), is(subject));
+        assertThat(cert.getSubjectX500Principal().getName(), is(subject));
+        assertThat(cert.getNotBefore().toInstant(), is(notBefore));
+        assertThat(cert.getNotAfter().toInstant(), is(notAfter));
+        assertThat(cert.getSerialNumber(), not(nullValue()));
+        assertThat(cert.getPublicKey(), is(keypair.getPublic()));
+        cert.verify(cert.getPublicKey()); // self-signed
+    }
+
+    /**
+     * Test if {@link CertificateUtils#createTestIntermediateCertificate(String, Instant,
+     * Instant, PublicKey, X509Certificate, PrivateKey)} generates a valid intermediate
+     * certificate.
+     */
+    @Test
+    public void testCreateTestIntermediateCertificate() throws Exception {
+        KeyPair rootKeypair = KeyPairUtils.createKeyPair(2048);
+        String rootSubject = "CN=Test Root Certificate";
+        Instant rootNotBefore = Instant.now().minus(Duration.ofDays(1)).truncatedTo(SECONDS);
+        Instant rootNotAfter = rootNotBefore.plus(Duration.ofDays(14)).truncatedTo(SECONDS);
+
+        X509Certificate rootCert = CertificateUtils.createTestRootCertificate(rootSubject,
+                rootNotBefore, rootNotAfter, rootKeypair);
+
+        KeyPair keypair = KeyPairUtils.createKeyPair(2048);
+        String subject = "CN=Test Intermediate Certificate";
+        Instant notBefore = Instant.now().truncatedTo(SECONDS);
+        Instant notAfter = notBefore.plus(Duration.ofDays(7)).truncatedTo(SECONDS);
+
+        X509Certificate cert = CertificateUtils.createTestIntermediateCertificate(subject,
+                notBefore, notAfter, keypair.getPublic(), rootCert, rootKeypair.getPrivate());
+
+        assertThat(cert.getIssuerX500Principal().getName(), is(rootSubject));
+        assertThat(cert.getSubjectX500Principal().getName(), is(subject));
+        assertThat(cert.getNotBefore().toInstant(), is(notBefore));
+        assertThat(cert.getNotAfter().toInstant(), is(notAfter));
+        assertThat(cert.getSerialNumber(), not(nullValue()));
+        assertThat(cert.getSerialNumber(), not(rootCert.getSerialNumber()));
+        assertThat(cert.getPublicKey(), is(keypair.getPublic()));
+        cert.verify(rootKeypair.getPublic()); // signed by root
+    }
+
+    /**
+     * Test if {@link CertificateUtils#createTestCertificate(PKCS10CertificationRequest,
+     * Instant, Instant, X509Certificate, PrivateKey)} generates a valid certificate.
+     */
+    @Test
+    public void testCreateTestCertificate() throws Exception {
+        KeyPair rootKeypair = KeyPairUtils.createKeyPair(2048);
+        String rootSubject = "CN=Test Root Certificate";
+        Instant rootNotBefore = Instant.now().minus(Duration.ofDays(1)).truncatedTo(SECONDS);
+        Instant rootNotAfter = rootNotBefore.plus(Duration.ofDays(14)).truncatedTo(SECONDS);
+
+        X509Certificate rootCert = CertificateUtils.createTestRootCertificate(rootSubject,
+                rootNotBefore, rootNotAfter, rootKeypair);
+
+        KeyPair keypair = KeyPairUtils.createKeyPair(2048);
+        Instant notBefore = Instant.now().truncatedTo(SECONDS);
+        Instant notAfter = notBefore.plus(Duration.ofDays(7)).truncatedTo(SECONDS);
+
+        CSRBuilder builder = new CSRBuilder();
+        builder.addDomains("example.org", "www.example.org");
+        builder.addIP(InetAddress.getByName("192.168.0.1"));
+        builder.sign(keypair);
+        PKCS10CertificationRequest csr = builder.getCSR();
+
+        X509Certificate cert = CertificateUtils.createTestCertificate(csr, notBefore,
+                notAfter, rootCert, rootKeypair.getPrivate());
+
+        assertThat(cert.getIssuerX500Principal().getName(), is(rootSubject));
+        assertThat(cert.getSubjectX500Principal().getName(), is("CN=example.org"));
+        assertThat(getSANs(cert), contains("example.org", "www.example.org"));
+        assertThat(getIpSANs(cert), contains(InetAddress.getByName("192.168.0.1")));
+        assertThat(cert.getNotBefore().toInstant(), is(notBefore));
+        assertThat(cert.getNotAfter().toInstant(), is(notAfter));
+        assertThat(cert.getSerialNumber(), not(nullValue()));
+        assertThat(cert.getSerialNumber(), not(rootCert.getSerialNumber()));
+        assertThat(cert.getPublicKey(), is(keypair.getPublic()));
+        cert.verify(rootKeypair.getPublic()); // signed by root
     }
 
     /**
