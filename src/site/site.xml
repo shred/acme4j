@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ *
+ * acme4j - ACME Java client
+ *
+ * Copyright (C) 2015 Richard "Shred" Körber
+ *   http://acme4j.shredzone.org
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+-->
+<project xmlns="http://maven.apache.org/DECORATION/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
+  <publishDate position="right"/>
+  <version position="right"/>
+  <body>
+    <head>
+      <!-- Workaround for https://issues.apache.org/jira/browse/DOXIA-571 -->
+      <![CDATA[<script type="text/javascript">$(document).ready(function(){$(".source").addClass("prettyprint");prettyPrint();});</script>]]>
+    </head>
+    <links>
+      <item name="API javadoc" href="./apidocs/index.html"/>
+      <item name="GitHub" href="https://github.com/shred/acme4j"/>
+    </links>
+    <breadcrumbs>
+      <item name="shredzone.org" href="https://shredzone.org"/>
+      <item name="acme4j" href="index.html"/>
+    </breadcrumbs>
+    <menu name="Documentation">
+      <item name="Introduction" href="index.html"/>
+      <item name="Migration Guide" href="migration.html"/>
+      <item name="How to Use" href="usage/index.html">
+        <item name="Session" href="usage/session.html"/>
+        <item name="Account" href="usage/account.html"/>
+        <item name="Login" href="usage/login.html"/>
+        <item name="Order and Authorization" href="usage/order.html"/>
+        <item name="Certificate" href="usage/certificate.html"/>
+      </item>
+      <item name="Challenges" href="challenge/index.html">
+        <item name="http-01" href="challenge/http-01.html"/>
+        <item name="dns-01" href="challenge/dns-01.html"/>
+        <item name="tls-alpn-01" href="challenge/tls-alpn-01.html"/>
+      </item>
+      <item name="CAs" href="ca/index.html">
+        <item name="Let's Encrypt" href="ca/letsencrypt.html"/>
+        <item name="Pebble" href="ca/pebble.html"/>
+      </item>
+      <item name="Testing" href="testing/index.html">
+        <item name="Mock Module" href="testing/mock.html"/>
+        <item name="Simple Tests" href="testing/simple.html"/>
+      </item>
+      <item name="Development" href="development/index.html">
+        <item name="ACME Provider" href="development/provider.html"/>
+        <item name="Testing" href="development/testing.html"/>
+      </item>
+    </menu>
+    <menu ref="modules"/>
+    <menu ref="reports"/>
+  </body>
+
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>1.7</version>
+  </skin>
+</project>

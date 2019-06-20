@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ *
+ * acme4j - ACME Java client
+ *
+ * Copyright (C) 2019 Richard "Shred" Körber
+ *   http://acme4j.shredzone.org
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *
+-->
+<project xmlns="http://maven.apache.org/DECORATION/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
+  <publishDate position="right"/>
+  <version position="right"/>
+  <body>
+    <head>
+      <!-- Workaround for https://issues.apache.org/jira/browse/DOXIA-571 -->
+      <![CDATA[<script type="text/javascript">$(document).ready(function(){$(".source").addClass("prettyprint");prettyPrint();});</script>]]>
+    </head>
+    <links>
+      <item name="API javadoc" href="./apidocs/index.html"/>
+      <item name="GitHub" href="https://github.com/shred/acme4j"/>
+    </links>
+    <breadcrumbs>
+      <item name="shredzone.org" href="https://shredzone.org"/>
+      <item name="acme4j" href="../index.html"/>
+      <item name="acme4j-mock" href="index.html"/>
+    </breadcrumbs>
+    <menu name="Main">
+      <item name="Description" href="index.html"/>
+    </menu>
+    <menu ref="modules"/>
+    <menu ref="reports"/>
+  </body>
+
+  <skin>
+    <groupId>org.apache.maven.skins</groupId>
+    <artifactId>maven-fluido-skin</artifactId>
+    <version>1.7</version>
+  </skin>
+</project>
