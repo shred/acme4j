@@ -159,6 +159,21 @@ public final class JoseUtils {
     }
 
     /**
+     * Converts a JOSE JWK structure to a {@link PublicKey}.
+     *
+     * @param jwk
+     *         Map containing a JWK structure
+     * @return the extracted {@link PublicKey}
+     */
+    public static PublicKey jwkToPublicKey(Map<String, Object> jwk) {
+        try {
+            return PublicJsonWebKey.Factory.newPublicJwk(jwk).getPublicKey();
+        } catch (JoseException ex) {
+            throw new IllegalArgumentException("Bad JWK", ex);
+        }
+    }
+
+    /**
      * Computes a thumbprint of the given public key.
      *
      * @param key

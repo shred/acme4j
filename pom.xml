@@ -64,6 +64,7 @@
         <module>acme4j-utils</module>
         <module>acme4j-example</module>
         <module>acme4j-it</module>
+        <module>acme4j-mock</module>
     </modules>
 
     <build>

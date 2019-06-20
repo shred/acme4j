@@ -22,7 +22,9 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.URL;
 import java.security.KeyPair;
+import java.security.PublicKey;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.crypto.SecretKey;
@@ -184,6 +186,19 @@ public class JoseUtilsTest {
         assertThat(json.get("kty"), is(TestUtils.KTY));
         assertThat(json.get("n"), is(TestUtils.N));
         assertThat(json.get("e"), is(TestUtils.E));
+    }
+
+    /**
+     * Test if JWK structure is correctly converted to public key.
+     */
+    @Test
+    public void testJWKToPublicKey() throws Exception {
+        Map<String, Object> json = new HashMap<>();
+        json.put("kty", TestUtils.KTY);
+        json.put("n", TestUtils.N);
+        json.put("e", TestUtils.E);
+        PublicKey key = JoseUtils.jwkToPublicKey(json);
+        assertThat(key.getEncoded(), is(TestUtils.createKeyPair().getPublic().getEncoded()));
     }
 
     /**

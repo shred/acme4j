@@ -1,0 +1,27 @@
+acme4j Mock
+===========
+
+This is an ACME mock provider that can be used for unit testing _acme4j_ clients.
+
+How to Use
+----------
+
+Just add this snippet to your `pom.xml`:
+
+```xml
+<dependency>
+  <groupId>${project.groupId}</groupId>
+  <artifactId>${project.artifactId}</artifactId>
+  <version>${project.version}</version>
+  <scope>test</scope>
+</dependency>
+```
+
+Java Module
+-----------
+
+Add this line to your module descriptor:
+
+```java
+requires org.shredzone.acme4j.mock;
+```
