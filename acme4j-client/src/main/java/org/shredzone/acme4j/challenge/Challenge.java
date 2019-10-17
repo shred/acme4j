@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.challenge;
 
+import java.net.URL;
 import java.time.Instant;
 
 import javax.annotation.CheckForNull;
@@ -50,6 +51,11 @@ public class Challenge extends AcmeJsonResource {
     protected static final String KEY_STATUS = "status";
     protected static final String KEY_VALIDATED = "validated";
     protected static final String KEY_ERROR = "error";
+
+    public Challenge(Login login, URL location) {
+        super(login, location);
+    }
+
 
     /**
      * Creates a new generic {@link Challenge} object.

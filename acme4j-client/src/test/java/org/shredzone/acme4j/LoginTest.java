@@ -83,6 +83,11 @@ public class LoginTest {
         assertThat(order, is(notNullValue()));
         assertThat(order.getLogin(), is(login));
         assertThat(order.getLocation(), is(resourceUrl));
+
+        Challenge challenge = login.bindChallenge(resourceUrl);
+        assertThat(challenge, is(notNullValue()));
+        assertThat(challenge.getLogin(), is(login));
+        assertThat(challenge.getLocation(), is(resourceUrl));
     }
 
     /**

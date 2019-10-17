@@ -124,6 +124,18 @@ public class Login {
     }
 
     /**
+     * Creates a new instance of {@link Challenge} and binds it to this login.
+     *
+     * @param location
+     *            Location URL of the challenge
+     * @return
+     *            {@link Challenge} bound to the login
+     */
+    public Challenge bindChallenge(URL location) {
+        return new Challenge(this, requireNonNull(location, "location"));
+    }
+
+    /**
      * Creates a {@link Challenge} instance for the given challenge data.
      *
      * @param data
