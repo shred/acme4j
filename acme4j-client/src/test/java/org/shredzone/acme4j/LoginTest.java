@@ -16,9 +16,11 @@ package org.shredzone.acme4j;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
+import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyPair;
 
@@ -27,6 +29,7 @@ import org.mockito.ArgumentMatchers;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.provider.AcmeProvider;
+import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.shredzone.acme4j.toolbox.TestUtils;
@@ -133,6 +136,41 @@ public class LoginTest {
         assertThat(challenge, is(sameInstance(mockChallenge)));
 
         verify(mockProvider).createChallenge(login, data);
+    }
+
+
+    /**
+     * Test that binding to a challenge invokes createChallenge
+     */
+    @Test
+    public void testBindChallenge() throws Exception {
+        URL locationUrl = new URL("https://example.com/acme/challenge/1");
+
+        Http01Challenge mockChallenge = mock(Http01Challenge.class);
+        JSON httpChallenge = getJSON("httpChallenge");
+        TestableConnectionProvider provider  = new TestableConnectionProvider() {
+            @Override
+            public int sendSignedPostAsGetRequest(URL url, Login login) {
+                assertThat(url, is(locationUrl));
+                return HttpURLConnection.HTTP_OK;
+            }
+
+            @Override
+            public JSON readJsonResponse() {
+                return httpChallenge;
+            }
+
+            @Override
+            public Challenge createChallenge(Login login, JSON json) {
+                assertThat(json, is(httpChallenge));
+                return mockChallenge;
+            }
+        };
+
+        Login login = provider.createLogin();
+        Challenge challenge = login.bindChallenge(locationUrl);
+        assertThat(challenge, is(instanceOf(Http01Challenge.class)));
+        assertThat(challenge, is(sameInstance(mockChallenge)));
     }
 
 }

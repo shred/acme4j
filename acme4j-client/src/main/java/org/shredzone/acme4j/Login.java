@@ -23,6 +23,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.ThreadSafe;
 
 import org.shredzone.acme4j.challenge.Challenge;
+import org.shredzone.acme4j.connector.Connection;
+import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
 
@@ -121,6 +123,21 @@ public class Login {
      */
     public Order bindOrder(URL location) {
         return new Order(this, requireNonNull(location, "location"));
+    }
+
+    /**
+     * Creates a new instance of {@link Challenge} and binds it to this login.
+     *
+     * @param location
+     *            Location URL of the order
+     * @return {@link Challenge} bound to the login
+     */
+    public Challenge bindChallenge(URL location) throws AcmeException {
+        Connection connect = session.connect();
+        connect.sendSignedPostAsGetRequest(location, this);
+        JSON data = connect.readJsonResponse();
+        Objects.requireNonNull(data, "data");
+        return createChallenge(data);
     }
 
     /**
