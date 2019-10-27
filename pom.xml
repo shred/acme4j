@@ -129,7 +129,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <version>3.7.1</version>
+                <version>3.8.2</version>
                 <configuration>
                     <outputEncoding>UTF-8</outputEncoding>
                 </configuration>
@@ -195,7 +195,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.0.1</version>
+                <version>3.1.1</version>
                 <configuration>
                     <doclint>syntax,reference</doclint>
                     <linksource>true</linksource>
@@ -260,7 +260,7 @@
         <profile>
             <id>java-9</id>
             <activation>
-                <jdk>[9,)</jdk>
+                <jdk>[9,10]</jdk>
             </activation>
             <reporting>
                 <plugins>
@@ -269,6 +269,23 @@
                         <artifactId>maven-javadoc-plugin</artifactId>
                         <configuration>
                             <additionalJOption combine.self="override">--no-module-directories</additionalJOption>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </reporting>
+        </profile>
+        <profile>
+            <id>java-11</id>
+            <activation>
+                <jdk>[11,)</jdk>
+            </activation>
+            <reporting>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <configuration>
+                            <source>8</source>
                         </configuration>
                     </plugin>
                 </plugins>
