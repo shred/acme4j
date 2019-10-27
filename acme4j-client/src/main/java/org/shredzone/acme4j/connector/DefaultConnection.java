@@ -161,12 +161,11 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    @CheckForNull
     public JSON readJsonResponse() throws AcmeException {
         assertConnectionIsOpen();
 
         if (conn.getContentLength() == 0) {
-            return null;
+            throw new AcmeProtocolException("Empty response");
         }
 
         String contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
@@ -174,20 +173,19 @@ public class DefaultConnection implements Connection {
             throw new AcmeProtocolException("Unexpected content type: " + contentType);
         }
 
-        JSON result = null;
-
         try {
             InputStream in =
                     conn.getResponseCode() < 400 ? conn.getInputStream() : conn.getErrorStream();
-            if (in != null) {
-                result = JSON.parse(in);
-                LOG.debug("Result JSON: {}", result.toString());
+            if (in == null) {
+                throw new AcmeProtocolException("JSON response is empty");
             }
+
+            JSON result = JSON.parse(in);
+            LOG.debug("Result JSON: {}", result.toString());
+            return result;
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         }
-
-        return result;
     }
 
     @Override
@@ -461,11 +459,7 @@ public class DefaultConnection implements Connection {
                 throw new AcmeException("HTTP " + conn.getResponseCode() + ": " + conn.getResponseMessage());
             }
 
-            JSON problemJson = readJsonResponse();
-            if (problemJson == null) {
-                throw new AcmeProtocolException("Empty problem response");
-            }
-            Problem problem = new Problem(problemJson, conn.getURL());
+            Problem problem = new Problem(readJsonResponse(), conn.getURL());
 
             String error = AcmeUtils.stripErrorPrefix(problem.getType().toString());
 

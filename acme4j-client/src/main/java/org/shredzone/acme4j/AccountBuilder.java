@@ -30,7 +30,6 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
-import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.shredzone.acme4j.toolbox.JoseUtils;
 import org.slf4j.Logger;
@@ -219,10 +218,7 @@ public class AccountBuilder {
             }
 
             Login login = new Login(location, keyPair, session);
-            JSON json = conn.readJsonResponse();
-            if (json != null) {
-                login.getAccount().setJSON(json);
-            }
+            login.getAccount().setJSON(conn.readJsonResponse());
             return login;
         }
     }

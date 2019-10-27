@@ -153,11 +153,7 @@ public class Challenge extends AcmeJsonResource {
             prepareResponse(claims);
 
             conn.sendSignedRequest(getLocation(), claims, getLogin());
-
-            JSON json = conn.readJsonResponse();
-            if (json != null) {
-                setJSON(json);
-            }
+            setJSON(conn.readJsonResponse());
         }
     }
 

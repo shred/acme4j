@@ -26,6 +26,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -130,9 +131,10 @@ public interface Connection extends AutoCloseable {
     /**
      * Reads a server response as JSON data.
      *
-     * @return The JSON response, or {@code null} if the server did not provide any data.
+     * @return The JSON response.
+     * @throws AcmeProtocolException
+     *         if the JSON response was empty.
      */
-    @CheckForNull
     JSON readJsonResponse() throws AcmeException;
 
     /**

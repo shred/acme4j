@@ -203,10 +203,7 @@ public class Account extends AcmeJsonResource {
             }
 
             Authorization auth = getLogin().bindAuthorization(authLocation);
-            JSON json = conn.readJsonResponse();
-            if (json != null) {
-                auth.setJSON(json);
-            }
+            auth.setJSON(conn.readJsonResponse());
             return auth;
         }
     }
@@ -258,11 +255,7 @@ public class Account extends AcmeJsonResource {
             claims.put(KEY_STATUS, "deactivated");
 
             conn.sendSignedRequest(getLocation(), claims, getLogin());
-
-            JSON json = conn.readJsonResponse();
-            if (json != null) {
-                setJSON(json);
-            }
+            setJSON(conn.readJsonResponse());
         }
     }
 
@@ -348,11 +341,7 @@ public class Account extends AcmeJsonResource {
                 }
 
                 conn.sendSignedRequest(getLocation(), claims, getLogin());
-
-                JSON json = conn.readJsonResponse();
-                if (json != null) {
-                    setJSON(json);
-                }
+                setJSON(conn.readJsonResponse());
             }
         }
     }

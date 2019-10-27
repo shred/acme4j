@@ -146,11 +146,7 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
         Session session = login.getSession();
         try (Connection conn = session.connect()) {
             conn.sendSignedPostAsGetRequest(nextUrl, login);
-
-            JSON json = conn.readJsonResponse();
-            if (json != null) {
-                fillUrlList(json);
-            }
+            fillUrlList(conn.readJsonResponse());
 
             nextUrl = conn.getLinks("next").stream().findFirst().orElse(null);
         }

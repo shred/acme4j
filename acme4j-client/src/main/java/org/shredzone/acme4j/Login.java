@@ -135,9 +135,7 @@ public class Login {
     public Challenge bindChallenge(URL location) throws AcmeException {
         Connection connect = session.connect();
         connect.sendSignedPostAsGetRequest(location, this);
-        JSON data = connect.readJsonResponse();
-        Objects.requireNonNull(data, "data");
-        return createChallenge(data);
+        return createChallenge(connect.readJsonResponse());
     }
 
     /**

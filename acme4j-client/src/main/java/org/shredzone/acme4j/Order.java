@@ -26,7 +26,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
@@ -266,11 +265,7 @@ public class Order extends AcmeJsonResource {
             claims.put("status", "canceled");
 
             conn.sendSignedRequest(getLocation(), claims, getLogin());
-
-            JSON json = conn.readJsonResponse();
-            if (json != null) {
-                setJSON(json);
-            }
+            setJSON(conn.readJsonResponse());
         }
     }
 
