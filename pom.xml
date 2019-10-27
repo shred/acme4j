@@ -81,7 +81,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>3.1.10</version>
+                <version>3.1.12.2</version>
                 <configuration>
                     <excludeFilterFile>src/config/spotbugs-exclude.xml</excludeFilterFile>
                 </configuration>
@@ -205,7 +205,7 @@
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>3.1.10</version>
+                <version>3.1.12.2</version>
             </plugin>
         </plugins>
     </reporting>
