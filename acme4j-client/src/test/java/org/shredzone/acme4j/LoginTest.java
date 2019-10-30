@@ -138,7 +138,6 @@ public class LoginTest {
         verify(mockProvider).createChallenge(login, data);
     }
 
-
     /**
      * Test that binding to a challenge invokes createChallenge
      */

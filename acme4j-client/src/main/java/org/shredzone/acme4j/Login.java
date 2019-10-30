@@ -25,6 +25,7 @@ import javax.annotation.concurrent.ThreadSafe;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
 
@@ -131,11 +132,16 @@ public class Login {
      * @param location
      *            Location URL of the order
      * @return {@link Challenge} bound to the login
+     * @since 2.8
      */
-    public Challenge bindChallenge(URL location) throws AcmeException {
-        Connection connect = session.connect();
-        connect.sendSignedPostAsGetRequest(location, this);
-        return createChallenge(connect.readJsonResponse());
+    public Challenge bindChallenge(URL location) {
+        try {
+            Connection connect = session.connect();
+            connect.sendSignedPostAsGetRequest(location, this);
+            return createChallenge(connect.readJsonResponse());
+        } catch (AcmeException ex) {
+            throw new AcmeLazyLoadingException(Challenge.class, location, ex);
+        }
     }
 
     /**

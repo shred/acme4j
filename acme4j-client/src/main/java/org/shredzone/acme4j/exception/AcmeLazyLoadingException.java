@@ -43,10 +43,24 @@ public class AcmeLazyLoadingException extends RuntimeException {
      *            {@link AcmeException} that was raised
      */
     public AcmeLazyLoadingException(AcmeResource resource, AcmeException cause) {
-        super(requireNonNull(resource).getClass().getSimpleName() + " "
-            + requireNonNull(resource).getLocation(), requireNonNull(cause));
-        type = resource.getClass();
-        location = resource.getLocation();
+        this(requireNonNull(resource).getClass(), requireNonNull(resource).getLocation(), cause);
+    }
+
+    /**
+     * Creates a new {@link AcmeLazyLoadingException}.
+     *
+     * @param type
+     *         {@link AcmeResource} type to be loaded
+     * @param location
+     *         Resource location
+     * @param cause
+     *         {@link AcmeException} that was raised
+     * @since 2.8
+     */
+    public AcmeLazyLoadingException(Class<? extends AcmeResource> type, URL location, AcmeException cause) {
+        super(requireNonNull(type).getSimpleName() + " " + requireNonNull(location), requireNonNull(cause));
+        this.type = type;
+        this.location = location;
     }
 
     /**
