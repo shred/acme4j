@@ -16,10 +16,10 @@ package org.shredzone.acme4j.connector;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.Proxy;
 import java.net.URL;
 import java.util.Properties;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory;
 @ThreadSafe
 public class HttpConnector {
 
-    private static final int TIMEOUT = 10000;
     private static final String USER_AGENT;
 
     static {
@@ -69,28 +68,33 @@ public class HttpConnector {
      *
      * @param url
      *            {@link URL} to connect to
-     * @param proxy
-     *            {@link Proxy} to be used
+     * @param settings
+     *            {@link NetworkSettings} to be used
      * @return {@link HttpURLConnection} connected to the {@link URL}
      */
-    public HttpURLConnection openConnection(URL url, Proxy proxy) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection(proxy);
-        configure(conn);
+    public HttpURLConnection openConnection(URL url, NetworkSettings settings) throws IOException {
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection(settings.getProxy());
+        configure(conn, settings);
         return conn;
     }
 
     /**
      * Configures the new {@link HttpURLConnection}.
      * <p>
-     * This implementation sets reasonable timeouts, forbids caching, and sets an user
-     * agent.
+     * The {@link HttpURLConnection} is already preconfigured with a reasonable timeout,
+     * disabled caches and a User-Agent header. Subclasses can override this method to
+     * change the configuration.
      *
      * @param conn
-     *            {@link HttpURLConnection} to configure.
+     *         {@link HttpURLConnection} to configure.
+     * @param settings
+     *         {@link NetworkSettings} with settings to be used
      */
-    protected void configure(HttpURLConnection conn) {
-        conn.setConnectTimeout(TIMEOUT);
-        conn.setReadTimeout(TIMEOUT);
+    @OverridingMethodsMustInvokeSuper
+    protected void configure(HttpURLConnection conn, NetworkSettings settings) {
+        int timeout = (int) settings.getTimeout().toMillis();
+        conn.setConnectTimeout(timeout);
+        conn.setReadTimeout(timeout);
         conn.setUseCaches(false);
         conn.setRequestProperty("User-Agent", USER_AGENT);
     }

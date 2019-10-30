@@ -16,7 +16,6 @@ package org.shredzone.acme4j.provider.pebble;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
-import java.net.Proxy;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -32,6 +31,7 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 import org.shredzone.acme4j.connector.HttpConnector;
+import org.shredzone.acme4j.connector.NetworkSettings;
 
 /**
  * {@link HttpConnector} to be used for Pebble. Pebble uses a static, self signed SSL
@@ -43,12 +43,12 @@ public class PebbleHttpConnector extends HttpConnector {
     private static SSLSocketFactory sslSocketFactory;
 
     @Override
-    public HttpURLConnection openConnection(URL url, Proxy proxy) throws IOException {
-        HttpURLConnection conn = super.openConnection(url, proxy);
+    public HttpURLConnection openConnection(URL url, NetworkSettings settings) throws IOException {
+        HttpURLConnection conn = super.openConnection(url, settings);
         if (conn instanceof HttpsURLConnection) {
             HttpsURLConnection conns = (HttpsURLConnection) conn;
             conns.setSSLSocketFactory(createSocketFactory());
-            conns.setHostnameVerifier((hostname, session) -> true);
+            conns.setHostnameVerifier((h, s) -> true);
         }
         return conn;
     }

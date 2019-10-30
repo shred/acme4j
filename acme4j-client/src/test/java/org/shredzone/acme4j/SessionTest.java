@@ -20,9 +20,6 @@ import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.*;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.Proxy.Type;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
@@ -96,14 +93,8 @@ public class SessionTest {
         session.setNonce(DUMMY_NONCE);
         assertThat(session.getNonce(), is(equalTo(DUMMY_NONCE)));
 
-        assertThat(session.getProxy(), is(Proxy.NO_PROXY));
-        Proxy proxy = new Proxy(Type.HTTP, new InetSocketAddress("10.0.0.1", 8080));
-        session.setProxy(proxy);
-        assertThat(session.getProxy(), is(proxy));
-        session.setProxy(null);
-        assertThat(session.getProxy(), is(Proxy.NO_PROXY));
-
         assertThat(session.getServerUri(), is(serverUri));
+        assertThat(session.networkSettings(), is(notNullValue()));
     }
 
     /**

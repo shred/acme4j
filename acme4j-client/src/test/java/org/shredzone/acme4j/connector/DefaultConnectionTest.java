@@ -17,6 +17,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
@@ -26,7 +27,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
-import java.net.Proxy;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
@@ -72,6 +72,7 @@ public class DefaultConnectionTest {
 
     private URL requestUrl = TestUtils.url("http://example.com/acme/");
     private URL accountUrl = TestUtils.url(TestUtils.ACCOUNT_URL);
+    private NetworkSettings settings = new NetworkSettings();
     private HttpURLConnection mockUrlConnection;
     private HttpConnector mockHttpConnection;
     private Session session;
@@ -83,7 +84,7 @@ public class DefaultConnectionTest {
         mockUrlConnection = mock(HttpURLConnection.class);
 
         mockHttpConnection = mock(HttpConnector.class);
-        when(mockHttpConnection.openConnection(requestUrl, Proxy.NO_PROXY)).thenReturn(mockUrlConnection);
+        when(mockHttpConnection.openConnection(same(requestUrl), any())).thenReturn(mockUrlConnection);
 
         final AcmeProvider mockProvider = mock(AcmeProvider.class);
         when(mockProvider.directory(
@@ -163,7 +164,7 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testResetNonce() throws AcmeException, IOException {
-        when(mockHttpConnection.openConnection(new URL("https://example.com/acme/new-nonce"), Proxy.NO_PROXY))
+        when(mockHttpConnection.openConnection(eq(new URL("https://example.com/acme/new-nonce")), any()))
                 .thenReturn(mockUrlConnection);
         when(mockUrlConnection.getResponseCode())
                 .thenReturn(HttpURLConnection.HTTP_NO_CONTENT);
@@ -955,7 +956,7 @@ public class DefaultConnectionTest {
      */
     @Test(expected = AcmeException.class)
     public void testSendSignedRequestNoNonce() throws Exception {
-        when(mockHttpConnection.openConnection(new URL("https://example.com/acme/new-nonce"), Proxy.NO_PROXY))
+        when(mockHttpConnection.openConnection(eq(new URL("https://example.com/acme/new-nonce")), any()))
                 .thenReturn(mockUrlConnection);
         when(mockUrlConnection.getResponseCode())
                 .thenReturn(HttpURLConnection.HTTP_NOT_FOUND);

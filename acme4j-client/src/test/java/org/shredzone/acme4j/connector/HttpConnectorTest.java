@@ -15,14 +15,13 @@ package org.shredzone.acme4j.connector;
 
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.net.Proxy;
 import java.net.URL;
+import java.time.Duration;
 
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -38,14 +37,17 @@ public class HttpConnectorTest {
      * This is just a mock to check that the parameters are properly set.
      */
     @Test
-    public void testMockOpenConnection() {
+    public void testMockOpenConnection() throws IOException {
+        NetworkSettings settings = new NetworkSettings();
+        settings.setTimeout(Duration.ofSeconds(50));
+
         HttpURLConnection conn = mock(HttpURLConnection.class);
 
         HttpConnector connector = new HttpConnector();
-        connector.configure(conn);
+        connector.configure(conn, settings);
 
-        verify(conn).setConnectTimeout(anyInt());
-        verify(conn).setReadTimeout(anyInt());
+        verify(conn).setConnectTimeout(50000);
+        verify(conn).setReadTimeout(50000);
         verify(conn).setUseCaches(false);
         verify(conn).setRequestProperty("User-Agent", HttpConnector.defaultUserAgent());
     }
@@ -59,8 +61,9 @@ public class HttpConnectorTest {
     @Test
     @Category(HttpURLConnection.class)
     public void testOpenConnection() throws IOException {
+        NetworkSettings settings = new NetworkSettings();
         HttpConnector connector = new HttpConnector();
-        HttpURLConnection conn = connector.openConnection(new URL("http://example.com"), Proxy.NO_PROXY);
+        HttpURLConnection conn = connector.openConnection(new URL("http://example.com"), settings);
         assertThat(conn, not(nullValue()));
         conn.connect();
         assertThat(conn.getResponseCode(), is(HttpURLConnection.HTTP_OK));

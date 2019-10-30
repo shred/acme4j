@@ -33,6 +33,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.annotation.concurrent.ThreadSafe;
 
 import org.shredzone.acme4j.connector.Connection;
+import org.shredzone.acme4j.connector.NetworkSettings;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
@@ -51,12 +52,12 @@ public class Session {
 
     private final AtomicReference<Map<Resource, URL>> resourceMap = new AtomicReference<>();
     private final AtomicReference<Metadata> metadata = new AtomicReference<>();
+    private final NetworkSettings networkSettings = new NetworkSettings();
     private final URI serverUri;
     private final AcmeProvider provider;
 
     private String nonce;
     private Locale locale = Locale.getDefault();
-    private Proxy proxy = Proxy.NO_PROXY;
     protected Instant directoryCacheExpiry;
 
     /**
@@ -171,17 +172,33 @@ public class Session {
 
     /**
      * Gets the {@link Proxy} to be used for connections.
+     *
+     * @deprecated Use {@code networkSettings().getProxy()}
      */
+    @Deprecated
     public Proxy getProxy() {
-        return proxy;
+        return networkSettings.getProxy();
     }
 
     /**
      * Sets a {@link Proxy} that is to be used for all connections. If {@code null},
      * {@link Proxy#NO_PROXY} is used, which is also the default.
+     *
+     * @deprecated Use {@code networkSettings().setProxy(Proxy)}
      */
+    @Deprecated
     public void setProxy(@Nullable Proxy proxy) {
-        this.proxy = proxy != null ? proxy : Proxy.NO_PROXY;
+        networkSettings.setProxy(proxy);
+    }
+
+    /**
+     * Returns the current {@link NetworkSettings}.
+     *
+     * @return {@link NetworkSettings}
+     * @since 2.8
+     */
+    public NetworkSettings networkSettings() {
+        return networkSettings;
     }
 
     /**
