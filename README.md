@@ -12,9 +12,9 @@ It is an independent open source implementation that is not affiliated with or e
 
 This _acme4j_ branch implements the deprecated _ACME v1_ protocol. _Let's Encrypt_ has announced an [End of Life Plan for ACME v1](https://community.letsencrypt.org/t/end-of-life-plan-for-acmev1/88430). According to this plan, access to the ACME v1 servers will be limited starting November 2019, and completely stopped in June 2021.
 
-**Please [migrate](https://shredzone.org/maven/acme4j/migration.html) your code to _acme4j_ v2.5 or higher soon!**
+**For this reason, development of _acme4j_ v1 has been terminated since November 1st, 2019. Please [migrate](https://shredzone.org/maven/acme4j/migration.html) your code to _acme4j_ v2.5 or higher!**
 
-This _acme4j_ v1 branch will **only receive security fixes until November 1st, 2019**. After that date, ACME v1 support will end and this branch will be closed.
+There will be no more updates or security fixes for acme4j v1. Bug reports related to acme4j v1 will be closed without comment.
 
 ## Features
 
