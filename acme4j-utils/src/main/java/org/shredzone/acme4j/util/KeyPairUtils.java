@@ -47,6 +47,19 @@ public class KeyPairUtils {
     }
 
     /**
+     * Creates a new standard {@link KeyPair}.
+     * <p>
+     * This method can be used if no specific key type is required. It returns a
+     * "secp384r1" ECDSA key pair.
+     *
+     * @return Generated {@link KeyPair}
+     * @since 2.8
+     */
+    public static KeyPair createKeyPair() {
+        return createECKeyPair("secp384r1");
+    }
+
+    /**
      * Creates a new RSA {@link KeyPair}.
      *
      * @param keysize

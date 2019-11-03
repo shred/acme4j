@@ -43,6 +43,19 @@ public class KeyPairUtilsTest {
     }
 
     /**
+     * Test that standard keypair generates a secure key pair.
+     */
+    @Test
+    public void testCreateStandardKeyPair() {
+        KeyPair pair = KeyPairUtils.createKeyPair();
+        assertThat(pair, is(notNullValue()));
+        assertThat(pair.getPublic(), is(instanceOf(ECPublicKey.class)));
+        ECPublicKey pk = (ECPublicKey) pair.getPublic();
+        assertThat(pk.getAlgorithm(), is("ECDSA"));
+        assertThat(pk.getParams().getCurve().getField().getFieldSize(), is(384));
+    }
+
+    /**
      * Test that RSA keypairs of the correct size are generated.
      */
     @Test
