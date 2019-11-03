@@ -319,6 +319,18 @@ public class MockOrder extends MockResource {
         return buildUrl("certificate", getUniqueId());
     }
 
+    /**
+     * Detaches this {@link MockOrder} from the {@link Repository}.
+     *
+     * @param repository
+     *         {@link Repository} to remove the order from.
+     */
+    public void detach(Repository repository) {
+        repository.removeController(getFinalizeLocation());
+        repository.removeController(getCertificateLocation());
+        repository.removeResource(this);
+    }
+
     @Override
     public JSON toJSON() {
         JSONBuilder jb = new JSONBuilder();

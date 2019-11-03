@@ -68,6 +68,15 @@ public class MockAccountTest {
         assertThat(account.getPublicKey(), is(PUBLIC_KEY));
         assertThat(account.getStatus(), is(Status.VALID));
         assertThat(account.getTermsOfServiceAgreed(), is(nullValue()));
+
+        // Detach from repository
+        account.detach(repository);
+        assertThat(repository.getController(account.getLocation()).isPresent(),
+                is(false));
+        assertThat(repository.getController(account.getOrdersLocation()).isPresent(),
+                is(false));
+        assertThat(repository.getResourceOfType(account.getLocation(), MockAccount.class).isPresent(),
+                is(false));
     }
 
     /**

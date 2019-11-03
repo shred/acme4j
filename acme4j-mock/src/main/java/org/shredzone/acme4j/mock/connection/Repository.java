@@ -88,6 +88,21 @@ public class Repository {
     }
 
     /**
+     * Removes a controller {@link URL}.
+     *
+     * @param url
+     *         {@link URL} of the controller to be removed
+     */
+    public void removeController(URL url) {
+        URI uri = safeToURI(url);
+        Controller receiver = resourceMap.get(uri);
+        if (receiver == null) {
+            throw new IllegalArgumentException("No controller is registered for " + url);
+        }
+        resourceMap.remove(uri);
+    }
+
+    /**
      * Adds a {@link MockResource} to this repository.
      *
      * @param resource
@@ -113,6 +128,21 @@ public class Repository {
         return Optional.ofNullable(resources.get(safeToURI(url)))
                 .filter(type::isInstance)
                 .map(type::cast);
+    }
+
+    /**
+     * Removes a {@link MockResource} from this repository. Also removes the controller.
+     *
+     * @param resource
+     *         {@link MockResource} to remove
+     */
+    public void removeResource(MockResource resource) {
+        URI uri = safeToURI(resource.getLocation());
+        if (!resources.containsKey(uri)) {
+            throw new IllegalArgumentException("Unknown resource " + resource.getLocation());
+        }
+        removeController(resource.getLocation());
+        resources.remove(uri);
     }
 
     /**

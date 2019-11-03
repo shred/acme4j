@@ -59,6 +59,13 @@ public class MockAuthorizationTest {
         assertThat(auth.getIdentifier(), is(IDENTIFIER));
         assertThat(auth.getStatus(), is(Status.PENDING));
         assertThat(auth.getWildcard(), is(nullValue()));
+
+        // Detach from repository
+        auth.detach(repository);
+        assertThat(repository.getController(auth.getLocation()).isPresent(),
+                is(false));
+        assertThat(repository.getResourceOfType(auth.getLocation(), MockAuthorization.class).isPresent(),
+                is(false));
     }
 
     /**

@@ -20,6 +20,7 @@ import static org.junit.Assert.fail;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyPair;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import org.junit.Test;
@@ -184,6 +185,12 @@ public class MockAcmeServerTest {
         assertThat(server.getAccounts().size(), is(2));
         assertThat(server.findAccount(keyPair1.getPublic()).isPresent(), is(false));
         assertThat(server.findAccount(keyPair2.getPublic()).isPresent(), is(false));
+
+        server.removeAccount(account1);
+        assertThat(server.getAccounts().size(), is(1));
+
+        server.removeAccount(account2);
+        assertThat(server.getAccounts().size(), is(0));
     }
 
     /**
@@ -213,6 +220,9 @@ public class MockAcmeServerTest {
 
         Optional<MockAuthorization> missingAuth = server.findAuthorization(Identifier.dns("example.com"));
         assertThat(missingAuth.isPresent(), is(false));
+
+        server.removeAuthorization(auth);
+        assertThat(server.findAuthorization(identifier).isPresent(), is(false));
     }
 
     /**
@@ -268,6 +278,14 @@ public class MockAcmeServerTest {
 
         MockChallenge mockChallenge = server.getMockOf(challenge);
         assertThat(mockChallenge, sameInstance(createdChallenge));
+
+        server.removeChallenge(createdChallenge);
+        try {
+            server.getMockOf(challenge);
+            fail("Challenge is still there");
+        } catch (NoSuchElementException ex) {
+            // expected
+        }
     }
 
     /**
@@ -284,6 +302,14 @@ public class MockAcmeServerTest {
         Order order = login.bindOrder(createdOrder.getLocation());
         MockOrder mockOrder = server.getMockOf(order);
         assertThat(mockOrder, sameInstance(createdOrder));
+
+        server.removeOrder(createdOrder);
+        try {
+            server.getMockOf(order);
+            fail("Order is still there");
+        } catch (NoSuchElementException ex) {
+            // expected
+        }
     }
 
     /**

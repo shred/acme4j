@@ -248,6 +248,17 @@ public class MockAcmeServer {
     }
 
     /**
+     * Removes a {@link MockAccount}.
+     *
+     * @param account
+     *         {@link MockAccount} to remove
+     */
+    public void removeAccount(MockAccount account) {
+        account.detach(repository);
+        accounts.remove(account);
+    }
+
+    /**
      * Creates a new {@link MockAuthorization} for the given {@link Identifier}. If there
      * is already a {@link MockAuthorization} for that {@link Identifier}, it is returned
      * instead.
@@ -273,6 +284,17 @@ public class MockAcmeServer {
     }
 
     /**
+     * Removes a {@link MockAuthorization}.
+     *
+     * @param authorization
+     *         {@link MockAuthorization} to remove
+     */
+    public void removeAuthorization(MockAuthorization authorization) {
+        authorization.detach(repository);
+        authorizations.remove(authorization.getIdentifier());
+    }
+
+    /**
      * Creates a new {@link MockChallenge} instance of the given type.
      *
      * @param type
@@ -282,6 +304,16 @@ public class MockAcmeServer {
     public MockChallenge createChallenge(String type) {
         requireNonNull(type, "type");
         return MockChallenge.create(repository, type);
+    }
+
+    /**
+     * Removes a {@link MockChallenge}.
+     *
+     * @param challenge
+     *         {@link MockChallenge} to remove
+     */
+    public void removeChallenge(MockChallenge challenge) {
+        challenge.detach(repository);
     }
 
     /**
@@ -341,6 +373,16 @@ public class MockAcmeServer {
         }
 
         return MockOrder.create(repository, identifiers, authorizations, ca);
+    }
+
+    /**
+     * Removes a {@link MockOrder}.
+     *
+     * @param order
+     *         {@link MockOrder} to remove
+     */
+    public void removeOrder(MockOrder order) {
+        order.detach(repository);
     }
 
     /**

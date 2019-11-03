@@ -59,6 +59,13 @@ public class MockChallengeTest {
         assertThat(challenge.getToken(), is(nullValue()));
         assertThat(challenge.getType(), is(Http01Challenge.TYPE));
         assertThat(challenge.getValidated(), is(nullValue()));
+
+        // Detach from repository
+        challenge.detach(repository);
+        assertThat(repository.getController(challenge.getLocation()).isPresent(),
+                is(false));
+        assertThat(repository.getResourceOfType(challenge.getLocation(), MockChallenge.class).isPresent(),
+                is(false));
     }
 
     /**
