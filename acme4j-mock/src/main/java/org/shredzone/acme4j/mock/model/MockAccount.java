@@ -182,6 +182,17 @@ public class MockAccount extends MockResource {
         return buildUrl("account", getUniqueId(), "orders");
     }
 
+    /**
+     * Detaches this {@link MockAccount} from the {@link Repository}.
+     *
+     * @param repository
+     *         {@link Repository} to remove the account from.
+     */
+    public void detach(Repository repository) {
+        repository.removeController(getOrdersLocation());
+        repository.removeResource(this);
+    }
+
     @Override
     public JSON toJSON() {
         JSONBuilder jb = new JSONBuilder();

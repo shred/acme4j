@@ -32,6 +32,8 @@ import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.mock.connection.MockCertificateAuthority;
 import org.shredzone.acme4j.mock.connection.ProblemBuilder;
 import org.shredzone.acme4j.mock.connection.Repository;
+import org.shredzone.acme4j.mock.controller.CertificateController;
+import org.shredzone.acme4j.mock.controller.FinalizeController;
 import org.shredzone.acme4j.mock.controller.OrderController;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 
@@ -64,6 +66,10 @@ public class MockOrderTest {
         // Controllers were added to the repository?
         assertThat(repository.getController(order.getLocation()).get(),
                 is(instanceOf(OrderController.class)));
+        assertThat(repository.getController(order.getFinalizeLocation()).get(),
+                is(instanceOf(FinalizeController.class)));
+        assertThat(repository.getController(order.getCertificateLocation()).get(),
+                is(instanceOf(CertificateController.class)));
         assertThat(repository.getResourceOfType(order.getLocation(), MockOrder.class).get(),
                 is(sameInstance(order)));
 
@@ -76,6 +82,17 @@ public class MockOrderTest {
         assertThat(order.getNotBefore(), is(nullValue()));
         assertThat(order.getNotAfter(), is(nullValue()));
         assertThat(order.getStatus(), is(Status.PENDING));
+
+        // Detach from repository
+        order.detach(repository);
+        assertThat(repository.getController(order.getLocation()).isPresent(),
+                is(false));
+        assertThat(repository.getController(order.getFinalizeLocation()).isPresent(),
+                is(false));
+        assertThat(repository.getController(order.getCertificateLocation()).isPresent(),
+                is(false));
+        assertThat(repository.getResourceOfType(order.getLocation(), MockOrder.class).isPresent(),
+                is(false));
     }
 
     /**

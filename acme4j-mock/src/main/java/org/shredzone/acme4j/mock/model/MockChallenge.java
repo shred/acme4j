@@ -193,6 +193,16 @@ public class MockChallenge extends MockResource {
         return buildUrl("challenge", getUniqueId());
     }
 
+    /**
+     * Detaches this {@link MockChallenge} from the {@link Repository}.
+     *
+     * @param repository
+     *         {@link Repository} to remove the challenge from.
+     */
+    public void detach(Repository repository) {
+        repository.removeResource(this);
+    }
+
     @Override
     public JSON toJSON() {
         JSONBuilder jb = new JSONBuilder();
