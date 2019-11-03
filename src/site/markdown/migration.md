@@ -4,11 +4,6 @@ This document will help you migrate your code to the latest _acme4j_ version.
 
 <div class="alert alert-info" role="alert">
 
-**Starting on November 1st, 2019, all _acme4j_ versions before 2.5 will not work properly any more.**
-
-I recommend to update at least to this _acme4j_ version as soon as possible! _Let's Encrypt_ has [announced a sunset date for GET requests](https://community.letsencrypt.org/t/acme-v2-scheduled-deprecation-of-unauthenticated-resource-gets/74380) on November 1st, 2019. On the same day [access to the ACMEv1 servers](https://community.letsencrypt.org/t/end-of-life-plan-for-acmev1/88430) will be restricted.
-</div>
-
 ## Migration to Version 2.7
 
 - Note that _acme4j_ has an `Automatic-Module-Name` set in the acme-client and acme-utils modules now. If you have added _acme4j_ to your Java 9+ module dependencies, you'll need to fix your dependency declaration to `org.shredzone.acme4j` (acme-client) and `org.shredzone.acme4j.utils` (acme-utils).
