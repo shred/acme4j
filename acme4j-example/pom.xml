@@ -30,7 +30,6 @@
 
     <properties>
         <!-- I prefer readability over maintainability in the examples... -->
-        <sonar.skip>true</sonar.skip>
         <spotbugs.skip>true</spotbugs.skip>
     </properties>
 
