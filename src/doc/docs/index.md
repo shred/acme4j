@@ -12,9 +12,6 @@ The source code can be found at [GitHub](https://github.com/shred/acme4j) and is
 
 Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzone.acme4j/acme4j/badge.svg)
 
-!!! danger
-    **Make sure to use _acme4j_ 2.5 or higher, before November 1st 2019.** Due to a change in the ACME protocol, _acme4j_ < 2.5 will fail to connect to servers after that date. See [here](https://community.letsencrypt.org/t/acme-v2-scheduled-deprecation-of-unauthenticated-resource-gets/74380) for details.
-
 ## Features
 
 * Fully [RFC 8555](https://tools.ietf.org/html/rfc8555) compliant
