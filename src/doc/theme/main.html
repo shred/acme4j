@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ 'css/font.css'|url }}" />
+<link rel="stylesheet" href="{{ 'css/theme.css'|url }}" />
+<link rel="stylesheet" href="{{ 'css/theme_extra.css'|url }}" />
+<link rel="stylesheet" href="{{ 'css/theme_custom.css'|url }}" />
+{%- for path in config['extra_css'] %}
+<link href="{{ path|url }}" rel="stylesheet" />
+{%- endfor %}
+{% endblock %}
+
+{% block repo %}
+<a href="https://shredzone.org/maven/acme4j/apidocs/index.html">API javadoc</a>s
+{% endblock %}

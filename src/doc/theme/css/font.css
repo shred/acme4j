@@ -1,0 +1,35 @@
+/*
+ * Lato
+ * Copyright 2010-2011 tyPoland Lukasz Dziedzic
+ * SIL Open Font License, 1.1
+ */
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Lato Regular'), local('Lato-Regular'), url('../fonts/lato-v15-latin-regular.woff') format('woff');
+}
+
+/*
+ * Roboto Slab
+ * Copyright 2013 Google
+ * Apache License, version 2.0
+ */
+@font-face {
+  font-family: 'Roboto Slab';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto Slab Regular'), local('RobotoSlab-Regular'), url('../fonts/roboto-slab-v8-latin-regular.woff') format('woff');
+}
+
+/*
+ * Inconsolata
+ * Copyright 2006 The Inconsolata Project Authors
+ * SIL Open Font License, 1.1
+ */
+@font-face {
+  font-family: 'Inconsolata';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Inconsolata Regular'), local('Inconsolata-Regular'), url('../fonts/inconsolata-v17-latin-regular.woff') format('woff');
+}

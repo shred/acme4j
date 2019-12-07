@@ -1,0 +1,9 @@
+{% for toc_item in page.toc %}
+    {% if toc_item.children %}
+        <ul>
+        {% for toc_item in toc_item.children %}
+            <li><a class="toctree-l{{ navlevel + 2 }}" href="{{ toc_item.url }}">{{ toc_item.title }}</a></li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+{% endfor %}

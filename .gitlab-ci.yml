@@ -19,4 +19,4 @@ deploy:
     - maven
     - docker
   script:
-    - mvn -B install site:site
+    - mvn -B install javadoc:javadoc mkdocs:build

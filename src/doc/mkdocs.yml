@@ -1,0 +1,44 @@
+site_name: acme4j
+site_author: Richard Körber
+site_url: https://acme4j.shredzone.org
+site_dir: target/site/
+repo_url: https://github.com/shred/acme4j
+edit_uri: ''
+use_directory_urls: false
+theme:
+    name: readthedocs
+    custom_dir: theme/
+    highlightjs: false
+markdown_extensions:
+  - admonition
+  - codehilite
+  - def_list
+  - toc:
+      permalink: true
+nav:
+  - 'index.md'
+  - JavaDocs:
+    - 'acme4j-client': acme4j-client/apidocs/index.html
+    - 'acme4j-utils': acme4j-utils/apidocs/index.html
+    - 'acme4j-it': acme4j-it/apidocs/index.html
+  - Usage:
+    - 'usage/index.md'
+    - 'usage/session.md'
+    - 'usage/account.md'
+    - 'usage/login.md'
+    - 'usage/order.md'
+    - 'usage/certificate.md'
+  - Challenges:
+    - 'challenge/index.md'
+    - 'challenge/http-01.md'
+    - 'challenge/dns-01.md'
+    - 'challenge/tls-alpn-01.md'
+  - CA:
+    - 'ca/index.md'
+    - 'ca/letsencrypt.md'
+    - 'ca/pebble.md'
+  - Development:
+    - 'development/index.md'
+    - 'development/provider.md'
+    - 'development/testing.md'
+    - 'migration.md'

@@ -1,0 +1,14 @@
+
+.wy-nav-content {
+    max-width: none;
+}
+
+pre {
+    background-color: #f6f6f6;
+    padding: .4rem;
+    overflow-x: auto;
+}
+
+footer {
+    margin-top: 2rem;
+}
