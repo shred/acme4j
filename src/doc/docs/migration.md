@@ -2,6 +2,17 @@
 
 This document will help you migrate your code to the latest _acme4j_ version.
 
+## Migration to Version 2.8
+
+- Challenges can now be found by their class type instead of a type string, which makes finding a challenge type safe. I recommend to migrate your code to this new way. The classic way is not deprecated and will not be removed though. Example:
+
+```java
+Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);   // old style: by name
+Http01Challenge challenge = auth.findChallenge(Http01Challenge.class);  // new style: by type
+```
+
+- `Login.bindChallenge()` was documented, but missing. It is available now. If you used a custom solution to bind challenges, you can now use the official way.
+
 ## Migration to Version 2.7
 
 - Note that _acme4j_ has an `Automatic-Module-Name` set in the acme-client and acme-utils modules now. If you have added _acme4j_ to your Java 9+ module dependencies, you'll need to fix your dependency declaration to `org.shredzone.acme4j` (acme-client) and `org.shredzone.acme4j.utils` (acme-utils).
@@ -17,6 +28,9 @@ This document will help you migrate your code to the latest _acme4j_ version.
 ## Migration to Version 2.5
 
 - The GET compatibility mode has been removed. It also means that the `postasget=false` parameter is ignored from now on. If you need it to connect to your ACME server, do not update to this version until your ACME server has been fixed to support ACME draft 15.
+
+!!! warning
+    _acme4j_ before version 2.5 will not work with providers like Let's Encrypt any more!
 
 ## Migration to Version 2.4
 
