@@ -24,7 +24,7 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 * Easy to use Java API
 * Requires JRE 8 (update 101) or higher
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
-* Small, only requires [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home) and [slf4j](http://www.slf4j.org/) as dependencies
+* Requires [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home), [Bouncy Castle](https://www.bouncycastle.org/) and [slf4j](http://www.slf4j.org/) as dependencies. If you have other means of generating key pairs and CSRs, you can even do without `acme4j-utils` and Bouncy Castle as dependency.
 * Extensive unit and integration tests
 
 ## Quick Start
@@ -54,7 +54,7 @@ acme4j-utils
     The Java module name is `org.shredzone.acme4j.utils`.
 
 acme4j-example
-:   This module only contains [an example code](https://shredzone.org/maven/acme4j/acme4j-example/apidocs/src-html/org/shredzone/acme4j/ClientTest.html) that demonstrates how to get a certificate with _acme4j_. It is not useful as a dependency in other projects.
+:   This module only contains [an example code](https://shredzone.org/maven/acme4j/acme4j-example/apidocs/src-html/org/shredzone/acme4j/ClientTest.html) that demonstrates how to get a certificate with _acme4j_. It depends on `acme4j-client` and `acme4j-utils`. It is not useful as a dependency in other projects.
 
 acme4j-it
 :   [`acme4j-it`](https://mvnrepository.com/artifact/org.shredzone.acme4j/acme4j-it/latest) mainly serves as integration test suite for _acme4j_ itself. It is not really useful as a dependency in other projects. However if you write own integration tests using [pebble](https://github.com/letsencrypt/pebble) and [pebble-challtestsrv](https://hub.docker.com/r/letsencrypt/pebble-challtestsrv), you may find the [`challtestsrv` configuration client](https://shredzone.org/maven/acme4j/acme4j-it/apidocs/org/shredzone/acme4j/it/BammBammClient.html) useful in your project.
