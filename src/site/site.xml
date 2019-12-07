@@ -50,10 +50,6 @@
         <item name="Let's Encrypt" href="ca/letsencrypt.html"/>
         <item name="Pebble" href="ca/pebble.html"/>
       </item>
-      <item name="Testing" href="testing/index.html">
-        <item name="Mock Module" href="testing/mock.html"/>
-        <item name="Simple Tests" href="testing/simple.html"/>
-      </item>
       <item name="Development" href="development/index.html">
         <item name="ACME Provider" href="development/provider.html"/>
         <item name="Testing" href="development/testing.html"/>
