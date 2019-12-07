@@ -50,6 +50,11 @@ acme4j-utils
 
     The Java module name is `org.shredzone.acme4j.utils`.
 
+acme4j-mock
+:   [`acme4j-mock`](https://mvnrepository.com/artifact/org.shredzone.acme4j/acme4j-mock/latest) contains a framework for unit testing your _acme4j_ client.
+
+    The Java module name is `org.shredzone.acme4j.mock`.
+
 acme4j-example
 :   This module only contains [an example code](https://shredzone.org/maven/acme4j/acme4j-example/apidocs/src-html/org/shredzone/acme4j/ClientTest.html) that demonstrates how to get a certificate with _acme4j_. It depends on `acme4j-client` and `acme4j-utils`. It is not useful as a dependency in other projects.
 

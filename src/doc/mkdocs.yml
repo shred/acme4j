@@ -20,6 +20,7 @@ nav:
   - JavaDocs:
     - 'acme4j-client': acme4j-client/apidocs/index.html
     - 'acme4j-utils': acme4j-utils/apidocs/index.html
+    - 'acme4j-mock': acme4j-mock/apidocs/index.html
     - 'acme4j-it': acme4j-it/apidocs/index.html
   - Usage:
     - 'usage/index.md'
@@ -37,6 +38,10 @@ nav:
     - 'ca/index.md'
     - 'ca/letsencrypt.md'
     - 'ca/pebble.md'
+  - Testing:
+    - 'testing/index.md'
+    - 'testing/mock.md'
+    - 'testing/simple.md'
   - Development:
     - 'development/index.md'
     - 'development/provider.md'
