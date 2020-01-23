@@ -19,6 +19,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.net.URI;
+import java.net.URL;
 import java.security.KeyPair;
 import java.security.Security;
 import java.util.Arrays;
@@ -194,10 +195,9 @@ public class ClientTest {
      * created.
      * <p>
      * This is a simple way of finding your {@link Account}. A better way is to get the
-     * URL and KeyIdentifier of your new account with {@link Account#getLocation()}
-     * {@link Session#getKeyIdentifier()} and store it somewhere. If you need to get
-     * access to your account later, reconnect to it via
-     * {@link Account#bind(Session, URI)} by using the stored location.
+     * URL of your new account with {@link Account#getLocation()} and store it somewhere.
+     * If you need to get access to your account later, reconnect to it via
+     * {@link Session#login(URL, KeyPair)} by using the stored location.
      *
      * @param session
      *            {@link Session} to bind with
