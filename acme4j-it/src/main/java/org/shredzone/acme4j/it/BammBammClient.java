@@ -164,6 +164,32 @@ public class BammBammClient {
     }
 
     /**
+     * Simulates a SERVFAIL for the given domain.
+     *
+     * @param domain
+     *         Domain that will give a SERVFAIL response
+     * @since 2.9
+     */
+    public void dnsAddServFailRecord(String domain) throws IOException {
+        JSONBuilder jb = new JSONBuilder();
+        jb.put("host", domain);
+        sendRequest("set-servfail", jb.toString());
+    }
+
+    /**
+     * Removes a SERVFAIL Record from the DNS.
+     *
+     * @param domain
+     *         Domain to remove the SEVFAIL Record from
+     * @since 2.9
+     */
+    public void dnsRemoveServFailRecord(String domain) throws IOException {
+        JSONBuilder jb = new JSONBuilder();
+        jb.put("host", domain);
+        sendRequest("clear-servfail", jb.toString());
+    }
+
+    /**
      * Adds a certificate for TLS-ALPN tests.
      *
      * @param domain
