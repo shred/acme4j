@@ -134,6 +134,36 @@ public class BammBammClient {
     }
 
     /**
+     * Adds a CNAME Record to the DNS. Only one CNAME Record is supported per domain. If
+     * another CNAME Record is set, it will replace the existing one.
+     *
+     * @param domain
+     *         Domain to add the CNAME Record to
+     * @param cname
+     *         CNAME Record to add
+     * @since 2.9
+     */
+    public void dnsAddCnameRecord(String domain, String cname) throws IOException {
+        JSONBuilder jb = new JSONBuilder();
+        jb.put("host", domain);
+        jb.put("target", cname);
+        sendRequest("set-cname", jb.toString());
+    }
+
+    /**
+     * Removes a CNAME Record from the DNS.
+     *
+     * @param domain
+     *         Domain to remove the CNAME Record from
+     * @since 2.9
+     */
+    public void dnsRemoveCnameRecord(String domain) throws IOException {
+        JSONBuilder jb = new JSONBuilder();
+        jb.put("host", domain);
+        sendRequest("clear-cname", jb.toString());
+    }
+
+    /**
      * Adds a certificate for TLS-ALPN tests.
      *
      * @param domain
