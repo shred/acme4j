@@ -2,6 +2,10 @@
 
 This document will help you migrate your code to the latest _acme4j_ version.
 
+## Migration to Version 2.9
+
+- In the ACME STAR draft 09, the term "recurring" has been changed to "auto-renewal". To reflect this change, all STAR related methods in the acme4j API have been renamed as well. If you are using the STAR extension, you are going to get a number of compile errors, but you will always find a corresponding new method. No functionality has been removed. I decided to do a hard API change because acme4j's STAR support is still experimental.
+
 ## Migration to Version 2.8
 
 - Challenges can now be found by their class type instead of a type string, which makes finding a challenge type safe. I recommend to migrate your code to this new way. The classic way is not deprecated and will not be removed though. Example:

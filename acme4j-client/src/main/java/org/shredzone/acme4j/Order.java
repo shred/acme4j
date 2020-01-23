@@ -26,6 +26,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
@@ -138,7 +139,7 @@ public class Order extends AcmeJsonResource {
      * @since 2.6
      */
     @CheckForNull
-    public Certificate getStarCertificate() {
+    public Certificate getAutoRenewalCertificate() {
         return getJSON().get("star-certificate")
                     .map(Value::asURL)
                     .map(getLogin()::bindCertificate)
@@ -171,15 +172,14 @@ public class Order extends AcmeJsonResource {
     }
 
     /**
-     * Checks if this order is recurrent, according to the ACME STAR specifications.
+     * Checks if this order is auto-renewing, according to the ACME STAR specifications.
      *
      * @since 2.3
      */
-    public boolean isRecurrent() {
-        return getJSON().get("recurrent")
+    public boolean isAutoRenewing() {
+        return getJSON().get("auto-renewal")
                     .optional()
-                    .map(Value::asBoolean)
-                    .orElse(false);
+                    .isPresent();
     }
 
     /**
@@ -189,8 +189,12 @@ public class Order extends AcmeJsonResource {
      * @since 2.3
      */
     @CheckForNull
-    public Instant getRecurrentStart() {
-        return getJSON().get("recurrent-start-date")
+    public Instant getAutoRenewalStartDate() {
+        return getJSON().get("auto-renewal")
+                    .optional()
+                    .map(Value::asObject)
+                    .orElseGet(JSON::empty)
+                    .get("start-date")
                     .optional()
                     .map(Value::asInstant)
                     .orElse(null);
@@ -203,21 +207,29 @@ public class Order extends AcmeJsonResource {
      * @since 2.3
      */
     @CheckForNull
-    public Instant getRecurrentEnd() {
-        return getJSON().get("recurrent-end-date")
+    public Instant getAutoRenewalEndDate() {
+        return getJSON().get("auto-renewal")
+                    .optional()
+                    .map(Value::asObject)
+                    .orElseGet(JSON::empty)
+                    .get("end-date")
                     .optional()
                     .map(Value::asInstant)
                     .orElse(null);
     }
 
     /**
-     * Returns the maximum validity period of each certificate, or {@code null}.
+     * Returns the maximum lifetime of each certificate, or {@code null}.
      *
      * @since 2.3
      */
     @CheckForNull
-    public Duration getRecurrentCertificateValidity() {
-        return getJSON().get("recurrent-certificate-validity")
+    public Duration getAutoRenewalLifetime() {
+        return getJSON().get("auto-renewal")
+                    .optional()
+                    .map(Value::asObject)
+                    .orElseGet(JSON::empty)
+                    .get("lifetime")
                     .optional()
                     .map(Value::asDuration)
                     .orElse(null);
@@ -229,11 +241,15 @@ public class Order extends AcmeJsonResource {
      * @since 2.7
      */
     @CheckForNull
-    public Duration getRecurrentCertificatePredate() {
-        return getJSON().get("recurrent-certificate-predate")
-                .optional()
-                .map(Value::asDuration)
-                .orElse(null);
+    public Duration getAutoRenewalLifetimeAdjust() {
+        return getJSON().get("auto-renewal")
+                    .optional()
+                    .map(Value::asObject)
+                    .orElseGet(JSON::empty)
+                    .get("lifetime-adjust")
+                    .optional()
+                    .map(Value::asDuration)
+                    .orElse(null);
     }
 
     /**
@@ -242,20 +258,24 @@ public class Order extends AcmeJsonResource {
      *
      * @since 2.6
      */
-    public boolean isRecurrentGetEnabled() {
-        return getJSON().get("recurrent-certificate-get")
+    public boolean isAutoRenewalGetEnabled() {
+        return getJSON().get("auto-renewal")
+                    .optional()
+                    .map(Value::asObject)
+                    .orElseGet(JSON::empty)
+                    .get("allow-certificate-get")
                     .optional()
                     .map(Value::asBoolean)
                     .orElse(false);
     }
 
     /**
-     * Cancels a recurrent order.
+     * Cancels an auto-renewing order.
      *
      * @since 2.3
      */
-    public void cancelRecurrent() throws AcmeException {
-        if (!getSession().getMetadata().isStarEnabled()) {
+    public void cancelAutoRenewal() throws AcmeException {
+        if (!getSession().getMetadata().isAutoRenewalEnabled()) {
             throw new AcmeException("CA does not support short-term automatic renewals");
         }
 

@@ -19,6 +19,7 @@ import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.Optional;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -88,8 +89,8 @@ public class Metadata {
      *
      * @since 2.3
      */
-    public boolean isStarEnabled() {
-        return meta.get("star-enabled").map(Value::asBoolean).orElse(false);
+    public boolean isAutoRenewalEnabled() {
+        return meta.get("auto-renewal").isPresent();
     }
 
     /**
@@ -99,18 +100,26 @@ public class Metadata {
      *
      * @since 2.3
      */
-    public Duration getStarMinCertValidity() {
-        return meta.get("star-min-cert-validity").map(Value::asDuration).orElse(null);
+    public Duration getAutoRenewalMinLifetime() {
+        Optional<JSON> ar = meta.get("auto-renewal").optional().map(Value::asObject);
+        if (!ar.isPresent()) {
+            return null;
+        }
+        return ar.get().get("min-lifetime").map(Value::asDuration).orElse(null);
     }
 
     /**
-     * Returns the maximum delta between recurrent end date and recurrent start date.
-     * {@code null} if the CA does not support short-term auto renewal.
+     * Returns the maximum delta between auto-renewal end date and auto-renewal start
+     * date. {@code null} if the CA does not support short-term auto renewal.
      *
      * @since 2.3
      */
-    public Duration getStarMaxRenewal() {
-        return meta.get("star-max-renewal").map(Value::asDuration).orElse(null);
+    public Duration getAutoRenewalMaxDuration() {
+        Optional<JSON> ar = meta.get("auto-renewal").optional().map(Value::asObject);
+        if (!ar.isPresent()) {
+            return null;
+        }
+        return ar.get().get("max-duration").map(Value::asDuration).orElse(null);
     }
 
     /**
@@ -118,8 +127,12 @@ public class Metadata {
      *
      * @since 2.6
      */
-    public boolean isStarCertificateGetAllowed() {
-        return meta.get("star-allow-certificate-get").map(Value::asBoolean).orElse(false);
+    public boolean isAutoRenewalGetAllowed() {
+        Optional<JSON> ar = meta.get("auto-renewal").optional().map(Value::asObject);
+        if (!ar.isPresent()) {
+            return false;
+        }
+        return ar.get().get("allow-certificate-get").map(Value::asBoolean).orElse(false);
     }
 
     /**

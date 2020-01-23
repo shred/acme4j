@@ -9,11 +9,12 @@
     "caaIdentities": [
       "example.com"
     ],
+    "auto-renewal": {
+      "min-lifetime": 86400,
+      "max-duration":  31536000,
+      "allow-certificate-get": true
+    },
     "externalAccountRequired": true,
-    "star-enabled": true,
-    "star-min-cert-validity": 86400,
-    "star-max-renewal": 31536000,
-    "star-allow-certificate-get": true,
     "xTestString": "foobar",
     "xTestUri": "https://www.example.org",
     "xTestArray": [

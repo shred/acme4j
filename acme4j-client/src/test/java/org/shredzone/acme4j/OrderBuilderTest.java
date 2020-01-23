@@ -102,6 +102,12 @@ public class OrderBuilderTest {
         assertThat(order.getNotAfter(), is(parseTimestamp("2016-01-08T00:10:00Z")));
         assertThat(order.getExpires(), is(parseTimestamp("2016-01-10T00:00:00Z")));
         assertThat(order.getStatus(), is(Status.PENDING));
+        assertThat(order.isAutoRenewing(), is(false));
+        assertThat(order.getAutoRenewalStartDate(), is(nullValue()));
+        assertThat(order.getAutoRenewalEndDate(), is(nullValue()));
+        assertThat(order.getAutoRenewalLifetime(), is(nullValue()));
+        assertThat(order.getAutoRenewalLifetimeAdjust(), is(nullValue()));
+        assertThat(order.isAutoRenewalGetEnabled(), is(false));
         assertThat(order.getLocation(), is(locationUrl));
         assertThat(order.getAuthorizations(), is(notNullValue()));
         assertThat(order.getAuthorizations().size(), is(2));
@@ -110,12 +116,12 @@ public class OrderBuilderTest {
     }
 
     /**
-     * Test that a new recurrent {@link Order} can be created.
+     * Test that a new auto-renewal {@link Order} can be created.
      */
     @Test
-    public void testRecurrentOrderCertificate() throws Exception {
-        Instant recurrentStart = parseTimestamp("2018-01-01T00:00:00Z");
-        Instant recurrentEnd = parseTimestamp("2019-01-01T00:00:00Z");
+    public void testAutoRenewOrderCertificate() throws Exception {
+        Instant autoRenewStart = parseTimestamp("2018-01-01T00:00:00Z");
+        Instant autoRenewEnd = parseTimestamp("2019-01-01T00:00:00Z");
         Duration validity = Duration.ofDays(7);
         Duration predate = Duration.ofDays(6);
 
@@ -123,14 +129,14 @@ public class OrderBuilderTest {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("requestRecurrentOrderRequest").toString()));
+                assertThat(claims.toString(), sameJSONAs(getJSON("requestAutoRenewOrderRequest").toString()));
                 assertThat(login, is(notNullValue()));
                 return HttpURLConnection.HTTP_CREATED;
             }
 
             @Override
             public JSON readJsonResponse() {
-                return getJSON("requestRecurrentOrderResponse");
+                return getJSON("requestAutoRenewOrderResponse");
             }
 
             @Override
@@ -141,39 +147,39 @@ public class OrderBuilderTest {
 
         Login login = provider.createLogin();
 
-        provider.putMetadata("star-enabled", true);
+        provider.putMetadata("auto-renewal", JSON.empty());
         provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
 
         Account account = new Account(login);
         Order order = account.newOrder()
                         .domain("example.org")
-                        .recurrent()
-                        .recurrentStart(recurrentStart)
-                        .recurrentEnd(recurrentEnd)
-                        .recurrentCertificateValidity(validity)
-                        .recurrentCertificatePredate(predate)
-                        .recurrentEnableGet()
+                        .autoRenewal()
+                        .autoRenewalStart(autoRenewStart)
+                        .autoRenewalEnd(autoRenewEnd)
+                        .autoRenewalLifetime(validity)
+                        .autoRenewalLifetimeAdjust(predate)
+                        .autoRenewalEnableGet()
                         .create();
 
         assertThat(order.getIdentifiers(), containsInAnyOrder(Identifier.dns("example.org")));
         assertThat(order.getNotBefore(), is(nullValue()));
         assertThat(order.getNotAfter(), is(nullValue()));
-        assertThat(order.isRecurrent(), is(true));
-        assertThat(order.getRecurrentStart(), is(recurrentStart));
-        assertThat(order.getRecurrentEnd(), is(recurrentEnd));
-        assertThat(order.getRecurrentCertificateValidity(), is(validity));
-        assertThat(order.getRecurrentCertificatePredate(), is(predate));
-        assertThat(order.isRecurrentGetEnabled(), is(true));
+        assertThat(order.isAutoRenewing(), is(true));
+        assertThat(order.getAutoRenewalStartDate(), is(autoRenewStart));
+        assertThat(order.getAutoRenewalEndDate(), is(autoRenewEnd));
+        assertThat(order.getAutoRenewalLifetime(), is(validity));
+        assertThat(order.getAutoRenewalLifetimeAdjust(), is(predate));
+        assertThat(order.isAutoRenewalGetEnabled(), is(true));
         assertThat(order.getLocation(), is(locationUrl));
 
         provider.close();
     }
 
     /**
-     * Test that a recurrent {@link Order} cannot be created if unsupported by the CA.
+     * Test that an auto-renewal {@link Order} cannot be created if unsupported by the CA.
      */
     @Test(expected = AcmeException.class)
-    public void testRecurrentOrderCertificateFails() throws Exception {
+    public void testAutoRenewOrderCertificateFails() throws Exception {
         TestableConnectionProvider provider = new TestableConnectionProvider();
         provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
 
@@ -182,17 +188,17 @@ public class OrderBuilderTest {
         Account account = new Account(login);
         account.newOrder()
                         .domain("example.org")
-                        .recurrent()
+                        .autoRenewal()
                         .create();
 
         provider.close();
     }
 
     /**
-     * Test that recurrent and notBefore/notAfter cannot be mixed.
+     * Test that auto-renew and notBefore/notAfter cannot be mixed.
      */
     @Test
-    public void testRecurrentNotMixed() throws Exception {
+    public void testAutoRenewNotMixed() throws Exception {
         Instant someInstant = parseTimestamp("2018-01-01T00:00:00Z");
 
         TestableConnectionProvider provider = new TestableConnectionProvider();
@@ -201,7 +207,7 @@ public class OrderBuilderTest {
         Account account = new Account(login);
 
         try {
-            OrderBuilder ob = account.newOrder().recurrent();
+            OrderBuilder ob = account.newOrder().autoRenewal();
             ob.notBefore(someInstant);
             fail("accepted notBefore");
         } catch (IllegalArgumentException ex) {
@@ -209,7 +215,7 @@ public class OrderBuilderTest {
         }
 
         try {
-            OrderBuilder ob = account.newOrder().recurrent();
+            OrderBuilder ob = account.newOrder().autoRenewal();
             ob.notAfter(someInstant);
             fail("accepted notAfter");
         } catch (IllegalArgumentException ex) {
@@ -218,32 +224,32 @@ public class OrderBuilderTest {
 
         try {
             OrderBuilder ob = account.newOrder().notBefore(someInstant);
-            ob.recurrent();
-            fail("accepted recurrent");
+            ob.autoRenewal();
+            fail("accepted autoRenewal");
         } catch (IllegalArgumentException ex) {
             // expected
         }
 
         try {
             OrderBuilder ob = account.newOrder().notBefore(someInstant);
-            ob.recurrentStart(someInstant);
-            fail("accepted recurrentStart");
+            ob.autoRenewalStart(someInstant);
+            fail("accepted autoRenewalStart");
         } catch (IllegalArgumentException ex) {
             // expected
         }
 
         try {
             OrderBuilder ob = account.newOrder().notBefore(someInstant);
-            ob.recurrentEnd(someInstant);
-            fail("accepted recurrentEnd");
+            ob.autoRenewalEnd(someInstant);
+            fail("accepted autoRenewalEnd");
         } catch (IllegalArgumentException ex) {
             // expected
         }
 
         try {
             OrderBuilder ob = account.newOrder().notBefore(someInstant);
-            ob.recurrentCertificateValidity(Duration.ofDays(7));
-            fail("accepted recurrentCertificateValidity");
+            ob.autoRenewalLifetime(Duration.ofDays(7));
+            fail("accepted autoRenewalLifetime");
         } catch (IllegalArgumentException ex) {
             // expected
         }

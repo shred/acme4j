@@ -198,25 +198,25 @@ _acme4j_ supports the [ACME STAR](https://tools.ietf.org/html/draft-ietf-acme-st
 To find out if the CA supports the STAR extension, check the metadata:
 
 ```java
-if (session.getMetadata().isStarEnabled()) {
+if (session.getMetadata().isAutoRenewalEnabled()) {
   // CA supports STAR!
 }
 ```
 
-If STAR is supported, you can enable recurrent renewals by adding `recurrent()` to the order parameters:
+If STAR is supported, you can enable automatic renewals by adding `autoRenewal()` to the order parameters:
 
 ```java
 Order order = account.newOrder()
         .domain("example.org")
-        .recurrent()
+        .autoRenewal()
         .create();
 ```
 
-You can use `recurrentStart()`, `recurrentEnd()`, `recurrentCertificateValidity()` and `recurrentCertificatePredate()` to change the time span and frequency of automatic renewals. You cannot use `notBefore()` and `notAfter()` in combination with `recurrent()` though.
+You can use `autoRenewalStart()`, `autoRenewalEnd()`, `autoRenewalLifetime()` and `autoRenewalLifetimeAdjust()` to change the time span and frequency of automatic renewals. You cannot use `notBefore()` and `notAfter()` in combination with `autoRenewal()` though.
 
-The `Metadata` object also holds the accepted renewal limits (see `Metadata.getStarMinCertValidity()` and `Metadata.getStarMaxRenewal()`).
+The `Metadata` object also holds the accepted renewal limits (see `Metadata.getAutoRenewalMinLifetime()` and `Metadata.getAutoRenewalMaxDuration()`).
 
-After the validation process is completed and the order is finalized, the STAR certificate is available via `Order.getStarCertificate()` (_not_ `Order.getCertificate()`)!
+After the validation process is completed and the order is finalized, the STAR certificate is available via `Order.getAutoRenewalCertificate()` (_not_ `Order.getCertificate()`)!
 
 Use `Certificate.getLocation()` to retrieve the URL of your certificate. It is renewed automatically, so you will always be able to download the latest issue of the certificate from this URL.
 
@@ -233,6 +233,6 @@ X509Certificate latestCertificate = cert.getCertificate();
 
 ```
 
-If supported by the CA, it is possible to negotiate that the certificate can also be downloaded via `GET` request. First use `Metadata.isStarCertificateGetAllowed()` to check if this option is supported by the CA. If it is, add `recurrentEnableGet()` to the order parameters to enable it. After the order was finalized, you can use any HTTP client to download the latest certificate from the certificate URL by a `GET` request.
+If supported by the CA, it is possible to negotiate that the certificate can also be downloaded via `GET` request. First use `Metadata.isAutoRenewalGetAllowed()` to check if this option is supported by the CA. If it is, add `autoRenewalEnableGet()` to the order parameters to enable it. After the order was finalized, you can use any HTTP client to download the latest certificate from the certificate URL by a `GET` request.
 
-Use `Order.cancelRecurrent()` to terminate automatical certificate renewals.
+Use `Order.cancelAutoRenewal()` to terminate automatical certificate renewals.

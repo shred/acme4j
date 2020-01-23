@@ -1,9 +1,0 @@
-{
-  "status": "valid",
-  "recurrent": true,
-  "recurrent-start-date": "2016-01-01T00:00:00Z",
-  "recurrent-end-date": "2017-01-01T00:00:00Z",
-  "recurrent-certificate-validity": 604800,
-  "recurrent-certificate-predate": 518400,
-  "recurrent-certificate-get": true
-}

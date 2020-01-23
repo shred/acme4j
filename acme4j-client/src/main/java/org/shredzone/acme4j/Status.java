@@ -68,7 +68,7 @@ public enum Status {
     EXPIRED,
 
     /**
-     * A recurrent {@link Order} is canceled.
+     * An auto-renewing {@link Order} is canceled.
      *
      * @since 2.3
      */

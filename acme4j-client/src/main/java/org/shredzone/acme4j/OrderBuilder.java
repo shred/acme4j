@@ -45,12 +45,12 @@ public class OrderBuilder {
     private final Set<Identifier> identifierSet = new LinkedHashSet<>();
     private Instant notBefore;
     private Instant notAfter;
-    private boolean recurrent;
-    private Instant recurrentStart;
-    private Instant recurrentEnd;
-    private Duration recurrentValidity;
-    private Duration recurrentPredate;
-    private boolean recurrentGet;
+    private boolean autoRenewal;
+    private Instant autoRenewalStart;
+    private Instant autoRenewalEnd;
+    private Duration autoRenewalLifetime;
+    private Duration autoRenewalLifetimeAdjust;
+    private boolean autoRenewalGet;
 
     /**
      * Create a new {@link OrderBuilder}.
@@ -137,8 +137,8 @@ public class OrderBuilder {
      * @return itself
      */
     public OrderBuilder notBefore(Instant notBefore) {
-        if (recurrent) {
-            throw new IllegalArgumentException("cannot combine notBefore with recurrent");
+        if (autoRenewal) {
+            throw new IllegalArgumentException("cannot combine notBefore with autoRenew");
         }
         this.notBefore = requireNonNull(notBefore, "notBefore");
         return this;
@@ -151,8 +151,8 @@ public class OrderBuilder {
      * @return itself
      */
     public OrderBuilder notAfter(Instant notAfter) {
-        if (recurrent) {
-            throw new IllegalArgumentException("cannot combine notAfter with recurrent");
+        if (autoRenewal) {
+            throw new IllegalArgumentException("cannot combine notAfter with autoRenew");
         }
         this.notAfter = requireNonNull(notAfter, "notAfter");
         return this;
@@ -162,17 +162,17 @@ public class OrderBuilder {
      * Enables short-term automatic renewal of the certificate. Must be supported by the
      * CA.
      * <p>
-     * Recurrent renewals cannot be combined with {@link #notBefore(Instant)} or
-     * {@link #notAfter(Instant)}.
+     * Automatic renewals cannot be combined with {@link #notBefore(Instant)} or {@link
+     * #notAfter(Instant)}.
      *
      * @return itself
      * @since 2.3
      */
-    public OrderBuilder recurrent() {
+    public OrderBuilder autoRenewal() {
         if (notBefore != null || notAfter != null) {
-            throw new IllegalArgumentException("cannot combine notBefore/notAfter with recurrent");
+            throw new IllegalArgumentException("cannot combine notBefore/notAfter with autoRenewalOr");
         }
-        this.recurrent = true;
+        this.autoRenewal = true;
         return this;
     }
 
@@ -180,16 +180,16 @@ public class OrderBuilder {
      * Sets the earliest date of validity of the first issued certificate. If not set,
      * the start date is the earliest possible date.
      * <p>
-     * Implies {@link #recurrent()}.
+     * Implies {@link #autoRenewal()}.
      *
      * @param start
      *            Start date of validity
      * @return itself
      * @since 2.3
      */
-    public OrderBuilder recurrentStart(Instant start) {
-        recurrent();
-        this.recurrentStart = requireNonNull(start, "start");
+    public OrderBuilder autoRenewalStart(Instant start) {
+        autoRenewal();
+        this.autoRenewalStart = requireNonNull(start, "start");
         return this;
     }
 
@@ -197,17 +197,17 @@ public class OrderBuilder {
      * Sets the latest date of validity of the last issued certificate. If not set, the
      * CA's default is used.
      * <p>
-     * Implies {@link #recurrent()}.
+     * Implies {@link #autoRenewal()}.
      *
      * @param end
      *            End date of validity
      * @return itself
-     * @see Metadata#getStarMaxRenewal()
+     * @see Metadata#getAutoRenewalMaxDuration()
      * @since 2.3
      */
-    public OrderBuilder recurrentEnd(Instant end) {
-        recurrent();
-        this.recurrentEnd = requireNonNull(end, "end");
+    public OrderBuilder autoRenewalEnd(Instant end) {
+        autoRenewal();
+        this.autoRenewalEnd = requireNonNull(end, "end");
         return this;
     }
 
@@ -215,17 +215,17 @@ public class OrderBuilder {
      * Sets the maximum validity period of each certificate. If not set, the CA's
      * default is used.
      * <p>
-     * Implies {@link #recurrent()}.
+     * Implies {@link #autoRenewal()}.
      *
      * @param duration
      *            Duration of validity of each certificate
      * @return itself
-     * @see Metadata#getStarMinCertValidity()
+     * @see Metadata#getAutoRenewalMinLifetime()
      * @since 2.3
      */
-    public OrderBuilder recurrentCertificateValidity(Duration duration) {
-        recurrent();
-        this.recurrentValidity = requireNonNull(duration, "duration");
+    public OrderBuilder autoRenewalLifetime(Duration duration) {
+        autoRenewal();
+        this.autoRenewalLifetime = requireNonNull(duration, "duration");
         return this;
     }
 
@@ -233,36 +233,36 @@ public class OrderBuilder {
      * Sets the amount of pre-dating each certificate. If not set, the CA's
      * default (0) is used.
      * <p>
-     * Implies {@link #recurrent()}.
+     * Implies {@link #autoRenewal()}.
      *
      * @param duration
      *            Duration of certificate pre-dating
      * @return itself
      * @since 2.7
      */
-    public OrderBuilder recurrentCertificatePredate(Duration duration) {
-        recurrent();
-        this.recurrentPredate = requireNonNull(duration, "duration");
+    public OrderBuilder autoRenewalLifetimeAdjust(Duration duration) {
+        autoRenewal();
+        this.autoRenewalLifetimeAdjust = requireNonNull(duration, "duration");
         return this;
     }
 
     /**
-     * Announces that the client wishes to fetch the recurring certificate via GET
+     * Announces that the client wishes to fetch the auto-renewed certificate via GET
      * request. If not used, the STAR certificate can only be fetched via POST-as-GET
-     * request. {@link Metadata#isStarCertificateGetAllowed()} must return {@code true} in
+     * request. {@link Metadata#isAutoRenewalGetAllowed()} must return {@code true} in
      * order for this option to work.
      * <p>
      * This option is only needed if you plan to fetch the STAR certificate via other
      * means than by using acme4j.
      * <p>
-     * Implies {@link #recurrent()}.
+     * Implies {@link #autoRenewal()}.
      *
      * @return itself
      * @since 2.6
      */
-    public OrderBuilder recurrentEnableGet() {
-        recurrent();
-        this.recurrentGet = true;
+    public OrderBuilder autoRenewalEnableGet() {
+        autoRenewal();
+        this.autoRenewalGet = true;
         return this;
     }
 
@@ -278,7 +278,7 @@ public class OrderBuilder {
 
         Session session = login.getSession();
 
-        if (recurrent && !session.getMetadata().isStarEnabled()) {
+        if (autoRenewal && !session.getMetadata().isAutoRenewalEnabled()) {
             throw new AcmeException("CA does not support short-term automatic renewals");
         }
 
@@ -294,22 +294,22 @@ public class OrderBuilder {
                 claims.put("notAfter", notAfter);
             }
 
-            if (recurrent) {
-                claims.put("recurrent", true);
-                if (recurrentStart != null) {
-                    claims.put("recurrent-start-date", recurrentStart);
+            if (autoRenewal) {
+                JSONBuilder arClaims = claims.object("auto-renewal");
+                if (autoRenewalStart != null) {
+                    arClaims.put("start-date", autoRenewalStart);
                 }
-                if (recurrentStart != null) {
-                    claims.put("recurrent-end-date", recurrentEnd);
+                if (autoRenewalStart != null) {
+                    arClaims.put("end-date", autoRenewalEnd);
                 }
-                if (recurrentValidity != null) {
-                    claims.put("recurrent-certificate-validity", recurrentValidity);
+                if (autoRenewalLifetime != null) {
+                    arClaims.put("lifetime", autoRenewalLifetime);
                 }
-                if (recurrentPredate != null) {
-                    claims.put("recurrent-certificate-predate", recurrentPredate);
+                if (autoRenewalLifetimeAdjust != null) {
+                    arClaims.put("lifetime-adjust", autoRenewalLifetimeAdjust);
                 }
-                if (recurrentGet) {
-                    claims.put("recurrent-certificate-get", recurrentGet);
+                if (autoRenewalGet) {
+                    arClaims.put("allow-certificate-get", autoRenewalGet);
                 }
             }
 

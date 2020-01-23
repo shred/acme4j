@@ -184,10 +184,10 @@ public class SessionTest {
         assertThat(meta.getTermsOfService(), is(nullValue()));
         assertThat(meta.getWebsite(), is(nullValue()));
         assertThat(meta.getCaaIdentities(), is(empty()));
-        assertThat(meta.isStarEnabled(), is(false));
-        assertThat(meta.getStarMaxRenewal(), is(nullValue()));
-        assertThat(meta.getStarMinCertValidity(), is(nullValue()));
-        assertThat(meta.isStarCertificateGetAllowed(), is(false));
+        assertThat(meta.isAutoRenewalEnabled(), is(false));
+        assertThat(meta.getAutoRenewalMaxDuration(), is(nullValue()));
+        assertThat(meta.getAutoRenewalMinLifetime(), is(nullValue()));
+        assertThat(meta.isAutoRenewalGetAllowed(), is(false));
     }
 
     /**
@@ -217,10 +217,10 @@ public class SessionTest {
         assertThat(meta.getTermsOfService(), is(URI.create("https://example.com/acme/terms")));
         assertThat(meta.getWebsite(), is(url("https://www.example.com/")));
         assertThat(meta.getCaaIdentities(), containsInAnyOrder("example.com"));
-        assertThat(meta.isStarEnabled(), is(true));
-        assertThat(meta.getStarMaxRenewal(), is(Duration.ofDays(365)));
-        assertThat(meta.getStarMinCertValidity(), is(Duration.ofHours(24)));
-        assertThat(meta.isStarCertificateGetAllowed(), is(true));
+        assertThat(meta.isAutoRenewalEnabled(), is(true));
+        assertThat(meta.getAutoRenewalMaxDuration(), is(Duration.ofDays(365)));
+        assertThat(meta.getAutoRenewalMinLifetime(), is(Duration.ofHours(24)));
+        assertThat(meta.isAutoRenewalGetAllowed(), is(true));
         assertThat(meta.isExternalAccountRequired(), is(true));
         assertThat(meta.getJSON(), is(notNullValue()));
     }

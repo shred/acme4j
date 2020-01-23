@@ -1,0 +1,15 @@
+{
+  "identifiers": [
+    {
+      "type": "dns",
+      "value": "example.org"
+    }
+  ],
+  "auto-renewal": {
+    "start-date": "2018-01-01T00:00:00Z",
+    "end-date": "2019-01-01T00:00:00Z",
+    "lifetime": 604800,
+    "lifetime-adjust": 518400,
+    "allow-certificate-get": true
+  }
+}

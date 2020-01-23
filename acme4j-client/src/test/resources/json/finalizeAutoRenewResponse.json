@@ -11,12 +11,13 @@
       "value": "www.example.com"
     }
   ],
-  "recurrent": true,
-  "recurrent-start-date": "2018-01-01T00:00:00Z",
-  "recurrent-end-date": "2019-01-01T00:00:00Z",
-  "recurrent-certificate-validity": 604800,
-  "recurrent-certificate-predate": 518400,
-  "recurrent-certificate-get": true,
+  "auto-renewal": {
+    "start-date": "2018-01-01T00:00:00Z",
+    "end-date": "2019-01-01T00:00:00Z",
+    "lifetime": 604800,
+    "lifetime-adjust": 518400,
+    "allow-certificate-get": true
+  },
   "authorizations": [
     "https://example.com/acme/authz/1234",
     "https://example.com/acme/authz/2345"
