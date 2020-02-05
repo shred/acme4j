@@ -65,6 +65,8 @@ This is a very simple example. You should limit the number of loop iterations, a
 
 The CA server may start the validation immediately after `trigger()` is invoked, so make sure your server is ready to respond to requests before invoking `trigger()`. Otherwise the challenge might fail immediately.
 
+Also keep your response available until the status has changed to `VALID` or `INVALID`. The ACME server may check your response multiple times, and from different IPs.
+
 `update()` may throw an `AcmeRetryAfterException`, giving an estimated instant in `getRetryAfter()` when the authorization is completed. You should then wait until that moment has been reached, before trying again. The state of the `Authorization` instance is still updated when this exception is thrown.
 
 When the authorization status is `VALID`, you have successfully authorized your domain.
