@@ -168,7 +168,7 @@ auth.deactivate();
 
 ## Use IP Identifiers
 
-_acme4j_ supports the [ACME IP](https://tools.ietf.org/html/draft-ietf-acme-ip) extension. It permits validation of IP addresses instead of domain names. If your CA offers ACME IP support, you can add IP `Identifier` objects to the order:
+_acme4j_ supports IP identifier validation, as specified in [RFC 8738](https://tools.ietf.org/html/rfc8738). It permits validation of IP addresses instead of domain names. If your CA offers ACME IP support, you can add IP `Identifier` objects to the order:
 
 ```java
 Order order = account.newOrder()

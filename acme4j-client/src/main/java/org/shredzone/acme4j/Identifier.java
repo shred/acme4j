@@ -51,7 +51,7 @@ public class Identifier implements Serializable {
     /**
      * Type constant for IP identifiers.
      *
-     * @see <a href="https://tools.ietf.org/html/draft-ietf-acme-ip">draft-ietf-acme-ip</a>
+     * @see <a href="https://tools.ietf.org/html/rfc8738">RFC 8738</a>
      */
     public static final String TYPE_IP = "ip";
 

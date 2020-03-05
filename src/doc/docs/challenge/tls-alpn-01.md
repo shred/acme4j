@@ -1,9 +1,6 @@
 # tls-alpn-01 Challenge
 
-With the `tls-alpn-01` challenge, you prove to the CA that you are able to control the web server of the domain to be authorized, by letting it respond to a request with a specific self-signed cert utilizing the ALPN extension.
-
-!!! note
-    This challenge is not part of the ACME specifications. It is specified [in a separate IETF document](https://tools.ietf.org/html/draft-ietf-acme-tls-alpn) and is still work in progress.
+With the `tls-alpn-01` challenge, you prove to the CA that you are able to control the web server of the domain to be authorized, by letting it respond to a request with a specific self-signed cert utilizing the ALPN extension. This challenge is specified in [RFC 8737](https://tools.ietf.org/html/rfc8737).
 
 `TlsAlpn01Challenge` provides a byte array called `acmeValidation`:
 

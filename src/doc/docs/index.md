@@ -15,8 +15,8 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 ## Features
 
 * Fully [RFC 8555](https://tools.ietf.org/html/rfc8555) compliant
-* Supports the `http-01`, `dns-01` and `tls-alpn-01` challenges
-* Supports the [acme-ip draft](https://tools.ietf.org/html/draft-ietf-acme-ip)
+* Supports the `http-01`, `dns-01`, and `tls-alpn-01` ([RFC 8737](https://tools.ietf.org/html/rfc8737)) challenges
+* Also supports [RFC 8738](https://tools.ietf.org/html/rfc8738) IP identifier validation
 * Supports the [acme-star draft](https://tools.ietf.org/html/draft-ietf-acme-star) for short-term automatic certificate renewal (experimental)
 * Easy to use Java API
 * Requires JRE 8 (update 101) or higher
