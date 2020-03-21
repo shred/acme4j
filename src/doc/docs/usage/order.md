@@ -192,7 +192,7 @@ byte[] csr = csrb.getEncoded();
 
 ## Short-Term Automatic Renewal
 
-_acme4j_ supports the [ACME STAR](https://tools.ietf.org/html/draft-ietf-acme-star) extension for short-term automatic renewal of certificates.
+_acme4j_ supports [RFC 8739](https://tools.ietf.org/html/rfc8739) for short-term automatic renewal of certificates.
 
 !!! warning
     The _ACME STAR_ support is experimental. There is currently no known ACME server implementing this extension.
