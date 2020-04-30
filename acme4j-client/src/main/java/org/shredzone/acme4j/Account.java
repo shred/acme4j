@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 import javax.annotation.CheckForNull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -128,8 +129,13 @@ public class Account extends AcmeJsonResource {
      *         {@link Order} objects in a different order.
      */
     public Iterator<Order> getOrders() {
-        URL ordersUrl = getJSON().get(KEY_ORDERS).asURL();
-        return new ResourceIterator<>(getLogin(), KEY_ORDERS, ordersUrl, Login::bindOrder);
+        Optional<URL> ordersUrl = getJSON().get(KEY_ORDERS).optional().map(Value::asURL);
+        if (!ordersUrl.isPresent()) {
+            // Let's Encrypt does not provide this field at the moment although it's required.
+            // See https://github.com/letsencrypt/boulder/issues/3335
+            throw new AcmeProtocolException("This ACME server does not support getOrders()");
+        }
+        return new ResourceIterator<>(getLogin(), KEY_ORDERS, ordersUrl.get(), Login::bindOrder);
     }
 
     /**
