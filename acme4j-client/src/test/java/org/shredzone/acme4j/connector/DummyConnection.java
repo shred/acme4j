@@ -16,8 +16,10 @@ package org.shredzone.acme4j.connector;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
@@ -37,7 +39,7 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public void sendRequest(URL url, Session session) {
+    public int sendRequest(URL url, Session session, ZonedDateTime ifModifiedSince) {
         throw new UnsupportedOperationException();
     }
 
@@ -85,6 +87,16 @@ public class DummyConnection implements Connection {
 
     @Override
     public URL getLocation() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Optional<ZonedDateTime> getLastModified() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Optional<ZonedDateTime> getExpiration() {
         throw new UnsupportedOperationException();
     }
 

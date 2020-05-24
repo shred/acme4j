@@ -17,10 +17,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.CheckForNull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.shredzone.acme4j.Login;
@@ -55,8 +58,13 @@ public interface Connection extends AutoCloseable {
      *            {@link URL} to send the request to.
      * @param session
      *            {@link Session} instance to be used for tracking
+     * @param ifModifiedSince
+     *            {@link ZonedDateTime} to be sent as "If-Modified-Since" header, or
+     *            {@code null} if this header is not to be used
+     * @return HTTP status that was returned
      */
-    void sendRequest(URL url, Session session) throws AcmeException;
+    int sendRequest(URL url, Session session, @Nullable ZonedDateTime ifModifiedSince)
+            throws AcmeException;
 
     /**
      * Sends a signed POST-as-GET request for a certificate resource. Requires a
@@ -170,6 +178,24 @@ public interface Connection extends AutoCloseable {
      */
     @CheckForNull
     URL getLocation();
+
+    /**
+     * Returns the content of the last-modified header, if present.
+     *
+     * @return Date in the Last-Modified header, or empty if the server did not provide
+     * this information.
+     * @since 2.10
+     */
+    Optional<ZonedDateTime> getLastModified();
+
+    /**
+     * Returns the expiration date of the resource, if present.
+     *
+     * @return Expiration date, either from the Cache-Control or Expires header. If empty,
+     * the server did not provide an expiration date, or forbid caching.
+     * @since 2.10
+     */
+    Optional<ZonedDateTime> getExpiration();
 
     /**
      * Gets one or more relation links from the header. The result is expected to be an URL.

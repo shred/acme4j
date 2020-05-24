@@ -24,7 +24,7 @@ import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
 import java.time.Duration;
-import java.time.Instant;
+import java.time.ZonedDateTime;
 
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
@@ -86,6 +86,7 @@ public class SessionTest {
     @Test
     public void testGettersAndSetters() {
         URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
+        ZonedDateTime now = ZonedDateTime.now();
 
         Session session = new Session(serverUri);
 
@@ -95,6 +96,18 @@ public class SessionTest {
 
         assertThat(session.getServerUri(), is(serverUri));
         assertThat(session.networkSettings(), is(notNullValue()));
+
+        assertThat(session.getDirectoryExpires(), is(nullValue()));
+        session.setDirectoryExpires(now);
+        assertThat(session.getDirectoryExpires(), is(equalTo(now)));
+        session.setDirectoryExpires(null);
+        assertThat(session.getDirectoryExpires(), is(nullValue()));
+
+        assertThat(session.getDirectoryLastModified(), is(nullValue()));
+        session.setDirectoryLastModified(now);
+        assertThat(session.getDirectoryLastModified(), is(equalTo(now)));
+        session.setDirectoryLastModified(null);
+        assertThat(session.getDirectoryLastModified(), is(nullValue()));
     }
 
     /**
@@ -116,7 +129,7 @@ public class SessionTest {
     }
 
     /**
-     * Test that the directory is properly read and cached.
+     * Test that the directory is properly read.
      */
     @Test
     public void testDirectory() throws AcmeException, IOException {
@@ -135,19 +148,41 @@ public class SessionTest {
             }
         };
 
-        assertSession(session);
+        // No directory has been fetched yet
+        assertThat(session.hasDirectory(), is(false));
 
-        // Make sure directory is only read once!
-        verify(mockProvider, times(1)).directory(
-                        ArgumentMatchers.any(Session.class),
-                        ArgumentMatchers.any(URI.class));
+        assertThat(session.resourceUrl(Resource.NEW_ACCOUNT),
+                is(new URL("https://example.com/acme/new-account")));
 
-        // Simulate a cache expiry
-        session.directoryCacheExpiry = Instant.now();
+        // There is a local copy of the directory now
+        assertThat(session.hasDirectory(), is(true));
 
-        // Make sure directory is read once again
-        assertSession(session);
-        verify(mockProvider, times(2)).directory(
+        assertThat(session.resourceUrl(Resource.NEW_AUTHZ),
+                is(new URL("https://example.com/acme/new-authz")));
+        assertThat(session.resourceUrl(Resource.NEW_ORDER),
+                is(new URL("https://example.com/acme/new-order")));
+
+        try {
+            session.resourceUrl(Resource.REVOKE_CERT);
+            fail("Did not fail to get an unsupported resource URL");
+        } catch (AcmeException ex) {
+            // Expected
+        }
+
+        Metadata meta = session.getMetadata();
+        assertThat(meta, not(nullValue()));
+        assertThat(meta.getTermsOfService(), is(URI.create("https://example.com/acme/terms")));
+        assertThat(meta.getWebsite(), is(url("https://www.example.com/")));
+        assertThat(meta.getCaaIdentities(), containsInAnyOrder("example.com"));
+        assertThat(meta.isAutoRenewalEnabled(), is(true));
+        assertThat(meta.getAutoRenewalMaxDuration(), is(Duration.ofDays(365)));
+        assertThat(meta.getAutoRenewalMinLifetime(), is(Duration.ofHours(24)));
+        assertThat(meta.isAutoRenewalGetAllowed(), is(true));
+        assertThat(meta.isExternalAccountRequired(), is(true));
+        assertThat(meta.getJSON(), is(notNullValue()));
+
+        // Make sure directory is read
+        verify(mockProvider, atLeastOnce()).directory(
                         ArgumentMatchers.any(Session.class),
                         ArgumentMatchers.any(URI.class));
     }
@@ -188,41 +223,6 @@ public class SessionTest {
         assertThat(meta.getAutoRenewalMaxDuration(), is(nullValue()));
         assertThat(meta.getAutoRenewalMinLifetime(), is(nullValue()));
         assertThat(meta.isAutoRenewalGetAllowed(), is(false));
-    }
-
-    /**
-     * Asserts that the {@link Session} returns correct
-     * {@link Session#resourceUrl(Resource)} and {@link Session#getMetadata()}.
-     *
-     * @param session
-     *            {@link Session} to assert
-     */
-    private void assertSession(Session session) throws AcmeException, IOException {
-        assertThat(session.resourceUrl(Resource.NEW_ACCOUNT),
-                        is(new URL("https://example.com/acme/new-account")));
-        assertThat(session.resourceUrl(Resource.NEW_AUTHZ),
-                        is(new URL("https://example.com/acme/new-authz")));
-        assertThat(session.resourceUrl(Resource.NEW_ORDER),
-                        is(new URL("https://example.com/acme/new-order")));
-
-        try {
-            session.resourceUrl(Resource.REVOKE_CERT);
-            fail("Did not fail to get an unsupported resource URL");
-        } catch (AcmeException ex) {
-            // Expected
-        }
-
-        Metadata meta = session.getMetadata();
-        assertThat(meta, not(nullValue()));
-        assertThat(meta.getTermsOfService(), is(URI.create("https://example.com/acme/terms")));
-        assertThat(meta.getWebsite(), is(url("https://www.example.com/")));
-        assertThat(meta.getCaaIdentities(), containsInAnyOrder("example.com"));
-        assertThat(meta.isAutoRenewalEnabled(), is(true));
-        assertThat(meta.getAutoRenewalMaxDuration(), is(Duration.ofDays(365)));
-        assertThat(meta.getAutoRenewalMinLifetime(), is(Duration.ofHours(24)));
-        assertThat(meta.isAutoRenewalGetAllowed(), is(true));
-        assertThat(meta.isExternalAccountRequired(), is(true));
-        assertThat(meta.getJSON(), is(notNullValue()));
     }
 
 }

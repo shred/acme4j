@@ -13,7 +13,9 @@
  */
 package org.shredzone.acme4j.provider;
 
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,8 +56,23 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
 
     @Override
     public JSON directory(Session session, URI serverUri) throws AcmeException {
+        ZonedDateTime expires = session.getDirectoryExpires();
+        if (expires != null && expires.isAfter(ZonedDateTime.now())) {
+            // The cached directory is still valid
+            return null;
+        }
+
         try (Connection conn = connect(serverUri)) {
-            conn.sendRequest(resolve(serverUri), session);
+            ZonedDateTime lastModified = session.getDirectoryLastModified();
+            int rc = conn.sendRequest(resolve(serverUri), session, lastModified);
+            if (lastModified != null && rc == HttpURLConnection.HTTP_NOT_MODIFIED) {
+                // The server has not been modified since
+                return null;
+            }
+
+            // evaluate caching headers
+            session.setDirectoryLastModified(conn.getLastModified().orElse(null));
+            session.setDirectoryExpires(conn.getExpiration().orElse(null));
 
             // use nonce header if there is one, saves a HEAD request...
             String nonce = conn.getNonce();

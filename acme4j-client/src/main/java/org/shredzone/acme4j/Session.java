@@ -17,8 +17,7 @@ import java.net.Proxy;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
-import java.time.Duration;
-import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
@@ -58,7 +57,8 @@ public class Session {
 
     private String nonce;
     private Locale locale = Locale.getDefault();
-    protected Instant directoryCacheExpiry;
+    protected ZonedDateTime directoryLastModified;
+    protected ZonedDateTime directoryExpires;
 
     /**
      * Creates a new {@link Session}.
@@ -250,19 +250,80 @@ public class Session {
     }
 
     /**
-     * Reads the provider's directory, then rebuild the resource map. The response is
-     * cached.
+     * Returns the date when the directory has been modified the last time.
+     *
+     * @return The last modification date of the directory, or {@code null} if unknown
+     * (directory has not been read yet or did not provide this information).
+     * @since 2.10
+     */
+    @CheckForNull
+    public ZonedDateTime getDirectoryLastModified() {
+        return directoryLastModified;
+    }
+
+    /**
+     * Sets the date when the directory has been modified the last time. Should only be
+     * invoked by {@link AcmeProvider} implementations.
+     *
+     * @param directoryLastModified
+     *         The last modification date of the directory, or {@code null} if unknown
+     *         (directory has not been read yet or did not provide this information).
+     * @since 2.10
+     */
+    public void setDirectoryLastModified(@Nullable ZonedDateTime directoryLastModified) {
+        this.directoryLastModified = directoryLastModified;
+    }
+
+    /**
+     * Returns the date when the current directory records will expire. A fresh copy of
+     * the directory will be fetched automatically after that instant.
+     *
+     * @return The expiration date, or {@code null} if the server did not provide this
+     * information.
+     * @since 2.10
+     */
+    @CheckForNull
+    public ZonedDateTime getDirectoryExpires() {
+        return directoryExpires;
+    }
+
+    /**
+     * Sets the date when the current directory will expire. Should only be invoked by
+     * {@link AcmeProvider} implementations.
+     *
+     * @param directoryExpires
+     *         Expiration date, or {@code null} if the server did not provide this
+     *         information.
+     * @since 2.10
+     */
+    public void setDirectoryExpires(@Nullable ZonedDateTime directoryExpires) {
+        this.directoryExpires = directoryExpires;
+    }
+
+    /**
+     * Returns {@code true} if a directory is available. Should only be invoked by {@link
+     * AcmeProvider} implementations.
+     *
+     * @return {@code true} if a directory is available.
+     * @since 2.10
+     */
+    public boolean hasDirectory() {
+        return resourceMap.get() != null;
+    }
+
+    /**
+     * Reads the provider's directory, then rebuild the resource map. The resource map
+     * is unchanged if the {@link AcmeProvider} returns that the directory has not been
+     * changed on the remote side.
      */
     private void readDirectory() throws AcmeException {
-        synchronized (this) {
-            Instant now = Instant.now();
-            if (directoryCacheExpiry != null && directoryCacheExpiry.isAfter(now)) {
-                return;
-            }
-            directoryCacheExpiry = now.plus(Duration.ofHours(1));
-        }
-
         JSON directoryJson = provider().directory(this, getServerUri());
+        if (directoryJson == null) {
+            if (!hasDirectory()) {
+                throw new AcmeException("AcmeProvider did not provide a directory");
+            }
+            return;
+        }
 
         Value meta = directoryJson.get("meta");
         if (meta.isPresent()) {

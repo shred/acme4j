@@ -2,6 +2,11 @@
 
 This document will help you migrate your code to the latest _acme4j_ version.
 
+## Migration to Version 2.10
+
+- When fetching the directory, acme4j now evaluates HTTP caching headers instead of just caching the directory for 1 hour. However, Let's Encrypt explicitly forbids caching, which means that a fresh copy of the directory is now fetched from the server every time it is needed. I don't like it, but it is the RFC conformous behavior. It needs to be [fixed on Let's Encrypt side](https://github.com/letsencrypt/boulder/issues/4814).
+- `AcmeProvider.directory(Session, URI)` is now responsible for maintaining the cache. Implementations can use `Session.setDirectoryExpires()`, `Session.setDirectoryLastModified()`, and the respective getters, for keeping track of the local directory state. `AcmeProvider.directory(Session, URI)` may now return `null`, to indicate that the remote directory was unchanged and the local copy is still valid. It's not permitted to return `null` if `Session.hasDirectory()` returns `false`, though! If your `AcmeProvider` is derived from `AbstractAcmeProvider`, and you haven't overridden the `directory()` method, no migration is necessary.
+
 ## Migration to Version 2.9
 
 - In the ACME STAR draft 09, the term "recurring" has been changed to "auto-renewal". To reflect this change, all STAR related methods in the acme4j API have been renamed as well. If you are using the STAR extension, you are going to get a number of compile errors, but you will always find a corresponding new method. No functionality has been removed. I decided to do a hard API change because acme4j's STAR support is still experimental.

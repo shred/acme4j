@@ -77,8 +77,10 @@ public interface AcmeProvider {
      *            {@link Session} to be used
      * @param serverUri
      *            Server {@link URI}
-     * @return Directory data, as JSON object
+     * @return Directory data, as JSON object, or {@code null} if the directory has not
+     * been changed since the last request.
      */
+    @CheckForNull
     JSON directory(Session session, URI serverUri) throws AcmeException;
 
     /**

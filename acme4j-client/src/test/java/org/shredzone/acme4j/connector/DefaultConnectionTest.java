@@ -14,6 +14,7 @@
 package org.shredzone.acme4j.connector;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -33,6 +34,9 @@ import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Base64;
@@ -41,6 +45,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.CompactSerializer;
@@ -660,13 +665,44 @@ public class DefaultConnectionTest {
                 return null;
             }
         }) {
-            conn.sendRequest(requestUrl, session);
+            conn.sendRequest(requestUrl, session, null);
         }
 
         verify(mockUrlConnection).setRequestMethod("GET");
         verify(mockUrlConnection).setRequestProperty("Accept", "application/json");
         verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
         verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
+        verify(mockUrlConnection).setDoOutput(false);
+        verify(mockUrlConnection).connect();
+        verify(mockUrlConnection).getResponseCode();
+        verify(mockUrlConnection, atLeast(0)).getHeaderFields();
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    /**
+     * Test GET requests with If-Modified-Since.
+     */
+    @Test
+    public void testSendRequestIfModifiedSince() throws Exception {
+        ZonedDateTime ifModifiedSince = ZonedDateTime.now(ZoneId.of("UTC"));
+
+        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
+            @Override
+            public String getNonce() {
+                return null;
+            }
+        }) {
+            int rc = conn.sendRequest(requestUrl, session, ifModifiedSince);
+            assertThat(rc, is(HttpURLConnection.HTTP_NOT_MODIFIED));
+        }
+
+        verify(mockUrlConnection).setRequestMethod("GET");
+        verify(mockUrlConnection).setRequestProperty("Accept", "application/json");
+        verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
+        verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
+        verify(mockUrlConnection).setRequestProperty("If-Modified-Since", ifModifiedSince.format(RFC_1123_DATE_TIME));
         verify(mockUrlConnection).setDoOutput(false);
         verify(mockUrlConnection).connect();
         verify(mockUrlConnection).getResponseCode();
@@ -1048,6 +1084,161 @@ public class DefaultConnectionTest {
             conn.conn = mockUrlConnection;
             conn.readCertificates();
         }
+    }
+
+    /**
+     * Test that {@link DefaultConnection#getLastModified()} returns valid dates.
+     */
+    @Test
+    public void testLastModifiedUnset() {
+        when(mockUrlConnection.getHeaderField("Last-Modified")).thenReturn(null);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            assertThat(conn.getLastModified().isPresent(), is(false));
+        }
+
+        verify(mockUrlConnection).getHeaderField("Last-Modified");
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    @Test
+    public void testLastModifiedSet() {
+        when(mockUrlConnection.getHeaderField("Last-Modified")).thenReturn("Thu, 07 May 2020 19:42:46 GMT");
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            Optional<ZonedDateTime> lm = conn.getLastModified();
+            assertThat(lm.isPresent(), is(true));
+            assertThat(lm.get().format(DateTimeFormatter.ISO_DATE_TIME),
+                    is("2020-05-07T19:42:46Z"));
+        }
+
+        verify(mockUrlConnection).getHeaderField("Last-Modified");
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    @Test
+    public void testLastModifiedInvalid() {
+        when(mockUrlConnection.getHeaderField("Last-Modified")).thenReturn("iNvAlId");
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            assertThat(conn.getLastModified().isPresent(), is(false));
+        }
+
+        verify(mockUrlConnection).getHeaderField("Last-Modified");
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    /**
+     * Test that {@link DefaultConnection#getExpiration()} returns valid dates.
+     */
+    @Test
+    public void testExpirationUnset() {
+        when(mockUrlConnection.getHeaderField("Cache-Control")).thenReturn(null);
+        when(mockUrlConnection.getHeaderField("Expires")).thenReturn(null);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            assertThat(conn.getExpiration().isPresent(), is(false));
+        }
+
+        verify(mockUrlConnection).getHeaderField("Cache-Control");
+        verify(mockUrlConnection).getHeaderField("Expires");
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    @Test
+    public void testExpirationNoCache() {
+        when(mockUrlConnection.getHeaderField("Cache-Control")).thenReturn("public, no-cache");
+        when(mockUrlConnection.getHeaderField("Expires")).thenReturn(null);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            assertThat(conn.getExpiration().isPresent(), is(false));
+        }
+
+        verify(mockUrlConnection).getHeaderField("Cache-Control");
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    @Test
+    public void testExpirationMaxAgeZero() {
+        when(mockUrlConnection.getHeaderField("Cache-Control")).thenReturn("public, max-age=0, no-cache");
+        when(mockUrlConnection.getHeaderField("Expires")).thenReturn(null);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            assertThat(conn.getExpiration().isPresent(), is(false));
+        }
+
+        verify(mockUrlConnection).getHeaderField("Cache-Control");
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    @Test
+    public void testExpirationMaxAgeButNoCache() {
+        when(mockUrlConnection.getHeaderField("Cache-Control")).thenReturn("public, max-age=3600, no-cache");
+        when(mockUrlConnection.getHeaderField("Expires")).thenReturn(null);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            assertThat(conn.getExpiration().isPresent(), is(false));
+        }
+
+        verify(mockUrlConnection).getHeaderField("Cache-Control");
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    @Test
+    public void testExpirationMaxAge() {
+        when(mockUrlConnection.getHeaderField("Cache-Control")).thenReturn("max-age=3600");
+        when(mockUrlConnection.getHeaderField("Expires")).thenReturn(null);
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            Optional<ZonedDateTime> exp = conn.getExpiration();
+            assertThat(exp.isPresent(), is(true));
+            assertThat(exp.get().isAfter(ZonedDateTime.now().plusHours(1).minusMinutes(1)), is(true));
+            assertThat(exp.get().isBefore(ZonedDateTime.now().plusHours(1).plusMinutes(1)), is(true));
+        }
+
+        verify(mockUrlConnection).getHeaderField("Cache-Control");
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    @Test
+    public void testExpirationExpires() {
+        when(mockUrlConnection.getHeaderField("Cache-Control")).thenReturn(null);
+        when(mockUrlConnection.getHeaderField("Expires")).thenReturn("Thu, 18 Jun 2020 08:43:04 GMT");
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            Optional<ZonedDateTime> exp = conn.getExpiration();
+            assertThat(exp.isPresent(), is(true));
+            assertThat(exp.get().format(DateTimeFormatter.ISO_DATE_TIME),
+                    is("2020-06-18T08:43:04Z"));
+        }
+
+        verify(mockUrlConnection).getHeaderField("Cache-Control");
+        verify(mockUrlConnection).getHeaderField("Expires");
+        verifyNoMoreInteractions(mockUrlConnection);
+    }
+
+    @Test
+    public void testExpirationInvalidExpires() {
+        when(mockUrlConnection.getHeaderField("Cache-Control")).thenReturn(null);
+        when(mockUrlConnection.getHeaderField("Expires")).thenReturn("iNvAlId");
+
+        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+            conn.conn = mockUrlConnection;
+            assertThat(conn.getExpiration().isPresent(), is(false));
+        }
+
+        verify(mockUrlConnection).getHeaderField("Cache-Control");
+        verify(mockUrlConnection).getHeaderField("Expires");
+        verifyNoMoreInteractions(mockUrlConnection);
     }
 
 }

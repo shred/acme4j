@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.connector;
 
+import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
@@ -29,6 +30,9 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -69,8 +73,12 @@ public class DefaultConnection implements Connection {
     private static final String ACCEPT_HEADER = "Accept";
     private static final String ACCEPT_CHARSET_HEADER = "Accept-Charset";
     private static final String ACCEPT_LANGUAGE_HEADER = "Accept-Language";
+    private static final String CACHE_CONTROL_HEADER = "Cache-Control";
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String DATE_HEADER = "Date";
+    private static final String EXPIRES_HEADER = "Expires";
+    private static final String IF_MODIFIED_SINCE_HEADER = "If-Modified-Since";
+    private static final String LAST_MODIFIED_HEADER = "Last-Modified";
     private static final String LINK_HEADER = "Link";
     private static final String LOCATION_HEADER = "Location";
     private static final String REPLAY_NONCE_HEADER = "Replay-Nonce";
@@ -82,6 +90,9 @@ public class DefaultConnection implements Connection {
 
     private static final URI BAD_NONCE_ERROR = URI.create("urn:ietf:params:acme:error:badNonce");
     private static final int MAX_ATTEMPTS = 10;
+
+    private static final Pattern NO_CACHE_PATTERN = Pattern.compile("(?:^|.*?,)\\s*no-(?:cache|store)\\s*(?:,.*|$)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern MAX_AGE_PATTERN = Pattern.compile("(?:^|.*?,)\\s*max-age=(\\d+)\\s*(?:,.*|$)", Pattern.CASE_INSENSITIVE);
 
     protected final HttpConnector httpConnector;
     protected HttpURLConnection conn;
@@ -132,8 +143,9 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public void sendRequest(URL url, Session session) throws AcmeException {
-        sendRequest(url, session, MIME_JSON);
+    public int sendRequest(URL url, Session session, @Nullable ZonedDateTime ifModifiedSince)
+            throws AcmeException {
+        return sendRequest(url, session, MIME_JSON, ifModifiedSince);
     }
 
     @Override
@@ -253,6 +265,54 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
+    public Optional<ZonedDateTime> getLastModified() {
+        assertConnectionIsOpen();
+
+        String header = conn.getHeaderField(LAST_MODIFIED_HEADER);
+        if (header != null) {
+            try {
+                return Optional.of(ZonedDateTime.parse(header, RFC_1123_DATE_TIME));
+            } catch (DateTimeParseException ex) {
+                LOG.debug("Ignored invalid Last-Modified date: {}", header, ex);
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<ZonedDateTime> getExpiration() {
+        assertConnectionIsOpen();
+
+        String cacheHeader = conn.getHeaderField(CACHE_CONTROL_HEADER);
+        if (cacheHeader != null) {
+            if (NO_CACHE_PATTERN.matcher(cacheHeader).matches()) {
+                return Optional.empty();
+            }
+
+            Matcher m = MAX_AGE_PATTERN.matcher(cacheHeader);
+            if (m.matches()) {
+                int maxAge = Integer.parseInt(m.group(1));
+                if (maxAge == 0) {
+                    return Optional.empty();
+                }
+
+                return Optional.of(ZonedDateTime.now(ZoneId.of("UTC")).plusSeconds(maxAge));
+            }
+        }
+
+        String expiresHeader = conn.getHeaderField(EXPIRES_HEADER);
+        if (expiresHeader != null) {
+            try {
+                return Optional.of(ZonedDateTime.parse(expiresHeader, RFC_1123_DATE_TIME));
+            } catch (DateTimeParseException ex) {
+                LOG.debug("Ignored invalid Expires date: {}", expiresHeader, ex);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    @Override
     public Collection<URL> getLinks(String relation) {
         return collectLinks(relation).stream()
                 .map(this::resolveRelative)
@@ -273,9 +333,13 @@ public class DefaultConnection implements Connection {
      *            {@link Session} instance to be used for signing and tracking
      * @param accept
      *            Accept header
+     * @param ifModifiedSince
+     *            Set an If-Modified-Since header with the given date. If set, an
+     *            NOT_MODIFIED response is accepted as valid.
      * @return HTTP 200 class status that was returned
      */
-    protected int sendRequest(URL url, Session session, String accept) throws AcmeException {
+    protected int sendRequest(URL url, Session session, String accept,
+              @Nullable ZonedDateTime ifModifiedSince) throws AcmeException {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(session, "session");
         Objects.requireNonNull(accept, "accept");
@@ -289,6 +353,9 @@ public class DefaultConnection implements Connection {
             conn.setRequestProperty(ACCEPT_HEADER, accept);
             conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
             conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
+            if (ifModifiedSince != null) {
+                conn.setRequestProperty(IF_MODIFIED_SINCE_HEADER, ifModifiedSince.format(RFC_1123_DATE_TIME));
+            }
             conn.setDoOutput(false);
 
             conn.connect();
@@ -301,7 +368,8 @@ public class DefaultConnection implements Connection {
             }
 
             int rc = conn.getResponseCode();
-            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_CREATED) {
+            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_CREATED
+                && (rc != HttpURLConnection.HTTP_NOT_MODIFIED || ifModifiedSince == null)) {
                 throwAcmeException();
             }
             return rc;

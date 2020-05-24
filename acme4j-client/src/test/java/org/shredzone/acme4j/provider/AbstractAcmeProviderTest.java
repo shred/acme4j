@@ -16,13 +16,21 @@ package org.shredzone.acme4j.provider;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.annotation.ParametersAreNonnullByDefault;
 
 import org.junit.Test;
 import org.shredzone.acme4j.Login;
@@ -46,26 +54,17 @@ import org.shredzone.acme4j.toolbox.TestUtils;
  */
 public class AbstractAcmeProviderTest {
 
+    private static final URI SERVER_URI = URI.create("http://example.com/acme");
+    private static final URL RESOLVED_URL = TestUtils.url("http://example.com/acme/directory");
+
     /**
      * Test that connect returns a connection.
      */
     @Test
     public void testConnect() {
-        final URI testServerUri = URI.create("http://example.com/acme");
-
         final AtomicBoolean invoked = new AtomicBoolean();
 
-        AbstractAcmeProvider provider = new AbstractAcmeProvider() {
-            @Override
-            public boolean accepts(URI serverUri) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public URL resolve(URI serverUri) {
-                throw new UnsupportedOperationException();
-            }
-
+        AbstractAcmeProvider provider = new TestAbstractAcmeProvider() {
             @Override
             protected HttpConnector createHttpConnector() {
                 invoked.set(true);
@@ -73,7 +72,7 @@ public class AbstractAcmeProviderTest {
             }
         };
 
-        Connection connection = provider.connect(testServerUri);
+        Connection connection = provider.connect(SERVER_URI);
         assertThat(connection, not(nullValue()));
         assertThat(connection, instanceOf(DefaultConnection.class));
         assertThat(invoked.get(), is(true));
@@ -84,41 +83,172 @@ public class AbstractAcmeProviderTest {
      */
     @Test
     public void testResources() throws AcmeException {
-        final URI testServerUri = URI.create("http://example.com/acme");
-        final URL testResolvedUrl = TestUtils.url("http://example.com/acme/directory");
         final Connection connection = mock(Connection.class);
         final Session session = mock(Session.class);
 
         when(connection.readJsonResponse()).thenReturn(getJSON("directory"));
 
-        AbstractAcmeProvider provider = new AbstractAcmeProvider() {
-            @Override
-            public Connection connect(URI serverUri) {
-                assertThat(serverUri, is(testServerUri));
-                return connection;
-            }
+        AbstractAcmeProvider provider = new TestAbstractAcmeProvider(connection);
+        JSON map = provider.directory(session, SERVER_URI);
 
-            @Override
-            public boolean accepts(URI serverUri) {
-                assertThat(serverUri, is(testServerUri));
-                return true;
-            }
-
-            @Override
-            public URL resolve(URI serverUri) {
-                assertThat(serverUri, is(testServerUri));
-                return testResolvedUrl;
-            }
-        };
-
-        JSON map = provider.directory(session, testServerUri);
         assertThat(map.toString(), sameJSONAs(TestUtils.getJSON("directory").toString()));
 
-        verify(connection).sendRequest(testResolvedUrl, session);
+        verify(connection).sendRequest(RESOLVED_URL, session, null);
         verify(connection).getNonce();
+        verify(connection).getLastModified();
+        verify(connection).getExpiration();
         verify(connection).readJsonResponse();
         verify(connection).close();
         verifyNoMoreInteractions(connection);
+    }
+
+    /**
+     * Verify that the cache control headers are evaluated.
+     */
+    @Test
+    public void testResourcesCacheControl() throws AcmeException {
+        ZonedDateTime lastModified = ZonedDateTime.now().minus(13, ChronoUnit.DAYS);
+        ZonedDateTime expiryDate = ZonedDateTime.now().plus(60, ChronoUnit.DAYS);
+
+        final Connection connection = mock(Connection.class);
+        final Session session = mock(Session.class);
+
+        when(connection.readJsonResponse()).thenReturn(getJSON("directory"));
+        when(connection.getLastModified()).thenReturn(Optional.of(lastModified));
+        when(connection.getExpiration()).thenReturn(Optional.of(expiryDate));
+        when(session.getDirectoryExpires()).thenReturn(null);
+        when(session.getDirectoryLastModified()).thenReturn(null);
+
+        AbstractAcmeProvider provider = new TestAbstractAcmeProvider(connection);
+        JSON map = provider.directory(session, SERVER_URI);
+
+        assertThat(map.toString(), sameJSONAs(TestUtils.getJSON("directory").toString()));
+
+        verify(session).setDirectoryLastModified(eq(lastModified));
+        verify(session).setDirectoryExpires(eq(expiryDate));
+        verify(session).getDirectoryExpires();
+        verify(session).getDirectoryLastModified();
+        verifyNoMoreInteractions(session);
+
+        verify(connection).sendRequest(RESOLVED_URL, session, null);
+        verify(connection).getNonce();
+        verify(connection).getLastModified();
+        verify(connection).getExpiration();
+        verify(connection).readJsonResponse();
+        verify(connection).close();
+        verifyNoMoreInteractions(connection);
+    }
+
+    /**
+     * Verify that resorces are not fetched if not yet expired.
+     */
+    @Test
+    public void testResourcesNotExprired() throws AcmeException {
+        ZonedDateTime expiryDate = ZonedDateTime.now().plus(60, ChronoUnit.DAYS);
+
+        final Connection connection = mock(Connection.class);
+        final Session session = mock(Session.class);
+
+        when(session.getDirectoryExpires()).thenReturn(expiryDate);
+
+        AbstractAcmeProvider provider = new TestAbstractAcmeProvider();
+        JSON map = provider.directory(session, SERVER_URI);
+
+        assertThat(map, is(nullValue()));
+
+        verify(session).getDirectoryExpires();
+        verifyNoMoreInteractions(session);
+
+        verifyNoMoreInteractions(connection);
+    }
+
+    /**
+     * Verify that resorces are fetched if expired.
+     */
+    @Test
+    public void testResourcesExprired() throws AcmeException {
+        ZonedDateTime expiryDate = ZonedDateTime.now().plus(60, ChronoUnit.DAYS);
+        ZonedDateTime pastExpiryDate = ZonedDateTime.now().minus(10, ChronoUnit.MINUTES);
+
+        final Connection connection = mock(Connection.class);
+        final Session session = mock(Session.class);
+
+        when(connection.readJsonResponse()).thenReturn(getJSON("directory"));
+        when(connection.getExpiration()).thenReturn(Optional.of(expiryDate));
+        when(connection.getLastModified()).thenReturn(Optional.empty());
+        when(session.getDirectoryExpires()).thenReturn(pastExpiryDate);
+
+        AbstractAcmeProvider provider = new TestAbstractAcmeProvider(connection);
+        JSON map = provider.directory(session, SERVER_URI);
+
+        assertThat(map.toString(), sameJSONAs(TestUtils.getJSON("directory").toString()));
+
+        verify(session).setDirectoryExpires(eq(expiryDate));
+        verify(session).setDirectoryLastModified(eq(null));
+        verify(session).getDirectoryExpires();
+        verify(session).getDirectoryLastModified();
+        verifyNoMoreInteractions(session);
+
+        verify(connection).sendRequest(RESOLVED_URL, session, null);
+        verify(connection).getNonce();
+        verify(connection).getLastModified();
+        verify(connection).getExpiration();
+        verify(connection).readJsonResponse();
+        verify(connection).close();
+        verifyNoMoreInteractions(connection);
+    }
+
+    /**
+     * Verify that if-modified-since is used.
+     */
+    @Test
+    public void testResourcesIfModifiedSince() throws AcmeException {
+        ZonedDateTime modifiedSinceDate = ZonedDateTime.now().minus(60, ChronoUnit.DAYS);
+
+        final Connection connection = mock(Connection.class);
+        final Session session = mock(Session.class);
+
+        when(connection.sendRequest(eq(RESOLVED_URL), eq(session), eq(modifiedSinceDate)))
+                .thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
+        when(connection.getLastModified()).thenReturn(Optional.of(modifiedSinceDate));
+        when(session.getDirectoryLastModified()).thenReturn(modifiedSinceDate);
+
+        AbstractAcmeProvider provider = new TestAbstractAcmeProvider(connection);
+        JSON map = provider.directory(session, SERVER_URI);
+
+        assertThat(map, is(nullValue()));
+
+        verify(session).getDirectoryExpires();
+        verify(session).getDirectoryLastModified();
+        verifyNoMoreInteractions(session);
+
+        verify(connection).sendRequest(RESOLVED_URL, session, modifiedSinceDate);
+        verify(connection).close();
+        verifyNoMoreInteractions(connection);
+    }
+
+    /**
+     * Verify that HTTP errors are handled correctly.
+     */
+    @Test
+    public void testResourcesHttpError() throws AcmeException, IOException {
+        final HttpURLConnection conn = mock(HttpURLConnection.class);
+        final HttpConnector connector = mock(HttpConnector.class);
+        final Connection connection = new DefaultConnection(connector);
+
+        when(connector.openConnection(any(), any())).thenReturn(conn);
+        when(conn.getResponseCode()).thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
+        when(conn.getResponseMessage()).thenReturn("Internal error");
+
+        AbstractAcmeProvider provider = new TestAbstractAcmeProvider(connection);
+        Session session = TestUtils.session(provider);
+
+        try {
+            provider.directory(session, SERVER_URI);
+            fail("HTTP error was ignored");
+        } catch (AcmeException ex) {
+            // expected
+        }
     }
 
     /**
@@ -128,17 +258,7 @@ public class AbstractAcmeProviderTest {
     public void testCreateChallenge() {
         Login login = mock(Login.class);
 
-        AbstractAcmeProvider provider = new AbstractAcmeProvider() {
-            @Override
-            public boolean accepts(URI serverUri) {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public URL resolve(URI serverUri) {
-                throw new UnsupportedOperationException();
-            }
-        };
+        AbstractAcmeProvider provider = new TestAbstractAcmeProvider();
 
         Challenge c1 = provider.createChallenge(login, getJSON("httpChallenge"));
         assertThat(c1, not(nullValue()));
@@ -187,6 +307,37 @@ public class AbstractAcmeProviderTest {
             fail("null was accepted");
         } catch (NullPointerException ex) {
             // expected
+        }
+    }
+
+    @ParametersAreNonnullByDefault
+    private static class TestAbstractAcmeProvider extends AbstractAcmeProvider {
+        private final Connection connection;
+
+        public TestAbstractAcmeProvider() {
+            this.connection = null;
+        }
+
+        public TestAbstractAcmeProvider(Connection connection) {
+            this.connection = connection;
+        }
+
+        @Override
+        public boolean accepts(URI serverUri) {
+            assertThat(serverUri, is(SERVER_URI));
+            return true;
+        }
+
+        @Override
+        public URL resolve(URI serverUri) {
+            assertThat(serverUri, is(SERVER_URI));
+            return RESOLVED_URL;
+        }
+
+        @Override
+        public Connection connect(URI serverUri) {
+            assertThat(serverUri, is(SERVER_URI));
+            return connection != null ? connection : super.connect(serverUri);
         }
     }
 
