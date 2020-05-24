@@ -1,0 +1,63 @@
+
+/* github pygments theme by @jwarby, https://github.com/jwarby/jekyll-pygments-themes */
+.codehilite .hll { background-color: #ffffcc }
+.codehilite .c { color: #999988; font-style: italic }
+.codehilite .err { color: #a61717; background-color: #e3d2d2 }
+.codehilite .k { color: #000000; font-weight: bold }
+.codehilite .o { color: #000000; font-weight: bold }
+.codehilite .cm { color: #999988; font-style: italic }
+.codehilite .cp { color: #999999; font-weight: bold; font-style: italic }
+.codehilite .c1 { color: #999988; font-style: italic }
+.codehilite .cs { color: #999999; font-weight: bold; font-style: italic }
+.codehilite .gd { color: #000000; background-color: #ffdddd }
+.codehilite .ge { color: #000000; font-style: italic }
+.codehilite .gr { color: #aa0000 }
+.codehilite .gh { color: #999999 }
+.codehilite .gi { color: #000000; background-color: #ddffdd }
+.codehilite .go { color: #888888 }
+.codehilite .gp { color: #555555 }
+.codehilite .gs { font-weight: bold }
+.codehilite .gu { color: #aaaaaa }
+.codehilite .gt { color: #aa0000 }
+.codehilite .kc { color: #000000; font-weight: bold }
+.codehilite .kd { color: #000000; font-weight: bold }
+.codehilite .kn { color: #000000; font-weight: bold }
+.codehilite .kp { color: #000000; font-weight: bold }
+.codehilite .kr { color: #000000; font-weight: bold }
+.codehilite .kt { color: #445588; font-weight: bold }
+.codehilite .m { color: #009999 }
+.codehilite .s { color: #d01040 }
+.codehilite .na { color: #008080 }
+.codehilite .nb { color: #0086B3 }
+.codehilite .nc { color: #445588; font-weight: bold }
+.codehilite .no { color: #008080 }
+.codehilite .nd { color: #3c5d5d; font-weight: bold }
+.codehilite .ni { color: #800080 }
+.codehilite .ne { color: #990000; font-weight: bold }
+.codehilite .nf { color: #990000; font-weight: bold }
+.codehilite .nl { color: #990000; font-weight: bold }
+.codehilite .nn { color: #555555 }
+.codehilite .nt { color: #000080 }
+.codehilite .nv { color: #008080 }
+.codehilite .ow { color: #000000; font-weight: bold }
+.codehilite .w { color: #bbbbbb }
+.codehilite .mf { color: #009999 }
+.codehilite .mh { color: #009999 }
+.codehilite .mi { color: #009999 }
+.codehilite .mo { color: #009999 }
+.codehilite .sb { color: #d01040 }
+.codehilite .sc { color: #d01040 }
+.codehilite .sd { color: #d01040 }
+.codehilite .s2 { color: #d01040 }
+.codehilite .se { color: #d01040 }
+.codehilite .sh { color: #d01040 }
+.codehilite .si { color: #d01040 }
+.codehilite .sx { color: #d01040 }
+.codehilite .sr { color: #009926 }
+.codehilite .s1 { color: #d01040 }
+.codehilite .ss { color: #990073 }
+.codehilite .bp { color: #999999 }
+.codehilite .vc { color: #008080 }
+.codehilite .vg { color: #008080 }
+.codehilite .vi { color: #008080 }
+.codehilite .il { color: #009999 }

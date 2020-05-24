@@ -3,10 +3,22 @@
     max-width: none;
 }
 
-pre {
-    background-color: #f6f6f6;
-    padding: .4rem;
-    overflow-x: auto;
+.codehilite pre code {
+    font-size: 15px;
+}
+
+.wy-menu-vertical p.caption {
+    padding: 0 1rem;
+    font-size: 100%;
+    border-bottom: 1px solid #555;
+}
+
+.wy-menu-vertical ul {
+    margin-bottom: .7rem;
+}
+
+table {
+    margin-bottom: 2rem;
 }
 
 footer {
