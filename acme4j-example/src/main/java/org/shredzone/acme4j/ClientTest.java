@@ -140,7 +140,7 @@ public class ClientTest {
         }
 
         // That's all! Configure your web server to use the DOMAIN_KEY_FILE and
-        // DOMAIN_CHAIN_FILE for the requested domans.
+        // DOMAIN_CHAIN_FILE for the requested domains.
     }
 
     /**
