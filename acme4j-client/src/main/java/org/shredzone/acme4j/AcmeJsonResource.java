@@ -16,8 +16,7 @@ package org.shredzone.acme4j;
 import java.net.URL;
 import java.util.Objects;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
@@ -29,12 +28,11 @@ import org.slf4j.LoggerFactory;
 /**
  * An ACME resource that stores its state in a JSON structure.
  */
-@ParametersAreNonnullByDefault
 public abstract class AcmeJsonResource extends AcmeResource {
     private static final long serialVersionUID = -5060364275766082345L;
     private static final Logger LOG = LoggerFactory.getLogger(AcmeJsonResource.class);
 
-    private JSON data = null;
+    private @Nullable JSON data = null;
 
     /**
      * Create a new {@link AcmeJsonResource}.

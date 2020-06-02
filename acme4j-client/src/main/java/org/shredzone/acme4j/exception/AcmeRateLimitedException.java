@@ -18,23 +18,17 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.Collections;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.Immutable;
-
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.Problem;
 
 /**
  * An exception that is thrown when a rate limit was exceeded.
  */
-@ParametersAreNonnullByDefault
-@Immutable
 public class AcmeRateLimitedException extends AcmeServerException {
     private static final long serialVersionUID = 4150484059796413069L;
 
-    private final Instant retryAfter;
-    private final Collection<URL> documents;
+    private final @Nullable Instant retryAfter;
+    private final @Nullable Collection<URL> documents;
 
     /**
      * Creates a new {@link AcmeRateLimitedException}.
@@ -59,7 +53,7 @@ public class AcmeRateLimitedException extends AcmeServerException {
      * Returns the moment the request is expected to succeed again. {@code null} if this
      * moment is not known.
      */
-    @CheckForNull
+    @Nullable
     public Instant getRetryAfter() {
         return retryAfter;
     }
@@ -68,7 +62,7 @@ public class AcmeRateLimitedException extends AcmeServerException {
      * Collection of URLs pointing to documents about the rate limit that was hit.
      * {@code null} if the server did not provide such URLs.
      */
-    @CheckForNull
+    @Nullable
     public Collection<URL> getDocuments() {
         return documents;
     }

@@ -22,10 +22,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -37,7 +34,6 @@ import org.shredzone.acme4j.toolbox.JSONBuilder;
 /**
  * Connects to the ACME server and offers different methods for invoking the API.
  */
-@ParametersAreNonnullByDefault
 public interface Connection extends AutoCloseable {
 
     /**
@@ -166,7 +162,7 @@ public interface Connection extends AutoCloseable {
      *
      * @return Base64 encoded nonce, or {@code null} if no nonce header was set
      */
-    @CheckForNull
+    @Nullable
     String getNonce();
 
     /**
@@ -176,7 +172,7 @@ public interface Connection extends AutoCloseable {
      *
      * @return Location {@link URL}, or {@code null} if no Location header was set
      */
-    @CheckForNull
+    @Nullable
     URL getLocation();
 
     /**

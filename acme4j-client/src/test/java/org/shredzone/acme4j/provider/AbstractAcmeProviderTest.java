@@ -30,8 +30,6 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
 import org.junit.Test;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
@@ -310,7 +308,6 @@ public class AbstractAcmeProviderTest {
         }
     }
 
-    @ParametersAreNonnullByDefault
     private static class TestAbstractAcmeProvider extends AbstractAcmeProvider {
         private final Connection connection;
 

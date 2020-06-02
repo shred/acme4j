@@ -23,9 +23,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.WillClose;
-
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.openssl.PEMException;
@@ -39,7 +36,6 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
  * <p>
  * Requires {@code Bouncy Castle}. This class is part of the {@code acme4j-utils} module.
  */
-@ParametersAreNonnullByDefault
 public class KeyPairUtils {
 
     private KeyPairUtils() {
@@ -104,7 +100,7 @@ public class KeyPairUtils {
      *            after use.
      * @return {@link KeyPair} read
      */
-    public static KeyPair readKeyPair(@WillClose Reader r) throws IOException {
+    public static KeyPair readKeyPair(Reader r) throws IOException {
         try (PEMParser parser = new PEMParser(r)) {
             PEMKeyPair keyPair = (PEMKeyPair) parser.readObject();
             return new JcaPEMKeyConverter().getKeyPair(keyPair);
@@ -122,7 +118,7 @@ public class KeyPairUtils {
      *            {@link Writer} to write the PEM file to. The {@link Writer} is closed
      *            after use.
      */
-    public static void writeKeyPair(KeyPair keypair, @WillClose Writer w) throws IOException {
+    public static void writeKeyPair(KeyPair keypair, Writer w) throws IOException {
         try (JcaPEMWriter jw = new JcaPEMWriter(w)) {
             jw.writeObject(keypair);
         }

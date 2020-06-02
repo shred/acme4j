@@ -19,9 +19,6 @@ import java.net.URL;
 import java.security.KeyPair;
 import java.util.Objects;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.ThreadSafe;
-
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -37,8 +34,6 @@ import org.shredzone.acme4j.toolbox.JSON;
  * Note that {@link Login} objects are not serializable, as they contain a keypair and
  * volatile data.
  */
-@ParametersAreNonnullByDefault
-@ThreadSafe
 public class Login {
 
     private final Session session;

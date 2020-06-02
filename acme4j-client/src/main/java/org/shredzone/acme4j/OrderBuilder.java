@@ -23,8 +23,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -36,20 +35,19 @@ import org.slf4j.LoggerFactory;
 /**
  * A builder for a new {@link Order} object.
  */
-@ParametersAreNonnullByDefault
 public class OrderBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(OrderBuilder.class);
 
     private final Login login;
 
     private final Set<Identifier> identifierSet = new LinkedHashSet<>();
-    private Instant notBefore;
-    private Instant notAfter;
+    private @Nullable Instant notBefore;
+    private @Nullable Instant notAfter;
     private boolean autoRenewal;
-    private Instant autoRenewalStart;
-    private Instant autoRenewalEnd;
-    private Duration autoRenewalLifetime;
-    private Duration autoRenewalLifetimeAdjust;
+    private @Nullable Instant autoRenewalStart;
+    private @Nullable Instant autoRenewalEnd;
+    private @Nullable Duration autoRenewalLifetime;
+    private @Nullable Duration autoRenewalLifetimeAdjust;
     private boolean autoRenewalGet;
 
     /**

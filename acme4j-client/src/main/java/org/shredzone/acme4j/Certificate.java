@@ -25,10 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.WillNotClose;
-
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -45,13 +42,12 @@ import org.slf4j.LoggerFactory;
  * Note that a certificate is immutable once it is issued. For renewal, a new certificate
  * must be ordered.
  */
-@ParametersAreNonnullByDefault
 public class Certificate extends AcmeResource {
     private static final long serialVersionUID = 7381527770159084201L;
     private static final Logger LOG = LoggerFactory.getLogger(Certificate.class);
 
-    private ArrayList<X509Certificate> certChain;
-    private ArrayList<URL> alternates;
+    private @Nullable ArrayList<X509Certificate> certChain;
+    private @Nullable ArrayList<URL> alternates;
 
     protected Certificate(Login login, URL certUrl) {
         super(login, certUrl);
@@ -121,7 +117,7 @@ public class Certificate extends AcmeResource {
      * @param out
      *            {@link Writer} to write to. The writer is not closed after use.
      */
-    public void writeCertificate(@WillNotClose Writer out) throws IOException {
+    public void writeCertificate(Writer out) throws IOException {
         try {
             for (X509Certificate cert : getCertificateChain()) {
                 AcmeUtils.writeToPem(cert.getEncoded(), AcmeUtils.PemLabel.CERTIFICATE, out);

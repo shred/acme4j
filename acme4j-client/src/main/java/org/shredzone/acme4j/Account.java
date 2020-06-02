@@ -26,9 +26,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.ParametersAreNonnullByDefault;
-
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.ResourceIterator;
@@ -46,7 +44,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Represents an account at the ACME server.
  */
-@ParametersAreNonnullByDefault
 public class Account extends AcmeJsonResource {
     private static final long serialVersionUID = 7042863483428051319L;
     private static final Logger LOG = LoggerFactory.getLogger(Account.class);
@@ -67,7 +64,7 @@ public class Account extends AcmeJsonResource {
      * @return {@code true} if the user agreed to the terms of service. May be
      *         {@code null} if the server did not provide such an information.
      */
-    @CheckForNull
+    @Nullable
     public Boolean getTermsOfServiceAgreed() {
         return getJSON().get(KEY_TOS_AGREED).map(Value::asBoolean).orElse(null);
     }
@@ -108,7 +105,7 @@ public class Account extends AcmeJsonResource {
      *
      * @since 2.8
      */
-    @CheckForNull
+    @Nullable
     public String getKeyIdentifier() {
         return getJSON().get(KEY_EXTERNAL_ACCOUNT_BINDING)
                 .optional().map(Value::asObject)
@@ -277,7 +274,6 @@ public class Account extends AcmeJsonResource {
     /**
      * Editable {@link Account}.
      */
-    @ParametersAreNonnullByDefault
     public class EditableAccount {
         private final List<URI> editContacts = new ArrayList<>();
 

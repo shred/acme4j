@@ -19,10 +19,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Properties;
 
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.ThreadSafe;
-
 import org.slf4j.LoggerFactory;
 
 /**
@@ -32,8 +28,6 @@ import org.slf4j.LoggerFactory;
  * Subclasses may reconfigure the {@link HttpURLConnection} and pin it to a concrete SSL
  * certificate.
  */
-@ParametersAreNonnullByDefault
-@ThreadSafe
 public class HttpConnector {
 
     private static final String USER_AGENT;
@@ -90,7 +84,6 @@ public class HttpConnector {
      * @param settings
      *         {@link NetworkSettings} with settings to be used
      */
-    @OverridingMethodsMustInvokeSuper
     protected void configure(HttpURLConnection conn, NetworkSettings settings) {
         int timeout = (int) settings.getTimeout().toMillis();
         conn.setConnectTimeout(timeout);

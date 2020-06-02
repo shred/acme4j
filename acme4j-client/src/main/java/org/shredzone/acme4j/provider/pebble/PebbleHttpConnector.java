@@ -22,14 +22,14 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.Objects;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.ThreadSafe;
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.connector.NetworkSettings;
 
@@ -37,10 +37,8 @@ import org.shredzone.acme4j.connector.NetworkSettings;
  * {@link HttpConnector} to be used for Pebble. Pebble uses a static, self signed SSL
  * certificate.
  */
-@ParametersAreNonnullByDefault
-@ThreadSafe
 public class PebbleHttpConnector extends HttpConnector {
-    private static SSLSocketFactory sslSocketFactory;
+    private static @Nullable SSLSocketFactory sslSocketFactory = null;
 
     @Override
     public HttpURLConnection openConnection(URL url, NetworkSettings settings) throws IOException {
@@ -75,7 +73,7 @@ public class PebbleHttpConnector extends HttpConnector {
                 throw new IOException("Could not create truststore", ex);
             }
         }
-        return sslSocketFactory;
+        return Objects.requireNonNull(sslSocketFactory);
     }
 
 }

@@ -18,10 +18,9 @@ import java.security.KeyPair;
 import java.security.PublicKey;
 import java.util.Map;
 
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
 import javax.crypto.SecretKey;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.jose4j.jwk.EllipticCurveJsonWebKey;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.PublicJsonWebKey;
@@ -37,7 +36,6 @@ import org.slf4j.LoggerFactory;
  *
  * @since 2.7
  */
-@ParametersAreNonnullByDefault
 public final class JoseUtils {
 
     private static final Logger LOG = LoggerFactory.getLogger(JoseUtils.class);
@@ -65,7 +63,7 @@ public final class JoseUtils {
      * @return JSON structure of the JOSE request, ready to be sent.
      */
     public static JSONBuilder createJoseRequest(URL url, KeyPair keypair,
-            @Nullable JSONBuilder payload, @Nullable String nonce, @Nullable String kid) {
+                @Nullable JSONBuilder payload, @Nullable String nonce, @Nullable String kid) {
         try {
             PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(keypair.getPublic());
 

@@ -33,9 +33,6 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.function.Function;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.WillClose;
-
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -64,7 +61,6 @@ import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
  * <p>
  * Requires {@code Bouncy Castle}. This class is part of the {@code acme4j-utils} module.
  */
-@ParametersAreNonnullByDefault
 public final class CertificateUtils {
 
     /**
@@ -87,7 +83,7 @@ public final class CertificateUtils {
      *            closed after use.
      * @return CSR that was read
      */
-    public static PKCS10CertificationRequest readCSR(@WillClose InputStream in) throws IOException {
+    public static PKCS10CertificationRequest readCSR(InputStream in) throws IOException {
         try (PEMParser pemParser = new PEMParser(new InputStreamReader(in, StandardCharsets.US_ASCII))) {
             Object parsedObj = pemParser.readObject();
             if (!(parsedObj instanceof PKCS10CertificationRequest)) {

@@ -17,15 +17,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
 /**
  * A generic {@link AcmeProvider}. It should be working for all ACME servers complying to
  * the ACME specifications.
  * <p>
  * The {@code serverUri} is either a http or https URI to the server's directory service.
  */
-@ParametersAreNonnullByDefault
 public class GenericAcmeProvider extends AbstractAcmeProvider {
 
     @Override

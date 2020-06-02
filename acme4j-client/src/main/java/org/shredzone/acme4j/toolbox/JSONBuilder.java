@@ -26,9 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.jose4j.json.JsonUtil;
 
 /**
@@ -42,7 +40,6 @@ import org.jose4j.json.JsonUtil;
  * cb.array("array", 123, 456, 789);
  * </pre>
  */
-@ParametersAreNonnullByDefault
 public class JSONBuilder {
 
     private final Map<String, Object> data = new LinkedHashMap<>();

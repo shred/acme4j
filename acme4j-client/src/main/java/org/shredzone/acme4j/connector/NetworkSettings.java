@@ -16,15 +16,13 @@ package org.shredzone.acme4j.connector;
 import java.net.Proxy;
 import java.time.Duration;
 
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * Contains network settings to be used for network connections.
  *
  * @since 2.8
  */
-@ParametersAreNonnullByDefault
 public class NetworkSettings {
 
     private Proxy proxy = Proxy.NO_PROXY;

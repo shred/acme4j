@@ -26,11 +26,7 @@ import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.StreamSupport;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.ThreadSafe;
-
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.NetworkSettings;
 import org.shredzone.acme4j.connector.Resource;
@@ -43,8 +39,6 @@ import org.shredzone.acme4j.toolbox.JSON.Value;
 /**
  * A session stores the ACME server URI. It also tracks communication parameters.
  */
-@ParametersAreNonnullByDefault
-@ThreadSafe
 public class Session {
 
     private static final GenericAcmeProvider GENERIC_PROVIDER = new GenericAcmeProvider();
@@ -55,10 +49,10 @@ public class Session {
     private final URI serverUri;
     private final AcmeProvider provider;
 
-    private String nonce;
+    private @Nullable String nonce;
     private Locale locale = Locale.getDefault();
-    protected ZonedDateTime directoryLastModified;
-    protected ZonedDateTime directoryExpires;
+    protected @Nullable ZonedDateTime directoryLastModified;
+    protected @Nullable ZonedDateTime directoryExpires;
 
     /**
      * Creates a new {@link Session}.
@@ -143,7 +137,7 @@ public class Session {
     /**
      * Gets the last base64 encoded nonce, or {@code null} if the session is new.
      */
-    @CheckForNull
+    @Nullable
     public String getNonce() {
         return nonce;
     }
@@ -256,7 +250,7 @@ public class Session {
      * (directory has not been read yet or did not provide this information).
      * @since 2.10
      */
-    @CheckForNull
+    @Nullable
     public ZonedDateTime getDirectoryLastModified() {
         return directoryLastModified;
     }
@@ -282,7 +276,7 @@ public class Session {
      * information.
      * @since 2.10
      */
-    @CheckForNull
+    @Nullable
     public ZonedDateTime getDirectoryExpires() {
         return directoryExpires;
     }

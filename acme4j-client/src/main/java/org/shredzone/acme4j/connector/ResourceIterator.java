@@ -21,9 +21,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.AcmeResource;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
@@ -38,7 +36,6 @@ import org.shredzone.acme4j.toolbox.JSON;
  * @param <T>
  *            {@link AcmeResource} type to iterate over
  */
-@ParametersAreNonnullByDefault
 public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
 
     private final Login login;
@@ -46,7 +43,7 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
     private final Deque<URL> urlList = new ArrayDeque<>();
     private final BiFunction<Login, URL, T> creator;
     private boolean eol = false;
-    private URL nextUrl;
+    private @Nullable URL nextUrl;
 
     /**
      * Creates a new {@link ResourceIterator}.

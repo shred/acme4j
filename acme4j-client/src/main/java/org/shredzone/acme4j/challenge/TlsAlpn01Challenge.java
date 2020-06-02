@@ -15,8 +15,6 @@ package org.shredzone.acme4j.challenge;
 
 import static org.shredzone.acme4j.toolbox.AcmeUtils.sha256hash;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.toolbox.JSON;
 
@@ -25,7 +23,6 @@ import org.shredzone.acme4j.toolbox.JSON;
  *
  * @since 2.1
  */
-@ParametersAreNonnullByDefault
 public class TlsAlpn01Challenge extends TokenChallenge {
     private static final long serialVersionUID = -5590351078176091228L;
 

@@ -41,10 +41,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
@@ -66,7 +63,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Default implementation of {@link Connection}.
  */
-@ParametersAreNonnullByDefault
 public class DefaultConnection implements Connection {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultConnection.class);
 
@@ -95,7 +91,7 @@ public class DefaultConnection implements Connection {
     private static final Pattern MAX_AGE_PATTERN = Pattern.compile("(?:^|.*?,)\\s*max-age=(\\d+)\\s*(?:,.*|$)", Pattern.CASE_INSENSITIVE);
 
     protected final HttpConnector httpConnector;
-    protected HttpURLConnection conn;
+    protected @Nullable  HttpURLConnection conn;
 
     /**
      * Creates a new {@link DefaultConnection}.
@@ -232,7 +228,7 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    @CheckForNull
+    @Nullable
     public String getNonce() {
         assertConnectionIsOpen();
 
@@ -251,7 +247,7 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    @CheckForNull
+    @Nullable
     public URL getLocation() {
         assertConnectionIsOpen();
 
@@ -625,7 +621,7 @@ public class DefaultConnection implements Connection {
      * @return Absolute URL of the given link, or {@code null} if the link was
      *         {@code null}.
      */
-    @CheckForNull
+    @Nullable
     private URL resolveRelative(@Nullable String link) {
         if (link == null) {
             return null;
@@ -647,7 +643,7 @@ public class DefaultConnection implements Connection {
      * @return Absolute URI of the given link, or {@code null} if the URI was
      *         {@code null}.
      */
-    @CheckForNull
+    @Nullable
     private URI resolveUri(@Nullable String uri) {
         if (uri == null) {
             return null;

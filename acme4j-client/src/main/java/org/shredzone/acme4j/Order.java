@@ -21,9 +21,7 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.ParametersAreNonnullByDefault;
-
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.toolbox.JSON;
@@ -35,7 +33,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Represents a certificate order.
  */
-@ParametersAreNonnullByDefault
 public class Order extends AcmeJsonResource {
     private static final long serialVersionUID = 5435808648658292177L;
     private static final Logger LOG = LoggerFactory.getLogger(Order.class);
@@ -57,7 +54,7 @@ public class Order extends AcmeJsonResource {
     /**
      * Returns a {@link Problem} document if the order failed.
      */
-    @CheckForNull
+    @Nullable
     public Problem getError() {
         return getJSON().get("error").map(v -> v.asProblem(getLocation())).orElse(null);
     }
@@ -65,7 +62,7 @@ public class Order extends AcmeJsonResource {
     /**
      * Gets the expiry date of the authorization, if set by the server.
      */
-    @CheckForNull
+    @Nullable
     public Instant getExpires() {
         return getJSON().get("expires").map(Value::asInstant).orElse(null);
     }
@@ -86,7 +83,7 @@ public class Order extends AcmeJsonResource {
     /**
      * Gets the "not before" date that was used for the order, or {@code null}.
      */
-    @CheckForNull
+    @Nullable
     public Instant getNotBefore() {
         return getJSON().get("notBefore").map(Value::asInstant).orElse(null);
     }
@@ -94,7 +91,7 @@ public class Order extends AcmeJsonResource {
     /**
      * Gets the "not after" date that was used for the order, or {@code null}.
      */
-    @CheckForNull
+    @Nullable
     public Instant getNotAfter() {
         return getJSON().get("notAfter").map(Value::asInstant).orElse(null);
     }
@@ -124,7 +121,7 @@ public class Order extends AcmeJsonResource {
     /**
      * Gets the {@link Certificate} if it is available. {@code null} otherwise.
      */
-    @CheckForNull
+    @Nullable
     public Certificate getCertificate() {
         return getJSON().get("certificate")
                     .map(Value::asURL)
@@ -138,7 +135,7 @@ public class Order extends AcmeJsonResource {
      *
      * @since 2.6
      */
-    @CheckForNull
+    @Nullable
     public Certificate getAutoRenewalCertificate() {
         return getJSON().get("star-certificate")
                     .map(Value::asURL)
@@ -188,7 +185,7 @@ public class Order extends AcmeJsonResource {
      *
      * @since 2.3
      */
-    @CheckForNull
+    @Nullable
     public Instant getAutoRenewalStartDate() {
         return getJSON().get("auto-renewal")
                     .optional()
@@ -206,7 +203,7 @@ public class Order extends AcmeJsonResource {
      *
      * @since 2.3
      */
-    @CheckForNull
+    @Nullable
     public Instant getAutoRenewalEndDate() {
         return getJSON().get("auto-renewal")
                     .optional()
@@ -223,7 +220,7 @@ public class Order extends AcmeJsonResource {
      *
      * @since 2.3
      */
-    @CheckForNull
+    @Nullable
     public Duration getAutoRenewalLifetime() {
         return getJSON().get("auto-renewal")
                     .optional()
@@ -240,7 +237,7 @@ public class Order extends AcmeJsonResource {
      *
      * @since 2.7
      */
-    @CheckForNull
+    @Nullable
     public Duration getAutoRenewalLifetimeAdjust() {
         return getJSON().get("auto-renewal")
                     .optional()

@@ -22,8 +22,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -44,7 +42,6 @@ import org.shredzone.acme4j.toolbox.JSON;
  * Implementing classes must implement at least {@link AcmeProvider#accepts(URI)}
  * and {@link AbstractAcmeProvider#resolve(URI)}.
  */
-@ParametersAreNonnullByDefault
 public abstract class AbstractAcmeProvider implements AcmeProvider {
 
     private static final Map<String, BiFunction<Login, JSON, Challenge>> CHALLENGES = challengeMap();

@@ -16,15 +16,10 @@ package org.shredzone.acme4j.exception;
 import java.time.Instant;
 import java.util.Objects;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.Immutable;
-
 /**
  * This exception is thrown when a server side process has not been completed yet, and the
  * server returned an estimated retry date.
  */
-@ParametersAreNonnullByDefault
-@Immutable
 public class AcmeRetryAfterException extends AcmeException {
     private static final long serialVersionUID = 4461979121063649905L;
 

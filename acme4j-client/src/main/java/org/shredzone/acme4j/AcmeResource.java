@@ -17,16 +17,15 @@ import java.io.Serializable;
 import java.net.URL;
 import java.util.Objects;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
  * A generic ACME resource.
  */
-@ParametersAreNonnullByDefault
 public abstract class AcmeResource implements Serializable {
     private static final long serialVersionUID = -7930580802257379731L;
 
-    private transient Login login;
+    private transient @Nullable Login login;
     private final URL location;
 
     /**

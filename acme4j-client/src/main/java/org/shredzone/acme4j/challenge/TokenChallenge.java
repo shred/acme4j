@@ -17,8 +17,6 @@ import static org.shredzone.acme4j.toolbox.AcmeUtils.base64UrlEncode;
 
 import java.security.PublicKey;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
@@ -29,7 +27,6 @@ import org.shredzone.acme4j.toolbox.JoseUtils;
  * An extension of {@link Challenge} that handles challenges with a {@code token} and
  * {@code keyAuthorization}.
  */
-@ParametersAreNonnullByDefault
 public class TokenChallenge extends Challenge {
     private static final long serialVersionUID = 1634133407432681800L;
 

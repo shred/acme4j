@@ -21,10 +21,10 @@ import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -38,16 +38,15 @@ import org.slf4j.LoggerFactory;
 /**
  * A builder for registering a new account.
  */
-@ParametersAreNonnullByDefault
 public class AccountBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(AccountBuilder.class);
 
-    private List<URI> contacts = new ArrayList<>();
-    private Boolean termsOfServiceAgreed;
-    private Boolean onlyExisting;
-    private String keyIdentifier;
-    private KeyPair keyPair;
-    private SecretKey macKey;
+    private final List<URI> contacts = new ArrayList<>();
+    private @Nullable Boolean termsOfServiceAgreed;
+    private @Nullable Boolean onlyExisting;
+    private @Nullable String keyIdentifier;
+    private @Nullable KeyPair keyPair;
+    private @Nullable SecretKey macKey;
 
     /**
      * Add a contact URI to the list of contacts.

@@ -16,13 +16,10 @@ package org.shredzone.acme4j.connector;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
 /**
  * Normalizes line separators in an InputStream. Converts all line separators to '\n'.
  * Multiple line separators are compressed to a single line separator.
  */
-@ParametersAreNonnullByDefault
 public class TrimmingInputStream extends InputStream {
 
     private final InputStream in;

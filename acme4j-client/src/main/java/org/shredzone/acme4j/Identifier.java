@@ -21,9 +21,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.Immutable;
-
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -38,8 +35,6 @@ import org.shredzone.acme4j.toolbox.JSONBuilder;
  *
  * @since 2.3
  */
-@ParametersAreNonnullByDefault
-@Immutable
 public class Identifier implements Serializable {
     private static final long serialVersionUID = -7777851842076362412L;
 

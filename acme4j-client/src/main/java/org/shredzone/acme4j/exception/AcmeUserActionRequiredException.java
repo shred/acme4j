@@ -17,11 +17,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.Nullable;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.Immutable;
-
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.Problem;
 
 /**
@@ -30,12 +26,10 @@ import org.shredzone.acme4j.Problem;
  * Usually this exception is thrown when the terms of service have changed, and the CA
  * requires an agreement to the new terms before proceeding.
  */
-@ParametersAreNonnullByDefault
-@Immutable
 public class AcmeUserActionRequiredException extends AcmeServerException {
     private static final long serialVersionUID = 7719055447283858352L;
 
-    private final URI tosUri;
+    private final @Nullable URI tosUri;
 
     /**
      * Creates a new {@link AcmeUserActionRequiredException}.
@@ -54,7 +48,7 @@ public class AcmeUserActionRequiredException extends AcmeServerException {
      * Returns the {@link URI} of the terms-of-service document to accept, or {@code null}
      * if the server did not provide a link to such a document.
      */
-    @CheckForNull
+    @Nullable
     public URI getTermsOfServiceUri() {
         return tosUri;
     }

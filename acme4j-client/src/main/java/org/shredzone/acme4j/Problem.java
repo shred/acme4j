@@ -22,10 +22,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.Immutable;
-
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
@@ -35,8 +32,6 @@ import org.shredzone.acme4j.toolbox.JSON.Value;
  *
  * @see <a href="https://tools.ietf.org/html/rfc7807">RFC 7807</a>
  */
-@ParametersAreNonnullByDefault
-@Immutable
 public class Problem implements Serializable {
     private static final long serialVersionUID = -8418248862966754214L;
 
@@ -78,7 +73,7 @@ public class Problem implements Serializable {
      *
      * @see #toString()
      */
-    @CheckForNull
+    @Nullable
     public String getTitle() {
         return problemJson.get("title").map(Value::asString).orElse(null);
     }
@@ -89,7 +84,7 @@ public class Problem implements Serializable {
      *
      * @see #toString()
      */
-    @CheckForNull
+    @Nullable
     public String getDetail() {
         return problemJson.get("detail").map(Value::asString).orElse(null);
     }
@@ -98,7 +93,7 @@ public class Problem implements Serializable {
      * Returns an URI that identifies the specific occurence of the problem. It is always
      * an absolute URI.
      */
-    @CheckForNull
+    @Nullable
     public URI getInstance() {
         return problemJson.get("instance")
                         .map(Value::asString)
@@ -117,7 +112,7 @@ public class Problem implements Serializable {
      *
      * @since 2.3
      */
-    @CheckForNull
+    @Nullable
     public Identifier getIdentifier() {
         return problemJson.get("identifier")
                         .optional()

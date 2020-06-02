@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Objects;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
@@ -33,7 +31,6 @@ import org.shredzone.acme4j.toolbox.JSONBuilder;
 /**
  * The BammBamm client connects to the pebble-challtestsrv.
  */
-@ParametersAreNonnullByDefault
 public class BammBammClient {
     private static final HttpClient CLIENT = HttpClients.createDefault();
 

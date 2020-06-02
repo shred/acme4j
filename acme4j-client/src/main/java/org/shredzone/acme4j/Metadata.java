@@ -21,18 +21,13 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Optional;
 
-import javax.annotation.CheckForNull;
-import javax.annotation.ParametersAreNonnullByDefault;
-import javax.annotation.concurrent.Immutable;
-
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 
 /**
  * Contains metadata related to the provider.
  */
-@ParametersAreNonnullByDefault
-@Immutable
 public class Metadata {
 
     private final JSON meta;
@@ -51,7 +46,7 @@ public class Metadata {
      * Returns an {@link URI} to the current terms of service, or {@code null} if not
      * available.
      */
-    @CheckForNull
+    @Nullable
     public URI getTermsOfService() {
         return meta.get("termsOfService").map(Value::asURI).orElse(null);
     }
@@ -60,7 +55,7 @@ public class Metadata {
      * Returns an {@link URL} to a website providing more information about the ACME
      * server. {@code null} if not available.
      */
-    @CheckForNull
+    @Nullable
     public URL getWebsite() {
         return meta.get("website").map(Value::asURL).orElse(null);
     }
@@ -100,6 +95,7 @@ public class Metadata {
      *
      * @since 2.3
      */
+    @Nullable
     public Duration getAutoRenewalMinLifetime() {
         Optional<JSON> ar = meta.get("auto-renewal").optional().map(Value::asObject);
         if (!ar.isPresent()) {
@@ -114,6 +110,7 @@ public class Metadata {
      *
      * @since 2.3
      */
+    @Nullable
     public Duration getAutoRenewalMaxDuration() {
         Optional<JSON> ar = meta.get("auto-renewal").optional().map(Value::asObject);
         if (!ar.isPresent()) {
