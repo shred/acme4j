@@ -4,6 +4,8 @@ This document will help you migrate your code to the latest _acme4j_ version.
 
 ## Migration to Version 2.10
 
+- acme4j now provides real `module-info.java` definitions. It also means that for _building_ this project, Java 9 is the minimum requirement now.
+
 - In a preparation for Java 9 modules, the JSR305 null-safe annotations have been replaced by SpotBugs annotations. This _should_ have no impact on your code, as the method signatures themselves are unchanged. However, the compiler could now complain about some `null` dereferences that have been undetected before. Reason is that JSR305 uses the `javax.annotations` package, which leads to split packages in a Java 9 modular environment.
   
 - When fetching the directory, acme4j now evaluates HTTP caching headers instead of just caching the directory for 1 hour. However, Let's Encrypt explicitly forbids caching, which means that a fresh copy of the directory is now fetched from the server every time it is needed. I don't like it, but it is the RFC conformous behavior. It needs to be [fixed on Let's Encrypt side](https://github.com/letsencrypt/boulder/issues/4814).

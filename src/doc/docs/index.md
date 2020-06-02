@@ -19,16 +19,16 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 * Supports [RFC 8738](https://tools.ietf.org/html/rfc8738) IP identifier validation
 * Supports [RFC 8739](https://tools.ietf.org/html/rfc8739) short-term automatic certificate renewal (experimental)
 * Easy to use Java API
-* Requires JRE 8 (update 101) or higher
+* Requires JRE 8 (update 101) or higher. For building the project, Java 9 or higher is required.
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
 * Requires [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home), [Bouncy Castle](https://www.bouncycastle.org/) and [slf4j](http://www.slf4j.org/) as dependencies. If you have other means of generating key pairs and CSRs, you can even do without `acme4j-utils` and Bouncy Castle as dependency.
 * Extensive unit and integration tests
 
 ## Quick Start
 
-[This source code](acme4j-example/apidocs/src-html/org/shredzone/acme4j/ClientTest.html) gives an example of how to get a TLS certificate with _acme4j_.
+[This source code](acme4j-example/apidocs/src-html/org/shredzone/acme4j/example/ClientTest.html) gives an example of how to get a TLS certificate with _acme4j_.
 
-You can run the `org.shredzone.acme4j.ClientTest` class in your IDE, with the domains to be registered as parameters. The test client can also be invoked via maven in a command line:
+You can run the `org.shredzone.acme4j.example.ClientTest` class in your IDE, with the domains to be registered as parameters. The test client can also be invoked via maven in a command line:
 
 ```sh
 mvn exec:java -Dexec.args="example.com example.org"
@@ -51,7 +51,7 @@ acme4j-utils
     The Java module name is `org.shredzone.acme4j.utils`.
 
 acme4j-example
-:   This module only contains [an example code](https://shredzone.org/maven/acme4j/acme4j-example/apidocs/src-html/org/shredzone/acme4j/ClientTest.html) that demonstrates how to get a certificate with _acme4j_. It depends on `acme4j-client` and `acme4j-utils`. It is not useful as a dependency in other projects.
+:   This module only contains [an example code](https://shredzone.org/maven/acme4j/acme4j-example/apidocs/src-html/org/shredzone/acme4j/example/ClientTest.html) that demonstrates how to get a certificate with _acme4j_. It depends on `acme4j-client` and `acme4j-utils`. It is not useful as a dependency in other projects.
 
 acme4j-it
 :   [`acme4j-it`](https://mvnrepository.com/artifact/org.shredzone.acme4j/acme4j-it/latest) mainly serves as integration test suite for _acme4j_ itself. It is not really useful as a dependency in other projects. However if you write own integration tests using [pebble](https://github.com/letsencrypt/pebble) and [pebble-challtestsrv](https://hub.docker.com/r/letsencrypt/pebble-challtestsrv), you may find the [`challtestsrv` configuration client](https://shredzone.org/maven/acme4j/acme4j-it/apidocs/org/shredzone/acme4j/it/BammBammClient.html) useful in your project.

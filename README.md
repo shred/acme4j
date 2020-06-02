@@ -15,7 +15,7 @@ It is an independent open source implementation that is not affiliated with or e
 * Supports [RFC 8738](https://tools.ietf.org/html/rfc8738) IP identifier validation
 * Supports [RFC 8739](https://tools.ietf.org/html/rfc8739) short-term automatic certificate renewal (experimental)
 * Easy to use Java API
-* Requires JRE 8 (update 101) or higher
+* Requires JRE 8 (update 101) or higher. For building the project, Java 9 or higher is required.
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
 * Requires [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home), [Bouncy Castle](https://www.bouncycastle.org/) and [slf4j](http://www.slf4j.org/) as dependencies. If you have other means of generating key pairs and CSRs, you can even do without `acme4j-utils` and Bouncy Castle as dependency.
 * Extensive unit and integration tests
@@ -23,7 +23,7 @@ It is an independent open source implementation that is not affiliated with or e
 ## Usage
 
 * See the [online documentation](https://shredzone.org/maven/acme4j/) about how to use _acme4j_.
-* For a quick start, have a look at [the source code of an example](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/ClientTest.java).
+* For a quick start, have a look at [the source code of an example](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/example/ClientTest.java).
 
 ## Contribute
 

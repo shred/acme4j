@@ -41,13 +41,11 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
+                <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <archive>
-                        <manifestEntries>
-                            <Automatic-Module-Name>org.shredzone.acme4j</Automatic-Module-Name>
-                        </manifestEntries>
-                    </archive>
+                    <!-- Required because unit tests provides an own AcmeProvider
+                         which cannot be added to the module-info definition. -->
+                    <useModulePath>false</useModulePath>
                 </configuration>
             </plugin>
         </plugins>
