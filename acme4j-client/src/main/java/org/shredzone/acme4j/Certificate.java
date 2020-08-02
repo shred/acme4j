@@ -167,9 +167,6 @@ public class Certificate extends AcmeResource {
         Session session = login.getSession();
 
         URL resUrl = session.resourceUrl(Resource.REVOKE_CERT);
-        if (resUrl == null) {
-            throw new AcmeException("Server does not allow certificate revocation");
-        }
 
         try (Connection conn = session.connect()) {
             JSONBuilder claims = new JSONBuilder();
@@ -204,9 +201,6 @@ public class Certificate extends AcmeResource {
         LOG.debug("revoke using the domain key pair");
 
         URL resUrl = session.resourceUrl(Resource.REVOKE_CERT);
-        if (resUrl == null) {
-            throw new AcmeException("Server does not allow certificate revocation");
-        }
 
         try (Connection conn = session.connect()) {
             JSONBuilder claims = new JSONBuilder();

@@ -13,8 +13,9 @@
  */
 package org.shredzone.acme4j.toolbox;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.IDN;
 import java.net.URI;
@@ -99,9 +100,9 @@ public final class AcmeUtils {
     public static byte[] sha256hash(String z) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
-            md.update(z.getBytes("UTF-8"));
+            md.update(z.getBytes(UTF_8));
             return md.digest();
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
+        } catch (NoSuchAlgorithmException ex) {
             throw new AcmeProtocolException("Could not compute hash", ex);
         }
     }

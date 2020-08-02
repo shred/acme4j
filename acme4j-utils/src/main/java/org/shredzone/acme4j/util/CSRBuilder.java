@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.util;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.joining;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.toAce;
@@ -311,7 +312,7 @@ public class CSRBuilder {
      *            is closed after use.
      */
     public void write(OutputStream out) throws IOException {
-        write(new OutputStreamWriter(out, "utf-8"));
+        write(new OutputStreamWriter(out, UTF_8));
     }
 
     @Override

@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.toolbox;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
 
@@ -319,7 +320,7 @@ public final class TestUtils {
         final JsonWebKey jwk = JsonWebKey.Factory.newJwk(keyPair.getPublic());
         Map<String, Object> params = new TreeMap<>(jwk.toParams(OutputControlLevel.PUBLIC_ONLY));
         MessageDigest md = MessageDigest.getInstance("SHA-256");
-        md.update(JsonUtil.toJson(params).getBytes("UTF-8"));
+        md.update(JsonUtil.toJson(params).getBytes(UTF_8));
         byte[] thumbprint = md.digest();
 
         System.out.println("N = " + params.get("n"));

@@ -128,7 +128,7 @@ public class Challenge extends AcmeJsonResource {
         }
 
         String loc = json.get(KEY_URL).asString();
-        if (loc != null && !loc.equals(getLocation().toString())) {
+        if (!loc.equals(getLocation().toString())) {
             throw new AcmeProtocolException("challenge has changed its location");
         }
 

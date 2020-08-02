@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.toolbox;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.stream.Collectors.joining;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 
@@ -27,7 +28,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
@@ -96,7 +96,7 @@ public final class JSON implements Serializable {
      * @return {@link JSON} of the read content.
      */
     public static JSON parse(InputStream in) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, "utf-8"))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, UTF_8))) {
             String json = reader.lines().map(String::trim).collect(joining());
             return parse(json);
         }
@@ -347,7 +347,7 @@ public final class JSON implements Serializable {
             required();
             try {
                 byte[] raw = AcmeUtils.base64UrlDecode(val.toString());
-                return new JSON(path, JsonUtil.parseJson(new String(raw, StandardCharsets.UTF_8)));
+                return new JSON(path, JsonUtil.parseJson(new String(raw, UTF_8)));
             } catch (IllegalArgumentException | JoseException ex) {
                 throw new AcmeProtocolException(path + ": expected an encoded object", ex);
             }
@@ -494,7 +494,7 @@ public final class JSON implements Serializable {
 
         @Override
         public boolean equals(Object obj) {
-            if (obj == null || !(obj instanceof Value)) {
+            if (!(obj instanceof Value)) {
                 return false;
             }
             return Objects.equals(val, ((Value) obj).val);
