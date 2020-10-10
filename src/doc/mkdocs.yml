@@ -17,6 +17,7 @@ markdown_extensions:
       permalink: true
 nav:
   - 'index.md'
+  - 'example.md'
   - JavaDocs:
     - 'acme4j-client': acme4j-client/apidocs/index.html
     - 'acme4j-utils': acme4j-utils/apidocs/index.html

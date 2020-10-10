@@ -29,7 +29,7 @@ It is an independent open source implementation that is not affiliated with or e
 ## Usage
 
 * See the [online documentation](https://shredzone.org/maven/acme4j/) about how to use _acme4j_.
-* For a quick start, have a look at [the source code of an example](https://github.com/shred/acme4j/blob/master/acme4j-example/src/main/java/org/shredzone/acme4j/example/ClientTest.java).
+* For a quick start, have a look at [the source code of an example](https://shredzone.org/maven/acme4j/example.html).
 
 ## Contribute
 

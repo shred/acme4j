@@ -17,6 +17,14 @@
     margin-bottom: .7rem;
 }
 
+p {
+    margin-bottom: .5rem;
+}
+
+h2 {
+    margin-top: 2rem;
+}
+
 table {
     margin-bottom: 2rem;
 }

@@ -32,15 +32,7 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 
 ## Quick Start
 
-[This source code](acme4j-example/apidocs/src-html/org/shredzone/acme4j/example/ClientTest.html) gives an example of how to get a TLS certificate with _acme4j_.
-
-You can run the `org.shredzone.acme4j.example.ClientTest` class in your IDE, with the domains to be registered as parameters. The test client can also be invoked via maven in a command line:
-
-```sh
-mvn exec:java -Dexec.args="example.com example.org"
-```
-
-By default, the test client registers the domains with the Let's Encrypt staging server via HTTP challenge.
+There is an [example source code](example.md) included in this project. It gives an example of how to get a TLS certificate with _acme4j_.
 
 ## Modules
 
@@ -57,7 +49,7 @@ acme4j-utils
     The Java module name is `org.shredzone.acme4j.utils`.
 
 acme4j-example
-:   This module only contains [an example code](https://shredzone.org/maven/acme4j/acme4j-example/apidocs/src-html/org/shredzone/acme4j/example/ClientTest.html) that demonstrates how to get a certificate with _acme4j_. It depends on `acme4j-client` and `acme4j-utils`. It is not useful as a dependency in other projects.
+:   This module only contains [an example code](example.md) that demonstrates how to get a certificate with _acme4j_. It depends on `acme4j-client` and `acme4j-utils`. It is not useful as a dependency in other projects.
 
 acme4j-it
 :   [`acme4j-it`](https://mvnrepository.com/artifact/org.shredzone.acme4j/acme4j-it/latest) mainly serves as integration test suite for _acme4j_ itself. It is not really useful as a dependency in other projects. However if you write own integration tests using [pebble](https://github.com/letsencrypt/pebble) and [pebble-challtestsrv](https://hub.docker.com/r/letsencrypt/pebble-challtestsrv), you may find the [`challtestsrv` configuration client](https://shredzone.org/maven/acme4j/acme4j-it/apidocs/org/shredzone/acme4j/it/BammBammClient.html) useful in your project.
