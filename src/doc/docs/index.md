@@ -14,6 +14,7 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 
 ## Features
 
+* Mature and stable code base. First release was in December 2015!
 * Fully [RFC 8555](https://tools.ietf.org/html/rfc8555) compliant
 * Supports the `http-01`, `dns-01`, and `tls-alpn-01` ([RFC 8737](https://tools.ietf.org/html/rfc8737)) challenges
 * Supports [RFC 8738](https://tools.ietf.org/html/rfc8738) IP identifier validation
@@ -21,8 +22,13 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 * Easy to use Java API
 * Requires JRE 8 (update 101) or higher. For building the project, Java 9 or higher is required.
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
-* Requires [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home), [Bouncy Castle](https://www.bouncycastle.org/) and [slf4j](http://www.slf4j.org/) as dependencies. If you have other means of generating key pairs and CSRs, you can even do without `acme4j-utils` and Bouncy Castle as dependency.
 * Extensive unit and integration tests
+
+## Dependencies
+
+* [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home)
+* [slf4j](http://www.slf4j.org/)
+* [Bouncy Castle](https://www.bouncycastle.org/) - If you have other means of generating key pairs and CSRs, you can even do without `acme4j-utils` and Bouncy Castle as dependency.
 
 ## Quick Start
 
