@@ -183,7 +183,7 @@ public class Identifier implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == null || !(obj instanceof Identifier)) {
+        if (!(obj instanceof Identifier)) {
             return false;
         }
 
