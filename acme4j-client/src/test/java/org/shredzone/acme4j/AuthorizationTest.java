@@ -13,8 +13,8 @@
  */
 package org.shredzone.acme4j;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
@@ -47,7 +47,7 @@ public class AuthorizationTest {
     private static final String SNAILMAIL_TYPE = "snail-01"; // a non-existent challenge
     private static final String DUPLICATE_TYPE = "duplicate-01"; // a duplicate challenge
 
-    private URL locationUrl = url("http://example.com/acme/account");
+    private final URL locationUrl = url("http://example.com/acme/account");
 
     /**
      * Test that {@link Authorization#findChallenge(String)} finds challenges.

@@ -16,8 +16,9 @@ package org.shredzone.acme4j.it.pebble;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;

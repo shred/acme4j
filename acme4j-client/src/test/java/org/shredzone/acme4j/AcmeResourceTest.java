@@ -13,8 +13,8 @@
  */
 package org.shredzone.acme4j;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.Test;
 import org.shredzone.acme4j.toolbox.TestUtils;
@@ -73,7 +74,7 @@ public class AcmeResourceTest {
         }
 
         // Make sure there is no PrivateKey in the stream
-        String str = new String(serialized, "iso-8859-1");
+        String str = new String(serialized, StandardCharsets.ISO_8859_1);
         if (str.contains("Ljava/security/PrivateKey")) {
             fail("serialized stream contains a PrivateKey");
         }

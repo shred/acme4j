@@ -13,8 +13,8 @@
  */
 package org.shredzone.acme4j.challenge;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -29,7 +29,7 @@ import org.shredzone.acme4j.toolbox.TestUtils;
  */
 public class DnsChallengeTest {
 
-    private Login login = TestUtils.login();
+    private final Login login = TestUtils.login();
 
     /**
      * Test that {@link Dns01Challenge} generates a correct authorization key.

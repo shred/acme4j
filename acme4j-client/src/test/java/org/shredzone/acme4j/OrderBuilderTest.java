@@ -13,8 +13,8 @@
  */
 package org.shredzone.acme4j;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
@@ -41,8 +41,8 @@ import org.shredzone.acme4j.toolbox.TestUtils;
  */
 public class OrderBuilderTest {
 
-    private URL resourceUrl  = url("http://example.com/acme/resource");
-    private URL locationUrl  = url(TestUtils.ACCOUNT_URL);
+    private final URL resourceUrl  = url("http://example.com/acme/resource");
+    private final URL locationUrl  = url(TestUtils.ACCOUNT_URL);
 
     /**
      * Test that a new {@link Order} can be created.

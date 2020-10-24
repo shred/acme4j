@@ -13,9 +13,9 @@
  */
 package org.shredzone.acme4j.challenge;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
@@ -44,7 +44,7 @@ import org.shredzone.acme4j.toolbox.TestUtils;
  * Unit tests for {@link Challenge}.
  */
 public class ChallengeTest {
-    private URL locationUrl = url("https://example.com/acme/some-location");
+    private final URL locationUrl = url("https://example.com/acme/some-location");
 
     /**
      * Test that after unmarshaling, the challenge properties are set correctly.

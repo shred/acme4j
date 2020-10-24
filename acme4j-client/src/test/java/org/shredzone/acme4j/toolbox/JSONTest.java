@@ -13,8 +13,9 @@
  */
 package org.shredzone.acme4j.toolbox;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
@@ -25,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
@@ -77,7 +77,7 @@ public class JSONTest {
         assertThat(map.get("foo"), is("a-text"));
         assertThat(map.get("bar"), is(123L));
 
-        try (InputStream in = new ByteArrayInputStream(json.getBytes("utf-8"))) {
+        try (InputStream in = new ByteArrayInputStream(json.getBytes(UTF_8))) {
             JSON fromStream = JSON.parse(in);
             assertThat(fromStream.toString(), is(sameJSONAs(json)));
             Map<String, Object> map2 = fromStream.toMap();
@@ -92,7 +92,7 @@ public class JSONTest {
      * Test that bad JSON fails.
      */
     @Test(expected = AcmeProtocolException.class)
-    public void testParsersBadJSON() throws IOException {
+    public void testParsersBadJSON() {
         JSON.parse("This is no JSON.");
     }
 
@@ -247,7 +247,7 @@ public class JSONTest {
      * Test that getters are null safe.
      */
     @Test
-    public void testNullGetter() throws MalformedURLException {
+    public void testNullGetter() {
         JSON json = TestUtils.getJSON("datatypes");
 
         assertThat(json.get("none"), is(notNullValue()));
@@ -344,7 +344,7 @@ public class JSONTest {
      * Test that wrong getters return an exception.
      */
     @Test
-    public void testWrongGetter() throws MalformedURLException {
+    public void testWrongGetter() {
         JSON json = TestUtils.getJSON("datatypes");
 
         try {

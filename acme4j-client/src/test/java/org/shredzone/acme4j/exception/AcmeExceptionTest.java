@@ -13,9 +13,9 @@
  */
 package org.shredzone.acme4j.exception;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 

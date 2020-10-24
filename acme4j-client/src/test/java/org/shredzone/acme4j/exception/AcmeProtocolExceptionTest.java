@@ -13,8 +13,8 @@
  */
 package org.shredzone.acme4j.exception;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 
@@ -38,7 +38,7 @@ public class AcmeProtocolExceptionTest {
         NumberFormatException cause = new NumberFormatException("Not a number: abc");
         AcmeProtocolException ex = new AcmeProtocolException(message, cause);
         assertThat(ex.getMessage(), is(message));
-        assertThat(ex.getCause(), is((Throwable) cause));
+        assertThat(ex.getCause(), is(cause));
     }
 
 }

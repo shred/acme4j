@@ -13,8 +13,8 @@
  */
 package org.shredzone.acme4j.connector;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -37,7 +37,7 @@ public class HttpConnectorTest {
      * This is just a mock to check that the parameters are properly set.
      */
     @Test
-    public void testMockOpenConnection() throws IOException {
+    public void testMockOpenConnection() {
         NetworkSettings settings = new NetworkSettings();
         settings.setTimeout(Duration.ofSeconds(50));
 

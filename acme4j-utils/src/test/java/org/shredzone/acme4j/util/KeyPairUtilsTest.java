@@ -13,8 +13,8 @@
  */
 package org.shredzone.acme4j.util;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 import java.io.StringReader;

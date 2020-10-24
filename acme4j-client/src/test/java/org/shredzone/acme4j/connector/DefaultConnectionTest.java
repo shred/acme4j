@@ -15,8 +15,9 @@ package org.shredzone.acme4j.connector;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
@@ -75,9 +76,8 @@ public class DefaultConnectionTest {
     private static final Base64.Encoder URL_ENCODER = Base64.getUrlEncoder().withoutPadding();
     private static final Base64.Decoder URL_DECODER = Base64.getUrlDecoder();
 
-    private URL requestUrl = TestUtils.url("http://example.com/acme/");
-    private URL accountUrl = TestUtils.url(TestUtils.ACCOUNT_URL);
-    private NetworkSettings settings = new NetworkSettings();
+    private final URL requestUrl = TestUtils.url("http://example.com/acme/");
+    private final URL accountUrl = TestUtils.url(TestUtils.ACCOUNT_URL);
     private HttpURLConnection mockUrlConnection;
     private HttpConnector mockHttpConnection;
     private Session session;
@@ -247,8 +247,8 @@ public class DefaultConnectionTest {
     @Test
     public void testGetLink() throws Exception {
         Map<String, List<String>> headers = new HashMap<>();
-        headers.put("Content-Type", Arrays.asList("application/json"));
-        headers.put("Location", Arrays.asList("https://example.com/acme/acct/asdf"));
+        headers.put("Content-Type", singletonList("application/json"));
+        headers.put("Location", singletonList("https://example.com/acme/acct/asdf"));
         headers.put("Link", Arrays.asList(
                         "<https://example.com/acme/new-authz>;rel=\"next\"",
                         "</recover-acct>;rel=recover",
@@ -441,7 +441,7 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getContentLength()).thenReturn(jsonData.length());
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
         when(mockUrlConnection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
-        when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
+        when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes(UTF_8)));
         when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
 
         session.setNonce(TestUtils.DUMMY_NONCE);
@@ -471,14 +471,14 @@ public class DefaultConnectionTest {
         String jsonData = "{\"type\":\"urn:ietf:params:acme:error:userActionRequired\",\"detail\":\"Accept the TOS\"}";
 
         Map<String, List<String>> linkHeader = new HashMap<>();
-        linkHeader.put("Link", Arrays.asList("<https://example.com/tos.pdf>; rel=\"terms-of-service\""));
+        linkHeader.put("Link", singletonList("<https://example.com/tos.pdf>; rel=\"terms-of-service\""));
 
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/problem+json");
         when(mockUrlConnection.getContentLength()).thenReturn(jsonData.length());
         when(mockUrlConnection.getHeaderFields()).thenReturn(linkHeader);
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
         when(mockUrlConnection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
-        when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
+        when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes(UTF_8)));
         when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
 
         session.setNonce(TestUtils.DUMMY_NONCE);
@@ -510,7 +510,7 @@ public class DefaultConnectionTest {
         String jsonData = "{\"type\":\"urn:ietf:params:acme:error:rateLimited\",\"detail\":\"Too many invocations\"}";
 
         Map<String, List<String>> linkHeader = new HashMap<>();
-        linkHeader.put("Link", Arrays.asList("<https://example.com/rates.pdf>; rel=\"help\""));
+        linkHeader.put("Link", singletonList("<https://example.com/rates.pdf>; rel=\"help\""));
 
         Instant retryAfter = Instant.now().plusSeconds(30L).truncatedTo(ChronoUnit.MILLIS);
 
@@ -521,7 +521,7 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getHeaderFields()).thenReturn(linkHeader);
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
         when(mockUrlConnection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
-        when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
+        when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes(UTF_8)));
         when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
 
         session.setNonce(TestUtils.DUMMY_NONCE);
@@ -762,7 +762,7 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection, atLeast(0)).getHeaderFields();
         verifyNoMoreInteractions(mockUrlConnection);
 
-        JSON data = JSON.parse(new String(outputStream.toByteArray(), "utf-8"));
+        JSON data = JSON.parse(new String(outputStream.toByteArray(), UTF_8));
         String encodedHeader = data.get("protected").asString();
         String encodedSignature = data.get("signature").asString();
         String encodedPayload = data.get("payload").asString();
@@ -835,7 +835,7 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection, atLeast(0)).getHeaderFields();
         verifyNoMoreInteractions(mockUrlConnection);
 
-        JSON data = JSON.parse(new String(outputStream.toByteArray(), "utf-8"));
+        JSON data = JSON.parse(new String(outputStream.toByteArray(), UTF_8));
         String encodedHeader = data.get("protected").asString();
         String encodedSignature = data.get("signature").asString();
         String encodedPayload = data.get("payload").asString();
@@ -961,7 +961,7 @@ public class DefaultConnectionTest {
         verify(mockUrlConnection, atLeast(0)).getHeaderFields();
         verifyNoMoreInteractions(mockUrlConnection);
 
-        JSON data = JSON.parse(new String(outputStream.toByteArray(), "utf-8"));
+        JSON data = JSON.parse(new String(outputStream.toByteArray(), UTF_8));
         String encodedHeader = data.get("protected").asString();
         String encodedSignature = data.get("signature").asString();
         String encodedPayload = data.get("payload").asString();
@@ -1013,7 +1013,7 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/json");
         when(mockUrlConnection.getContentLength()).thenReturn(jsonData.length());
         when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
-        when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes("utf-8")));
+        when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes(UTF_8)));
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;

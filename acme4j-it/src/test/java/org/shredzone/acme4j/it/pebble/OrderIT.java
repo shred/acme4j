@@ -15,8 +15,9 @@ package org.shredzone.acme4j.it.pebble;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.security.KeyPair;
@@ -154,7 +155,7 @@ public class OrderIT extends PebbleITBase {
 
         KeyPair domainKeyPair = createKeyPair();
 
-        Instant notBefore = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+        Instant notBefore = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         Instant notAfter = notBefore.plus(Duration.ofDays(20L));
 
         Order order = account.newOrder()
@@ -208,8 +209,8 @@ public class OrderIT extends PebbleITBase {
         Certificate certificate = order.getCertificate();
         X509Certificate cert = certificate.getCertificate();
         assertThat(cert, not(nullValue()));
-        assertThat(cert.getNotAfter(), not(nullValue()));
-        assertThat(cert.getNotBefore(), not(nullValue()));
+        assertThat(cert.getNotBefore().toInstant(), is(notNullValue()));
+        assertThat(cert.getNotAfter().toInstant(), is(notNullValue()));
         assertThat(cert.getSubjectX500Principal().getName(), containsString("CN=" + domain));
 
         for (Authorization auth :  order.getAuthorizations()) {
@@ -260,12 +261,12 @@ public class OrderIT extends PebbleITBase {
     }
 
     @FunctionalInterface
-    private static interface Validator {
+    private interface Validator {
         Challenge prepare(Authorization auth) throws Exception;
     }
 
     @FunctionalInterface
-    private static interface Revoker {
+    private interface Revoker {
         void revoke(Session session, Certificate certificate, KeyPair keyPair,
             KeyPair domainKeyPair) throws Exception;
     }

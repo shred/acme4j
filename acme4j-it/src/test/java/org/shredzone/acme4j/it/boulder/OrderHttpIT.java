@@ -15,8 +15,9 @@ package org.shredzone.acme4j.it.boulder;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.security.KeyPair;
@@ -46,7 +47,7 @@ public class OrderHttpIT {
 
     private final String bammbammUrl = System.getProperty("bammbammUrl", "http://localhost:14001");
 
-    private BammBammClient client = new BammBammClient(bammbammUrl);
+    private final BammBammClient client = new BammBammClient(bammbammUrl);
 
     /**
      * Test if a certificate can be ordered via http-01 challenge.

@@ -13,9 +13,9 @@
  */
 package org.shredzone.acme4j.exception;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 
 import java.io.IOException;
 
@@ -33,7 +33,7 @@ public class AcmeNetworkExceptionTest {
         AcmeNetworkException ex = new AcmeNetworkException(cause);
 
         assertThat(ex.getMessage(), notNullValue());
-        assertThat(ex.getCause(), is((Throwable) cause));
+        assertThat(ex.getCause(), is(cause));
     }
 
 }

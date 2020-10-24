@@ -14,8 +14,8 @@
 package org.shredzone.acme4j.util;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;

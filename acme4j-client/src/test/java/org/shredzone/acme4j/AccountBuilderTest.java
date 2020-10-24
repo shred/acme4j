@@ -13,8 +13,8 @@
  */
 package org.shredzone.acme4j;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
@@ -41,8 +41,8 @@ import org.shredzone.acme4j.toolbox.TestUtils;
  */
 public class AccountBuilderTest {
 
-    private URL resourceUrl = url("http://example.com/acme/resource");
-    private URL locationUrl = url("http://example.com/acme/account");
+    private final URL resourceUrl = url("http://example.com/acme/resource");
+    private final URL locationUrl = url("http://example.com/acme/account");
 
     /**
      * Test if a new account can be created.

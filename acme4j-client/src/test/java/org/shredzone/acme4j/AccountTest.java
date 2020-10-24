@@ -13,8 +13,10 @@
  */
 package org.shredzone.acme4j;
 
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
@@ -25,9 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -51,9 +51,9 @@ import org.shredzone.acme4j.toolbox.TestUtils;
  */
 public class AccountTest {
 
-    private URL resourceUrl  = url("http://example.com/acme/resource");
-    private URL locationUrl  = url(TestUtils.ACCOUNT_URL);
-    private URL agreementUrl = url("http://example.com/agreement.pdf");
+    private final URL resourceUrl  = url("http://example.com/acme/resource");
+    private final URL locationUrl  = url(TestUtils.ACCOUNT_URL);
+    private final URL agreementUrl = url("http://example.com/agreement.pdf");
 
     /**
      * Test that a account can be updated.
@@ -76,7 +76,7 @@ public class AccountTest {
             public int sendSignedPostAsGetRequest(URL url, Login login) {
                 if (url("https://example.com/acme/acct/1/orders").equals(url)) {
                     jsonResponse = new JSONBuilder()
-                                .array("orders", Arrays.asList("https://example.com/acme/order/1"))
+                                .array("orders", singletonList("https://example.com/acme/order/1"))
                                 .toJSON();
                 } else {
                     jsonResponse = getJSON("updateAccountResponse");
@@ -96,7 +96,7 @@ public class AccountTest {
 
             @Override
             public Collection<URL> getLinks(String relation) {
-                return Collections.emptyList();
+                return emptyList();
             }
 
             @Override
@@ -154,8 +154,8 @@ public class AccountTest {
             @Override
             public Collection<URL> getLinks(String relation) {
                 switch(relation) {
-                    case "termsOfService": return Arrays.asList(agreementUrl);
-                    default: return null;
+                    case "termsOfService": return singletonList(agreementUrl);
+                    default: return emptyList();
                 }
             }
 

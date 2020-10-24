@@ -13,8 +13,8 @@
  */
 package org.shredzone.acme4j.challenge;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -34,7 +34,7 @@ public class TlsAlpn01ChallengeTest {
     private static final String KEY_AUTHORIZATION =
             "rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0";
 
-    private Login login = TestUtils.login();
+    private final Login login = TestUtils.login();
 
     /**
      * Test that {@link TlsAlpn01Challenge} generates a correct authorization key.

@@ -13,8 +13,8 @@
  */
 package org.shredzone.acme4j;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
@@ -39,7 +39,7 @@ import org.shredzone.acme4j.toolbox.TestUtils;
  */
 public class LoginTest {
 
-    private static final URL resourceUrl = url("https://example.com/acme/resource/123");
+    private final URL resourceUrl = url("https://example.com/acme/resource/123");
 
     /**
      * Test the constructor.

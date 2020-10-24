@@ -13,8 +13,10 @@
  */
 package org.shredzone.acme4j.it.pebble;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.net.URL;

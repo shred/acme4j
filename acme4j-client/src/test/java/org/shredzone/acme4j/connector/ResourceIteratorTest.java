@@ -13,15 +13,14 @@
  */
 package org.shredzone.acme4j.connector;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -41,12 +40,12 @@ import org.shredzone.acme4j.toolbox.JSONBuilder;
  */
 public class ResourceIteratorTest {
 
-    private final int PAGES = 4;
-    private final int RESOURCES_PER_PAGE = 5;
-    private final String TYPE = "authorizations";
+    private static final int PAGES = 4;
+    private static final int RESOURCES_PER_PAGE = 5;
+    private static final String TYPE = "authorizations";
 
-    private List<URL> resourceURLs = new ArrayList<>(PAGES * RESOURCES_PER_PAGE);
-    private List<URL> pageURLs = new ArrayList<>(PAGES);
+    private final List<URL> resourceURLs = new ArrayList<>(PAGES * RESOURCES_PER_PAGE);
+    private final List<URL> pageURLs = new ArrayList<>(PAGES);
 
     @Before
     public void setup() {
@@ -154,7 +153,7 @@ public class ResourceIteratorTest {
             @Override
             public Collection<URL> getLinks(String relation) {
                 if ("next".equals(relation) && (ix + 1 < pageURLs.size())) {
-                    return Arrays.asList(pageURLs.get(ix + 1));
+                    return Collections.singletonList(pageURLs.get(ix + 1));
                 }
                 return Collections.emptyList();
             }
