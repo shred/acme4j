@@ -125,8 +125,8 @@ public class OrderWildcardIT extends PebbleITBase {
         Certificate certificate = order.getCertificate();
         X509Certificate cert = certificate.getCertificate();
         assertThat(cert, not(nullValue()));
-        assertThat(cert.getNotAfter(), not(nullValue()));
-        assertThat(cert.getNotBefore(), not(nullValue()));
+        assertThat(cert.getNotAfter(), not(notBefore));
+        assertThat(cert.getNotBefore(), not(notAfter));
         assertThat(cert.getSubjectX500Principal().getName(), containsString("CN=" + TEST_DOMAIN));
 
         List<String> san = cert.getSubjectAlternativeNames().stream()

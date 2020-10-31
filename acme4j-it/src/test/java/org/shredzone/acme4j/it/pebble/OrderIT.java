@@ -209,8 +209,8 @@ public class OrderIT extends PebbleITBase {
         Certificate certificate = order.getCertificate();
         X509Certificate cert = certificate.getCertificate();
         assertThat(cert, not(nullValue()));
-        assertThat(cert.getNotBefore().toInstant(), is(notNullValue()));
-        assertThat(cert.getNotAfter().toInstant(), is(notNullValue()));
+        assertThat(cert.getNotBefore().toInstant(), is(notBefore));
+        assertThat(cert.getNotAfter().toInstant(), is(notAfter));
         assertThat(cert.getSubjectX500Principal().getName(), containsString("CN=" + domain));
 
         for (Authorization auth :  order.getAuthorizations()) {
