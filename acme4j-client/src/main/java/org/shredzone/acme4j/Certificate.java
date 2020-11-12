@@ -24,6 +24,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.connector.Connection;
@@ -108,6 +109,19 @@ public class Certificate extends AcmeResource {
         } else {
             return Collections.emptyList();
         }
+    }
+
+    /**
+     * Returns alternate certificate chains, if available.
+     *
+     * @return Alternate certificate chains, or empty if there are none.
+     * @since 2.11
+     */
+    public List<Certificate> getAlternateCertificates() {
+        Login login = getLogin();
+        return getAlternates().stream()
+                .map(login::bindCertificate)
+                .collect(Collectors.toList());
     }
 
     /**

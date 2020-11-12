@@ -113,6 +113,11 @@ public class CertificateTest {
         assertThat(cert.getAlternates().get(0), is(url("https://example.com/acme/alt-cert/1")));
         assertThat(cert.getAlternates().get(1), is(url("https://example.com/acme/alt-cert/2")));
 
+        assertThat(cert.getAlternateCertificates(), is(notNullValue()));
+        assertThat(cert.getAlternateCertificates().size(), is(2));
+        assertThat(cert.getAlternateCertificates().get(0).getLocation(), is(url("https://example.com/acme/alt-cert/1")));
+        assertThat(cert.getAlternateCertificates().get(1).getLocation(), is(url("https://example.com/acme/alt-cert/2")));
+
         provider.close();
     }
 
