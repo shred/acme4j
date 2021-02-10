@@ -121,6 +121,7 @@ public class ClientTest {
             while (order.getStatus() != Status.VALID && attempts-- > 0) {
                 // Did the order fail?
                 if (order.getStatus() == Status.INVALID) {
+                    LOG.error("Order has failed, reason: {}", order.getError());
                     throw new AcmeException("Order failed... Giving up.");
                 }
 
@@ -271,6 +272,7 @@ public class ClientTest {
             while (challenge.getStatus() != Status.VALID && attempts-- > 0) {
                 // Did the authorization fail?
                 if (challenge.getStatus() == Status.INVALID) {
+                    LOG.error("Challenge has failed, reason: {}", challenge.getError());
                     throw new AcmeException("Challenge failed... Giving up.");
                 }
 

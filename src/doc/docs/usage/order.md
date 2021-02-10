@@ -16,11 +16,11 @@ Order order = account.newOrder()
 !!! note
     The number of domains per certificate may be limited. See your CA's documentation for the limits.
 
-The `Order` resource contains a collection of `Authorization`s that can be read from the `getAuthorizations()` method. You must process _all of them_ in order to get the certificate, except those with a `VALID` status.
+The `Order` resource contains a collection of `Authorization`s that can be read from the `getAuthorizations()` method. In order to get the certificate, you must process _all of them_ that are in a `PENDING` state.
 
 ```java
 for (Authorization auth : order.getAuthorizations()) {
-  if (auth.getStatus() != Status.VALID) {
+  if (auth.getStatus() == Status.PENDING) {
     processAuth(auth);
   }
 }
