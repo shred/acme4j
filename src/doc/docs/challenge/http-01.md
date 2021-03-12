@@ -20,7 +20,9 @@ The expected path is (assuming that `${domain}` is the domain to be authorized, 
 http://${domain}/.well-known/acme-challenge/${token}
 ```
 
-The challenge is completed when the CA was able to download that file and found `content` in it.
+The validation was successful if the CA was able to download that file and found `content` in it.
 
 !!! note
-    The request is sent to port 80 only, but redirects are followed. If your domain has multiple IP addresses, the CA randomly selects one of them. There is no way to choose a different port or a fixed IP address.
+    The request is sent to port 80 only, but redirects are followed. If your domain has multiple IP addresses, the CA randomly selects some of them. There is no way to choose a different port or a fixed IP address.
+
+Your server should be able to handle multiple requests to the challenge. The ACME server may check your response multiple times, and from different IPs. Also keep your response available until the `Authorization` status has changed to `VALID` or `INVALID`.

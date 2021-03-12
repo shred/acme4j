@@ -27,4 +27,6 @@ X509Certificate cert = CertificateUtils.
 Now use `cert` and `certKeyPair` to let your web server respond to TLS requests containing an ALPN extension with the value `acme-tls/1` and a SNI extension containing your subject (`identifier`).
 
 !!! note
-    The request is sent to port 443 only. If your domain has multiple IP addresses, the CA randomly selects one of them. There is no way to choose a different port or a fixed IP address.
+    The request is sent to port 443 only. If your domain has multiple IP addresses, the CA randomly selects some of them. There is no way to choose a different port or a fixed IP address.
+
+Your server should be able to handle multiple requests to the challenge. The ACME server may check your response multiple times, and from different IPs. Also keep your response available until the `Authorization` status has changed to `VALID` or `INVALID`.
