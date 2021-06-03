@@ -17,6 +17,12 @@ Session session = new Session("acme://letsencrypt.org/staging");
 
 Instead of a generic provider, this call uses a special _Let's Encrypt_ provider.
 
+The _Let's Encrypt_ staging server is meant to be used for testing purposes only. The issued certificates are functional, but as the issuer certificate is not known to browsers, it will lead to a certificate error. Later you only need to change the ACME URI in order to use the _Let's Encrypt_ production server.
+
+```java
+Session session = new Session("acme://letsencrypt.org");
+```
+
 ## Metadata
 
 Some CAs provide metadata related to their ACME server:
