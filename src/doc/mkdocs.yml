@@ -29,6 +29,7 @@ nav:
     - 'usage/login.md'
     - 'usage/order.md'
     - 'usage/certificate.md'
+    - 'faq.md'
   - Challenges:
     - 'challenge/index.md'
     - 'challenge/http-01.md'
