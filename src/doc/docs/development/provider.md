@@ -23,7 +23,12 @@ A client provider implements the [`AcmeProvider`](../apidocs/org/shredzone/acme4
 * `accepts(URI)` checks if the client provider is accepting the provided URI. Usually it would be an URI like `acme://example.com`. Note that the `http` and `https` schemes are reserved for the generic provider and cannot be used by other providers.
 * `resolve(URI)` parses the URI and returns the corresponding URL of the directory service.
 
-The `AcmeProvider` implementation needs to be registered with Java's `ServiceLoader`. In the `META-INF/services` path of your project, create a file `org.shredzone.acme4j.provider.AcmeProvider` and write the fully qualified class name of your implementation into that file.
+The `AcmeProvider` implementation needs to be registered with Java's `ServiceLoader`. In the `META-INF/services` path of your project, create a file `org.shredzone.acme4j.provider.AcmeProvider` and write the fully qualified class name of your implementation into that file. If you use Java modules, there must also be a `provides` section in your `module-info.java`, e.g.:
+
+```java
+provides org.shredzone.acme4j.provider.AcmeProvider
+    with org.example.acme.provider.MyAcmeProvider;
+```
 
 When _acme4j_ tries to connect to an acme URI, it first invokes the `accepts(URI)` method of all registered `AcmeProvider`s. Only one of the providers must return `true` for a successful connection. _acme4j_ then invokes the `resolve(URI)` method of that provider, and connects to the directory URL that is returned.
 
@@ -56,4 +61,4 @@ These preconditions must be met:
 
 The _acme4j_ development team reserves the right to reject your pull request, without giving any reason.
 
-If you cannot meet these preconditions, you can always publish a JAR package of your _acme4j_ provider yourself. Due to the plug-in nature of _acme4j_ providers, it is sufficient to have that package in the Java classpath at runtime. There is no need to publish the source code.
+If you cannot meet these preconditions (or if your pull request was rejected), you can publish a JAR package of your _acme4j_ provider yourself. Due to the plug-in nature of _acme4j_ providers, it is sufficient to have that package in the Java classpath at runtime. There is no need to publish the source code.

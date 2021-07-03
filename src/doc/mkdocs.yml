@@ -44,5 +44,6 @@ nav:
   - Development:
     - 'development/index.md'
     - 'development/provider.md'
+    - 'development/challenge.md'
     - 'development/testing.md'
     - 'migration.md'
