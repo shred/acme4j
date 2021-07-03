@@ -54,7 +54,8 @@ import org.shredzone.acme4j.Identifier;
 /**
  * Generator for a CSR (Certificate Signing Request) suitable for ACME servers.
  * <p>
- * Requires {@code Bouncy Castle}. This class is part of the {@code acme4j-utils} module.
+ * Requires {@code Bouncy Castle}. The {@link org.bouncycastle.jce.provider.BouncyCastleProvider}
+ * must also be added as security provider.
  */
 public class CSRBuilder {
     private static final String SIGNATURE_ALG = "SHA256withRSA";
@@ -256,6 +257,7 @@ public class CSRBuilder {
 
             ExtensionsGenerator extensionsGenerator = new ExtensionsGenerator();
             extensionsGenerator.addExtension(Extension.subjectAlternativeName, false, subjectAltName);
+
             p10Builder.addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, extensionsGenerator.generate());
 
             PrivateKey pk = keypair.getPrivate();
@@ -319,10 +321,14 @@ public class CSRBuilder {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(namebuilder.build());
-        sb.append(namelist.stream().collect(joining(",DNS=", ",DNS=", "")));
-        sb.append(iplist.stream()
+        if (!namelist.isEmpty()) {
+            sb.append(namelist.stream().collect(joining(",DNS=", ",DNS=", "")));
+        }
+        if (!iplist.isEmpty()) {
+            sb.append(iplist.stream()
                     .map(InetAddress::getHostAddress)
                     .collect(joining(",IP=", ",IP=", "")));
+        }
         return sb.toString();
     }
 
