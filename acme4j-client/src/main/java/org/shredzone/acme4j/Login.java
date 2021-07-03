@@ -125,7 +125,7 @@ public class Login {
      * Creates a new instance of {@link Challenge} and binds it to this login.
      *
      * @param location
-     *            Location URL of the order
+     *            Location URL of the challenge
      * @return {@link Challenge} bound to the login
      * @since 2.8
      */
@@ -137,6 +137,28 @@ public class Login {
         } catch (AcmeException ex) {
             throw new AcmeLazyLoadingException(Challenge.class, location, ex);
         }
+    }
+
+    /**
+     * Creates a new instance of a challenge and binds it to this login.
+     *
+     * @param location
+     *         Location URL of the challenge
+     * @param type
+     *         Expected challenge type
+     * @return Challenge bound to the login
+     * @throws AcmeProtocolException
+     *         if the challenge found at the location does not match the expected
+     *         challenge type.
+     * @since 2.12
+     */
+    public <C extends Challenge> C bindChallenge(URL location, Class<C> type) {
+        Challenge challenge = bindChallenge(location);
+        if (!type.isInstance(challenge)) {
+            throw new AcmeProtocolException("Challenge type " + challenge.getType()
+                    + " does not match requested class " + type);
+        }
+        return type.cast(challenge);
     }
 
     /**

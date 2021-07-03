@@ -15,6 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
@@ -27,7 +28,9 @@ import java.security.KeyPair;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.shredzone.acme4j.challenge.Challenge;
+import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
@@ -146,6 +149,7 @@ public class LoginTest {
         URL locationUrl = new URL("https://example.com/acme/challenge/1");
 
         Http01Challenge mockChallenge = mock(Http01Challenge.class);
+        when(mockChallenge.getType()).thenReturn(Http01Challenge.TYPE);
         JSON httpChallenge = getJSON("httpChallenge");
         TestableConnectionProvider provider  = new TestableConnectionProvider() {
             @Override
@@ -170,6 +174,17 @@ public class LoginTest {
         Challenge challenge = login.bindChallenge(locationUrl);
         assertThat(challenge, is(instanceOf(Http01Challenge.class)));
         assertThat(challenge, is(sameInstance(mockChallenge)));
+
+        Http01Challenge challenge2 = login.bindChallenge(locationUrl, Http01Challenge.class);
+        assertThat(challenge2, is(sameInstance(mockChallenge)));
+
+        try {
+            login.bindChallenge(locationUrl, Dns01Challenge.class);
+            fail("Could bind to a different challenge type");
+        } catch (AcmeProtocolException ex) {
+            assertThat(ex.getMessage(), is("Challenge type http-01 does not match" +
+                    " requested class class org.shredzone.acme4j.challenge.Dns01Challenge"));
+        }
     }
 
 }
