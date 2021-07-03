@@ -56,14 +56,30 @@ public class TokenChallenge extends Challenge {
     }
 
     /**
-     * Returns the authorization string.
+     * Computes the key authorization for the given token.
      * <p>
      * The default is {@code token + '.' + base64url(jwkThumbprint)}. Subclasses may
      * override this method if a different algorithm is used.
+     *
+     * @param token
+     *         Token to be used
+     * @return Key Authorization string for that token
+     * @since 2.12
+     */
+    protected String keyAuthorizationFor(String token) {
+        PublicKey pk = getLogin().getKeyPair().getPublic();
+        return token + '.' + base64UrlEncode(JoseUtils.thumbprint(pk));
+    }
+
+    /**
+     * Returns the authorization string.
+     * <p>
+     * The default uses {@link #keyAuthorizationFor(String)} to compute the key
+     * authorization of {@link #getToken()}. Subclasses may override this method if a
+     * different algorithm is used.
      */
     public String getAuthorization() {
-        PublicKey pk = getLogin().getKeyPair().getPublic();
-        return getToken() + '.' + base64UrlEncode(JoseUtils.thumbprint(pk));
+        return keyAuthorizationFor(getToken());
     }
 
 }

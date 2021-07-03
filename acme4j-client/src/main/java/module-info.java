@@ -25,6 +25,7 @@ module org.shredzone.acme4j {
     exports org.shredzone.acme4j.toolbox;
 
     uses org.shredzone.acme4j.provider.AcmeProvider;
+    uses org.shredzone.acme4j.provider.ChallengeProvider;
 
     provides org.shredzone.acme4j.provider.AcmeProvider
             with org.shredzone.acme4j.provider.GenericAcmeProvider,

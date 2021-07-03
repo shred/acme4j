@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.BiFunction;
+import java.util.ServiceLoader;
 
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
@@ -44,7 +44,7 @@ import org.shredzone.acme4j.toolbox.JSON;
  */
 public abstract class AbstractAcmeProvider implements AcmeProvider {
 
-    private static final Map<String, BiFunction<Login, JSON, Challenge>> CHALLENGES = challengeMap();
+    private static final Map<String, ChallengeProvider> CHALLENGES = challengeMap();
 
     @Override
     public Connection connect(URI serverUri) {
@@ -81,12 +81,34 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
         }
     }
 
-    private static Map<String, BiFunction<Login, JSON, Challenge>> challengeMap() {
-        Map<String, BiFunction<Login, JSON, Challenge>> map = new HashMap<>();
+    private static Map<String, ChallengeProvider> challengeMap() {
+        Map<String, ChallengeProvider> map = new HashMap<>();
 
         map.put(Dns01Challenge.TYPE, Dns01Challenge::new);
         map.put(Http01Challenge.TYPE, Http01Challenge::new);
         map.put(TlsAlpn01Challenge.TYPE, TlsAlpn01Challenge::new);
+
+        for (ChallengeProvider provider : ServiceLoader.load(ChallengeProvider.class)) {
+            ChallengeType typeAnno = provider.getClass().getAnnotation(ChallengeType.class);
+            if (typeAnno == null) {
+                throw new IllegalStateException("ChallengeProvider "
+                        + provider.getClass().getName()
+                        + " has no @ChallengeType annotation");
+            }
+            String type = typeAnno.value();
+            if (type == null || type.trim().isEmpty()) {
+                throw new IllegalStateException("ChallengeProvider "
+                        + provider.getClass().getName()
+                        + ": type must not be null or empty");
+            }
+            if (map.containsKey(type)) {
+                throw new IllegalStateException("ChallengeProvider "
+                        + provider.getClass().getName()
+                        + ": there is already a provider for challenge type "
+                        + type);
+            }
+            map.put(type, provider);
+        }
 
         return Collections.unmodifiableMap(map);
     }
@@ -107,9 +129,9 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
 
         String type = data.get("type").asString();
 
-        BiFunction<Login, JSON, Challenge> constructor = CHALLENGES.get(type);
+        ChallengeProvider constructor = CHALLENGES.get(type);
         if (constructor != null) {
-            return constructor.apply(login, data);
+            return constructor.create(login, data);
         }
 
         if (data.contains("token")) {
