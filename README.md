@@ -15,6 +15,7 @@ It is an independent open source implementation that is not affiliated with or e
 * Supports the `http-01`, `dns-01`, and `tls-alpn-01` ([RFC 8737](https://tools.ietf.org/html/rfc8737)) challenges
 * Supports [RFC 8738](https://tools.ietf.org/html/rfc8738) IP identifier validation
 * Supports [RFC 8739](https://tools.ietf.org/html/rfc8739) short-term automatic certificate renewal (experimental)
+* Supports [RFC 8823](https://tools.ietf.org/html/rfc8823) for S/MIME certificates (experimental)
 * Easy to use Java API
 * Requires JRE 8 (update 101) or higher. For building the project, Java 9 or higher is required.
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
@@ -25,6 +26,7 @@ It is an independent open source implementation that is not affiliated with or e
 * [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home)
 * [slf4j](http://www.slf4j.org/)
 * [Bouncy Castle](https://www.bouncycastle.org/) - If you have other means of generating key pairs and CSRs, you can even do without `acme4j-utils` and Bouncy Castle as dependency.
+* For S/MIME certificates: a `javax.mail` implementation (e.g. the [JavaMail Reference Implementation](https://javaee.github.io/javamail/))
 
 ## Usage
 

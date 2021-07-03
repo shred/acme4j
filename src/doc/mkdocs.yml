@@ -21,6 +21,7 @@ nav:
   - JavaDocs:
     - 'acme4j-client': acme4j-client/apidocs/index.html
     - 'acme4j-utils': acme4j-utils/apidocs/index.html
+    - 'acme4j-smime': acme4j-smime/apidocs/index.html
     - 'acme4j-it': acme4j-it/apidocs/index.html
   - Usage:
     - 'usage/index.md'
@@ -35,6 +36,7 @@ nav:
     - 'challenge/http-01.md'
     - 'challenge/dns-01.md'
     - 'challenge/tls-alpn-01.md'
+    - 'challenge/email-reply-00.md'
   - CA:
     - 'ca/index.md'
     - 'ca/letsencrypt.md'

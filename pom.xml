@@ -53,6 +53,7 @@
     <properties>
         <bouncycastle.version>1.68</bouncycastle.version>
         <httpclient.version>4.5.13</httpclient.version>
+        <javax.mail.version>1.6.2</javax.mail.version>
         <jose4j.version>0.7.7</jose4j.version>
         <slf4j.version>1.7.30</slf4j.version>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
@@ -62,6 +63,7 @@
     <modules>
         <module>acme4j-client</module>
         <module>acme4j-utils</module>
+        <module>acme4j-smime</module>
         <module>acme4j-example</module>
         <module>acme4j-it</module>
     </modules>

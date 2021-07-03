@@ -12,3 +12,4 @@ The ACME specifications define these standard challenges:
 _acme4j_ also supports these non-standard challenges:
 
 * [tls-alpn-01](tls-alpn-01.md)
+* [email-reply-00](email-reply-00.md)

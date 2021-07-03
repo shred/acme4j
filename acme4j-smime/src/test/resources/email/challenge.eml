@@ -1,0 +1,17 @@
+Auto-Submitted: auto-generated; type=acme
+Date: Sat, 5 Dec 2020 10:08:55 +0100
+Message-ID: <A2299BB.FF7788@example.org>
+From: acme-generator@example.org
+To: Alexey <alexey@example.com>
+Reply-To: acme-validator@example.org
+Subject: =?UTF-8?Q?ACME:_LgYemJLy3F1LDki=20JrdIGbEzyFJyOyf=20=206vBdyZ1TG3sME=3D?=
+Content-Type: text/plain
+MIME-Version: 1.0
+
+This is an automatically generated ACME challenge for email address
+"alexey@example.com". If you haven't requested an S/MIME
+certificate generation for this email address, be very afraid.
+If you did request it, your email client might be able to process
+this request automatically, or you might have to paste the first
+token part into an external program.
+

@@ -1,0 +1,3 @@
+
+# Challenge Provider for https://datatracker.ietf.org/doc/html/rfc8823
+org.shredzone.acme4j.smime.challenge.EmailReply00ChallengeProvider
