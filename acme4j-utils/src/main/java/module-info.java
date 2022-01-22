@@ -15,7 +15,7 @@
 module org.shredzone.acme4j.utils {
     requires org.shredzone.acme4j;
 
-    requires com.github.spotbugs.annotations;
+    requires static com.github.spotbugs.annotations;
     requires org.bouncycastle.pkix;
     requires org.bouncycastle.provider;
 
