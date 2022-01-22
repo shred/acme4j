@@ -25,9 +25,8 @@ import java.security.KeyPair;
 import java.security.Security;
 import java.util.Arrays;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERIA5String;

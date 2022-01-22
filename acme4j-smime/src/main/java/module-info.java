@@ -16,7 +16,7 @@ module org.shredzone.acme4j.smime {
     requires org.shredzone.acme4j;
     requires org.shredzone.acme4j.utils;
 
-    requires static javax.mail.api;
+    requires transitive jakarta.mail;
     requires com.github.spotbugs.annotations;
     requires org.bouncycastle.pkix;
     requires org.bouncycastle.provider;

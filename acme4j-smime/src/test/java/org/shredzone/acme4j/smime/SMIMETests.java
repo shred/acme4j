@@ -25,12 +25,11 @@ import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.util.Properties;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.smime.challenge.EmailReply00Challenge;
 import org.shredzone.acme4j.toolbox.JSON;
@@ -48,7 +47,7 @@ public abstract class SMIMETests {
             + KEY_AUTHORIZATION + "\r\n"
             + "-----END ACME RESPONSE-----\r\n";
 
-    protected final Session mailSession = Session.getInstance(new Properties());
+    protected final Session mailSession = Session.getDefaultInstance(new Properties());
 
     /**
      * Safely generates an {@link InternetAddress} from the given email address.

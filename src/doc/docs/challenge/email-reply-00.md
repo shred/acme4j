@@ -13,7 +13,6 @@ To use the S/MIME support, you need to:
 
 * add the `acme4j-smime` module to your list of dependencies
 * make sure that `BouncyCastleProvider` is added as security provider
-* add a `javax.mail` implementation to your classpath (e.g. the [JavaMail Reference Implementation](https://javaee.github.io/javamail/))
 
 [RFC 8823](https://tools.ietf.org/html/rfc8823) requires that the DKIM or S/MIME signature of incoming mails _must_ be checked. Outgoing mails _must_ have a valid DKIM or S/MIME signature. This is out of the scope of `acme4j-smime`, but is usually performed by a MTA.
 

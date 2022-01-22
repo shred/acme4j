@@ -29,8 +29,8 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 
 * [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home)
 * [slf4j](http://www.slf4j.org/)
-* [Bouncy Castle](https://www.bouncycastle.org/) - If you have other means of generating key pairs and CSRs, you can even do without `acme4j-utils` and Bouncy Castle as dependency.
-* Only for `acme4j-smime`: a `javax.mail` implementation (e.g. the [JavaMail Reference Implementation](https://javaee.github.io/javamail/))
+* For `acme4j-utils`: [Bouncy Castle](https://www.bouncycastle.org/)
+* For `acme4j-smime`: [Jakarta Mail](https://eclipse-ee4j.github.io/mail/)
 
 ## Quick Start
 

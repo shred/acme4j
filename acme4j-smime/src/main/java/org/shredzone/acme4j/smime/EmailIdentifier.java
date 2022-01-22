@@ -13,9 +13,8 @@
  */
 package org.shredzone.acme4j.smime;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 import org.shredzone.acme4j.Identifier;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 

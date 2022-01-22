@@ -14,17 +14,16 @@
 package org.shredzone.acme4j.smime.email;
 
 import static java.util.Objects.requireNonNull;
-import static javax.mail.Message.RecipientType.TO;
+import static jakarta.mail.Message.RecipientType.TO;
 import static org.shredzone.acme4j.smime.email.ResponseBodyGenerator.RESPONSE_BODY_TYPE;
 
-import javax.mail.Address;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
-
 import edu.umd.cs.findbugs.annotations.Nullable;
+import jakarta.mail.Address;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 
 /**
  * A helper for creating an email response to the "challenge" email.

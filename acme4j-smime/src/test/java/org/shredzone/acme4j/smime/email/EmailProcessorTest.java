@@ -13,17 +13,16 @@
  */
 package org.shredzone.acme4j.smime.email;
 
-import static javax.mail.Message.RecipientType.TO;
+import static jakarta.mail.Message.RecipientType.TO;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import java.io.IOException;
 import java.util.Optional;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
-
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.InternetAddress;
 import org.junit.Test;
 import org.shredzone.acme4j.Identifier;
 import org.shredzone.acme4j.exception.AcmeProtocolException;

@@ -16,9 +16,8 @@ package org.shredzone.acme4j.smime.challenge;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.base64UrlEncode;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.sha256hash;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
+import jakarta.mail.internet.AddressException;
+import jakarta.mail.internet.InternetAddress;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.challenge.TokenChallenge;
 import org.shredzone.acme4j.exception.AcmeProtocolException;

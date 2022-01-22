@@ -13,8 +13,8 @@
  */
 package org.shredzone.acme4j.smime.email;
 
-import javax.mail.Message;
-import javax.mail.MessagingException;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
 
 /**
  * A generator for the response body to be set to the {@link Message}.
