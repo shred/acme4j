@@ -51,11 +51,11 @@
     </developers>
 
     <properties>
-        <bouncycastle.version>1.69</bouncycastle.version>
+        <bouncycastle.version>1.70</bouncycastle.version>
         <httpclient.version>4.5.13</httpclient.version>
         <javax.mail.version>1.6.2</javax.mail.version>
-        <jose4j.version>0.7.8</jose4j.version>
-        <slf4j.version>1.7.31</slf4j.version>
+        <jose4j.version>0.7.9</jose4j.version>
+        <slf4j.version>1.7.33</slf4j.version>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
     </properties>
@@ -193,7 +193,7 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.3.0</version>
+            <version>4.5.3</version>
             <optional>true</optional>
             <exclusions>
                 <exclusion>
@@ -224,13 +224,13 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>3.11.2</version>
+            <version>4.2.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
-            <version>4.1.0</version>
+            <version>4.1.1</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
