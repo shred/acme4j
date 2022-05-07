@@ -30,6 +30,7 @@ nav:
     - 'usage/login.md'
     - 'usage/order.md'
     - 'usage/certificate.md'
+    - 'debugging.md'
     - 'faq.md'
   - Challenges:
     - 'challenge/index.md'
