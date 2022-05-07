@@ -16,6 +16,7 @@ package org.shredzone.acme4j.challenge;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
@@ -185,13 +186,7 @@ public class ChallengeTest {
         Login login = provider.createLogin();
 
         Challenge challenge = new Http01Challenge(login, getJSON("triggerHttpChallengeResponse"));
-
-        try {
-            challenge.update();
-            fail("Expected AcmeRetryAfterException");
-        } catch (AcmeRetryAfterException ex) {
-            assertThat(ex.getRetryAfter(), is(retryAfter));
-        }
+        assertThrows(AcmeRetryAfterException.class, challenge::update);
 
         assertThat(challenge.getStatus(), is(Status.VALID));
         assertThat(challenge.getLocation(), is(locationUrl));

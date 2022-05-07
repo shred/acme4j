@@ -18,6 +18,7 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
@@ -151,13 +152,13 @@ public class DefaultConnectionTest {
 
         when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(badNonce);
 
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
-            conn.getNonce();
-            fail("Expected to fail");
-        } catch (AcmeProtocolException ex) {
-            assertThat(ex.getMessage(), org.hamcrest.Matchers.startsWith("Invalid replay nonce"));
-        }
+        AcmeProtocolException ex = assertThrows(AcmeProtocolException.class, () -> {
+            try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+                conn.conn = mockUrlConnection;
+                conn.getNonce();
+            }
+        });
+        assertThat(ex.getMessage(), org.hamcrest.Matchers.startsWith("Invalid replay nonce"));
 
         verify(mockUrlConnection).getHeaderField("Replay-Nonce");
         verifyNoMoreInteractions(mockUrlConnection);
@@ -176,12 +177,11 @@ public class DefaultConnectionTest {
 
         assertThat(session.getNonce(), is(nullValue()));
 
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.resetNonce(session);
-            fail("missing Replay-Nonce header not detected");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
+        assertThrows(AcmeProtocolException.class, () -> {
+            try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+                conn.resetNonce(session);
+            }
+        });
 
         assertThat(session.getNonce(), is(nullValue()));
 
@@ -335,14 +335,14 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getHeaderField("Retry-After")).thenReturn(retryDate.toString());
         when(mockUrlConnection.getHeaderFieldDate("Retry-After", 0L)).thenReturn(retryDate.toEpochMilli());
 
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
-            conn.handleRetryAfter(retryMsg);
-            fail("no AcmeRetryAfterException was thrown");
-        } catch (AcmeRetryAfterException ex) {
-            assertThat(ex.getRetryAfter(), is(retryDate));
-            assertThat(ex.getMessage(), is(retryMsg));
-        }
+        AcmeRetryAfterException ex = assertThrows(AcmeRetryAfterException.class, () -> {
+            try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+                conn.conn = mockUrlConnection;
+                conn.handleRetryAfter(retryMsg);
+            }
+        });
+        assertThat(ex.getRetryAfter(), is(retryDate));
+        assertThat(ex.getMessage(), is(retryMsg));
 
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
     }
@@ -365,14 +365,14 @@ public class DefaultConnectionTest {
                         ArgumentMatchers.anyLong()))
                 .thenReturn(now);
 
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
-            conn.handleRetryAfter(retryMsg);
-            fail("no AcmeRetryAfterException was thrown");
-        } catch (AcmeRetryAfterException ex) {
-            assertThat(ex.getRetryAfter(), is(Instant.ofEpochMilli(now).plusSeconds(delta)));
-            assertThat(ex.getMessage(), is(retryMsg));
-        }
+        AcmeRetryAfterException ex = assertThrows(AcmeRetryAfterException.class, () -> {
+            try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+                conn.conn = mockUrlConnection;
+                conn.handleRetryAfter(retryMsg);
+            }
+        });
+        assertThat(ex.getRetryAfter(), is(Instant.ofEpochMilli(now).plusSeconds(delta)));
+        assertThat(ex.getMessage(), is(retryMsg));
 
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
     }
@@ -446,15 +446,15 @@ public class DefaultConnectionTest {
 
         session.setNonce(TestUtils.DUMMY_NONCE);
 
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
-            fail("Expected to fail");
-        } catch (AcmeUnauthorizedException ex) {
-            assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:unauthorized")));
-            assertThat(ex.getMessage(), is("Invalid response: 404"));
-        } catch (AcmeException ex) {
-            fail("Expected an AcmeUnauthorizedException");
-        }
+        AcmeException ex = assertThrows(AcmeException.class, () -> {
+            try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+                conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
+            }
+        });
+        assertThat(ex, instanceOf(AcmeUnauthorizedException.class));
+        assertThat(((AcmeUnauthorizedException) ex).getType(),
+                is(URI.create("urn:ietf:params:acme:error:unauthorized")));
+        assertThat(ex.getMessage(), is("Invalid response: 404"));
 
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
@@ -483,16 +483,17 @@ public class DefaultConnectionTest {
 
         session.setNonce(TestUtils.DUMMY_NONCE);
 
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
-            fail("Expected to fail");
-        } catch (AcmeUserActionRequiredException ex) {
-            assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:userActionRequired")));
-            assertThat(ex.getMessage(), is("Accept the TOS"));
-            assertThat(ex.getTermsOfServiceUri(), is(URI.create("https://example.com/tos.pdf")));
-        } catch (AcmeException ex) {
-            fail("Expected an AcmeUserActionRequiredException");
-        }
+        AcmeException ex = assertThrows(AcmeException.class, () -> {
+            try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+                conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
+            }
+        });
+        assertThat(ex, instanceOf(AcmeUserActionRequiredException.class));
+        assertThat(((AcmeUserActionRequiredException) ex).getType(),
+                is(URI.create("urn:ietf:params:acme:error:userActionRequired")));
+        assertThat(ex.getMessage(), is("Accept the TOS"));
+        assertThat(((AcmeUserActionRequiredException) ex).getTermsOfServiceUri(),
+                is(URI.create("https://example.com/tos.pdf")));
 
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getHeaderFields();
@@ -526,19 +527,19 @@ public class DefaultConnectionTest {
 
         session.setNonce(TestUtils.DUMMY_NONCE);
 
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
-            fail("Expected to fail");
-        } catch (AcmeRateLimitedException ex) {
-            assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:rateLimited")));
-            assertThat(ex.getMessage(), is("Too many invocations"));
-            assertThat(ex.getRetryAfter(), is(retryAfter));
-            assertThat(ex.getDocuments(), is(notNullValue()));
-            assertThat(ex.getDocuments().size(), is(1));
-            assertThat(ex.getDocuments().iterator().next(), is(url("https://example.com/rates.pdf")));
-        } catch (AcmeException ex) {
-            fail("Expected an AcmeRateLimitedException");
-        }
+        AcmeException ex = assertThrows(AcmeException.class, () -> {
+            try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+                conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
+            }
+        });
+        assertThat(ex, instanceOf(AcmeRateLimitedException.class));
+        AcmeRateLimitedException arlex = (AcmeRateLimitedException) ex;
+        assertThat(arlex.getType(), is(URI.create("urn:ietf:params:acme:error:rateLimited")));
+        assertThat(ex.getMessage(), is("Too many invocations"));
+        assertThat(arlex.getRetryAfter(), is(retryAfter));
+        assertThat(arlex.getDocuments(), is(notNullValue()));
+        assertThat(arlex.getDocuments().size(), is(1));
+        assertThat(arlex.getDocuments().iterator().next(), is(url("https://example.com/rates.pdf")));
 
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
@@ -566,23 +567,23 @@ public class DefaultConnectionTest {
 
         session.setNonce(TestUtils.DUMMY_NONCE);
 
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
-            @Override
-            public JSON readJsonResponse() {
-                JSONBuilder result = new JSONBuilder();
-                result.put("type", "urn:zombie:error:apocalypse");
-                result.put("detail", "Zombie apocalypse in progress");
-                return result.toJSON();
+        AcmeException ex = assertThrows(AcmeException.class, () -> {
+            try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
+                @Override
+                public JSON readJsonResponse() {
+                    JSONBuilder result = new JSONBuilder();
+                    result.put("type", "urn:zombie:error:apocalypse");
+                    result.put("detail", "Zombie apocalypse in progress");
+                    return result.toJSON();
+                }
+            }) {
+                conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
-        }) {
-            conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
-            fail("Expected to fail");
-        } catch (AcmeServerException ex) {
-            assertThat(ex.getType(), is(URI.create("urn:zombie:error:apocalypse")));
-            assertThat(ex.getMessage(), is("Zombie apocalypse in progress"));
-        } catch (AcmeException ex) {
-            fail("Expected an AcmeServerException");
-        }
+        });
+        assertThat(ex, instanceOf(AcmeServerException.class));
+        assertThat(((AcmeServerException) ex).getType(),
+                is(URI.create("urn:zombie:error:apocalypse")));
+        assertThat(ex.getMessage(), is("Zombie apocalypse in progress"));
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
@@ -605,19 +606,17 @@ public class DefaultConnectionTest {
 
         session.setNonce(TestUtils.DUMMY_NONCE);
 
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
-            @Override
-            public JSON readJsonResponse() {
-                return JSON.empty();
+        AcmeProtocolException ex = assertThrows(AcmeProtocolException.class, () -> {
+            try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
+                @Override
+                public JSON readJsonResponse() {
+                    return JSON.empty();
+                }
+            }) {
+                conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
-        }) {
-            conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
-            fail("Expected to fail");
-        } catch (AcmeProtocolException ex) {
-            assertThat(ex.getMessage(), not(emptyOrNullString()));
-        } catch (AcmeException ex) {
-            fail("Did not expect an AcmeException");
-        }
+        });
+        assertThat(ex.getMessage(), not(emptyOrNullString()));
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
@@ -640,12 +639,12 @@ public class DefaultConnectionTest {
 
         session.setNonce(TestUtils.DUMMY_NONCE);
 
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
-            fail("Expected to fail");
-        } catch (AcmeException ex) {
-            assertThat(ex.getMessage(), is("HTTP 500: Infernal Server Error"));
-        }
+        AcmeException ex = assertThrows(AcmeException.class, () -> {
+            try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+                conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
+            }
+        });
+        assertThat(ex.getMessage(), is("HTTP 500: Infernal Server Error"));
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();

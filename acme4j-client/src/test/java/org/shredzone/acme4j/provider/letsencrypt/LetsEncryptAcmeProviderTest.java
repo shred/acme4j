@@ -15,6 +15,7 @@ package org.shredzone.acme4j.provider.letsencrypt;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
@@ -59,12 +60,9 @@ public class LetsEncryptAcmeProviderTest {
         assertThat(provider.resolve(new URI("acme://letsencrypt.org/v02")), is(url(V02_DIRECTORY_URL)));
         assertThat(provider.resolve(new URI("acme://letsencrypt.org/staging")), is(url(STAGING_DIRECTORY_URL)));
 
-        try {
+        assertThrows(IllegalArgumentException.class, () -> {
             provider.resolve(new URI("acme://letsencrypt.org/v99"));
-            fail("accepted unknown path");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
+        });
     }
 
 }

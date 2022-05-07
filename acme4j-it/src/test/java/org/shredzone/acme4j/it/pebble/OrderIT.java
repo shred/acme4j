@@ -17,6 +17,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
@@ -42,6 +43,7 @@ import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeServerException;
+import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.it.BammBammClient;
 import org.shredzone.acme4j.util.CSRBuilder;
 
@@ -222,22 +224,17 @@ public class OrderIT extends PebbleITBase {
         revoker.revoke(session, certificate, keyPair, domainKeyPair);
 
         // Make sure certificate is revoked
-        try {
+        AcmeException ex = assertThrows("Could download revoked cert", AcmeException.class, () -> {
             Login login2 = session.login(account.getLocation(), keyPair);
             Certificate cert2 = login2.bindCertificate(certificate.getLocation());
             cert2.download();
-            fail("Could download revoked cert");
-        } catch (AcmeException ex) {
-            assertThat(ex.getMessage(), is("HTTP 404: Not Found"));
-        }
+        });
+        assertThat(ex.getMessage(), is("HTTP 404: Not Found"));
 
         // Try to revoke again
-        try {
-            certificate.revoke();
-            fail("Could revoke again");
-        } catch (AcmeServerException ex) {
-            assertThat(ex.getProblem().getType(), is(URI.create("urn:ietf:params:acme:error:alreadyRevoked")));
-        }
+        AcmeServerException ex2 = assertThrows("Could revoke again", AcmeServerException.class,
+                () -> certificate.revoke());
+        assertThat(ex2.getProblem().getType(), is(URI.create("urn:ietf:params:acme:error:alreadyRevoked")));
     }
 
     /**

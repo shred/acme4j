@@ -15,6 +15,7 @@ package org.shredzone.acme4j.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
@@ -257,26 +258,13 @@ public class CSRBuilderTest {
     public void testNoSign() throws IOException {
         CSRBuilder builder = new CSRBuilder();
 
-        try {
-            builder.getCSR();
-            fail("getCSR(): expected exception was not thrown");
-        } catch (IllegalStateException ex) {
-            // expected
-        }
-
-        try {
-            builder.getEncoded();
-            fail("getEncoded(): expected exception was not thrown");
-        } catch (IllegalStateException ex) {
-            // expected
-        }
-
-        try (StringWriter w = new StringWriter()) {
-            builder.write(w);
-            fail("write(): expected exception was not thrown");
-        } catch (IllegalStateException ex) {
-            // expected
-        }
+        assertThrows("getCSR()", IllegalStateException.class, builder::getCSR);
+        assertThrows("getEncoded()", IllegalStateException.class, builder::getEncoded);
+        assertThrows("write()", IllegalStateException.class, () -> {
+            try (StringWriter w = new StringWriter()) {
+                builder.write(w);
+            };
+        });
     }
 
     /**

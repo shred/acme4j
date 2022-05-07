@@ -16,6 +16,7 @@ package org.shredzone.acme4j.smime.csr;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThrows;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -253,26 +254,13 @@ public class SMIMECSRBuilderTest {
     public void testNoSign() throws IOException {
         SMIMECSRBuilder builder = new SMIMECSRBuilder();
 
-        try {
-            builder.getCSR();
-            Assert.fail("getCSR(): expected exception was not thrown");
-        } catch (IllegalStateException ex) {
-            // expected
-        }
-
-        try {
-            builder.getEncoded();
-            Assert.fail("getEncoded(): expected exception was not thrown");
-        } catch (IllegalStateException ex) {
-            // expected
-        }
-
-        try (StringWriter w = new StringWriter()) {
-            builder.write(w);
-            Assert.fail("write(): expected exception was not thrown");
-        } catch (IllegalStateException ex) {
-            // expected
-        }
+        assertThrows("getCSR", IllegalStateException.class, builder::getCSR);
+        assertThrows("getEncoded", IllegalStateException.class, builder::getEncoded);
+        assertThrows("write", IllegalStateException.class,() -> {
+            try (StringWriter w = new StringWriter()) {
+                builder.write(w);
+            }
+        });
     }
 
     /**

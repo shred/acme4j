@@ -15,6 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
@@ -40,12 +41,7 @@ public class AcmeResourceTest {
         Login login = TestUtils.login();
         URL location = new URL("http://example.com/acme/resource");
 
-        try {
-            new DummyResource(null, null);
-            fail("Could create resource without login and location");
-        } catch (NullPointerException ex) {
-            // expected
-        }
+        assertThrows(NullPointerException.class, () -> new DummyResource(null, null));
 
         AcmeResource resource = new DummyResource(login, location);
         assertThat(resource.getLogin(), is(login));
@@ -75,9 +71,8 @@ public class AcmeResourceTest {
 
         // Make sure there is no PrivateKey in the stream
         String str = new String(serialized, StandardCharsets.ISO_8859_1);
-        if (str.contains("Ljava/security/PrivateKey")) {
-            fail("serialized stream contains a PrivateKey");
-        }
+        assertThat("serialized stream contains a PrivateKey",
+                str, not(containsString("Ljava/security/PrivateKey")));
 
         // Deserialize to new object
         DummyResource restored;
@@ -90,12 +85,7 @@ public class AcmeResourceTest {
         assertThat(restored, not(sameInstance(challenge)));
 
         // Make sure the restored object is not attached to a login
-        try {
-            restored.getLogin();
-            fail("was able to retrieve a session");
-        } catch (IllegalStateException ex) {
-            // must fail because we don't have a login in the restored object
-        }
+        assertThrows(IllegalStateException.class, restored::getLogin);
 
         // Rebind to login
         restored.rebind(login);

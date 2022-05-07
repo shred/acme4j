@@ -15,6 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
@@ -206,53 +207,35 @@ public class OrderBuilderTest {
 
         Account account = new Account(login);
 
-        try {
+        assertThrows("accepted notBefore", IllegalArgumentException.class, () -> {
             OrderBuilder ob = account.newOrder().autoRenewal();
             ob.notBefore(someInstant);
-            fail("accepted notBefore");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
+        });
 
-        try {
+        assertThrows("accepted notAfter", IllegalArgumentException.class, () -> {
             OrderBuilder ob = account.newOrder().autoRenewal();
             ob.notAfter(someInstant);
-            fail("accepted notAfter");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
+        });
 
-        try {
+        assertThrows("accepted autoRenewal", IllegalArgumentException.class, () -> {
             OrderBuilder ob = account.newOrder().notBefore(someInstant);
             ob.autoRenewal();
-            fail("accepted autoRenewal");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
+        });
 
-        try {
+        assertThrows("accepted autoRenewalStart", IllegalArgumentException.class, () -> {
             OrderBuilder ob = account.newOrder().notBefore(someInstant);
             ob.autoRenewalStart(someInstant);
-            fail("accepted autoRenewalStart");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
+        });
 
-        try {
+        assertThrows("accepted autoRenewalEnd", IllegalArgumentException.class, () -> {
             OrderBuilder ob = account.newOrder().notBefore(someInstant);
             ob.autoRenewalEnd(someInstant);
-            fail("accepted autoRenewalEnd");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
+        });
 
-        try {
+        assertThrows("accepted autoRenewalLifetime", IllegalArgumentException.class, () -> {
             OrderBuilder ob = account.newOrder().notBefore(someInstant);
             ob.autoRenewalLifetime(Duration.ofDays(7));
-            fail("accepted autoRenewalLifetime");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
+        });
 
         provider.close();
     }

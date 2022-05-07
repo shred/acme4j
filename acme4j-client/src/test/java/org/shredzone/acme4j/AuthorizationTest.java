@@ -15,6 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
@@ -280,13 +281,8 @@ public class AuthorizationTest {
         provider.putTestChallenge("tls-alpn-01", TlsAlpn01Challenge::new);
 
         Authorization auth = new Authorization(login, locationUrl);
-
-        try {
-            auth.update();
-            fail("Expected AcmeRetryAfterException");
-        } catch (AcmeRetryAfterException ex) {
-            assertThat(ex.getRetryAfter(), is(retryAfter));
-        }
+        AcmeRetryAfterException ex = assertThrows(AcmeRetryAfterException.class, auth::update);
+        assertThat(ex.getRetryAfter(), is(retryAfter));
 
         assertThat(auth.getIdentifier().getDomain(), is("example.org"));
         assertThat(auth.getStatus(), is(Status.VALID));

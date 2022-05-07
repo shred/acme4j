@@ -15,6 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.*;
@@ -46,12 +47,7 @@ public class SessionTest {
     public void testConstructor() {
         URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
 
-        try {
-            new Session((URI) null);
-            fail("accepted null parameters in constructor");
-        } catch (NullPointerException ex) {
-            // expected
-        }
+        assertThrows(NullPointerException.class, () -> new Session((URI) null));
 
         Session session = new Session(serverUri);
         assertThat(session, not(nullValue()));
@@ -65,19 +61,10 @@ public class SessionTest {
         assertThat(session3, not(nullValue()));
         assertThat(session3.getServerUri(), is(serverUri));
 
-        try {
-            new Session("#*aBaDuRi*#");
-            fail("accepted bad URI in constructor");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
-
-        try {
-            new Session(URI.create("acme://invalid"), new GenericAcmeProvider());
-            fail("Provider accepted unsupported URI");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
+        assertThrows("Bad URI in constructor", IllegalArgumentException.class,
+                () -> new Session("#*aBaDuRi*#"));
+        assertThrows("Unsupported URI", IllegalArgumentException.class,
+                () -> new Session(URI.create("acme://invalid"), new GenericAcmeProvider()));
     }
 
     /**
@@ -162,12 +149,7 @@ public class SessionTest {
         assertThat(session.resourceUrl(Resource.NEW_ORDER),
                 is(new URL("https://example.com/acme/new-order")));
 
-        try {
-            session.resourceUrl(Resource.REVOKE_CERT);
-            fail("Did not fail to get an unsupported resource URL");
-        } catch (AcmeException ex) {
-            // Expected
-        }
+        assertThrows(AcmeException.class, () -> session.resourceUrl(Resource.REVOKE_CERT));
 
         Metadata meta = session.getMetadata();
         assertThat(meta, not(nullValue()));

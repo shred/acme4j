@@ -16,6 +16,7 @@ package org.shredzone.acme4j.toolbox;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
@@ -162,21 +163,11 @@ public class JSONTest {
         assertThat(it.next().asArray().size(), is(3));
 
         assertThat(it.hasNext(), is(true));
-        try {
-            it.remove();
-            fail("was able to remove from array");
-        } catch (UnsupportedOperationException ex) {
-            // expected
-        }
+        assertThrows(UnsupportedOperationException.class, it::remove);
         assertThat(it.next().asObject(), is(notNullValue()));
 
         assertThat(it.hasNext(), is(false));
-        try {
-            it.next();
-            fail("next past last element");
-        } catch (NoSuchElementException ex) {
-            // expected
-        }
+        assertThrows(NoSuchElementException.class, it::next);
     }
 
     /**
@@ -255,89 +246,30 @@ public class JSONTest {
         assertThat(json.get("none").optional().isPresent(), is(false));
         assertThat(json.get("none").map(Value::asString).isPresent(), is(false));
 
-        try {
-            json.get("none").asString();
-            fail("asString did not fail");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("none").asURI();
-            fail("asURI did not fail");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("none").asURL();
-            fail("asURL did not fail");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("none").asInstant();
-            fail("asInstant did not fail");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("none").asDuration();
-            fail("asDuration did not fail");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("none").asObject();
-            fail("asObject did not fail");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("none").asEncodedObject();
-            fail("asEncodedObject did not fail");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("none").asStatus();
-            fail("asStatus did not fail");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("none").asBinary();
-            fail("asBinary did not fail");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("none").asProblem(BASE_URL);
-            fail("asProblem did not fail");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("none").asInt();
-            fail("asInt did not fail");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("none").asBoolean();
-            fail("asBoolean did not fail");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
+        assertThrows("asString", AcmeProtocolException.class,
+                () -> json.get("none").asString());
+        assertThrows("asURI", AcmeProtocolException.class,
+                () -> json.get("none").asURI());
+        assertThrows("asURL", AcmeProtocolException.class,
+                () -> json.get("none").asURL());
+        assertThrows("asInstant", AcmeProtocolException.class,
+                () -> json.get("none").asInstant());
+        assertThrows("asDuration", AcmeProtocolException.class,
+                () -> json.get("none").asDuration());
+        assertThrows("asObject", AcmeProtocolException.class,
+                () -> json.get("none").asObject());
+        assertThrows("asEncodedObject", AcmeProtocolException.class,
+                () -> json.get("none").asEncodedObject());
+        assertThrows("asStatus", AcmeProtocolException.class,
+                () -> json.get("none").asStatus());
+        assertThrows("asBinary", AcmeProtocolException.class,
+                () -> json.get("none").asBinary());
+        assertThrows("asProblem", AcmeProtocolException.class,
+                () -> json.get("none").asProblem(BASE_URL));
+        assertThrows("asInt", AcmeProtocolException.class,
+                () -> json.get("none").asInt());
+        assertThrows("asBoolean", AcmeProtocolException.class,
+                () -> json.get("none").asBoolean());
     }
 
     /**
@@ -347,68 +279,24 @@ public class JSONTest {
     public void testWrongGetter() {
         JSON json = TestUtils.getJSON("datatypes");
 
-        try {
-            json.get("text").asObject();
-            fail("no exception was thrown");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("text").asEncodedObject();
-            fail("no exception was thrown");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("text").asArray();
-            fail("no exception was thrown");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("text").asInt();
-            fail("no exception was thrown");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("text").asURI();
-            fail("no exception was thrown");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("text").asURL();
-            fail("no exception was thrown");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("text").asInstant();
-            fail("no exception was thrown");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("text").asDuration();
-            fail("no exception was thrown");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
-        try {
-            json.get("text").asProblem(BASE_URL);
-            fail("no exception was thrown");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
+        assertThrows("asObject", AcmeProtocolException.class,
+                () -> json.get("text").asObject());
+        assertThrows("asEncodedObject", AcmeProtocolException.class,
+                () -> json.get("text").asEncodedObject());
+        assertThrows("asArray", AcmeProtocolException.class,
+                () -> json.get("text").asArray());
+        assertThrows("asInt", AcmeProtocolException.class,
+                () -> json.get("text").asInt());
+        assertThrows("asURI", AcmeProtocolException.class,
+                () -> json.get("text").asURI());
+        assertThrows("asURL", AcmeProtocolException.class,
+                () -> json.get("text").asURL());
+        assertThrows("asInstant", AcmeProtocolException.class,
+                () -> json.get("text").asInstant());
+        assertThrows("asDuration", AcmeProtocolException.class,
+                () -> json.get("text").asDuration());
+        assertThrows("asProblem", AcmeProtocolException.class,
+                () -> json.get("text").asProblem(BASE_URL));
     }
 
     /**

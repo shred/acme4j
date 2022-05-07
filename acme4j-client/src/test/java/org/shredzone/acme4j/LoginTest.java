@@ -15,6 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
@@ -178,13 +179,10 @@ public class LoginTest {
         Http01Challenge challenge2 = login.bindChallenge(locationUrl, Http01Challenge.class);
         assertThat(challenge2, is(sameInstance(mockChallenge)));
 
-        try {
-            login.bindChallenge(locationUrl, Dns01Challenge.class);
-            fail("Could bind to a different challenge type");
-        } catch (AcmeProtocolException ex) {
-            assertThat(ex.getMessage(), is("Challenge type http-01 does not match" +
-                    " requested class class org.shredzone.acme4j.challenge.Dns01Challenge"));
-        }
+        AcmeProtocolException ex = assertThrows(AcmeProtocolException.class,
+                () -> login.bindChallenge(locationUrl, Dns01Challenge.class));
+        assertThat(ex.getMessage(), is("Challenge type http-01 does not match" +
+                " requested class class org.shredzone.acme4j.challenge.Dns01Challenge"));
     }
 
 }

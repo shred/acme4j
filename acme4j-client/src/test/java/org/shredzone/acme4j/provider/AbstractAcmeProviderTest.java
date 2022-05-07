@@ -15,6 +15,7 @@ package org.shredzone.acme4j.provider;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
@@ -241,12 +242,7 @@ public class AbstractAcmeProviderTest {
         AbstractAcmeProvider provider = new TestAbstractAcmeProvider(connection);
         Session session = TestUtils.session(provider);
 
-        try {
-            provider.directory(session, SERVER_URI);
-            fail("HTTP error was ignored");
-        } catch (AcmeException ex) {
-            // expected
-        }
+        assertThrows(AcmeException.class, () -> provider.directory(session, SERVER_URI));
     }
 
     /**
@@ -290,22 +286,16 @@ public class AbstractAcmeProviderTest {
         assertThat(c7, not(nullValue()));
         assertThat(c7, instanceOf(TokenChallenge.class));
 
-        try {
+        assertThrows(AcmeProtocolException.class, () -> {
             JSON json8 = new JSONBuilder()
-                        .put("url", "https://example.com/some/challenge")
-                        .toJSON();
+                    .put("url", "https://example.com/some/challenge")
+                    .toJSON();
             provider.createChallenge(login, json8);
-            fail("Challenge without type was accepted");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
+        });
 
-        try {
+        assertThrows(NullPointerException.class, () -> {
             provider.createChallenge(login, null);
-            fail("null was accepted");
-        } catch (NullPointerException ex) {
-            // expected
-        }
+        });
     }
 
     private static class TestAbstractAcmeProvider extends AbstractAcmeProvider {

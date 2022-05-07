@@ -16,6 +16,7 @@ package org.shredzone.acme4j.it.pebble;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
@@ -137,14 +138,12 @@ public class AccountIT extends PebbleITBase {
      */
     @Test
     public void testNotExisting() throws AcmeException {
-        try {
+        AcmeServerException ex = assertThrows(AcmeServerException.class, () -> {
             KeyPair keyPair = createKeyPair();
             Session session = new Session(pebbleURI());
             new AccountBuilder().onlyExisting().useKeyPair(keyPair).create(session);
-            fail("onlyExisting flag was ignored");
-        } catch (AcmeServerException ex) {
-            assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:accountDoesNotExist")));
-        }
+        });
+        assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:accountDoesNotExist")));
     }
 
     /**
@@ -193,14 +192,11 @@ public class AccountIT extends PebbleITBase {
         KeyPair newKeyPair = createKeyPair();
         acct.changeKey(newKeyPair);
 
-        try {
+        assertThrows("Old account key is still accessible", AcmeServerException.class, () -> {
             Session sessionOldKey = new Session(pebbleURI());
             Account oldAccount = sessionOldKey.login(location, keyPair).getAccount();
             oldAccount.update();
-            fail("Old account key is still accessible");
-        } catch (AcmeServerException ex) {
-            // Expected
-        }
+        });
 
         Session sessionNewKey = new Session(pebbleURI());
         Account newAccount = sessionNewKey.login(location, newKeyPair).getAccount();
@@ -227,14 +223,13 @@ public class AccountIT extends PebbleITBase {
         assertThat(acct.getStatus(), is(Status.DEACTIVATED));
 
         // Make sure account cannot be accessed any more...
-        try {
+        AcmeUnauthorizedException ex = assertThrows("Account can still be accessed",
+                AcmeUnauthorizedException.class, () -> {
             Session session2 = new Session(pebbleURI());
             Account acct2 = session2.login(location, keyPair).getAccount();
             acct2.update();
-            fail("Account can still be accessed");
-        } catch (AcmeUnauthorizedException ex) {
-            assertThat(ex.getMessage(), is("Account has been deactivated"));
-        }
+        });
+        assertThat(ex.getMessage(), is("Account has been deactivated"));
     }
 
 }

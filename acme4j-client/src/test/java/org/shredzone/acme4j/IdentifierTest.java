@@ -15,6 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.net.InetAddress;
@@ -123,19 +124,8 @@ public class IdentifierTest {
 
     @Test
     public void testNull() {
-        try {
-            new Identifier(null, "123.456");
-            fail("accepted null");
-        } catch (NullPointerException ex) {
-            // expected
-        }
-
-        try {
-            new Identifier("foo", null);
-            fail("accepted null");
-        } catch (NullPointerException ex) {
-            // expected
-        }
+        assertThrows(NullPointerException.class, () -> new Identifier(null, "123.456"));
+        assertThrows(NullPointerException.class, () -> new Identifier("foo", null));
     }
 
 }

@@ -16,6 +16,7 @@ package org.shredzone.acme4j.toolbox;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.*;
 
@@ -172,33 +173,14 @@ public class AcmeUtilsTest {
      */
     @Test
     public void testInvalid() {
-        try {
-            parseTimestamp("");
-            fail("accepted empty string");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
-
-        try {
-            parseTimestamp("abc");
-            fail("accepted nonsense string");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
-
-        try {
-            parseTimestamp("2015-12-27");
-            fail("accepted year only string");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
-
-        try {
-            parseTimestamp("2015-12-27T");
-            fail("accepted year only string");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
+        assertThrows("accepted empty string", IllegalArgumentException.class,
+                () -> parseTimestamp(""));
+        assertThrows("accepted nonsense string", IllegalArgumentException.class,
+                () -> parseTimestamp("abc"));
+        assertThrows("accepted date only string", IllegalArgumentException.class,
+                () -> parseTimestamp("2015-12-27"));
+        assertThrows("accepted string without time", IllegalArgumentException.class,
+                () -> parseTimestamp("2015-12-27T"));
     }
 
     /**
@@ -258,13 +240,8 @@ public class AcmeUtilsTest {
                         is("application/json"));
         assertThat(AcmeUtils.getContentType(" application/json ;foo=4"),
                         is("application/json"));
-
-        try {
-            AcmeUtils.getContentType("application/json; charset=\"iso-8859-1\"");
-            fail("Accepted bad charset");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
+        assertThrows(AcmeProtocolException.class,
+                () -> AcmeUtils.getContentType("application/json; charset=\"iso-8859-1\""));
     }
 
     /**
@@ -275,26 +252,12 @@ public class AcmeUtilsTest {
     public void testValidateContact() {
         AcmeUtils.validateContact(URI.create("mailto:foo@example.com"));
 
-        try {
-            AcmeUtils.validateContact(URI.create("mailto:foo@example.com,bar@example.com"));
-            fail("multiple recipients are accepted");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
-
-        try {
-            AcmeUtils.validateContact(URI.create("mailto:foo@example.com?to=bar@example.com"));
-            fail("hfields are accepted");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
-
-        try {
-            AcmeUtils.validateContact(URI.create("mailto:?to=foo@example.com"));
-            fail("hfields are accepted");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
+        assertThrows("multiple recipients are accepted", IllegalArgumentException.class,
+                () -> AcmeUtils.validateContact(URI.create("mailto:foo@example.com,bar@example.com")));
+        assertThrows("hfields are accepted", IllegalArgumentException.class,
+                () -> AcmeUtils.validateContact(URI.create("mailto:foo@example.com?to=bar@example.com")));
+        assertThrows("only hfields are accepted", IllegalArgumentException.class,
+                () -> AcmeUtils.validateContact(URI.create("mailto:?to=foo@example.com")));
     }
 
     /**

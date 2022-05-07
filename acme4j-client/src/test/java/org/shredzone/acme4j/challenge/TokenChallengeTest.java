@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.challenge;
 
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -42,14 +43,7 @@ public class TokenChallengeTest {
         jb.put("token", "<script>someMaliciousCode()</script>");
 
         TokenChallenge challenge = new TokenChallenge(login, jb.toJSON());
-
-        try {
-            challenge.getToken();
-            fail("Invalid token was accepted");
-        } catch (AcmeProtocolException ex) {
-            // expected
-        }
-
+        assertThrows(AcmeProtocolException.class, challenge::getToken);
         provider.close();
     }
 

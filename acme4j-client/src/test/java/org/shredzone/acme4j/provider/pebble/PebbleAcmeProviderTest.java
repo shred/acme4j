@@ -15,6 +15,7 @@ package org.shredzone.acme4j.provider.pebble;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
@@ -62,19 +63,13 @@ public class PebbleAcmeProviderTest {
         assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com:12345/")),
                         is(url("https://pebble.example.com:12345/dir")));
 
-        try {
+        assertThrows(IllegalArgumentException.class, () -> {
             provider.resolve(new URI("acme://pebble/bad.example.com:port"));
-            fail("accepted bad port");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
+        });
 
-        try {
+        assertThrows(IllegalArgumentException.class, () -> {
             provider.resolve(new URI("acme://pebble/bad.example.com:1234/foo"));
-            fail("accepted invalid path");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
+        });
     }
 
 }
