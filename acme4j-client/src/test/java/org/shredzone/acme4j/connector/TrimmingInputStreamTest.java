@@ -15,6 +15,7 @@ package org.shredzone.acme4j.connector;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -26,6 +27,15 @@ import org.junit.Test;
  * Unit tests for {@link TrimmingInputStream}.
  */
 public class TrimmingInputStreamTest {
+    private final static String FULL_TEXT =
+              "Gallia est omnis divisa in partes tres,\r\n\r\n\r\n"
+            + "quarum unam incolunt Belgae, aliam Aquitani,\r\r\r\n\n"
+            + "tertiam, qui ipsorum lingua Celtae, nostra Galli appellantur.";
+
+    private final static String TRIMMED_TEXT =
+              "Gallia est omnis divisa in partes tres,\n"
+            + "quarum unam incolunt Belgae, aliam Aquitani,\n"
+            + "tertiam, qui ipsorum lingua Celtae, nostra Galli appellantur.";
 
     @Test
     public void testEmpty() throws IOException {
@@ -34,14 +44,47 @@ public class TrimmingInputStreamTest {
     }
 
     @Test
+    public void testLineBreakOnly() throws IOException {
+        String out1 = trimByStream("\n");
+        assertThat(out1, is(""));
+
+        String out2 = trimByStream("\r");
+        assertThat(out2, is(""));
+
+        String out3 = trimByStream("\r\n");
+        assertThat(out2, is(""));
+    }
+
+    @Test
     public void testTrim() throws IOException {
-        String out = trimByStream("\n\n"
-            + "Gallia est omnis divisa in partes tres,\r\n\r\n\r\n"
-            + "quarum unam incolunt Belgae, aliam Aquitani,\r\r\r\n\n"
-            + "tertiam, qui ipsorum lingua Celtae, nostra Galli appellantur.");
-        assertThat(out, is("Gallia est omnis divisa in partes tres,\n"
-            + "quarum unam incolunt Belgae, aliam Aquitani,\n"
-            + "tertiam, qui ipsorum lingua Celtae, nostra Galli appellantur."));
+        String out = trimByStream(FULL_TEXT);
+        assertThat(out, is(TRIMMED_TEXT));
+    }
+
+    @Test
+    public void testTrimEndOnly() throws IOException {
+        String out = trimByStream(FULL_TEXT + "\r\n\r\n");
+        assertThat(out, is(TRIMMED_TEXT + "\n"));
+    }
+
+    @Test
+    public void testTrimStartOnly() throws IOException {
+        String out = trimByStream("\n\n" + FULL_TEXT);
+        assertThat(out, is(TRIMMED_TEXT));
+    }
+
+    @Test
+    public void testTrimFull() throws IOException {
+        String out = trimByStream("\n\n" + FULL_TEXT + "\r\n\r\n");
+        assertThat(out, is(TRIMMED_TEXT + "\n"));
+    }
+
+    @Test
+    public void testAvailable() throws IOException {
+        try (TrimmingInputStream in = new TrimmingInputStream(
+                new ByteArrayInputStream("Test".getBytes(StandardCharsets.US_ASCII)))) {
+            assertThat(in.available(), not(0));
+        }
     }
 
     /**
