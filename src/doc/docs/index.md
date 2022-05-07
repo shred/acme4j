@@ -24,6 +24,7 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 * Requires JRE 8 (update 101) or higher. For building the project, Java 9 or higher is required.
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
 * Extensive unit and integration tests
+* Reported to work on Android. However, this platform is not officially supported.
 
 ## Dependencies
 
