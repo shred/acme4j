@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j.smime.challenge;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URI;
@@ -40,8 +39,8 @@ public class EmailReply00ChallengeTest extends SMIMETests {
         AcmeProvider provider = new TestAcmeProvider();
 
         Challenge challenge = provider.createChallenge(mockLogin(), getJSON("emailReplyChallenge"));
-        assertThat(challenge, not(nullValue()));
-        assertThat(challenge, instanceOf(EmailReply00Challenge.class));
+        assertThat(challenge).isNotNull();
+        assertThat(challenge).isInstanceOf(EmailReply00Challenge.class);
     }
 
     /**
@@ -51,14 +50,14 @@ public class EmailReply00ChallengeTest extends SMIMETests {
     public void testEmailReplyChallenge() {
         EmailReply00Challenge challenge = new EmailReply00Challenge(mockLogin(), getJSON("emailReplyChallenge"));
 
-        assertThat(challenge.getType(), is(EmailReply00Challenge.TYPE));
-        assertThat(challenge.getStatus(), is(Status.PENDING));
-        assertThat(challenge.getToken(TOKEN_PART1), is(TOKEN_PART1 + TOKEN_PART2));
-        assertThat(challenge.getTokenPart2(), is(TOKEN_PART2));
-        assertThat(challenge.getAuthorization(TOKEN_PART1), is(KEY_AUTHORIZATION));
+        assertThat(challenge.getType()).isEqualTo(EmailReply00Challenge.TYPE);
+        assertThat(challenge.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(challenge.getToken(TOKEN_PART1)).isEqualTo(TOKEN_PART1 + TOKEN_PART2);
+        assertThat(challenge.getTokenPart2()).isEqualTo(TOKEN_PART2);
+        assertThat(challenge.getAuthorization(TOKEN_PART1)).isEqualTo(KEY_AUTHORIZATION);
 
-        assertThat(challenge.getFrom(), is("acme-generator@example.org"));
-        assertThat(challenge.getExpectedSender().getAddress(), is("acme-generator@example.org"));
+        assertThat(challenge.getFrom()).isEqualTo("acme-generator@example.org");
+        assertThat(challenge.getExpectedSender().getAddress()).isEqualTo("acme-generator@example.org");
     }
 
     /**

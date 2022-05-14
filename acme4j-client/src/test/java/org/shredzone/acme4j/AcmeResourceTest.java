@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
@@ -43,8 +42,8 @@ public class AcmeResourceTest {
         assertThrows(NullPointerException.class, () -> new DummyResource(null, null));
 
         AcmeResource resource = new DummyResource(login, location);
-        assertThat(resource.getLogin(), is(login));
-        assertThat(resource.getLocation(), is(location));
+        assertThat(resource.getLogin()).isEqualTo(login);
+        assertThat(resource.getLocation()).isEqualTo(location);
     }
 
     /**
@@ -57,7 +56,7 @@ public class AcmeResourceTest {
 
         // Create a Challenge for testing
         DummyResource challenge = new DummyResource(login, location);
-        assertThat(challenge.getLogin(), is(login));
+        assertThat(challenge.getLogin()).isEqualTo(login);
 
         // Serialize it
         byte[] serialized;
@@ -70,18 +69,18 @@ public class AcmeResourceTest {
 
         // Make sure there is no PrivateKey in the stream
         String str = new String(serialized, StandardCharsets.ISO_8859_1);
-        assertThat("serialized stream contains a PrivateKey",
-                str, not(containsString("Ljava/security/PrivateKey")));
+        assertThat(str).as("serialized stream contains a PrivateKey")
+                .doesNotContain("Ljava/security/PrivateKey");
 
         // Deserialize to new object
         DummyResource restored;
         try (ByteArrayInputStream bais = new ByteArrayInputStream(serialized);
                 ObjectInputStream in = new ObjectInputStream(bais)) {
             Object obj = in.readObject();
-            assertThat(obj, instanceOf(DummyResource.class));
+            assertThat(obj).isInstanceOf(DummyResource.class);
             restored = (DummyResource) obj;
         }
-        assertThat(restored, not(sameInstance(challenge)));
+        assertThat(restored).isNotSameAs(challenge);
 
         // Make sure the restored object is not attached to a login
         assertThrows(IllegalStateException.class, restored::getLogin);
@@ -90,7 +89,7 @@ public class AcmeResourceTest {
         restored.rebind(login);
 
         // Make sure the new login is set
-        assertThat(restored.getLogin(), is(login));
+        assertThat(restored.getLogin()).isEqualTo(login);
     }
 
     /**
@@ -103,7 +102,7 @@ public class AcmeResourceTest {
             URL location = new URL("http://example.com/acme/resource");
 
             AcmeResource resource = new DummyResource(login, location);
-            assertThat(resource.getLogin(), is(login));
+            assertThat(resource.getLogin()).isEqualTo(login);
 
             Login login2 = TestUtils.login();
             resource.rebind(login2); // fails to rebind to another login

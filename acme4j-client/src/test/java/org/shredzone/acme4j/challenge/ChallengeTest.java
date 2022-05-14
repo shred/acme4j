@@ -13,21 +13,21 @@
  */
 package org.shredzone.acme4j.challenge;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
@@ -54,18 +54,20 @@ public class ChallengeTest {
         Challenge challenge = new Challenge(TestUtils.login(), getJSON("genericChallenge"));
 
         // Test unmarshalled values
-        assertThat(challenge.getType(), is("generic-01"));
-        assertThat(challenge.getStatus(), is(Status.INVALID));
-        assertThat(challenge.getLocation(), is(url("http://example.com/challenge/123")));
-        assertThat(challenge.getValidated(), is(parseTimestamp("2015-12-12T17:19:36.336785823Z")));
-        assertThat(challenge.getJSON().get("type").asString(), is("generic-01"));
-        assertThat(challenge.getJSON().get("url").asURL(), is(url("http://example.com/challenge/123")));
+        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+            softly.assertThat(challenge.getType()).isEqualTo("generic-01");
+            softly.assertThat(challenge.getStatus()).isEqualTo(Status.INVALID);
+            softly.assertThat(challenge.getLocation()).isEqualTo(url("http://example.com/challenge/123"));
+            softly.assertThat(challenge.getValidated()).isCloseTo("2015-12-12T17:19:36.336Z", within(1, ChronoUnit.MILLIS));
+            softly.assertThat(challenge.getJSON().get("type").asString()).isEqualTo("generic-01");
+            softly.assertThat(challenge.getJSON().get("url").asURL()).isEqualTo(url("http://example.com/challenge/123"));
 
-        Problem error = challenge.getError();
-        assertThat(error, is(notNullValue()));
-        assertThat(error.getType(), is(URI.create("urn:ietf:params:acme:error:incorrectResponse")));
-        assertThat(error.getDetail(), is("bad token"));
-        assertThat(error.getInstance(), is(URI.create("http://example.com/documents/faq.html")));
+            Problem error = challenge.getError();
+            softly.assertThat(error).isNotNull();
+            softly.assertThat(error.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:incorrectResponse"));
+            softly.assertThat(error.getDetail()).isEqualTo("bad token");
+            softly.assertThat(error.getInstance()).isEqualTo(URI.create("http://example.com/documents/faq.html"));
+        }
     }
 
     /**
@@ -78,7 +80,7 @@ public class ChallengeTest {
         JSONBuilder response = new JSONBuilder();
         challenge.prepareResponse(response);
 
-        assertThat(response.toString(), sameJSONAs("{}"));
+        assertThatJson(response.toString()).isEqualTo("{}");
     }
 
     /**
@@ -99,9 +101,9 @@ public class ChallengeTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
-                assertThat(url, is(locationUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("triggerHttpChallengeRequest").toString()));
-                assertThat(login, is(notNullValue()));
+                assertThat(url).isEqualTo(locationUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("triggerHttpChallengeRequest").toString());
+                assertThat(login).isNotNull();
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -117,8 +119,8 @@ public class ChallengeTest {
 
         challenge.trigger();
 
-        assertThat(challenge.getStatus(), is(Status.PENDING));
-        assertThat(challenge.getLocation(), is(locationUrl));
+        assertThat(challenge.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(challenge.getLocation()).isEqualTo(locationUrl);
 
         provider.close();
     }
@@ -131,7 +133,7 @@ public class ChallengeTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
-                assertThat(url, is(locationUrl));
+                assertThat(url).isEqualTo(locationUrl);
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -152,8 +154,8 @@ public class ChallengeTest {
 
         challenge.update();
 
-        assertThat(challenge.getStatus(), is(Status.VALID));
-        assertThat(challenge.getLocation(), is(locationUrl));
+        assertThat(challenge.getStatus()).isEqualTo(Status.VALID);
+        assertThat(challenge.getLocation()).isEqualTo(locationUrl);
 
         provider.close();
     }
@@ -168,7 +170,7 @@ public class ChallengeTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
-                assertThat(url, is(locationUrl));
+                assertThat(url).isEqualTo(locationUrl);
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -189,8 +191,8 @@ public class ChallengeTest {
         Challenge challenge = new Http01Challenge(login, getJSON("triggerHttpChallengeResponse"));
         assertThrows(AcmeRetryAfterException.class, challenge::update);
 
-        assertThat(challenge.getStatus(), is(Status.VALID));
-        assertThat(challenge.getLocation(), is(locationUrl));
+        assertThat(challenge.getStatus()).isEqualTo(Status.VALID);
+        assertThat(challenge.getLocation()).isEqualTo(locationUrl);
 
         provider.close();
     }

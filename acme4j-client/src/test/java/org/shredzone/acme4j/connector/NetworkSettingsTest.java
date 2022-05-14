@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j.connector;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.InetSocketAddress;
@@ -35,16 +34,16 @@ public class NetworkSettingsTest {
     public void testGettersAndSetters() {
         NetworkSettings settings = new NetworkSettings();
 
-        assertThat(settings.getProxy(), is(Proxy.NO_PROXY));
+        assertThat(settings.getProxy()).isEqualTo(Proxy.NO_PROXY);
         Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("10.0.0.1", 8080));
         settings.setProxy(proxy);
-        assertThat(settings.getProxy(), is(proxy));
+        assertThat(settings.getProxy()).isEqualTo(proxy);
         settings.setProxy(null);
-        assertThat(settings.getProxy(), is(Proxy.NO_PROXY));
+        assertThat(settings.getProxy()).isEqualTo(Proxy.NO_PROXY);
 
-        assertThat(settings.getTimeout(), is(Duration.ofSeconds(10)));
+        assertThat(settings.getTimeout()).isEqualTo(Duration.ofSeconds(10));
         settings.setTimeout(Duration.ofMillis(5120));
-        assertThat(settings.getTimeout(), is(Duration.ofMillis(5120)));
+        assertThat(settings.getTimeout()).isEqualTo(Duration.ofMillis(5120));
     }
 
     @Test

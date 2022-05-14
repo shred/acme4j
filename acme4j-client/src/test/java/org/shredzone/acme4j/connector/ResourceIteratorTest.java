@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j.connector;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
@@ -69,8 +68,8 @@ public class ResourceIteratorTest {
         assertThrows(NoSuchElementException.class, () -> {
             Iterator<Authorization> it = createIterator(null);
 
-            assertThat(it, not(nullValue()));
-            assertThat(it.hasNext(), is(false));
+            assertThat(it).isNotNull();
+            assertThat(it.hasNext()).isFalse();
             it.next(); // throws NoSuchElementException
         });
     }
@@ -87,7 +86,7 @@ public class ResourceIteratorTest {
             result.add(it.next().getLocation());
         }
 
-        assertThat(result, is(equalTo(resourceURLs)));
+        assertThat(result).isEqualTo(resourceURLs);
     }
 
     /**
@@ -98,8 +97,8 @@ public class ResourceIteratorTest {
         List<URL> result = new ArrayList<>();
 
         Iterator<Authorization> it = createIterator(pageURLs.get(0));
-        assertThat(it.hasNext(), is(true));
-        assertThat(it.hasNext(), is(true));
+        assertThat(it.hasNext()).isTrue();
+        assertThat(it.hasNext()).isTrue();
 
         // don't try this at home, kids...
         try {
@@ -107,11 +106,11 @@ public class ResourceIteratorTest {
                 result.add(it.next().getLocation());
             }
         } catch (NoSuchElementException ex) {
-            assertThat(it.hasNext(), is(false));
-            assertThat(it.hasNext(), is(false));
+            assertThat(it.hasNext()).isFalse();
+            assertThat(it.hasNext()).isFalse();
         }
 
-        assertThat(result, is(equalTo(resourceURLs)));
+        assertThat(result).isEqualTo(resourceURLs);
     }
 
     /**
@@ -140,7 +139,7 @@ public class ResourceIteratorTest {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
                 ix = pageURLs.indexOf(url);
-                assertThat(ix, is(greaterThanOrEqualTo(0)));
+                assertThat(ix).isGreaterThanOrEqualTo(0);
                 return HttpURLConnection.HTTP_OK;
             }
 

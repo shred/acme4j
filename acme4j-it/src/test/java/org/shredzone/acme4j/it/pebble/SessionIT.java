@@ -13,9 +13,8 @@
  */
 package org.shredzone.acme4j.it.pebble;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 
@@ -44,15 +43,15 @@ public class SessionIT extends PebbleITBase {
         Session session = new Session(pebbleURI());
 
         Metadata meta = session.getMetadata();
-        assertThat(meta, not(nullValue()));
+        assertThat(meta).isNotNull();
 
-        assertThat(meta.getTermsOfService(), is(URI.create("data:text/plain,Do%20what%20thou%20wilt")));
-        assertThat(meta.getWebsite(), is(nullValue()));
-        assertThat(meta.getCaaIdentities(), is(empty()));
-        assertThat(meta.getJSON().toString(), sameJSONAs("{"
+        assertThat(meta.getTermsOfService()).isEqualTo(URI.create("data:text/plain,Do%20what%20thou%20wilt"));
+        assertThat(meta.getWebsite()).isNull();
+        assertThat(meta.getCaaIdentities()).isEmpty();
+        assertThatJson(meta.getJSON().toString()).isEqualTo("{"
                         + "'termsOfService': 'data:text/plain,Do%20what%20thou%20wilt',"
                         + "'externalAccountRequired': false"
-                        + "}"));
+                        + "}");
     }
 
 }

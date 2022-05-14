@@ -13,9 +13,7 @@
  */
 package org.shredzone.acme4j.it.pebble;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URI;
@@ -57,18 +55,18 @@ public class AccountIT extends PebbleITBase {
 
         // Check registered data
         Account acct = login.getAccount();
-        assertThat(acct.getLocation(), is(location));
-        assertThat(acct.getContacts(), contains(URI.create("mailto:acme@example.com")));
-        assertThat(acct.getStatus(), is(Status.VALID));
+        assertThat(acct.getLocation()).isEqualTo(location);
+        assertThat(acct.getContacts()).contains(URI.create("mailto:acme@example.com"));
+        assertThat(acct.getStatus()).isEqualTo(Status.VALID);
 
         // Bind another Account object
         Session session2 = new Session(pebbleURI());
         Login login2 = new Login(location, keyPair, session2);
-        assertThat(login2.getAccountLocation(), is(location));
+        assertThat(login2.getAccountLocation()).isEqualTo(location);
         Account acct2 = login2.getAccount();
-        assertThat(acct2.getLocation(), is(location));
-        assertThat(acct2.getContacts(), contains(URI.create("mailto:acme@example.com")));
-        assertThat(acct2.getStatus(), is(Status.VALID));
+        assertThat(acct2.getLocation()).isEqualTo(location);
+        assertThat(acct2.getContacts()).contains(URI.create("mailto:acme@example.com"));
+        assertThat(acct2.getStatus()).isEqualTo(Status.VALID);
     }
 
     /**
@@ -100,7 +98,7 @@ public class AccountIT extends PebbleITBase {
         URL location2 = login2.getAccountLocation();
         assertIsPebbleUrl(location2);
 
-        assertThat(location1, is(location2));
+        assertThat(location1).isEqualTo(location2);
     }
 
     /**
@@ -128,7 +126,7 @@ public class AccountIT extends PebbleITBase {
         URL location2 = login2.getAccountLocation();
         assertIsPebbleUrl(location2);
 
-        assertThat(location1, is(location2));
+        assertThat(location1).isEqualTo(location2);
     }
 
     /**
@@ -142,7 +140,7 @@ public class AccountIT extends PebbleITBase {
             Session session = new Session(pebbleURI());
             new AccountBuilder().onlyExisting().useKeyPair(keyPair).create(session);
         });
-        assertThat(ex.getType(), is(URI.create("urn:ietf:params:acme:error:accountDoesNotExist")));
+        assertThat(ex.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:accountDoesNotExist"));
     }
 
     /**
@@ -163,15 +161,15 @@ public class AccountIT extends PebbleITBase {
 
         acct.modify().addContact("mailto:acme2@example.com").commit();
 
-        assertThat(acct.getContacts(), contains(
+        assertThat(acct.getContacts()).contains(
                         URI.create("mailto:acme@example.com"),
-                        URI.create("mailto:acme2@example.com")));
+                        URI.create("mailto:acme2@example.com"));
 
         // Still the same after updating
         acct.update();
-        assertThat(acct.getContacts(), contains(
+        assertThat(acct.getContacts()).contains(
                         URI.create("mailto:acme@example.com"),
-                        URI.create("mailto:acme2@example.com")));
+                        URI.create("mailto:acme2@example.com"));
     }
 
     /**
@@ -199,7 +197,7 @@ public class AccountIT extends PebbleITBase {
 
         Session sessionNewKey = new Session(pebbleURI());
         Account newAccount = sessionNewKey.login(location, newKeyPair).getAccount();
-        assertThat(newAccount.getStatus(), is(Status.VALID));
+        assertThat(newAccount.getStatus()).isEqualTo(Status.VALID);
     }
 
     /**
@@ -219,7 +217,7 @@ public class AccountIT extends PebbleITBase {
         acct.deactivate();
 
         // Make sure it is deactivated now...
-        assertThat(acct.getStatus(), is(Status.DEACTIVATED));
+        assertThat(acct.getStatus()).isEqualTo(Status.DEACTIVATED);
 
         // Make sure account cannot be accessed any more...
         AcmeUnauthorizedException ex = assertThrows(AcmeUnauthorizedException.class,
@@ -228,7 +226,7 @@ public class AccountIT extends PebbleITBase {
             Account acct2 = session2.login(location, keyPair).getAccount();
             acct2.update();
         }, "Account can still be accessed");
-        assertThat(ex.getMessage(), is("Account has been deactivated"));
+        assertThat(ex.getMessage()).isEqualTo("Account has been deactivated");
     }
 
 }

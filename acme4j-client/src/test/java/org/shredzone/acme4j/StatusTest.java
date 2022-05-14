@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
@@ -30,11 +29,11 @@ public class StatusTest {
     public void testParse() {
         for (Status s : Status.values()) {
             Status parsed = Status.parse(s.name().toLowerCase());
-            assertThat(parsed, is(s));
+            assertThat(parsed).isEqualTo(s);
         }
 
         // unknown status returns UNKNOWN
-        assertThat(Status.parse("foo"), is(Status.UNKNOWN));
+        assertThat(Status.parse("foo")).isEqualTo(Status.UNKNOWN);
     }
 
 }

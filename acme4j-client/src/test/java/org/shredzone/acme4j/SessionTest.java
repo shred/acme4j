@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.*;
@@ -26,6 +25,7 @@ import java.security.KeyPair;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.shredzone.acme4j.connector.Resource;
@@ -49,16 +49,16 @@ public class SessionTest {
         assertThrows(NullPointerException.class, () -> new Session((URI) null));
 
         Session session = new Session(serverUri);
-        assertThat(session, not(nullValue()));
-        assertThat(session.getServerUri(), is(serverUri));
+        assertThat(session).isNotNull();
+        assertThat(session.getServerUri()).isEqualTo(serverUri);
 
         Session session2 = new Session(TestUtils.ACME_SERVER_URI);
-        assertThat(session2, not(nullValue()));
-        assertThat(session2.getServerUri(), is(serverUri));
+        assertThat(session2).isNotNull();
+        assertThat(session2.getServerUri()).isEqualTo(serverUri);
 
         Session session3 = new Session(serverUri, new GenericAcmeProvider());
-        assertThat(session3, not(nullValue()));
-        assertThat(session3.getServerUri(), is(serverUri));
+        assertThat(session3).isNotNull();
+        assertThat(session3.getServerUri()).isEqualTo(serverUri);
 
         assertThrows(IllegalArgumentException.class,
                 () -> new Session("#*aBaDuRi*#"),
@@ -78,24 +78,24 @@ public class SessionTest {
 
         Session session = new Session(serverUri);
 
-        assertThat(session.getNonce(), is(nullValue()));
+        assertThat(session.getNonce()).isNull();
         session.setNonce(DUMMY_NONCE);
-        assertThat(session.getNonce(), is(equalTo(DUMMY_NONCE)));
+        assertThat(session.getNonce()).isEqualTo(DUMMY_NONCE);
 
-        assertThat(session.getServerUri(), is(serverUri));
-        assertThat(session.networkSettings(), is(notNullValue()));
+        assertThat(session.getServerUri()).isEqualTo(serverUri);
+        assertThat(session.networkSettings()).isNotNull();
 
-        assertThat(session.getDirectoryExpires(), is(nullValue()));
+        assertThat(session.getDirectoryExpires()).isNull();
         session.setDirectoryExpires(now);
-        assertThat(session.getDirectoryExpires(), is(equalTo(now)));
+        assertThat(session.getDirectoryExpires()).isEqualTo(now);
         session.setDirectoryExpires(null);
-        assertThat(session.getDirectoryExpires(), is(nullValue()));
+        assertThat(session.getDirectoryExpires()).isNull();
 
-        assertThat(session.getDirectoryLastModified(), is(nullValue()));
+        assertThat(session.getDirectoryLastModified()).isNull();
         session.setDirectoryLastModified(now);
-        assertThat(session.getDirectoryLastModified(), is(equalTo(now)));
+        assertThat(session.getDirectoryLastModified()).isEqualTo(now);
         session.setDirectoryLastModified(null);
-        assertThat(session.getDirectoryLastModified(), is(nullValue()));
+        assertThat(session.getDirectoryLastModified()).isNull();
     }
 
     /**
@@ -110,10 +110,10 @@ public class SessionTest {
         Session session = new Session(serverUri);
 
         Login login = session.login(accountLocation, accountKeyPair);
-        assertThat(login, is(notNullValue()));
-        assertThat(login.getSession(), is(session));
-        assertThat(login.getAccountLocation(), is(accountLocation));
-        assertThat(login.getKeyPair(), is(accountKeyPair));
+        assertThat(login).isNotNull();
+        assertThat(login.getSession()).isEqualTo(session);
+        assertThat(login.getAccountLocation()).isEqualTo(accountLocation);
+        assertThat(login.getKeyPair()).isEqualTo(accountKeyPair);
     }
 
     /**
@@ -137,32 +137,35 @@ public class SessionTest {
         };
 
         // No directory has been fetched yet
-        assertThat(session.hasDirectory(), is(false));
+        assertThat(session.hasDirectory()).isFalse();
 
-        assertThat(session.resourceUrl(Resource.NEW_ACCOUNT),
-                is(new URL("https://example.com/acme/new-account")));
+        assertThat(session.resourceUrl(Resource.NEW_ACCOUNT))
+                .isEqualTo(new URL("https://example.com/acme/new-account"));
 
         // There is a local copy of the directory now
-        assertThat(session.hasDirectory(), is(true));
+        assertThat(session.hasDirectory()).isTrue();
 
-        assertThat(session.resourceUrl(Resource.NEW_AUTHZ),
-                is(new URL("https://example.com/acme/new-authz")));
-        assertThat(session.resourceUrl(Resource.NEW_ORDER),
-                is(new URL("https://example.com/acme/new-order")));
+        assertThat(session.resourceUrl(Resource.NEW_AUTHZ))
+                .isEqualTo(new URL("https://example.com/acme/new-authz"));
+        assertThat(session.resourceUrl(Resource.NEW_ORDER))
+                .isEqualTo(new URL("https://example.com/acme/new-order"));
 
         assertThrows(AcmeException.class, () -> session.resourceUrl(Resource.REVOKE_CERT));
 
         Metadata meta = session.getMetadata();
-        assertThat(meta, not(nullValue()));
-        assertThat(meta.getTermsOfService(), is(URI.create("https://example.com/acme/terms")));
-        assertThat(meta.getWebsite(), is(url("https://www.example.com/")));
-        assertThat(meta.getCaaIdentities(), containsInAnyOrder("example.com"));
-        assertThat(meta.isAutoRenewalEnabled(), is(true));
-        assertThat(meta.getAutoRenewalMaxDuration(), is(Duration.ofDays(365)));
-        assertThat(meta.getAutoRenewalMinLifetime(), is(Duration.ofHours(24)));
-        assertThat(meta.isAutoRenewalGetAllowed(), is(true));
-        assertThat(meta.isExternalAccountRequired(), is(true));
-        assertThat(meta.getJSON(), is(notNullValue()));
+        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+            softly.assertThat(meta).isNotNull();
+            softly.assertThat(meta.getTermsOfService())
+                    .isEqualTo(URI.create("https://example.com/acme/terms"));
+            softly.assertThat(meta.getWebsite()).isEqualTo(url("https://www.example.com/"));
+            softly.assertThat(meta.getCaaIdentities()).containsExactlyInAnyOrder("example.com");
+            softly.assertThat(meta.isAutoRenewalEnabled()).isTrue();
+            softly.assertThat(meta.getAutoRenewalMaxDuration()).isEqualTo(Duration.ofDays(365));
+            softly.assertThat(meta.getAutoRenewalMinLifetime()).isEqualTo(Duration.ofHours(24));
+            softly.assertThat(meta.isAutoRenewalGetAllowed()).isTrue();
+            softly.assertThat(meta.isExternalAccountRequired()).isTrue();
+            softly.assertThat(meta.getJSON()).isNotNull();
+        }
 
         // Make sure directory is read
         verify(mockProvider, atLeastOnce()).directory(
@@ -190,22 +193,24 @@ public class SessionTest {
             }
         };
 
-        assertThat(session.resourceUrl(Resource.NEW_ACCOUNT),
-                        is(new URL("https://example.com/acme/new-account")));
-        assertThat(session.resourceUrl(Resource.NEW_AUTHZ),
-                        is(new URL("https://example.com/acme/new-authz")));
-        assertThat(session.resourceUrl(Resource.NEW_ORDER),
-                        is(new URL("https://example.com/acme/new-order")));
+        assertThat(session.resourceUrl(Resource.NEW_ACCOUNT))
+                .isEqualTo(new URL("https://example.com/acme/new-account"));
+        assertThat(session.resourceUrl(Resource.NEW_AUTHZ))
+                .isEqualTo(new URL("https://example.com/acme/new-authz"));
+        assertThat(session.resourceUrl(Resource.NEW_ORDER))
+                .isEqualTo(new URL("https://example.com/acme/new-order"));
 
         Metadata meta = session.getMetadata();
-        assertThat(meta, not(nullValue()));
-        assertThat(meta.getTermsOfService(), is(nullValue()));
-        assertThat(meta.getWebsite(), is(nullValue()));
-        assertThat(meta.getCaaIdentities(), is(empty()));
-        assertThat(meta.isAutoRenewalEnabled(), is(false));
-        assertThat(meta.getAutoRenewalMaxDuration(), is(nullValue()));
-        assertThat(meta.getAutoRenewalMinLifetime(), is(nullValue()));
-        assertThat(meta.isAutoRenewalGetAllowed(), is(false));
+        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+            softly.assertThat(meta).isNotNull();
+            softly.assertThat(meta.getTermsOfService()).isNull();
+            softly.assertThat(meta.getWebsite()).isNull();
+            softly.assertThat(meta.getCaaIdentities()).isEmpty();
+            softly.assertThat(meta.isAutoRenewalEnabled()).isFalse();
+            softly.assertThat(meta.getAutoRenewalMaxDuration()).isNull();
+            softly.assertThat(meta.getAutoRenewalMinLifetime()).isNull();
+            softly.assertThat(meta.isAutoRenewalGetAllowed()).isFalse();
+        }
     }
 
 }

@@ -13,13 +13,12 @@
  */
 package org.shredzone.acme4j;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
@@ -28,10 +27,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -56,9 +55,9 @@ public class OrderBuilderTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
-                assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("requestOrderRequest").toString()));
-                assertThat(login, is(notNullValue()));
+                assertThat(url).isEqualTo(resourceUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("requestOrderRequest").toString());
+                assertThat(login).isNotNull();
                 return HttpURLConnection.HTTP_CREATED;
             }
 
@@ -90,7 +89,8 @@ public class OrderBuilderTest {
                         .notAfter(notAfter)
                         .create();
 
-        assertThat(order.getIdentifiers(), containsInAnyOrder(
+        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+            softly.assertThat(order.getIdentifiers()).containsExactlyInAnyOrder(
                         Identifier.dns("example.com"),
                         Identifier.dns("www.example.com"),
                         Identifier.dns("example.org"),
@@ -98,20 +98,21 @@ public class OrderBuilderTest {
                         Identifier.dns("m.example.org"),
                         Identifier.dns("d.example.com"),
                         Identifier.dns("d2.example.com"),
-                        Identifier.ip(InetAddress.getByName("192.168.1.2"))));
-        assertThat(order.getNotBefore(), is(parseTimestamp("2016-01-01T00:10:00Z")));
-        assertThat(order.getNotAfter(), is(parseTimestamp("2016-01-08T00:10:00Z")));
-        assertThat(order.getExpires(), is(parseTimestamp("2016-01-10T00:00:00Z")));
-        assertThat(order.getStatus(), is(Status.PENDING));
-        assertThat(order.isAutoRenewing(), is(false));
-        assertThat(order.getAutoRenewalStartDate(), is(nullValue()));
-        assertThat(order.getAutoRenewalEndDate(), is(nullValue()));
-        assertThat(order.getAutoRenewalLifetime(), is(nullValue()));
-        assertThat(order.getAutoRenewalLifetimeAdjust(), is(nullValue()));
-        assertThat(order.isAutoRenewalGetEnabled(), is(false));
-        assertThat(order.getLocation(), is(locationUrl));
-        assertThat(order.getAuthorizations(), is(notNullValue()));
-        assertThat(order.getAuthorizations().size(), is(2));
+                        Identifier.ip(InetAddress.getByName("192.168.1.2")));
+            softly.assertThat(order.getNotBefore()).isEqualTo("2016-01-01T00:10:00Z");
+            softly.assertThat(order.getNotAfter()).isEqualTo("2016-01-08T00:10:00Z");
+            softly.assertThat(order.getExpires()).isEqualTo("2016-01-10T00:00:00Z");
+            softly.assertThat(order.getStatus()).isEqualTo(Status.PENDING);
+            softly.assertThat(order.isAutoRenewing()).isFalse();
+            softly.assertThat(order.getAutoRenewalStartDate()).isNull();
+            softly.assertThat(order.getAutoRenewalEndDate()).isNull();
+            softly.assertThat(order.getAutoRenewalLifetime()).isNull();
+            softly.assertThat(order.getAutoRenewalLifetimeAdjust()).isNull();
+            softly.assertThat(order.isAutoRenewalGetEnabled()).isFalse();
+            softly.assertThat(order.getLocation()).isEqualTo(locationUrl);
+            softly.assertThat(order.getAuthorizations()).isNotNull();
+            softly.assertThat(order.getAuthorizations()).hasSize(2);
+        }
 
         provider.close();
     }
@@ -129,9 +130,9 @@ public class OrderBuilderTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
-                assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("requestAutoRenewOrderRequest").toString()));
-                assertThat(login, is(notNullValue()));
+                assertThat(url).isEqualTo(resourceUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("requestAutoRenewOrderRequest").toString());
+                assertThat(login).isNotNull();
                 return HttpURLConnection.HTTP_CREATED;
             }
 
@@ -162,16 +163,18 @@ public class OrderBuilderTest {
                         .autoRenewalEnableGet()
                         .create();
 
-        assertThat(order.getIdentifiers(), containsInAnyOrder(Identifier.dns("example.org")));
-        assertThat(order.getNotBefore(), is(nullValue()));
-        assertThat(order.getNotAfter(), is(nullValue()));
-        assertThat(order.isAutoRenewing(), is(true));
-        assertThat(order.getAutoRenewalStartDate(), is(autoRenewStart));
-        assertThat(order.getAutoRenewalEndDate(), is(autoRenewEnd));
-        assertThat(order.getAutoRenewalLifetime(), is(validity));
-        assertThat(order.getAutoRenewalLifetimeAdjust(), is(predate));
-        assertThat(order.isAutoRenewalGetEnabled(), is(true));
-        assertThat(order.getLocation(), is(locationUrl));
+        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+            softly.assertThat(order.getIdentifiers()).containsExactlyInAnyOrder(Identifier.dns("example.org"));
+            softly.assertThat(order.getNotBefore()).isNull();
+            softly.assertThat(order.getNotAfter()).isNull();
+            softly.assertThat(order.isAutoRenewing()).isTrue();
+            softly.assertThat(order.getAutoRenewalStartDate()).isEqualTo(autoRenewStart);
+            softly.assertThat(order.getAutoRenewalEndDate()).isEqualTo(autoRenewEnd);
+            softly.assertThat(order.getAutoRenewalLifetime()).isEqualTo(validity);
+            softly.assertThat(order.getAutoRenewalLifetimeAdjust()).isEqualTo(predate);
+            softly.assertThat(order.isAutoRenewalGetEnabled()).isTrue();
+            softly.assertThat(order.getLocation()).isEqualTo(locationUrl);
+        }
 
         provider.close();
     }

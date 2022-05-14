@@ -14,8 +14,7 @@
 package org.shredzone.acme4j.smime.csr;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
@@ -28,12 +27,12 @@ import java.util.Arrays;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.Extension;
@@ -44,9 +43,6 @@ import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.util.KeyPairUtils;
@@ -88,18 +84,18 @@ public class SMIMECSRBuilderTest {
         builder.setOrganizationalUnit("Testunit");
         builder.setState("ABC");
 
-        assertThat(builder.toString(), is("CN=mail@example.com,C=XX,L=Testville,"
+        assertThat(builder.toString()).isEqualTo("CN=mail@example.com,C=XX,L=Testville,"
                 + "O=Testing Co,OU=Testunit,ST=ABC,"
                 + "EMAIL=mail@example.com,EMAIL=info@example.com,"
                 + "EMAIL=sales@example.com,EMAIL=shop@example.com,"
                 + "EMAIL=support@example.com,EMAIL=help@example.com,"
-                + "TYPE=SIGNING_AND_ENCRYPTION"));
+                + "TYPE=SIGNING_AND_ENCRYPTION");
 
         builder.sign(testKey);
 
         PKCS10CertificationRequest csr = builder.getCSR();
-        assertThat(csr, is(Matchers.notNullValue()));
-        assertThat(csr.getEncoded(), is(Matchers.equalTo(builder.getEncoded())));
+        assertThat(csr).isNotNull();
+        assertThat(csr.getEncoded()).isEqualTo(builder.getEncoded());
 
         smimeCsrTest(csr);
         keyUsageTest(csr, KeyUsage.digitalSignature | KeyUsage.keyEncipherment);
@@ -116,7 +112,7 @@ public class SMIMECSRBuilderTest {
         builder.setKeyUsageType(KeyUsageType.ENCRYPTION_ONLY);
         builder.sign(testKey);
         PKCS10CertificationRequest csr = builder.getCSR();
-        assertThat(csr, is(Matchers.notNullValue()));
+        assertThat(csr).isNotNull();
         keyUsageTest(csr, KeyUsage.keyEncipherment);
     }
 
@@ -130,7 +126,7 @@ public class SMIMECSRBuilderTest {
         builder.setKeyUsageType(KeyUsageType.SIGNING_ONLY);
         builder.sign(testKey);
         PKCS10CertificationRequest csr = builder.getCSR();
-        assertThat(csr, is(Matchers.notNullValue()));
+        assertThat(csr).isNotNull();
         keyUsageTest(csr, KeyUsage.digitalSignature);
     }
 
@@ -144,7 +140,7 @@ public class SMIMECSRBuilderTest {
         builder.setKeyUsageType(KeyUsageType.SIGNING_AND_ENCRYPTION);
         builder.sign(testKey);
         PKCS10CertificationRequest csr = builder.getCSR();
-        assertThat(csr, is(Matchers.notNullValue()));
+        assertThat(csr).isNotNull();
         keyUsageTest(csr, KeyUsage.digitalSignature | KeyUsage.keyEncipherment);
     }
 
@@ -157,25 +153,41 @@ public class SMIMECSRBuilderTest {
      */
     private void smimeCsrTest(PKCS10CertificationRequest csr) {
         X500Name name = csr.getSubject();
-        assertThat(name.getRDNs(BCStyle.CN), Matchers.arrayContaining(new RDNMatcher("mail@example.com")));
-        assertThat(name.getRDNs(BCStyle.C), Matchers.arrayContaining(new RDNMatcher("XX")));
-        assertThat(name.getRDNs(BCStyle.L), Matchers.arrayContaining(new RDNMatcher("Testville")));
-        assertThat(name.getRDNs(BCStyle.O), Matchers.arrayContaining(new RDNMatcher("Testing Co")));
-        assertThat(name.getRDNs(BCStyle.OU), Matchers.arrayContaining(new RDNMatcher("Testunit")));
-        assertThat(name.getRDNs(BCStyle.ST), Matchers.arrayContaining(new RDNMatcher("ABC")));
+
+        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+            softly.assertThat(name.getRDNs(BCStyle.CN)).as("CN")
+                    .extracting(rdn -> rdn.getFirst().getValue().toString())
+                    .contains("mail@example.com");
+            softly.assertThat(name.getRDNs(BCStyle.C)).as("C")
+                    .extracting(rdn -> rdn.getFirst().getValue().toString())
+                    .contains("XX");
+            softly.assertThat(name.getRDNs(BCStyle.L)).as("L")
+                    .extracting(rdn -> rdn.getFirst().getValue().toString())
+                    .contains("Testville");
+            softly.assertThat(name.getRDNs(BCStyle.O)).as("O")
+                    .extracting(rdn -> rdn.getFirst().getValue().toString())
+                    .contains("Testing Co");
+            softly.assertThat(name.getRDNs(BCStyle.OU)).as("OU")
+                    .extracting(rdn -> rdn.getFirst().getValue().toString())
+                    .contains("Testunit");
+            softly.assertThat(name.getRDNs(BCStyle.ST)).as("ST")
+                    .extracting(rdn -> rdn.getFirst().getValue().toString())
+                    .contains("ABC");
+        }
 
         Attribute[] attr = csr.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-        assertThat(attr.length, is(1));
+        assertThat(attr).hasSize(1);
+
         ASN1Encodable[] extensions = attr[0].getAttrValues().toArray();
-        assertThat(extensions.length, is(1));
+        assertThat(extensions).hasSize(1);
+
         GeneralNames names = GeneralNames.fromExtensions((Extensions) extensions[0], Extension.subjectAlternativeName);
-        assertThat(names.getNames(), Matchers.arrayContaining(
-                new GeneralNameMatcher("mail@example.com", GeneralName.rfc822Name),
-                new GeneralNameMatcher("info@example.com", GeneralName.rfc822Name),
-                new GeneralNameMatcher("sales@example.com", GeneralName.rfc822Name),
-                new GeneralNameMatcher("shop@example.com", GeneralName.rfc822Name),
-                new GeneralNameMatcher("support@example.com", GeneralName.rfc822Name),
-                new GeneralNameMatcher("help@example.com", GeneralName.rfc822Name)));
+        assertThat(names.getNames())
+                .filteredOn(gn -> gn.getTagNo() == GeneralName.rfc822Name)
+                .extracting(gn -> DERIA5String.getInstance(gn.getName()).getString())
+                .containsExactlyInAnyOrder("mail@example.com", "info@example.com",
+                        "sales@example.com", "shop@example.com", "support@example.com",
+                        "help@example.com");
     }
 
     /**
@@ -189,14 +201,14 @@ public class SMIMECSRBuilderTest {
      */
     private void keyUsageTest(PKCS10CertificationRequest csr, Integer expectedUsageBits) {
         Attribute[] attr = csr.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-        assertThat(attr.length, is(1));
+        assertThat(attr).hasSize(1);
         ASN1Encodable[] extensions = attr[0].getAttrValues().toArray();
-        assertThat(extensions.length, is(1));
+        assertThat(extensions).hasSize(1);
         DERBitString keyUsageBits = (DERBitString) ((Extensions) extensions[0]).getExtensionParsedValue(Extension.keyUsage);
         if (expectedUsageBits != null) {
-            assertThat(keyUsageBits.intValue(), is(expectedUsageBits));
+            assertThat(keyUsageBits.intValue()).isEqualTo(expectedUsageBits);
         } else {
-            assertThat(keyUsageBits, is(Matchers.nullValue()));
+            assertThat(keyUsageBits).isNull();
         }
     }
 
@@ -213,10 +225,10 @@ public class SMIMECSRBuilderTest {
         }
 
         // Make sure PEM file is properly formatted
-        assertThat(pem, Matchers.matchesPattern(
+        assertThat(pem).matches(
                   "-----BEGIN CERTIFICATE REQUEST-----[\\r\\n]+"
                 + "([a-zA-Z0-9/+=]+[\\r\\n]+)+"
-                + "-----END CERTIFICATE REQUEST-----[\\r\\n]*"));
+                + "-----END CERTIFICATE REQUEST-----[\\r\\n]*");
 
         // Read CSR from PEM
         PKCS10CertificationRequest readCsr;
@@ -225,8 +237,8 @@ public class SMIMECSRBuilderTest {
         }
 
         // Verify that both keypairs are the same
-        assertThat(builder.getCSR(), Matchers.not(Matchers.sameInstance(readCsr)));
-        assertThat(builder.getEncoded(), is(Matchers.equalTo(readCsr.getEncoded())));
+        assertThat(builder.getCSR()).isNotSameAs(readCsr);
+        assertThat(builder.getEncoded()).isEqualTo(readCsr.getEncoded());
 
         // OutputStream is identical?
         byte[] pemBytes;
@@ -234,7 +246,7 @@ public class SMIMECSRBuilderTest {
             builder.write(baos);
             pemBytes = baos.toByteArray();
         }
-        assertThat(new String(pemBytes, UTF_8), is(Matchers.equalTo(pem)));
+        assertThat(new String(pemBytes, UTF_8)).isEqualTo(pem);
     }
 
     /**
@@ -262,91 +274,6 @@ public class SMIMECSRBuilderTest {
                 builder.write(w);
             }
         },"write");
-    }
-
-    /**
-     * Matches {@link RDN} values.
-     */
-    private static class RDNMatcher extends BaseMatcher<RDN> {
-        private final String expectedValue;
-
-        public RDNMatcher(String expectedValue) {
-            this.expectedValue = expectedValue;
-        }
-
-        @Override
-        public boolean matches(Object item) {
-            if (!(item instanceof RDN)) {
-                return false;
-            }
-            return expectedValue.equals(((RDN) item).getFirst().getValue().toString());
-        }
-
-        @Override
-        public void describeTo(Description description) {
-            description.appendValue(expectedValue);
-        }
-
-        @Override
-        public void describeMismatch(Object item, Description description) {
-            if (!(item instanceof RDN)) {
-                description.appendText("is a ").appendValue(item.getClass());
-            } else {
-                description.appendText("was ").appendValue(((RDN) item).getFirst().getValue());
-            }
-        }
-    }
-
-    /**
-     * Matches {@link GeneralName} DNS tagged values.
-     */
-    private static class GeneralNameMatcher extends BaseMatcher<GeneralName> {
-        private final String expectedValue;
-        private final int expectedTag;
-
-        public GeneralNameMatcher(String expectedValue, int expectedTag) {
-            this.expectedTag = expectedTag;
-            this.expectedValue = expectedValue;
-        }
-
-        @Override
-        public boolean matches(Object item) {
-            if (!(item instanceof GeneralName)) {
-                return false;
-            }
-
-            GeneralName gn = (GeneralName) item;
-
-            if (gn.getTagNo() != expectedTag) {
-                return false;
-            }
-
-            if (gn.getTagNo() == GeneralName.rfc822Name) {
-                return expectedValue.equals(DERIA5String.getInstance(gn.getName()).getString());
-            }
-
-            return false;
-        }
-
-        @Override
-        public void describeTo(Description description) {
-            description.appendValue(expectedValue);
-        }
-
-        @Override
-        public void describeMismatch(Object item, Description description) {
-            if (!(item instanceof GeneralName)) {
-                description.appendText("is a ").appendValue(item.getClass());
-                return;
-            }
-
-            GeneralName gn = (GeneralName) item;
-            if (gn.getTagNo() == GeneralName.rfc822Name) {
-                description.appendText("was EMAIL ").appendValue(DERIA5String.getInstance(gn.getName()).getString());
-            } else {
-                description.appendText("is not EMAIL, but has tag " + gn.getTagNo());
-            }
-        }
     }
 
 }

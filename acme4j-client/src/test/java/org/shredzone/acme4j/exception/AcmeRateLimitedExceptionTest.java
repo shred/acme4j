@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j.exception;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.createProblem;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
@@ -50,10 +49,10 @@ public class AcmeRateLimitedExceptionTest {
         AcmeRateLimitedException ex
                 = new AcmeRateLimitedException(problem, retryAfter, documents);
 
-        assertThat(ex.getType(), is(type));
-        assertThat(ex.getMessage(), is(detail));
-        assertThat(ex.getRetryAfter(), is(retryAfter));
-        assertThat(ex.getDocuments(), containsInAnyOrder(documents.toArray()));
+        assertThat(ex.getType()).isEqualTo(type);
+        assertThat(ex.getMessage()).isEqualTo(detail);
+        assertThat(ex.getRetryAfter()).isEqualTo(retryAfter);
+        assertThat(ex.getDocuments()).containsAll(documents);
     }
 
     /**
@@ -69,10 +68,10 @@ public class AcmeRateLimitedExceptionTest {
         AcmeRateLimitedException ex
                 = new AcmeRateLimitedException(problem, null, null);
 
-        assertThat(ex.getType(), is(type));
-        assertThat(ex.getMessage(), is(detail));
-        assertThat(ex.getRetryAfter(), nullValue());
-        assertThat(ex.getDocuments(), nullValue());
+        assertThat(ex.getType()).isEqualTo(type);
+        assertThat(ex.getMessage()).isEqualTo(detail);
+        assertThat(ex.getRetryAfter()).isNull();
+        assertThat(ex.getDocuments()).isNull();
     }
 
 }

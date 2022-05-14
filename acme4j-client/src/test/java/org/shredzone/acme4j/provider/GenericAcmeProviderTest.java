@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j.provider;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -36,9 +35,9 @@ public class GenericAcmeProviderTest {
     public void testAccepts() throws URISyntaxException {
         GenericAcmeProvider provider = new GenericAcmeProvider();
 
-        assertThat(provider.accepts(new URI("http://example.com/acme")), is(true));
-        assertThat(provider.accepts(new URI("https://example.com/acme")), is(true));
-        assertThat(provider.accepts(new URI("acme://example.com")), is(false));
+        assertThat(provider.accepts(new URI("http://example.com/acme"))).isTrue();
+        assertThat(provider.accepts(new URI("https://example.com/acme"))).isTrue();
+        assertThat(provider.accepts(new URI("acme://example.com"))).isFalse();
     }
 
     /**
@@ -51,10 +50,10 @@ public class GenericAcmeProviderTest {
         GenericAcmeProvider provider = new GenericAcmeProvider();
 
         URL resolvedUrl = provider.resolve(serverUri);
-        assertThat(resolvedUrl.toString(), is(equalTo(serverUri.toString())));
+        assertThat(resolvedUrl.toString()).isEqualTo(serverUri.toString());
 
         Connection connection = provider.connect(serverUri);
-        assertThat(connection, is(instanceOf(DefaultConnection.class)));
+        assertThat(connection).isInstanceOf(DefaultConnection.class);
     }
 
 }

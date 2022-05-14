@@ -13,12 +13,16 @@
  */
 package org.shredzone.acme4j.smime;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.stream.Stream;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * Tests of {@link EmailIdentifier}.
@@ -27,25 +31,27 @@ public class EmailIdentifierTest {
 
     @Test
     public void testConstants() {
-        assertThat(EmailIdentifier.TYPE_EMAIL, is("email"));
+        assertThat(EmailIdentifier.TYPE_EMAIL).isEqualTo("email");
     }
 
-    @Test
-    public void testEmail() throws AddressException {
-        EmailIdentifier id1 = EmailIdentifier.email("email@example.com");
-        assertThat(id1.getType(), is(EmailIdentifier.TYPE_EMAIL));
-        assertThat(id1.getValue(), is("email@example.com"));
-        assertThat(id1.getEmailAddress().getAddress(), is("email@example.com"));
+    @ParameterizedTest
+    @MethodSource("provideTestEmails")
+    public void testEmail(Object input, String expected) {
+        EmailIdentifier id = input instanceof InternetAddress
+                ? EmailIdentifier.email((InternetAddress) input)
+                : EmailIdentifier.email(input.toString());
 
-        EmailIdentifier id2 = EmailIdentifier.email(new InternetAddress("email@example.com"));
-        assertThat(id2.getType(), is(EmailIdentifier.TYPE_EMAIL));
-        assertThat(id2.getValue(), is("email@example.com"));
-        assertThat(id2.getEmailAddress().getAddress(), is("email@example.com"));
+        assertThat(id.getType()).isEqualTo(EmailIdentifier.TYPE_EMAIL);
+        assertThat(id.getValue()).isEqualTo(expected);
+        assertThat(id.getEmailAddress().getAddress()).isEqualTo(expected);
+    }
 
-        EmailIdentifier id3 = EmailIdentifier.email(new InternetAddress("Example Corp <info@example.com>"));
-        assertThat(id3.getType(), is(EmailIdentifier.TYPE_EMAIL));
-        assertThat(id3.getValue(), is("info@example.com"));
-        assertThat(id3.getEmailAddress().getAddress(), is("info@example.com"));
+    public static Stream<Arguments> provideTestEmails() throws AddressException {
+        return Stream.of(
+                Arguments.of("email@example.com", "email@example.com"),
+                Arguments.of(new InternetAddress("email@example.com"), "email@example.com"),
+                Arguments.of(new InternetAddress("Example Corp <info@example.com>"), "info@example.com")
+        );
     }
 
 }

@@ -16,14 +16,11 @@ package org.shredzone.acme4j.connector;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.Collections.singletonList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -114,10 +111,10 @@ public class DefaultConnectionTest {
     public void testNoNonceFromHeader() {
         when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(null);
 
-        assertThat(session.getNonce(), is(nullValue()));
+        assertThat(session.getNonce()).isNull();
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getNonce(), is(nullValue()));
+            assertThat(conn.getNonce()).isNull();
         }
 
         verify(mockUrlConnection).getHeaderField("Replay-Nonce");
@@ -135,7 +132,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getNonce(), is(TestUtils.DUMMY_NONCE));
+            assertThat(conn.getNonce()).isEqualTo(TestUtils.DUMMY_NONCE);
         }
 
         verify(mockUrlConnection).getHeaderField("Replay-Nonce");
@@ -158,7 +155,7 @@ public class DefaultConnectionTest {
                 conn.getNonce();
             }
         });
-        assertThat(ex.getMessage(), org.hamcrest.Matchers.startsWith("Invalid replay nonce"));
+        assertThat(ex.getMessage()).startsWith("Invalid replay nonce");
 
         verify(mockUrlConnection).getHeaderField("Replay-Nonce");
         verifyNoMoreInteractions(mockUrlConnection);
@@ -175,7 +172,7 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getResponseCode())
                 .thenReturn(HttpURLConnection.HTTP_NO_CONTENT);
 
-        assertThat(session.getNonce(), is(nullValue()));
+        assertThat(session.getNonce()).isNull();
 
         assertThrows(AcmeProtocolException.class, () -> {
             try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
@@ -183,7 +180,7 @@ public class DefaultConnectionTest {
             }
         });
 
-        assertThat(session.getNonce(), is(nullValue()));
+        assertThat(session.getNonce()).isNull();
 
         when(mockUrlConnection.getHeaderField("Replay-Nonce"))
                 .thenReturn(TestUtils.DUMMY_NONCE);
@@ -192,7 +189,7 @@ public class DefaultConnectionTest {
             conn.resetNonce(session);
         }
 
-        assertThat(session.getNonce(), is(TestUtils.DUMMY_NONCE));
+        assertThat(session.getNonce()).isEqualTo(TestUtils.DUMMY_NONCE);
 
         verify(mockUrlConnection, atLeastOnce()).setRequestMethod("HEAD");
         verify(mockUrlConnection, atLeastOnce()).setRequestProperty("Accept-Language", "ja-JP");
@@ -214,7 +211,7 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             URL location = conn.getLocation();
-            assertThat(location, is(new URL("https://example.com/otherlocation")));
+            assertThat(location).isEqualTo(new URL("https://example.com/otherlocation"));
         }
 
         verify(mockUrlConnection).getHeaderField("Location");
@@ -233,7 +230,7 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             URL location = conn.getLocation();
-            assertThat(location, is(new URL("https://example.org/otherlocation")));
+            assertThat(location).isEqualTo(new URL("https://example.org/otherlocation"));
         }
 
         verify(mockUrlConnection).getHeaderField("Location");
@@ -260,10 +257,10 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getLinks("next"), containsInAnyOrder(new URL("https://example.com/acme/new-authz")));
-            assertThat(conn.getLinks("recover"), containsInAnyOrder(new URL("https://example.org/recover-acct")));
-            assertThat(conn.getLinks("terms-of-service"), containsInAnyOrder(new URL("https://example.com/acme/terms")));
-            assertThat(conn.getLinks("secret-stuff"), is(empty()));
+            assertThat(conn.getLinks("next")).containsExactly(new URL("https://example.com/acme/new-authz"));
+            assertThat(conn.getLinks("recover")).containsExactly(new URL("https://example.org/recover-acct"));
+            assertThat(conn.getLinks("terms-of-service")).containsExactly(new URL("https://example.com/acme/terms"));
+            assertThat(conn.getLinks("secret-stuff")).isEmpty();
         }
     }
 
@@ -286,11 +283,11 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getLinks("terms-of-service"), containsInAnyOrder(
+            assertThat(conn.getLinks("terms-of-service")).containsExactlyInAnyOrder(
                         url("https://example.com/acme/terms1"),
                         url("https://example.com/acme/terms2"),
                         url("https://example.com/acme/terms3")
-            ));
+            );
         }
     }
 
@@ -304,7 +301,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getLinks("something"), is(empty()));
+            assertThat(conn.getLinks("something")).isEmpty();
         }
     }
 
@@ -316,7 +313,7 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             URL location = conn.getLocation();
-            assertThat(location, is(nullValue()));
+            assertThat(location).isNull();
         }
 
         verify(mockUrlConnection).getHeaderField("Location");
@@ -341,8 +338,8 @@ public class DefaultConnectionTest {
                 conn.handleRetryAfter(retryMsg);
             }
         });
-        assertThat(ex.getRetryAfter(), is(retryDate));
-        assertThat(ex.getMessage(), is(retryMsg));
+        assertThat(ex.getRetryAfter()).isEqualTo(retryDate);
+        assertThat(ex.getMessage()).isEqualTo(retryMsg);
 
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
     }
@@ -371,8 +368,8 @@ public class DefaultConnectionTest {
                 conn.handleRetryAfter(retryMsg);
             }
         });
-        assertThat(ex.getRetryAfter(), is(Instant.ofEpochMilli(now).plusSeconds(delta)));
-        assertThat(ex.getMessage(), is(retryMsg));
+        assertThat(ex.getRetryAfter()).isEqualTo(Instant.ofEpochMilli(now).plusSeconds(delta));
+        assertThat(ex.getMessage()).isEqualTo(retryMsg);
 
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
     }
@@ -420,7 +417,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             int rc = conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
-            assertThat(rc, is(HttpURLConnection.HTTP_OK));
+            assertThat(rc).isEqualTo(HttpURLConnection.HTTP_OK);
         }
 
         verify(mockUrlConnection).getResponseCode();
@@ -447,10 +444,10 @@ public class DefaultConnectionTest {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
-        assertThat(ex, instanceOf(AcmeUnauthorizedException.class));
-        assertThat(((AcmeUnauthorizedException) ex).getType(),
-                is(URI.create("urn:ietf:params:acme:error:unauthorized")));
-        assertThat(ex.getMessage(), is("Invalid response: 404"));
+        assertThat(ex).isInstanceOf(AcmeUnauthorizedException.class);
+        assertThat(((AcmeUnauthorizedException) ex).getType())
+                .isEqualTo(URI.create("urn:ietf:params:acme:error:unauthorized"));
+        assertThat(ex.getMessage()).isEqualTo("Invalid response: 404");
 
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
@@ -484,12 +481,12 @@ public class DefaultConnectionTest {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
-        assertThat(ex, instanceOf(AcmeUserActionRequiredException.class));
-        assertThat(((AcmeUserActionRequiredException) ex).getType(),
-                is(URI.create("urn:ietf:params:acme:error:userActionRequired")));
-        assertThat(ex.getMessage(), is("Accept the TOS"));
-        assertThat(((AcmeUserActionRequiredException) ex).getTermsOfServiceUri(),
-                is(URI.create("https://example.com/tos.pdf")));
+        assertThat(ex).isInstanceOf(AcmeUserActionRequiredException.class);
+        assertThat(((AcmeUserActionRequiredException) ex).getType())
+                .isEqualTo(URI.create("urn:ietf:params:acme:error:userActionRequired"));
+        assertThat(ex.getMessage()).isEqualTo("Accept the TOS");
+        assertThat(((AcmeUserActionRequiredException) ex).getTermsOfServiceUri())
+                .isEqualTo(URI.create("https://example.com/tos.pdf"));
 
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getHeaderFields();
@@ -528,14 +525,14 @@ public class DefaultConnectionTest {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
-        assertThat(ex, instanceOf(AcmeRateLimitedException.class));
+        assertThat(ex).isInstanceOf(AcmeRateLimitedException.class);
         AcmeRateLimitedException arlex = (AcmeRateLimitedException) ex;
-        assertThat(arlex.getType(), is(URI.create("urn:ietf:params:acme:error:rateLimited")));
-        assertThat(ex.getMessage(), is("Too many invocations"));
-        assertThat(arlex.getRetryAfter(), is(retryAfter));
-        assertThat(arlex.getDocuments(), is(notNullValue()));
-        assertThat(arlex.getDocuments().size(), is(1));
-        assertThat(arlex.getDocuments().iterator().next(), is(url("https://example.com/rates.pdf")));
+        assertThat(arlex.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:rateLimited"));
+        assertThat(ex.getMessage()).isEqualTo("Too many invocations");
+        assertThat(arlex.getRetryAfter()).isEqualTo(retryAfter);
+        assertThat(arlex.getDocuments()).isNotNull();
+        assertThat(arlex.getDocuments()).hasSize(1);
+        assertThat(arlex.getDocuments().iterator().next()).isEqualTo(url("https://example.com/rates.pdf"));
 
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
@@ -576,10 +573,10 @@ public class DefaultConnectionTest {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
-        assertThat(ex, instanceOf(AcmeServerException.class));
-        assertThat(((AcmeServerException) ex).getType(),
-                is(URI.create("urn:zombie:error:apocalypse")));
-        assertThat(ex.getMessage(), is("Zombie apocalypse in progress"));
+        assertThat(ex).isInstanceOf(AcmeServerException.class);
+        assertThat(((AcmeServerException) ex).getType())
+                .isEqualTo(URI.create("urn:zombie:error:apocalypse"));
+        assertThat(ex.getMessage()).isEqualTo("Zombie apocalypse in progress");
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
@@ -612,7 +609,7 @@ public class DefaultConnectionTest {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
-        assertThat(ex.getMessage(), not(emptyOrNullString()));
+        assertThat(ex.getMessage()).isNotEmpty();
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
@@ -640,7 +637,7 @@ public class DefaultConnectionTest {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
-        assertThat(ex.getMessage(), is("HTTP 500: Infernal Server Error"));
+        assertThat(ex.getMessage()).isEqualTo("HTTP 500: Infernal Server Error");
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
         verify(mockUrlConnection, atLeastOnce()).getResponseCode();
@@ -690,7 +687,7 @@ public class DefaultConnectionTest {
             }
         }) {
             int rc = conn.sendRequest(requestUrl, session, ifModifiedSince);
-            assertThat(rc, is(HttpURLConnection.HTTP_NOT_MODIFIED));
+            assertThat(rc).isEqualTo(HttpURLConnection.HTTP_NOT_MODIFIED);
         }
 
         verify(mockUrlConnection).setRequestMethod("GET");
@@ -720,15 +717,15 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
             public void resetNonce(Session session) {
-                assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                assertThat(session.getNonce(), nullValue());
+                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
+                assertThat(session.getNonce()).isNull();
                 session.setNonce(nonce1);
             }
 
             @Override
             public String getNonce() {
-                assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                assertThat(session.getNonce(), is(nonce1));
+                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
+                assertThat(session.getNonce()).isEqualTo(nonce1);
                 return nonce2;
             }
         }) {
@@ -763,14 +760,14 @@ public class DefaultConnectionTest {
         expectedHeader.append("\"kid\":\"").append(accountUrl).append('"');
         expectedHeader.append('}');
 
-        assertThat(new String(URL_DECODER.decode(encodedHeader), UTF_8), sameJSONAs(expectedHeader.toString()));
-        assertThat(new String(URL_DECODER.decode(encodedPayload), UTF_8), sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
-        assertThat(encodedSignature, not(emptyOrNullString()));
+        assertThatJson(new String(URL_DECODER.decode(encodedHeader), UTF_8)).isEqualTo(expectedHeader.toString());
+        assertThatJson(new String(URL_DECODER.decode(encodedPayload), UTF_8)).isEqualTo("{\"foo\":123,\"bar\":\"a-string\"}");
+        assertThat(encodedSignature).isNotEmpty();
 
         JsonWebSignature jws = new JsonWebSignature();
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
         jws.setKey(login.getKeyPair().getPublic());
-        assertThat(jws.verifySignature(), is(true));
+        assertThat(jws.verifySignature()).isTrue();
     }
 
     /**
@@ -788,15 +785,15 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
             public void resetNonce(Session session) {
-                assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                assertThat(session.getNonce(), nullValue());
+                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
+                assertThat(session.getNonce()).isNull();
                 session.setNonce(nonce1);
             }
 
             @Override
             public String getNonce() {
-                assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                assertThat(session.getNonce(), is(nonce1));
+                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
+                assertThat(session.getNonce()).isEqualTo(nonce1);
                 return nonce2;
             }
         }) {
@@ -829,14 +826,14 @@ public class DefaultConnectionTest {
         expectedHeader.append("\"kid\":\"").append(accountUrl).append('"');
         expectedHeader.append('}');
 
-        assertThat(new String(URL_DECODER.decode(encodedHeader), UTF_8), sameJSONAs(expectedHeader.toString()));
-        assertThat(new String(URL_DECODER.decode(encodedPayload), UTF_8), is(""));
-        assertThat(encodedSignature, not(emptyOrNullString()));
+        assertThatJson(new String(URL_DECODER.decode(encodedHeader), UTF_8)).isEqualTo(expectedHeader.toString());
+        assertThat(new String(URL_DECODER.decode(encodedPayload), UTF_8)).isEqualTo("");
+        assertThat(encodedSignature).isNotEmpty();
 
         JsonWebSignature jws = new JsonWebSignature();
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
         jws.setKey(login.getKeyPair().getPublic());
-        assertThat(jws.verifySignature(), is(true));
+        assertThat(jws.verifySignature()).isTrue();
     }
 
     /**
@@ -854,15 +851,15 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
             public void resetNonce(Session session) {
-                assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                assertThat(session.getNonce(), nullValue());
+                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
+                assertThat(session.getNonce()).isNull();
                 session.setNonce(nonce1);
             }
 
             @Override
             public String getNonce() {
-                assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                assertThat(session.getNonce(), is(nonce1));
+                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
+                assertThat(session.getNonce()).isEqualTo(nonce1);
                 return nonce2;
             }
         }) {
@@ -898,15 +895,15 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection) {
             @Override
             public void resetNonce(Session session) {
-                assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                assertThat(session.getNonce(), nullValue());
+                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
+                assertThat(session.getNonce()).isNull();
                 session.setNonce(nonce1);
             }
 
             @Override
             public String getNonce() {
-                assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                assertThat(session.getNonce(), is(nonce1));
+                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
+                assertThat(session.getNonce()).isEqualTo(nonce1);
                 return nonce2;
             }
         }) {
@@ -944,14 +941,16 @@ public class DefaultConnectionTest {
         expectedHeader.append("\"n\":\"").append(TestUtils.N).append("\"");
         expectedHeader.append("}}");
 
-        assertThat(new String(URL_DECODER.decode(encodedHeader), UTF_8), sameJSONAs(expectedHeader.toString()));
-        assertThat(new String(URL_DECODER.decode(encodedPayload), UTF_8), sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
-        assertThat(encodedSignature, not(emptyOrNullString()));
+        assertThatJson(new String(URL_DECODER.decode(encodedHeader), UTF_8))
+                .isEqualTo(expectedHeader.toString());
+        assertThatJson(new String(URL_DECODER.decode(encodedPayload), UTF_8))
+                .isEqualTo("{\"foo\":123,\"bar\":\"a-string\"}");
+        assertThat(encodedSignature).isNotEmpty();
 
         JsonWebSignature jws = new JsonWebSignature();
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
         jws.setKey(login.getKeyPair().getPublic());
-        assertThat(jws.verifySignature(), is(true));
+        assertThat(jws.verifySignature()).isTrue();
     }
 
     /**
@@ -987,10 +986,10 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             JSON result = conn.readJsonResponse();
-            assertThat(result, is(notNullValue()));
-            assertThat(result.keySet(), hasSize(2));
-            assertThat(result.get("foo").asInt(), is(123));
-            assertThat(result.get("bar").asString(), is("a-string"));
+            assertThat(result).isNotNull();
+            assertThat(result.keySet()).hasSize(2);
+            assertThat(result.get("foo").asInt()).isEqualTo(123);
+            assertThat(result.get("bar").asString()).isEqualTo("a-string");
         }
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
@@ -1015,12 +1014,12 @@ public class DefaultConnectionTest {
         }
 
         List<X509Certificate> original = TestUtils.createCertificate();
-        assertThat(original.size(), is(2));
+        assertThat(original).hasSize(2);
 
-        assertThat(downloaded, not(nullValue()));
-        assertThat(downloaded.size(), is(original.size()));
+        assertThat(downloaded).isNotNull();
+        assertThat(downloaded).hasSize(original.size());
         for (int ix = 0; ix < downloaded.size(); ix++) {
-            assertThat(downloaded.get(ix).getEncoded(), is(original.get(ix).getEncoded()));
+            assertThat(downloaded.get(ix).getEncoded()).isEqualTo(original.get(ix).getEncoded());
         }
 
         verify(mockUrlConnection).getHeaderField("Content-Type");
@@ -1066,7 +1065,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getLastModified().isPresent(), is(false));
+            assertThat(conn.getLastModified().isPresent()).isFalse();
         }
 
         verify(mockUrlConnection).getHeaderField("Last-Modified");
@@ -1080,9 +1079,9 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             Optional<ZonedDateTime> lm = conn.getLastModified();
-            assertThat(lm.isPresent(), is(true));
-            assertThat(lm.get().format(DateTimeFormatter.ISO_DATE_TIME),
-                    is("2020-05-07T19:42:46Z"));
+            assertThat(lm.isPresent()).isTrue();
+            assertThat(lm.get().format(DateTimeFormatter.ISO_DATE_TIME))
+                    .isEqualTo("2020-05-07T19:42:46Z");
         }
 
         verify(mockUrlConnection).getHeaderField("Last-Modified");
@@ -1095,7 +1094,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getLastModified().isPresent(), is(false));
+            assertThat(conn.getLastModified().isPresent()).isFalse();
         }
 
         verify(mockUrlConnection).getHeaderField("Last-Modified");
@@ -1112,7 +1111,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getExpiration().isPresent(), is(false));
+            assertThat(conn.getExpiration().isPresent()).isFalse();
         }
 
         verify(mockUrlConnection).getHeaderField("Cache-Control");
@@ -1127,7 +1126,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getExpiration().isPresent(), is(false));
+            assertThat(conn.getExpiration().isPresent()).isFalse();
         }
 
         verify(mockUrlConnection).getHeaderField("Cache-Control");
@@ -1141,7 +1140,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getExpiration().isPresent(), is(false));
+            assertThat(conn.getExpiration().isPresent()).isFalse();
         }
 
         verify(mockUrlConnection).getHeaderField("Cache-Control");
@@ -1155,7 +1154,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getExpiration().isPresent(), is(false));
+            assertThat(conn.getExpiration().isPresent()).isFalse();
         }
 
         verify(mockUrlConnection).getHeaderField("Cache-Control");
@@ -1170,9 +1169,9 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             Optional<ZonedDateTime> exp = conn.getExpiration();
-            assertThat(exp.isPresent(), is(true));
-            assertThat(exp.get().isAfter(ZonedDateTime.now().plusHours(1).minusMinutes(1)), is(true));
-            assertThat(exp.get().isBefore(ZonedDateTime.now().plusHours(1).plusMinutes(1)), is(true));
+            assertThat(exp.isPresent()).isTrue();
+            assertThat(exp.get().isAfter(ZonedDateTime.now().plusHours(1).minusMinutes(1))).isTrue();
+            assertThat(exp.get().isBefore(ZonedDateTime.now().plusHours(1).plusMinutes(1))).isTrue();
         }
 
         verify(mockUrlConnection).getHeaderField("Cache-Control");
@@ -1187,9 +1186,9 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             Optional<ZonedDateTime> exp = conn.getExpiration();
-            assertThat(exp.isPresent(), is(true));
-            assertThat(exp.get().format(DateTimeFormatter.ISO_DATE_TIME),
-                    is("2020-06-18T08:43:04Z"));
+            assertThat(exp.isPresent()).isTrue();
+            assertThat(exp.get().format(DateTimeFormatter.ISO_DATE_TIME))
+                    .isEqualTo("2020-06-18T08:43:04Z");
         }
 
         verify(mockUrlConnection).getHeaderField("Cache-Control");
@@ -1204,7 +1203,7 @@ public class DefaultConnectionTest {
 
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
-            assertThat(conn.getExpiration().isPresent(), is(false));
+            assertThat(conn.getExpiration().isPresent()).isFalse();
         }
 
         verify(mockUrlConnection).getHeaderField("Cache-Control");

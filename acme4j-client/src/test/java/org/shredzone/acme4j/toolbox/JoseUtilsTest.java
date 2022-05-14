@@ -14,11 +14,10 @@
 package org.shredzone.acme4j.toolbox;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.URL;
 import java.security.KeyPair;
@@ -71,14 +70,16 @@ public class JoseUtilsTest {
         expectedHeader.append("\"kid\":\"").append(TestUtils.ACCOUNT_URL).append('"');
         expectedHeader.append('}');
 
-        assertThat(new String(URL_DECODER.decode(encodedHeader), UTF_8), sameJSONAs(expectedHeader.toString()));
-        assertThat(new String(URL_DECODER.decode(encodedPayload), UTF_8), sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
-        assertThat(encodedSignature, not(emptyOrNullString()));
+        assertThatJson(new String(URL_DECODER.decode(encodedHeader), UTF_8))
+                .isEqualTo(expectedHeader.toString());
+        assertThatJson(new String(URL_DECODER.decode(encodedPayload), UTF_8))
+                .isEqualTo("{\"foo\":123,\"bar\":\"a-string\"}");
+        assertThat(encodedSignature).isNotEmpty();
 
         JsonWebSignature jws = new JsonWebSignature();
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
         jws.setKey(accountKey.getPublic());
-        assertThat(jws.verifySignature(), is(true));
+        assertThat(jws.verifySignature()).isTrue();
     }
 
     /**
@@ -106,14 +107,15 @@ public class JoseUtilsTest {
         expectedHeader.append("\"kid\":\"").append(TestUtils.ACCOUNT_URL).append('"');
         expectedHeader.append('}');
 
-        assertThat(new String(URL_DECODER.decode(encodedHeader), UTF_8), sameJSONAs(expectedHeader.toString()));
-        assertThat(new String(URL_DECODER.decode(encodedPayload), UTF_8), is(""));
-        assertThat(encodedSignature, not(emptyOrNullString()));
+        assertThatJson(new String(URL_DECODER.decode(encodedHeader), UTF_8))
+                .isEqualTo(expectedHeader.toString());
+        assertThat(new String(URL_DECODER.decode(encodedPayload), UTF_8)).isEmpty();
+        assertThat(encodedSignature).isNotEmpty();
 
         JsonWebSignature jws = new JsonWebSignature();
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
         jws.setKey(accountKey.getPublic());
-        assertThat(jws.verifySignature(), is(true));
+        assertThat(jws.verifySignature()).isTrue();
     }
 
     /**
@@ -145,14 +147,16 @@ public class JoseUtilsTest {
         expectedHeader.append("\"n\": \"").append(TestUtils.N).append("\"}");
         expectedHeader.append("}");
 
-        assertThat(new String(URL_DECODER.decode(encodedHeader), UTF_8), sameJSONAs(expectedHeader.toString()));
-        assertThat(new String(URL_DECODER.decode(encodedPayload), UTF_8), sameJSONAs("{\"foo\":123,\"bar\":\"a-string\"}"));
-        assertThat(encodedSignature, not(emptyOrNullString()));
+        assertThatJson(new String(URL_DECODER.decode(encodedHeader), UTF_8))
+                .isEqualTo(expectedHeader.toString());
+        assertThatJson(new String(URL_DECODER.decode(encodedPayload), UTF_8))
+                .isEqualTo("{\"foo\":123,\"bar\":\"a-string\"}");
+        assertThat(encodedSignature).isNotEmpty();
 
         JsonWebSignature jws = new JsonWebSignature();
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
         jws.setKey(accountKey.getPublic());
-        assertThat(jws.verifySignature(), is(true));
+        assertThat(jws.verifySignature()).isTrue();
     }
 
     /**
@@ -182,10 +186,10 @@ public class JoseUtilsTest {
     @Test
     public void testPublicKeyToJWK() throws Exception {
         Map<String, Object> json = JoseUtils.publicKeyToJWK(TestUtils.createKeyPair().getPublic());
-        assertThat(json.size(), is(3));
-        assertThat(json.get("kty"), is(TestUtils.KTY));
-        assertThat(json.get("n"), is(TestUtils.N));
-        assertThat(json.get("e"), is(TestUtils.E));
+        assertThat(json).hasSize(3);
+        assertThat(json.get("kty")).isEqualTo(TestUtils.KTY);
+        assertThat(json.get("n")).isEqualTo(TestUtils.N);
+        assertThat(json.get("e")).isEqualTo(TestUtils.E);
     }
 
     /**
@@ -198,7 +202,7 @@ public class JoseUtilsTest {
         json.put("n", TestUtils.N);
         json.put("e", TestUtils.E);
         PublicKey key = JoseUtils.jwkToPublicKey(json);
-        assertThat(key.getEncoded(), is(TestUtils.createKeyPair().getPublic().getEncoded()));
+        assertThat(key.getEncoded()).isEqualTo(TestUtils.createKeyPair().getPublic().getEncoded());
     }
 
     /**
@@ -208,7 +212,7 @@ public class JoseUtilsTest {
     public void testThumbprint() throws Exception {
         byte[] thumb = JoseUtils.thumbprint(TestUtils.createKeyPair().getPublic());
         String encoded = Base64.getUrlEncoder().withoutPadding().encodeToString(thumb);
-        assertThat(encoded, is(TestUtils.THUMBPRINT));
+        assertThat(encoded).isEqualTo(TestUtils.THUMBPRINT);
     }
 
     /**
@@ -220,8 +224,7 @@ public class JoseUtilsTest {
         final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(rsaKeyPair.getPublic());
 
         String type = JoseUtils.keyAlgorithm(jwk);
-
-        assertThat(type, is("RS256"));
+        assertThat(type).isEqualTo("RS256");
     }
 
     /**
@@ -233,8 +236,7 @@ public class JoseUtilsTest {
         final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(ecKeyPair.getPublic());
 
         String type = JoseUtils.keyAlgorithm(jwk);
-
-        assertThat(type, is("ES256"));
+        assertThat(type).isEqualTo("ES256");
     }
 
     /**
@@ -246,8 +248,7 @@ public class JoseUtilsTest {
         final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(ecKeyPair.getPublic());
 
         String type = JoseUtils.keyAlgorithm(jwk);
-
-        assertThat(type, is("ES384"));
+        assertThat(type).isEqualTo("ES384");
     }
 
     /**
@@ -259,8 +260,7 @@ public class JoseUtilsTest {
         final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(ecKeyPair.getPublic());
 
         String type = JoseUtils.keyAlgorithm(jwk);
-
-        assertThat(type, is("ES512"));
+        assertThat(type).isEqualTo("ES512");
     }
 
     /**
@@ -268,9 +268,9 @@ public class JoseUtilsTest {
      */
     @Test
     public void testMacKey() throws Exception {
-        assertThat(JoseUtils.macKeyAlgorithm(TestUtils.createSecretKey("SHA-256")), is("HS256"));
-        assertThat(JoseUtils.macKeyAlgorithm(TestUtils.createSecretKey("SHA-384")), is("HS384"));
-        assertThat(JoseUtils.macKeyAlgorithm(TestUtils.createSecretKey("SHA-512")), is("HS512"));
+        assertThat(JoseUtils.macKeyAlgorithm(TestUtils.createSecretKey("SHA-256"))).isEqualTo("HS256");
+        assertThat(JoseUtils.macKeyAlgorithm(TestUtils.createSecretKey("SHA-384"))).isEqualTo("HS384");
+        assertThat(JoseUtils.macKeyAlgorithm(TestUtils.createSecretKey("SHA-512"))).isEqualTo("HS512");
     }
 
     /**
@@ -292,11 +292,11 @@ public class JoseUtilsTest {
             JsonWebSignature jws = new JsonWebSignature();
             jws.setCompactSerialization(serialized);
             jws.setKey(macKey);
-            assertThat(jws.verifySignature(), is(true));
+            assertThat(jws.verifySignature()).isTrue();
 
-            assertThat(jws.getHeader("url"), is(resourceUrl.toString()));
-            assertThat(jws.getHeader("kid"), is(keyIdentifier));
-            assertThat(jws.getHeader("alg"), is("HS256"));
+            assertThat(jws.getHeader("url")).isEqualTo(resourceUrl.toString());
+            assertThat(jws.getHeader("kid")).isEqualTo(keyIdentifier);
+            assertThat(jws.getHeader("alg")).isEqualTo("HS256");
 
             String decodedPayload = jws.getPayload();
             StringBuilder expectedPayload = new StringBuilder();
@@ -305,7 +305,7 @@ public class JoseUtilsTest {
             expectedPayload.append("\"e\":\"").append(TestUtils.E).append("\",");
             expectedPayload.append("\"n\":\"").append(TestUtils.N).append("\"");
             expectedPayload.append("}");
-            assertThat(decodedPayload, sameJSONAs(expectedPayload.toString()));
+            assertThatJson(decodedPayload).isEqualTo(expectedPayload.toString());
         } catch (JoseException ex) {
             fail(ex);
         }

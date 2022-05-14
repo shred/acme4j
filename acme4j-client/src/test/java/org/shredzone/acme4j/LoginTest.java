@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
@@ -54,14 +53,14 @@ public class LoginTest {
         Session session = TestUtils.session();
 
         Login login = new Login(location, keypair, session);
-        assertThat(login.getAccountLocation(), is(location));
-        assertThat(login.getKeyPair(), is(keypair));
-        assertThat(login.getSession(), is(session));
+        assertThat(login.getAccountLocation()).isEqualTo(location);
+        assertThat(login.getKeyPair()).isEqualTo(keypair);
+        assertThat(login.getSession()).isEqualTo(session);
 
-        assertThat(login.getAccount(), is(notNullValue()));
-        assertThat(login.getAccount().getLogin(), is(login));
-        assertThat(login.getAccount().getLocation(), is(location));
-        assertThat(login.getAccount().getSession(), is(session));
+        assertThat(login.getAccount()).isNotNull();
+        assertThat(login.getAccount().getLogin()).isEqualTo(login);
+        assertThat(login.getAccount().getLocation()).isEqualTo(location);
+        assertThat(login.getAccount().getSession()).isEqualTo(session);
     }
 
     /**
@@ -76,19 +75,19 @@ public class LoginTest {
         Login login = new Login(location, keypair, session);
 
         Authorization auth = login.bindAuthorization(resourceUrl);
-        assertThat(auth, is(notNullValue()));
-        assertThat(auth.getLogin(), is(login));
-        assertThat(auth.getLocation(), is(resourceUrl));
+        assertThat(auth).isNotNull();
+        assertThat(auth.getLogin()).isEqualTo(login);
+        assertThat(auth.getLocation()).isEqualTo(resourceUrl);
 
         Certificate cert = login.bindCertificate(resourceUrl);
-        assertThat(cert, is(notNullValue()));
-        assertThat(cert.getLogin(), is(login));
-        assertThat(cert.getLocation(), is(resourceUrl));
+        assertThat(cert).isNotNull();
+        assertThat(cert.getLogin()).isEqualTo(login);
+        assertThat(cert.getLocation()).isEqualTo(resourceUrl);
 
         Order order = login.bindOrder(resourceUrl);
-        assertThat(order, is(notNullValue()));
-        assertThat(order.getLogin(), is(login));
-        assertThat(order.getLocation(), is(resourceUrl));
+        assertThat(order).isNotNull();
+        assertThat(order.getLogin()).isEqualTo(login);
+        assertThat(order.getLocation()).isEqualTo(resourceUrl);
     }
 
     /**
@@ -101,11 +100,11 @@ public class LoginTest {
         Session session = TestUtils.session();
 
         Login login = new Login(location, keypair, session);
-        assertThat(login.getKeyPair(), is(keypair));
+        assertThat(login.getKeyPair()).isEqualTo(keypair);
 
         KeyPair keypair2 = TestUtils.createKeyPair();
         login.setKeyPair(keypair2);
-        assertThat(login.getKeyPair(), is(keypair2));
+        assertThat(login.getKeyPair()).isEqualTo(keypair2);
     }
 
     /**
@@ -135,8 +134,8 @@ public class LoginTest {
 
         Login login = new Login(location, keypair, session);
         Challenge challenge = login.createChallenge(data);
-        assertThat(challenge, is(instanceOf(Http01Challenge.class)));
-        assertThat(challenge, is(sameInstance(mockChallenge)));
+        assertThat(challenge).isInstanceOf(Http01Challenge.class);
+        assertThat(challenge).isSameAs(mockChallenge);
 
         verify(mockProvider).createChallenge(login, data);
     }
@@ -154,7 +153,7 @@ public class LoginTest {
         TestableConnectionProvider provider  = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
-                assertThat(url, is(locationUrl));
+                assertThat(url).isEqualTo(locationUrl);
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -165,23 +164,23 @@ public class LoginTest {
 
             @Override
             public Challenge createChallenge(Login login, JSON json) {
-                assertThat(json, is(httpChallenge));
+                assertThat(json).isEqualTo(httpChallenge);
                 return mockChallenge;
             }
         };
 
         Login login = provider.createLogin();
         Challenge challenge = login.bindChallenge(locationUrl);
-        assertThat(challenge, is(instanceOf(Http01Challenge.class)));
-        assertThat(challenge, is(sameInstance(mockChallenge)));
+        assertThat(challenge).isInstanceOf(Http01Challenge.class);
+        assertThat(challenge).isSameAs(mockChallenge);
 
         Http01Challenge challenge2 = login.bindChallenge(locationUrl, Http01Challenge.class);
-        assertThat(challenge2, is(sameInstance(mockChallenge)));
+        assertThat(challenge2).isSameAs(mockChallenge);
 
         AcmeProtocolException ex = assertThrows(AcmeProtocolException.class,
                 () -> login.bindChallenge(locationUrl, Dns01Challenge.class));
-        assertThat(ex.getMessage(), is("Challenge type http-01 does not match" +
-                " requested class class org.shredzone.acme4j.challenge.Dns01Challenge"));
+        assertThat(ex.getMessage()).isEqualTo("Challenge type http-01 does not match" +
+                " requested class class org.shredzone.acme4j.challenge.Dns01Challenge");
     }
 
 }

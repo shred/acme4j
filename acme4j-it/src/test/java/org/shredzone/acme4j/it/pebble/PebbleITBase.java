@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j.it.pebble;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.net.URL;
@@ -97,11 +96,11 @@ public abstract class PebbleITBase {
      *            {@link URL} to assert
      */
     protected void assertIsPebbleUrl(URL url) {
-        assertThat(url, not(nullValue()));
-        assertThat(url.getProtocol(), is("https"));
-        assertThat(url.getHost(), is(pebbleHost));
-        assertThat(url.getPort(), is(pebblePort));
-        assertThat(url.getPath(), not(emptyOrNullString()));
+        assertThat(url).isNotNull();
+        assertThat(url.getProtocol()).isEqualTo("https");
+        assertThat(url.getHost()).isEqualTo(pebbleHost);
+        assertThat(url.getPort()).isEqualTo(pebblePort);
+        assertThat(url.getPath()).isNotEmpty();
     }
 
     /**

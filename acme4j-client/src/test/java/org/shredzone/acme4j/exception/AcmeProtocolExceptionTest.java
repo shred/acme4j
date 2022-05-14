@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j.exception;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
@@ -27,9 +26,9 @@ public class AcmeProtocolExceptionTest {
     public void testAcmeProtocolException() {
         String msg = "Bad content";
         AcmeProtocolException ex = new AcmeProtocolException(msg);
-        assertThat(ex, is(instanceOf(RuntimeException.class)));
-        assertThat(ex.getMessage(), is(msg));
-        assertThat(ex.getCause(), nullValue());
+        assertThat(ex).isInstanceOf(RuntimeException.class);
+        assertThat(ex.getMessage()).isEqualTo(msg);
+        assertThat(ex.getCause()).isNull();
     }
 
     @Test
@@ -37,8 +36,8 @@ public class AcmeProtocolExceptionTest {
         String message = "Bad content";
         NumberFormatException cause = new NumberFormatException("Not a number: abc");
         AcmeProtocolException ex = new AcmeProtocolException(message, cause);
-        assertThat(ex.getMessage(), is(message));
-        assertThat(ex.getCause(), is(cause));
+        assertThat(ex.getMessage()).isEqualTo(message);
+        assertThat(ex.getCause()).isEqualTo(cause);
     }
 
 }

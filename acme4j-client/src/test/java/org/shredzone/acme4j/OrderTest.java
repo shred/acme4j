@@ -13,12 +13,10 @@
  */
 package org.shredzone.acme4j;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -27,6 +25,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
@@ -49,7 +48,7 @@ public class OrderTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
-                assertThat(url, is(locationUrl));
+                assertThat(url).isEqualTo(locationUrl);
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -60,7 +59,7 @@ public class OrderTest {
 
             @Override
             public void handleRetryAfter(String message) {
-                assertThat(message, not(nullValue()));
+                assertThat(message).isNotNull();
             }
         };
 
@@ -69,35 +68,41 @@ public class OrderTest {
         Order order = new Order(login, locationUrl);
         order.update();
 
-        assertThat(order.getStatus(), is(Status.PENDING));
-        assertThat(order.getExpires(), is(parseTimestamp("2015-03-01T14:09:00Z")));
-        assertThat(order.getLocation(), is(locationUrl));
+        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+            softly.assertThat(order.getStatus()).isEqualTo(Status.PENDING);
+            softly.assertThat(order.getExpires()).isEqualTo("2015-03-01T14:09:00Z");
+            softly.assertThat(order.getLocation()).isEqualTo(locationUrl);
 
-        assertThat(order.getIdentifiers(), containsInAnyOrder(
+            softly.assertThat(order.getIdentifiers()).containsExactlyInAnyOrder(
                     Identifier.dns("example.com"),
-                    Identifier.dns("www.example.com")));
-        assertThat(order.getNotBefore(), is(parseTimestamp("2016-01-01T00:00:00Z")));
-        assertThat(order.getNotAfter(), is(parseTimestamp("2016-01-08T00:00:00Z")));
-        assertThat(order.getCertificate().getLocation(), is(url("https://example.com/acme/cert/1234")));
-        assertThat(order.getFinalizeLocation(), is(finalizeUrl));
+                    Identifier.dns("www.example.com"));
+            softly.assertThat(order.getNotBefore()).isEqualTo("2016-01-01T00:00:00Z");
+            softly.assertThat(order.getNotAfter()).isEqualTo("2016-01-08T00:00:00Z");
+            softly.assertThat(order.getCertificate().getLocation())
+                    .isEqualTo(url("https://example.com/acme/cert/1234"));
+            softly.assertThat(order.getFinalizeLocation()).isEqualTo(finalizeUrl);
 
-        assertThat(order.isAutoRenewing(), is(false));
-        assertThat(order.getAutoRenewalStartDate(), is(nullValue()));
-        assertThat(order.getAutoRenewalEndDate(), is(nullValue()));
-        assertThat(order.getAutoRenewalLifetime(), is(nullValue()));
-        assertThat(order.getAutoRenewalLifetimeAdjust(), is(nullValue()));
-        assertThat(order.isAutoRenewalGetEnabled(), is(false));
+            softly.assertThat(order.isAutoRenewing()).isFalse();
+            softly.assertThat(order.getAutoRenewalStartDate()).isNull();
+            softly.assertThat(order.getAutoRenewalEndDate()).isNull();
+            softly.assertThat(order.getAutoRenewalLifetime()).isNull();
+            softly.assertThat(order.getAutoRenewalLifetimeAdjust()).isNull();
+            softly.assertThat(order.isAutoRenewalGetEnabled()).isFalse();
 
-        assertThat(order.getError(), is(notNullValue()));
-        assertThat(order.getError().getType(), is(URI.create("urn:ietf:params:acme:error:connection")));
-        assertThat(order.getError().getDetail(), is("connection refused"));
+            softly.assertThat(order.getError()).isNotNull();
+            softly.assertThat(order.getError().getType())
+                    .isEqualTo(URI.create("urn:ietf:params:acme:error:connection"));
+            softly.assertThat(order.getError().getDetail())
+                    .isEqualTo("connection refused");
 
-        List<Authorization> auths = order.getAuthorizations();
-        assertThat(auths.size(), is(2));
-        assertThat(auths.stream().map(Authorization::getLocation)::iterator,
-                containsInAnyOrder(
-                    url("https://example.com/acme/authz/1234"),
-                    url("https://example.com/acme/authz/2345")));
+            List<Authorization> auths = order.getAuthorizations();
+            softly.assertThat(auths).hasSize(2);
+            softly.assertThat(auths.stream())
+                    .map(Authorization::getLocation)
+                    .containsExactlyInAnyOrder(
+                            url("https://example.com/acme/authz/1234"),
+                            url("https://example.com/acme/authz/2345"));
+        }
 
         provider.close();
     }
@@ -113,7 +118,7 @@ public class OrderTest {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
                 requestWasSent.set(true);
-                assertThat(url, is(locationUrl));
+                assertThat(url).isEqualTo(locationUrl);
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -124,7 +129,7 @@ public class OrderTest {
 
             @Override
             public void handleRetryAfter(String message) {
-                assertThat(message, not(nullValue()));
+                assertThat(message).isNotNull();
             }
         };
 
@@ -132,17 +137,21 @@ public class OrderTest {
 
         Order order = new Order(login, locationUrl);
 
-        // Lazy loading
-        assertThat(requestWasSent.get(), is(false));
-        assertThat(order.getCertificate().getLocation(), is(url("https://example.com/acme/cert/1234")));
-        assertThat(requestWasSent.get(), is(true));
+        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+            // Lazy loading
+            softly.assertThat(requestWasSent).isFalse();
+            softly.assertThat(order.getCertificate().getLocation())
+                    .isEqualTo(url("https://example.com/acme/cert/1234"));
+            softly.assertThat(requestWasSent).isTrue();
 
-        // Subsequent queries do not trigger another load
-        requestWasSent.set(false);
-        assertThat(order.getCertificate().getLocation(), is(url("https://example.com/acme/cert/1234")));
-        assertThat(order.getStatus(), is(Status.PENDING));
-        assertThat(order.getExpires(), is(parseTimestamp("2015-03-01T14:09:00Z")));
-        assertThat(requestWasSent.get(), is(false));
+            // Subsequent queries do not trigger another load
+            requestWasSent.set(false);
+            softly.assertThat(order.getCertificate().getLocation())
+                    .isEqualTo(url("https://example.com/acme/cert/1234"));
+            softly.assertThat(order.getStatus()).isEqualTo(Status.PENDING);
+            softly.assertThat(order.getExpires()).isEqualTo("2015-03-01T14:09:00Z");
+            softly.assertThat(requestWasSent).isFalse();
+        }
 
         provider.close();
     }
@@ -159,15 +168,15 @@ public class OrderTest {
 
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
-                assertThat(url, is(locationUrl));
+                assertThat(url).isEqualTo(locationUrl);
                 return HttpURLConnection.HTTP_OK;
             }
 
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
-                assertThat(url, is(finalizeUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("finalizeRequest").toString()));
-                assertThat(login, is(notNullValue()));
+                assertThat(url).isEqualTo(finalizeUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("finalizeRequest").toString());
+                assertThat(login).isNotNull();
                 isFinalized = true;
                 return HttpURLConnection.HTTP_OK;
             }
@@ -179,7 +188,7 @@ public class OrderTest {
 
             @Override
             public void handleRetryAfter(String message) {
-                assertThat(message, not(nullValue()));
+                assertThat(message).isNotNull();
             }
         };
 
@@ -188,25 +197,29 @@ public class OrderTest {
         Order order = new Order(login, locationUrl);
         order.execute(csr);
 
-        assertThat(order.getStatus(), is(Status.VALID));
-        assertThat(order.getExpires(), is(parseTimestamp("2015-03-01T14:09:00Z")));
-        assertThat(order.getLocation(), is(locationUrl));
+        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+            softly.assertThat(order.getStatus()).isEqualTo(Status.VALID);
+            softly.assertThat(order.getExpires()).isEqualTo("2015-03-01T14:09:00Z");
+            softly.assertThat(order.getLocation()).isEqualTo(locationUrl);
 
-        assertThat(order.getIdentifiers(), containsInAnyOrder(
-                        Identifier.dns("example.com"),
-                        Identifier.dns("www.example.com")));
-        assertThat(order.getNotBefore(), is(parseTimestamp("2016-01-01T00:00:00Z")));
-        assertThat(order.getNotAfter(), is(parseTimestamp("2016-01-08T00:00:00Z")));
-        assertThat(order.getCertificate().getLocation(), is(url("https://example.com/acme/cert/1234")));
-        assertThat(order.getAutoRenewalCertificate(), is(nullValue()));
-        assertThat(order.getFinalizeLocation(), is(finalizeUrl));
+            softly.assertThat(order.getIdentifiers()).containsExactlyInAnyOrder(
+                    Identifier.dns("example.com"),
+                    Identifier.dns("www.example.com"));
+            softly.assertThat(order.getNotBefore()).isEqualTo("2016-01-01T00:00:00Z");
+            softly.assertThat(order.getNotAfter()).isEqualTo("2016-01-08T00:00:00Z");
+            softly.assertThat(order.getCertificate().getLocation())
+                    .isEqualTo(url("https://example.com/acme/cert/1234"));
+            softly.assertThat(order.getAutoRenewalCertificate()).isNull();
+            softly.assertThat(order.getFinalizeLocation()).isEqualTo(finalizeUrl);
 
-        List<Authorization> auths = order.getAuthorizations();
-        assertThat(auths.size(), is(2));
-        assertThat(auths.stream().map(Authorization::getLocation)::iterator,
-                containsInAnyOrder(
-                    url("https://example.com/acme/authz/1234"),
-                    url("https://example.com/acme/authz/2345")));
+            List<Authorization> auths = order.getAuthorizations();
+            softly.assertThat(auths).hasSize(2);
+            softly.assertThat(auths.stream())
+                    .map(Authorization::getLocation)
+                    .containsExactlyInAnyOrder(
+                            url("https://example.com/acme/authz/1234"),
+                            url("https://example.com/acme/authz/2345"));
+        }
 
         provider.close();
     }
@@ -219,7 +232,7 @@ public class OrderTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
-                assertThat(url, is(locationUrl));
+                assertThat(url).isEqualTo(locationUrl);
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -230,7 +243,7 @@ public class OrderTest {
 
             @Override
             public void handleRetryAfter(String message) {
-                assertThat(message, not(nullValue()));
+                assertThat(message).isNotNull();
             }
         };
 
@@ -241,14 +254,16 @@ public class OrderTest {
         Order order = new Order(login, locationUrl);
         order.update();
 
-        assertThat(order.isAutoRenewing(), is(true));
-        assertThat(order.getAutoRenewalStartDate(), is(parseTimestamp("2016-01-01T00:00:00Z")));
-        assertThat(order.getAutoRenewalEndDate(), is(parseTimestamp("2017-01-01T00:00:00Z")));
-        assertThat(order.getAutoRenewalLifetime(), is(Duration.ofHours(168)));
-        assertThat(order.getAutoRenewalLifetimeAdjust(), is(Duration.ofDays(6)));
-        assertThat(order.getNotBefore(), is(nullValue()));
-        assertThat(order.getNotAfter(), is(nullValue()));
-        assertThat(order.isAutoRenewalGetEnabled(), is(true));
+        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+            softly.assertThat(order.isAutoRenewing()).isTrue();
+            softly.assertThat(order.getAutoRenewalStartDate()).isEqualTo("2016-01-01T00:00:00Z");
+            softly.assertThat(order.getAutoRenewalEndDate()).isEqualTo("2017-01-01T00:00:00Z");
+            softly.assertThat(order.getAutoRenewalLifetime()).isEqualTo(Duration.ofHours(168));
+            softly.assertThat(order.getAutoRenewalLifetimeAdjust()).isEqualTo(Duration.ofDays(6));
+            softly.assertThat(order.getNotBefore()).isNull();
+            softly.assertThat(order.getNotAfter()).isNull();
+            softly.assertThat(order.isAutoRenewalGetEnabled()).isTrue();
+        }
 
         provider.close();
     }
@@ -261,7 +276,7 @@ public class OrderTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
-                assertThat(url, is(locationUrl));
+                assertThat(url).isEqualTo(locationUrl);
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -272,23 +287,26 @@ public class OrderTest {
 
             @Override
             public void handleRetryAfter(String message) {
-                assertThat(message, not(nullValue()));
+                assertThat(message).isNotNull();
             }
         };
 
         Login login = provider.createLogin();
         Order order = login.bindOrder(locationUrl);
 
-        assertThat(order.getCertificate(), is(nullValue()));
-        assertThat(order.getAutoRenewalCertificate().getLocation(), is(url("https://example.com/acme/cert/1234")));
-        assertThat(order.isAutoRenewing(), is(true));
-        assertThat(order.getAutoRenewalStartDate(), is(parseTimestamp("2018-01-01T00:00:00Z")));
-        assertThat(order.getAutoRenewalEndDate(), is(parseTimestamp("2019-01-01T00:00:00Z")));
-        assertThat(order.getAutoRenewalLifetime(), is(Duration.ofHours(168)));
-        assertThat(order.getAutoRenewalLifetimeAdjust(), is(Duration.ofDays(6)));
-        assertThat(order.getNotBefore(), is(nullValue()));
-        assertThat(order.getNotAfter(), is(nullValue()));
-        assertThat(order.isAutoRenewalGetEnabled(), is(true));
+        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+            softly.assertThat(order.getCertificate()).isNull();
+            softly.assertThat(order.getAutoRenewalCertificate().getLocation())
+                    .isEqualTo(url("https://example.com/acme/cert/1234"));
+            softly.assertThat(order.isAutoRenewing()).isTrue();
+            softly.assertThat(order.getAutoRenewalStartDate()).isEqualTo("2018-01-01T00:00:00Z");
+            softly.assertThat(order.getAutoRenewalEndDate()).isEqualTo("2019-01-01T00:00:00Z");
+            softly.assertThat(order.getAutoRenewalLifetime()).isEqualTo(Duration.ofHours(168));
+            softly.assertThat(order.getAutoRenewalLifetimeAdjust()).isEqualTo(Duration.ofDays(6));
+            softly.assertThat(order.getNotBefore()).isNull();
+            softly.assertThat(order.getNotAfter()).isNull();
+            softly.assertThat(order.isAutoRenewalGetEnabled()).isTrue();
+        }
 
         provider.close();
     }
@@ -302,9 +320,9 @@ public class OrderTest {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 JSON json = claims.toJSON();
-                assertThat(json.get("status").asString(), is("canceled"));
-                assertThat(url, is(locationUrl));
-                assertThat(login, is(notNullValue()));
+                assertThat(json.get("status").asString()).isEqualTo("canceled");
+                assertThat(url).isEqualTo(locationUrl);
+                assertThat(login).isNotNull();
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -321,7 +339,7 @@ public class OrderTest {
         Order order = new Order(login, locationUrl);
         order.cancelAutoRenewal();
 
-        assertThat(order.getStatus(), is(Status.CANCELED));
+        assertThat(order.getStatus()).isEqualTo(Status.CANCELED);
 
         provider.close();
     }

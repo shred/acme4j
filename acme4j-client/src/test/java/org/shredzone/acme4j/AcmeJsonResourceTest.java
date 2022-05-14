@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
@@ -41,14 +40,14 @@ public class AcmeJsonResourceTest {
         Login login = TestUtils.login();
 
         AcmeJsonResource resource = new DummyJsonResource(login, LOCATION_URL);
-        assertThat(resource.getLogin(), is(login));
-        assertThat(resource.getSession(), is(login.getSession()));
-        assertThat(resource.getLocation(), is(LOCATION_URL));
-        assertThat(resource.isValid(), is(false));
+        assertThat(resource.getLogin()).isEqualTo(login);
+        assertThat(resource.getSession()).isEqualTo(login.getSession());
+        assertThat(resource.getLocation()).isEqualTo(LOCATION_URL);
+        assertThat(resource.isValid()).isFalse();
         assertUpdateInvoked(resource, 0);
 
-        assertThat(resource.getJSON(), is(JSON_DATA));
-        assertThat(resource.isValid(), is(true));
+        assertThat(resource.getJSON()).isEqualTo(JSON_DATA);
+        assertThat(resource.isValid()).isTrue();
         assertUpdateInvoked(resource, 1);
     }
 
@@ -62,17 +61,17 @@ public class AcmeJsonResourceTest {
         JSON jsonData2 = getJSON("requestOrderResponse");
 
         AcmeJsonResource resource = new DummyJsonResource(login, LOCATION_URL);
-        assertThat(resource.isValid(), is(false));
+        assertThat(resource.isValid()).isFalse();
         assertUpdateInvoked(resource, 0);
 
         resource.setJSON(JSON_DATA);
-        assertThat(resource.getJSON(), is(JSON_DATA));
-        assertThat(resource.isValid(), is(true));
+        assertThat(resource.getJSON()).isEqualTo(JSON_DATA);
+        assertThat(resource.isValid()).isTrue();
         assertUpdateInvoked(resource, 0);
 
         resource.setJSON(jsonData2);
-        assertThat(resource.getJSON(), is(jsonData2));
-        assertThat(resource.isValid(), is(true));
+        assertThat(resource.getJSON()).isEqualTo(jsonData2);
+        assertThat(resource.isValid()).isTrue();
         assertUpdateInvoked(resource, 0);
     }
 
@@ -84,19 +83,19 @@ public class AcmeJsonResourceTest {
         Login login = TestUtils.login();
 
         AcmeJsonResource resource = new DummyJsonResource(login, LOCATION_URL);
-        assertThat(resource.isValid(), is(false));
+        assertThat(resource.isValid()).isFalse();
         assertUpdateInvoked(resource, 0);
 
         resource.setJSON(JSON_DATA);
-        assertThat(resource.isValid(), is(true));
+        assertThat(resource.isValid()).isTrue();
         assertUpdateInvoked(resource, 0);
 
         resource.invalidate();
-        assertThat(resource.isValid(), is(false));
+        assertThat(resource.isValid()).isFalse();
         assertUpdateInvoked(resource, 0);
 
-        assertThat(resource.getJSON(), is(JSON_DATA));
-        assertThat(resource.isValid(), is(true));
+        assertThat(resource.getJSON()).isEqualTo(JSON_DATA);
+        assertThat(resource.isValid()).isTrue();
         assertUpdateInvoked(resource, 1);
     }
 
@@ -111,7 +110,7 @@ public class AcmeJsonResourceTest {
      */
     private static void assertUpdateInvoked(AcmeJsonResource resource, int count) {
         DummyJsonResource dummy = (DummyJsonResource) resource;
-        assertThat("update counter", dummy.updateCount, is(count));
+        assertThat(dummy.updateCount).as("update counter").isEqualTo(count);
     }
 
     /**

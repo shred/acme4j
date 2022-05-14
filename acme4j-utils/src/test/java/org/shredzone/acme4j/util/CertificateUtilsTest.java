@@ -14,8 +14,7 @@
 package org.shredzone.acme4j.util;
 
 import static java.time.temporal.ChronoUnit.SECONDS;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -72,7 +71,7 @@ public class CertificateUtilsTest {
 
         try (ByteArrayInputStream bais = new ByteArrayInputStream(pemFile)) {
             PKCS10CertificationRequest read = CertificateUtils.readCSR(bais);
-            assertThat(original.getEncoded(), is(equalTo(read.getEncoded())));
+            assertThat(original.getEncoded()).isEqualTo(read.getEncoded());
         }
     }
 
@@ -82,7 +81,7 @@ public class CertificateUtilsTest {
     @Test
     public void testPrivateConstructor() throws Exception {
         Constructor<CertificateUtils> constructor = CertificateUtils.class.getDeclaredConstructor();
-        assertThat(Modifier.isPrivate(constructor.getModifiers()), is(true));
+        assertThat(Modifier.isPrivate(constructor.getModifiers())).isTrue();
         constructor.setAccessible(true);
         constructor.newInstance();
     }
@@ -103,18 +102,18 @@ public class CertificateUtilsTest {
         Instant now = Instant.now();
         Instant end = now.plus(Duration.ofDays(8));
 
-        assertThat(cert, not(nullValue()));
-        assertThat(cert.getNotAfter(), is(greaterThan(Date.from(now))));
-        assertThat(cert.getNotAfter(), is(lessThan(Date.from(end))));
-        assertThat(cert.getNotBefore(), is(lessThanOrEqualTo(Date.from(now))));
+        assertThat(cert).isNotNull();
+        assertThat(cert.getNotAfter()).isAfter(Date.from(now));
+        assertThat(cert.getNotAfter()).isBefore(Date.from(end));
+        assertThat(cert.getNotBefore()).isBeforeOrEqualTo(Date.from(now));
 
-        assertThat(cert.getSubjectX500Principal().getName(), is("CN=acme.invalid"));
-        assertThat(getSANs(cert), contains(subject));
+        assertThat(cert.getSubjectX500Principal().getName()).isEqualTo("CN=acme.invalid");
+        assertThat(getSANs(cert)).contains(subject);
 
-        assertThat(cert.getCriticalExtensionOIDs(), hasItem(TlsAlpn01Challenge.ACME_VALIDATION_OID));
+        assertThat(cert.getCriticalExtensionOIDs()).contains(TlsAlpn01Challenge.ACME_VALIDATION_OID);
 
         byte[] encodedExtensionValue = cert.getExtensionValue(TlsAlpn01Challenge.ACME_VALIDATION_OID);
-        assertThat(encodedExtensionValue, is(notNullValue()));
+        assertThat(encodedExtensionValue).isNotNull();
 
         try (ASN1InputStream asn = new ASN1InputStream(new ByteArrayInputStream(encodedExtensionValue))) {
             DEROctetString derOctetString = (DEROctetString) asn.readObject();
@@ -124,7 +123,7 @@ public class CertificateUtilsTest {
             test[1] = (byte) acmeValidationV1.length;
             System.arraycopy(acmeValidationV1, 0, test, 2, acmeValidationV1.length);
 
-            assertThat(derOctetString.getOctets(), is(test));
+            assertThat(derOctetString.getOctets()).isEqualTo(test);
         }
     }
 
@@ -141,8 +140,8 @@ public class CertificateUtilsTest {
 
         X509Certificate cert = CertificateUtils.createTlsAlpn01Certificate(keypair, Identifier.ip(subject), acmeValidationV1);
 
-        assertThat(cert.getSubjectX500Principal().getName(), is("CN=acme.invalid"));
-        assertThat(getIpSANs(cert), contains(subject));
+        assertThat(cert.getSubjectX500Principal().getName()).isEqualTo("CN=acme.invalid");
+        assertThat(getIpSANs(cert)).contains(subject);
     }
 
     /**
@@ -159,12 +158,12 @@ public class CertificateUtilsTest {
         X509Certificate cert = CertificateUtils.createTestRootCertificate(subject,
                 notBefore, notAfter, keypair);
 
-        assertThat(cert.getIssuerX500Principal().getName(), is(subject));
-        assertThat(cert.getSubjectX500Principal().getName(), is(subject));
-        assertThat(cert.getNotBefore().toInstant(), is(notBefore));
-        assertThat(cert.getNotAfter().toInstant(), is(notAfter));
-        assertThat(cert.getSerialNumber(), not(nullValue()));
-        assertThat(cert.getPublicKey(), is(keypair.getPublic()));
+        assertThat(cert.getIssuerX500Principal().getName()).isEqualTo(subject);
+        assertThat(cert.getSubjectX500Principal().getName()).isEqualTo(subject);
+        assertThat(cert.getNotBefore().toInstant()).isEqualTo(notBefore);
+        assertThat(cert.getNotAfter().toInstant()).isEqualTo(notAfter);
+        assertThat(cert.getSerialNumber()).isNotNull();
+        assertThat(cert.getPublicKey()).isEqualTo(keypair.getPublic());
         cert.verify(cert.getPublicKey()); // self-signed
     }
 
@@ -191,13 +190,13 @@ public class CertificateUtilsTest {
         X509Certificate cert = CertificateUtils.createTestIntermediateCertificate(subject,
                 notBefore, notAfter, keypair.getPublic(), rootCert, rootKeypair.getPrivate());
 
-        assertThat(cert.getIssuerX500Principal().getName(), is(rootSubject));
-        assertThat(cert.getSubjectX500Principal().getName(), is(subject));
-        assertThat(cert.getNotBefore().toInstant(), is(notBefore));
-        assertThat(cert.getNotAfter().toInstant(), is(notAfter));
-        assertThat(cert.getSerialNumber(), not(nullValue()));
-        assertThat(cert.getSerialNumber(), not(rootCert.getSerialNumber()));
-        assertThat(cert.getPublicKey(), is(keypair.getPublic()));
+        assertThat(cert.getIssuerX500Principal().getName()).isEqualTo(rootSubject);
+        assertThat(cert.getSubjectX500Principal().getName()).isEqualTo(subject);
+        assertThat(cert.getNotBefore().toInstant()).isEqualTo(notBefore);
+        assertThat(cert.getNotAfter().toInstant()).isEqualTo(notAfter);
+        assertThat(cert.getSerialNumber()).isNotNull();
+        assertThat(cert.getSerialNumber()).isNotEqualTo(rootCert.getSerialNumber());
+        assertThat(cert.getPublicKey()).isEqualTo(keypair.getPublic());
         cert.verify(rootKeypair.getPublic()); // signed by root
     }
 
@@ -228,15 +227,15 @@ public class CertificateUtilsTest {
         X509Certificate cert = CertificateUtils.createTestCertificate(csr, notBefore,
                 notAfter, rootCert, rootKeypair.getPrivate());
 
-        assertThat(cert.getIssuerX500Principal().getName(), is(rootSubject));
-        assertThat(cert.getSubjectX500Principal().getName(), is("CN=example.org"));
-        assertThat(getSANs(cert), contains("example.org", "www.example.org"));
-        assertThat(getIpSANs(cert), contains(InetAddress.getByName("192.168.0.1")));
-        assertThat(cert.getNotBefore().toInstant(), is(notBefore));
-        assertThat(cert.getNotAfter().toInstant(), is(notAfter));
-        assertThat(cert.getSerialNumber(), not(nullValue()));
-        assertThat(cert.getSerialNumber(), not(rootCert.getSerialNumber()));
-        assertThat(cert.getPublicKey(), is(keypair.getPublic()));
+        assertThat(cert.getIssuerX500Principal().getName()).isEqualTo(rootSubject);
+        assertThat(cert.getSubjectX500Principal().getName()).isEqualTo("CN=example.org");
+        assertThat(getSANs(cert)).contains("example.org", "www.example.org");
+        assertThat(getIpSANs(cert)).contains(InetAddress.getByName("192.168.0.1"));
+        assertThat(cert.getNotBefore().toInstant()).isEqualTo(notBefore);
+        assertThat(cert.getNotAfter().toInstant()).isEqualTo(notAfter);
+        assertThat(cert.getSerialNumber()).isNotNull();
+        assertThat(cert.getSerialNumber()).isNotEqualTo(rootCert.getSerialNumber());
+        assertThat(cert.getPublicKey()).isEqualTo(keypair.getPublic());
         cert.verify(rootKeypair.getPublic()); // signed by root
     }
 

@@ -15,9 +15,8 @@ package org.shredzone.acme4j.it.pebble;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
 
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -73,20 +72,20 @@ public class OrderWildcardIT extends PebbleITBase {
                     .notBefore(notBefore)
                     .notAfter(notAfter)
                     .create();
-        assertThat(order.getNotBefore(), is(notBefore));
-        assertThat(order.getNotAfter(), is(notAfter));
-        assertThat(order.getStatus(), is(Status.PENDING));
+        assertThat(order.getNotBefore()).isEqualTo(notBefore);
+        assertThat(order.getNotAfter()).isEqualTo(notAfter);
+        assertThat(order.getStatus()).isEqualTo(Status.PENDING);
 
         for (Authorization auth : order.getAuthorizations()) {
-            assertThat(auth.getIdentifier().getDomain(), is(TEST_DOMAIN));
-            assertThat(auth.getStatus(), is(Status.PENDING));
+            assertThat(auth.getIdentifier().getDomain()).isEqualTo(TEST_DOMAIN);
+            assertThat(auth.getStatus()).isEqualTo(Status.PENDING);
 
             if (auth.getStatus() == Status.VALID) {
                 continue;
             }
 
             Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
-            assertThat(challenge, is(notNullValue()));
+            assertThat(challenge).isNotNull();
 
             String challengeDomainName = "_acme-challenge." + TEST_DOMAIN;
 
@@ -99,9 +98,10 @@ public class OrderWildcardIT extends PebbleITBase {
                 .pollInterval(1, SECONDS)
                 .timeout(30, SECONDS)
                 .conditionEvaluationListener(cond -> updateAuth(auth))
-                .until(auth::getStatus, not(oneOf(Status.PENDING, Status.PROCESSING)));
+                .untilAsserted(() -> assertThat(
+                        auth.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
 
-            assertThat(auth.getStatus(), is(Status.VALID));
+            assertThat(auth.getStatus()).isEqualTo(Status.VALID);
         }
 
         CSRBuilder csr = new CSRBuilder();
@@ -116,21 +116,22 @@ public class OrderWildcardIT extends PebbleITBase {
             .pollInterval(1, SECONDS)
             .timeout(30, SECONDS)
             .conditionEvaluationListener(cond -> updateOrder(order))
-            .until(order::getStatus, not(oneOf(Status.PENDING, Status.PROCESSING)));
+            .untilAsserted(() -> assertThat(
+                    order.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
 
 
         Certificate certificate = order.getCertificate();
         X509Certificate cert = certificate.getCertificate();
-        assertThat(cert, not(nullValue()));
-        assertThat(cert.getNotAfter(), not(notBefore));
-        assertThat(cert.getNotBefore(), not(notAfter));
-        assertThat(cert.getSubjectX500Principal().getName(), containsString("CN=" + TEST_DOMAIN));
+        assertThat(cert).isNotNull();
+        assertThat(cert.getNotAfter()).isNotEqualTo(notBefore);
+        assertThat(cert.getNotBefore()).isNotEqualTo(notAfter);
+        assertThat(cert.getSubjectX500Principal().getName()).contains("CN=" + TEST_DOMAIN);
 
         List<String> san = cert.getSubjectAlternativeNames().stream()
                 .filter(it -> ((Number) it.get(0)).intValue() == GeneralName.dNSName)
                 .map(it -> (String) it.get(1))
                 .collect(toList());
-        assertThat(san, contains(TEST_DOMAIN, TEST_WILDCARD_DOMAIN));
+        assertThat(san).contains(TEST_DOMAIN, TEST_WILDCARD_DOMAIN);
     }
 
 }

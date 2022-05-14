@@ -13,16 +13,15 @@
  */
 package org.shredzone.acme4j;
 
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.URI;
 import java.net.URL;
 import java.util.List;
 
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -40,34 +39,36 @@ public class ProblemTest {
 
         Problem problem = new Problem(original, baseUrl);
 
-        assertThat(problem.getType(), is(URI.create("urn:ietf:params:acme:error:malformed")));
-        assertThat(problem.getTitle(), is("Some of the identifiers requested were rejected"));
-        assertThat(problem.getDetail(), is("Identifier \"abc12_\" is malformed"));
-        assertThat(problem.getInstance(), is(URI.create("https://example.com/documents/error.html")));
-        assertThat(problem.getIdentifier(), is(nullValue()));
-        assertThat(problem.asJSON().toString(), is(sameJSONAs(original.toString())));
-        assertThat(problem.toString(), is(
-                "Identifier \"abc12_\" is malformed ("
-                + "Invalid underscore in DNS name \"_example.com\" ‒ "
-                + "This CA will not issue for \"example.net\")"));
+        assertThatJson(problem.asJSON().toString()).isEqualTo(original.toString());
 
-        List<Problem> subs = problem.getSubProblems();
-        assertThat(subs, not(nullValue()));
-        assertThat(subs, hasSize(2));
+        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+            softly.assertThat(problem.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:malformed"));
+            softly.assertThat(problem.getTitle()).isEqualTo("Some of the identifiers requested were rejected");
+            softly.assertThat(problem.getDetail()).isEqualTo("Identifier \"abc12_\" is malformed");
+            softly.assertThat(problem.getInstance()).isEqualTo(URI.create("https://example.com/documents/error.html"));
+            softly.assertThat(problem.getIdentifier()).isNull();
+            softly.assertThat(problem.toString()).isEqualTo(
+                    "Identifier \"abc12_\" is malformed ("
+                            + "Invalid underscore in DNS name \"_example.com\" ‒ "
+                            + "This CA will not issue for \"example.net\")");
 
-        Problem p1 = subs.get(0);
-        assertThat(p1.getType(), is(URI.create("urn:ietf:params:acme:error:malformed")));
-        assertThat(p1.getTitle(), is(nullValue()));
-        assertThat(p1.getDetail(), is("Invalid underscore in DNS name \"_example.com\""));
-        assertThat(p1.getIdentifier().getDomain(), is("_example.com"));
-        assertThat(p1.toString(), is("Invalid underscore in DNS name \"_example.com\""));
+            List<Problem> subs = problem.getSubProblems();
+            softly.assertThat(subs).isNotNull().hasSize(2);
 
-        Problem p2 = subs.get(1);
-        assertThat(p2.getType(), is(URI.create("urn:ietf:params:acme:error:rejectedIdentifier")));
-        assertThat(p2.getTitle(), is(nullValue()));
-        assertThat(p2.getDetail(), is("This CA will not issue for \"example.net\""));
-        assertThat(p2.getIdentifier().getDomain(), is("example.net"));
-        assertThat(p2.toString(), is("This CA will not issue for \"example.net\""));
+            Problem p1 = subs.get(0);
+            softly.assertThat(p1.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:malformed"));
+            softly.assertThat(p1.getTitle()).isNull();
+            softly.assertThat(p1.getDetail()).isEqualTo("Invalid underscore in DNS name \"_example.com\"");
+            softly.assertThat(p1.getIdentifier().getDomain()).isEqualTo("_example.com");
+            softly.assertThat(p1.toString()).isEqualTo("Invalid underscore in DNS name \"_example.com\"");
+
+            Problem p2 = subs.get(1);
+            softly.assertThat(p2.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:rejectedIdentifier"));
+            softly.assertThat(p2.getTitle()).isNull();
+            softly.assertThat(p2.getDetail()).isEqualTo("This CA will not issue for \"example.net\"");
+            softly.assertThat(p2.getIdentifier().getDomain()).isEqualTo("example.net");
+            softly.assertThat(p2.toString()).isEqualTo("This CA will not issue for \"example.net\"");
+        }
     }
 
     /**
@@ -82,15 +83,15 @@ public class ProblemTest {
 
         jb.put("type", typeUri);
         Problem p1 = new Problem(jb.toJSON(), baseUrl);
-        assertThat(p1.toString(), is(typeUri.toString()));
+        assertThat(p1.toString()).isEqualTo(typeUri.toString());
 
         jb.put("title", "Some of the identifiers requested were rejected");
         Problem p2 = new Problem(jb.toJSON(), baseUrl);
-        assertThat(p2.toString(), is("Some of the identifiers requested were rejected"));
+        assertThat(p2.toString()).isEqualTo("Some of the identifiers requested were rejected");
 
         jb.put("detail", "Identifier \"abc12_\" is malformed");
         Problem p3 = new Problem(jb.toJSON(), baseUrl);
-        assertThat(p3.toString(), is("Identifier \"abc12_\" is malformed"));
+        assertThat(p3.toString()).isEqualTo("Identifier \"abc12_\" is malformed");
     }
 
 }

@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j.exception;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.net.URL;
@@ -39,12 +38,12 @@ public class AcmeLazyLoadingExceptionTest {
         AcmeException cause = new AcmeException("Something went wrong");
 
         AcmeLazyLoadingException ex = new AcmeLazyLoadingException(resource, cause);
-        assertThat(ex, is(instanceOf(RuntimeException.class)));
-        assertThat(ex.getMessage(), containsString(resourceUrl.toString()));
-        assertThat(ex.getMessage(), containsString(TestResource.class.getSimpleName()));
-        assertThat(ex.getCause(), is(cause));
-        assertThat(ex.getType(), is(equalTo(TestResource.class)));
-        assertThat(ex.getLocation(), is(resourceUrl));
+        assertThat(ex).isInstanceOf(RuntimeException.class);
+        assertThat(ex.getMessage()).contains(resourceUrl.toString());
+        assertThat(ex.getMessage()).contains(TestResource.class.getSimpleName());
+        assertThat(ex.getCause()).isEqualTo(cause);
+        assertThat(ex.getType()).isEqualTo(TestResource.class);
+        assertThat(ex.getLocation()).isEqualTo(resourceUrl);
     }
 
     private static class TestResource extends AcmeResource {

@@ -14,11 +14,10 @@
 package org.shredzone.acme4j.toolbox;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -28,7 +27,6 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.net.URL;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -58,8 +56,8 @@ public class JSONTest {
     @Test
     public void testEmpty() {
         JSON empty = JSON.empty();
-        assertThat(empty.toString(), is("{}"));
-        assertThat(empty.toMap().keySet(), is(empty()));
+        assertThat(empty.toString()).isEqualTo("{}");
+        assertThat(empty.toMap().keySet()).isEmpty();
     }
 
     /**
@@ -70,21 +68,21 @@ public class JSONTest {
         String json = "{\"foo\":\"a-text\",\n\"bar\":123}";
 
         JSON fromString = JSON.parse(json);
-        assertThat(fromString.toString(), is(sameJSONAs(json)));
+        assertThatJson(fromString.toString()).isEqualTo(json);
         Map<String, Object> map = fromString.toMap();
-        assertThat(map.size(), is(2));
-        assertThat(map.keySet(), containsInAnyOrder("foo", "bar"));
-        assertThat(map.get("foo"), is("a-text"));
-        assertThat(map.get("bar"), is(123L));
+        assertThat(map).hasSize(2);
+        assertThat(map.keySet()).containsExactlyInAnyOrder("foo", "bar");
+        assertThat(map.get("foo")).isEqualTo("a-text");
+        assertThat(map.get("bar")).isEqualTo(123L);
 
         try (InputStream in = new ByteArrayInputStream(json.getBytes(UTF_8))) {
             JSON fromStream = JSON.parse(in);
-            assertThat(fromStream.toString(), is(sameJSONAs(json)));
+            assertThatJson(fromStream.toString()).isEqualTo(json);
             Map<String, Object> map2 = fromStream.toMap();
-            assertThat(map2.size(), is(2));
-            assertThat(map2.keySet(), containsInAnyOrder("foo", "bar"));
-            assertThat(map2.get("foo"), is("a-text"));
-            assertThat(map2.get("bar"), is(123L));
+            assertThat(map2).hasSize(2);
+            assertThat(map2.keySet()).containsExactlyInAnyOrder("foo", "bar");
+            assertThat(map2.get("foo")).isEqualTo("a-text");
+            assertThat(map2.get("bar")).isEqualTo(123L);
         }
     }
 
@@ -105,13 +103,13 @@ public class JSONTest {
     public void testObject() {
         JSON json = TestUtils.getJSON("datatypes");
 
-        assertThat(json.keySet(), containsInAnyOrder(
+        assertThat(json.keySet()).containsExactlyInAnyOrder(
                     "text", "number", "boolean", "uri", "url", "date", "array",
-                    "collect", "status", "binary", "duration", "problem", "encoded"));
-        assertThat(json.contains("text"), is(true));
-        assertThat(json.contains("music"), is(false));
-        assertThat(json.get("text"), is(notNullValue()));
-        assertThat(json.get("music"), is(notNullValue()));
+                    "collect", "status", "binary", "duration", "problem", "encoded");
+        assertThat(json.contains("text")).isTrue();
+        assertThat(json.contains("music")).isFalse();
+        assertThat(json.get("text")).isNotNull();
+        assertThat(json.get("music")).isNotNull();
     }
 
     /**
@@ -122,12 +120,8 @@ public class JSONTest {
         JSON json = TestUtils.getJSON("datatypes");
         JSON.Array array = json.get("array").asArray();
 
-        assertThat(array.size(), is(4));
-        assertThat(array.isEmpty(), is(false));
-        assertThat(array.get(0), is(notNullValue()));
-        assertThat(array.get(1), is(notNullValue()));
-        assertThat(array.get(2), is(notNullValue()));
-        assertThat(array.get(3), is(notNullValue()));
+        assertThat(array.isEmpty()).isFalse();
+        assertThat(array).hasSize(4).doesNotContainNull();
     }
 
     /**
@@ -138,9 +132,9 @@ public class JSONTest {
         JSON json = TestUtils.getJSON("datatypes");
         JSON.Array array = json.get("missingArray").asArray();
 
-        assertThat(array.size(), is(0));
-        assertThat(array.isEmpty(), is(true));
-        assertThat(array.stream().count(), is(0L));
+        assertThat(array.isEmpty()).isTrue();
+        assertThat(array).hasSize(0);
+        assertThat(array.stream().count()).isEqualTo(0L);
     }
 
     /**
@@ -152,22 +146,22 @@ public class JSONTest {
         JSON.Array array = json.get("array").asArray();
 
         Iterator<JSON.Value> it = array.iterator();
-        assertThat(it, is(notNullValue()));
+        assertThat(it).isNotNull();
 
-        assertThat(it.hasNext(), is(true));
-        assertThat(it.next().asString(), is("foo"));
+        assertThat(it.hasNext()).isTrue();
+        assertThat(it.next().asString()).isEqualTo("foo");
 
-        assertThat(it.hasNext(), is(true));
-        assertThat(it.next().asInt(), is(987));
+        assertThat(it.hasNext()).isTrue();
+        assertThat(it.next().asInt()).isEqualTo(987);
 
-        assertThat(it.hasNext(), is(true));
-        assertThat(it.next().asArray().size(), is(3));
+        assertThat(it.hasNext()).isTrue();
+        assertThat(it.next().asArray()).hasSize(3);
 
-        assertThat(it.hasNext(), is(true));
+        assertThat(it.hasNext()).isTrue();
         assertThrows(UnsupportedOperationException.class, it::remove);
-        assertThat(it.next().asObject(), is(notNullValue()));
+        assertThat(it.next().asObject()).isNotNull();
 
-        assertThat(it.hasNext(), is(false));
+        assertThat(it.hasNext()).isFalse();
         assertThrows(NoSuchElementException.class, it::next);
     }
 
@@ -187,7 +181,7 @@ public class JSONTest {
             iteratorValues.add(it.next());
         }
 
-        assertThat(streamValues, contains(iteratorValues.toArray()));
+        assertThat(streamValues).containsAll(iteratorValues);
     }
 
     /**
@@ -199,40 +193,40 @@ public class JSONTest {
 
         JSON json = TestUtils.getJSON("datatypes");
 
-        assertThat(json.get("text").asString(), is("lorem ipsum"));
-        assertThat(json.get("number").asInt(), is(123));
-        assertThat(json.get("boolean").asBoolean(), is(true));
-        assertThat(json.get("uri").asURI(), is(URI.create("mailto:foo@example.com")));
-        assertThat(json.get("url").asURL(), is(url("http://example.com")));
-        assertThat(json.get("date").asInstant(), is(date));
-        assertThat(json.get("status").asStatus(), is(Status.VALID));
-        assertThat(json.get("binary").asBinary(), is("Chainsaw".getBytes()));
-        assertThat(json.get("duration").asDuration(), is(Duration.ofSeconds(86400)));
+        assertThat(json.get("text").asString()).isEqualTo("lorem ipsum");
+        assertThat(json.get("number").asInt()).isEqualTo(123);
+        assertThat(json.get("boolean").asBoolean()).isTrue();
+        assertThat(json.get("uri").asURI()).isEqualTo(URI.create("mailto:foo@example.com"));
+        assertThat(json.get("url").asURL()).isEqualTo(url("http://example.com"));
+        assertThat(json.get("date").asInstant()).isEqualTo(date);
+        assertThat(json.get("status").asStatus()).isEqualTo(Status.VALID);
+        assertThat(json.get("binary").asBinary()).isEqualTo("Chainsaw".getBytes());
+        assertThat(json.get("duration").asDuration()).hasSeconds(86400L);
 
-        assertThat(json.get("text").isPresent(), is(true));
-        assertThat(json.get("text").optional().isPresent(), is(true));
-        assertThat(json.get("text").map(Value::asString).isPresent(), is(true));
+        assertThat(json.get("text").isPresent()).isTrue();
+        assertThat(json.get("text").optional().isPresent()).isTrue();
+        assertThat(json.get("text").map(Value::asString).isPresent()).isTrue();
 
         JSON.Array array = json.get("array").asArray();
-        assertThat(array.get(0).asString(), is("foo"));
-        assertThat(array.get(1).asInt(), is(987));
+        assertThat(array.get(0).asString()).isEqualTo("foo");
+        assertThat(array.get(1).asInt()).isEqualTo(987);
 
         JSON.Array array2 = array.get(2).asArray();
-        assertThat(array2.get(0).asInt(), is(1));
-        assertThat(array2.get(1).asInt(), is(2));
-        assertThat(array2.get(2).asInt(), is(3));
+        assertThat(array2.get(0).asInt()).isEqualTo(1);
+        assertThat(array2.get(1).asInt()).isEqualTo(2);
+        assertThat(array2.get(2).asInt()).isEqualTo(3);
 
         JSON sub = array.get(3).asObject();
-        assertThat(sub.get("test").asString(), is("ok"));
+        assertThat(sub.get("test").asString()).isEqualTo("ok");
 
         JSON encodedSub = json.get("encoded").asEncodedObject();
-        assertThat(encodedSub.toString(), is(sameJSONAs("{\"key\":\"value\"}")));
+        assertThatJson(encodedSub.toString()).isEqualTo("{\"key\":\"value\"}");
 
         Problem problem = json.get("problem").asProblem(BASE_URL);
-        assertThat(problem, is(notNullValue()));
-        assertThat(problem.getType(), is(URI.create("urn:ietf:params:acme:error:rateLimited")));
-        assertThat(problem.getDetail(), is("too many requests"));
-        assertThat(problem.getInstance(), is(URI.create("https://example.com/documents/errors.html")));
+        assertThat(problem).isNotNull();
+        assertThat(problem.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:rateLimited"));
+        assertThat(problem.getDetail()).isEqualTo("too many requests");
+        assertThat(problem.getInstance()).isEqualTo(URI.create("https://example.com/documents/errors.html"));
     }
 
     /**
@@ -242,10 +236,10 @@ public class JSONTest {
     public void testNullGetter() {
         JSON json = TestUtils.getJSON("datatypes");
 
-        assertThat(json.get("none"), is(notNullValue()));
-        assertThat(json.get("none").isPresent(), is(false));
-        assertThat(json.get("none").optional().isPresent(), is(false));
-        assertThat(json.get("none").map(Value::asString).isPresent(), is(false));
+        assertThat(json.get("none")).isNotNull();
+        assertThat(json.get("none").isPresent()).isFalse();
+        assertThat(json.get("none").optional().isPresent()).isFalse();
+        assertThat(json.get("none").map(Value::asString).isPresent()).isFalse();
 
         assertThrows(AcmeProtocolException.class,
                 () -> json.get("none").asString(),
@@ -345,9 +339,9 @@ public class JSONTest {
             }
         }
 
-        assertThat(testJson, not(sameInstance(originalJson)));
-        assertThat(testJson.toString(), not(emptyOrNullString()));
-        assertThat(testJson.toString(), is(sameJSONAs(originalJson.toString())));
+        assertThat(testJson).isNotSameAs(originalJson);
+        assertThat(testJson.toString()).isNotEmpty();
+        assertThatJson(testJson.toString()).isEqualTo(originalJson.toString());
     }
 
 }

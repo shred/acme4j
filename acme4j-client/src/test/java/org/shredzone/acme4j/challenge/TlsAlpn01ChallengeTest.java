@@ -13,10 +13,9 @@
  */
 package org.shredzone.acme4j.challenge;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Login;
@@ -43,16 +42,16 @@ public class TlsAlpn01ChallengeTest {
     public void testTlsAlpn01Challenge() {
         TlsAlpn01Challenge challenge = new TlsAlpn01Challenge(login, getJSON("tlsAlpnChallenge"));
 
-        assertThat(challenge.getType(), is(TlsAlpn01Challenge.TYPE));
-        assertThat(challenge.getStatus(), is(Status.PENDING));
-        assertThat(challenge.getToken(), is(TOKEN));
-        assertThat(challenge.getAuthorization(), is(KEY_AUTHORIZATION));
-        assertThat(challenge.getAcmeValidation(), is(AcmeUtils.sha256hash(KEY_AUTHORIZATION)));
+        assertThat(challenge.getType()).isEqualTo(TlsAlpn01Challenge.TYPE);
+        assertThat(challenge.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(challenge.getToken()).isEqualTo(TOKEN);
+        assertThat(challenge.getAuthorization()).isEqualTo(KEY_AUTHORIZATION);
+        assertThat(challenge.getAcmeValidation()).isEqualTo(AcmeUtils.sha256hash(KEY_AUTHORIZATION));
 
         JSONBuilder response = new JSONBuilder();
         challenge.prepareResponse(response);
 
-        assertThat(response.toString(), sameJSONAs("{}").allowingExtraUnexpectedFields());
+        assertThatJson(response.toString()).isEqualTo("{}");
     }
 
 }

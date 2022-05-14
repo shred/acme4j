@@ -13,9 +13,7 @@
  */
 package org.shredzone.acme4j.exception;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.createProblem;
 
 import java.net.MalformedURLException;
@@ -45,10 +43,10 @@ public class AcmeUserActionRequiredExceptionTest {
         AcmeUserActionRequiredException ex
             = new AcmeUserActionRequiredException(problem, tosUri);
 
-        assertThat(ex.getType(), is(type));
-        assertThat(ex.getMessage(), is(detail));
-        assertThat(ex.getTermsOfServiceUri(), is(tosUri));
-        assertThat(ex.getInstance(), is(instanceUrl));
+        assertThat(ex.getType()).isEqualTo(type);
+        assertThat(ex.getMessage()).isEqualTo(detail);
+        assertThat(ex.getTermsOfServiceUri()).isEqualTo(tosUri);
+        assertThat(ex.getInstance()).isEqualTo(instanceUrl);
     }
 
     /**
@@ -65,10 +63,10 @@ public class AcmeUserActionRequiredExceptionTest {
         AcmeUserActionRequiredException ex
             = new AcmeUserActionRequiredException(problem, null);
 
-        assertThat(ex.getType(), is(type));
-        assertThat(ex.getMessage(), is(detail));
-        assertThat(ex.getTermsOfServiceUri(), nullValue());
-        assertThat(ex.getInstance(), is(instanceUrl));
+        assertThat(ex.getType()).isEqualTo(type);
+        assertThat(ex.getMessage()).isEqualTo(detail);
+        assertThat(ex.getTermsOfServiceUri()).isNull();
+        assertThat(ex.getInstance()).isEqualTo(instanceUrl);
     }
 
 }

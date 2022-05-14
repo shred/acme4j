@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j.connector;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -64,9 +63,9 @@ public class HttpConnectorTest {
         NetworkSettings settings = new NetworkSettings();
         HttpConnector connector = new HttpConnector();
         HttpURLConnection conn = connector.openConnection(new URL("http://example.com"), settings);
-        assertThat(conn, not(nullValue()));
+        assertThat(conn).isNotNull();
         conn.connect();
-        assertThat(conn.getResponseCode(), is(HttpURLConnection.HTTP_OK));
+        assertThat(conn.getResponseCode()).isEqualTo(HttpURLConnection.HTTP_OK);
     }
 
     /**
@@ -75,8 +74,8 @@ public class HttpConnectorTest {
     @Test
     public void testUserAgent() {
         String userAgent = HttpConnector.defaultUserAgent();
-        assertThat(userAgent.contains("acme4j/"), is(true));
-        assertThat(userAgent.contains("Java/"), is(true));
+        assertThat(userAgent).contains("acme4j/");
+        assertThat(userAgent).contains("Java/");
     }
 
 }

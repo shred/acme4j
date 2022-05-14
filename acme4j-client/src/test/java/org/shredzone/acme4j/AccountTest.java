@@ -15,13 +15,12 @@ package org.shredzone.acme4j;
 
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -66,9 +65,9 @@ public class AccountTest {
 
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
-                assertThat(url, is(locationUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("updateAccount").toString()));
-                assertThat(login, is(notNullValue()));
+                assertThat(url).isEqualTo(locationUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("updateAccount").toString());
+                assertThat(login).isNotNull();
                 jsonResponse = getJSON("updateAccountResponse");
                 return HttpURLConnection.HTTP_OK;
             }
@@ -110,19 +109,19 @@ public class AccountTest {
         Account account = new Account(login);
         account.update();
 
-        assertThat(login.getAccountLocation(), is(locationUrl));
-        assertThat(account.getLocation(), is(locationUrl));
-        assertThat(account.getTermsOfServiceAgreed(), is(true));
-        assertThat(account.getContacts(), hasSize(1));
-        assertThat(account.getContacts().get(0), is(URI.create("mailto:foo2@example.com")));
-        assertThat(account.getStatus(), is(Status.VALID));
-        assertThat(account.hasExternalAccountBinding(), is(true));
-        assertThat(account.getKeyIdentifier(), is("NCC-1701"));
+        assertThat(login.getAccountLocation()).isEqualTo(locationUrl);
+        assertThat(account.getLocation()).isEqualTo(locationUrl);
+        assertThat(account.getTermsOfServiceAgreed()).isTrue();
+        assertThat(account.getContacts()).hasSize(1);
+        assertThat(account.getContacts().get(0)).isEqualTo(URI.create("mailto:foo2@example.com"));
+        assertThat(account.getStatus()).isEqualTo(Status.VALID);
+        assertThat(account.hasExternalAccountBinding()).isTrue();
+        assertThat(account.getKeyIdentifier()).isEqualTo("NCC-1701");
 
         Iterator<Order> orderIt = account.getOrders();
-        assertThat(orderIt, not(nullValue()));
-        assertThat(orderIt.next().getLocation(), is(url("https://example.com/acme/order/1")));
-        assertThat(orderIt.hasNext(), is(false));
+        assertThat(orderIt).isNotNull();
+        assertThat(orderIt.next().getLocation()).isEqualTo(url("https://example.com/acme/order/1"));
+        assertThat(orderIt.hasNext()).isFalse();
 
         provider.close();
     }
@@ -138,7 +137,7 @@ public class AccountTest {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
                 requestWasSent.set(true);
-                assertThat(url, is(locationUrl));
+                assertThat(url).isEqualTo(locationUrl);
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -169,15 +168,15 @@ public class AccountTest {
         Account account = new Account(provider.createLogin());
 
         // Lazy loading
-        assertThat(requestWasSent.get(), is(false));
-        assertThat(account.getTermsOfServiceAgreed(), is(true));
-        assertThat(requestWasSent.get(), is(true));
+        assertThat(requestWasSent.get()).isFalse();
+        assertThat(account.getTermsOfServiceAgreed()).isTrue();
+        assertThat(requestWasSent.get()).isTrue();
 
         // Subsequent queries do not trigger another load
         requestWasSent.set(false);
-        assertThat(account.getTermsOfServiceAgreed(), is(true));
-        assertThat(account.getStatus(), is(Status.VALID));
-        assertThat(requestWasSent.get(), is(false));
+        assertThat(account.getTermsOfServiceAgreed()).isTrue();
+        assertThat(account.getStatus()).isEqualTo(Status.VALID);
+        assertThat(requestWasSent.get()).isFalse();
 
         provider.close();
     }
@@ -190,9 +189,9 @@ public class AccountTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
-                assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("newAuthorizationRequest").toString()));
-                assertThat(login, is(notNullValue()));
+                assertThat(url).isEqualTo(resourceUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("newAuthorizationRequest").toString());
+                assertThat(login).isNotNull();
                 return HttpURLConnection.HTTP_CREATED;
             }
 
@@ -218,14 +217,14 @@ public class AccountTest {
         Account account = new Account(login);
         Authorization auth = account.preAuthorizeDomain(domainName);
 
-        assertThat(auth.getIdentifier().getDomain(), is(domainName));
-        assertThat(auth.getStatus(), is(Status.PENDING));
-        assertThat(auth.getExpires(), is(nullValue()));
-        assertThat(auth.getLocation(), is(locationUrl));
+        assertThat(auth.getIdentifier().getDomain()).isEqualTo(domainName);
+        assertThat(auth.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(auth.getExpires()).isNull();
+        assertThat(auth.getLocation()).isEqualTo(locationUrl);
 
-        assertThat(auth.getChallenges(), containsInAnyOrder(
+        assertThat(auth.getChallenges()).containsExactlyInAnyOrder(
                         provider.getChallenge(Http01Challenge.TYPE),
-                        provider.getChallenge(Dns01Challenge.TYPE)));
+                        provider.getChallenge(Dns01Challenge.TYPE));
 
         provider.close();
     }
@@ -241,9 +240,9 @@ public class AccountTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) throws AcmeException {
-                assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("newAuthorizationRequest").toString()));
-                assertThat(login, is(notNullValue()));
+                assertThat(url).isEqualTo(resourceUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("newAuthorizationRequest").toString());
+                assertThat(login).isNotNull();
 
                 Problem problem = TestUtils.createProblem(problemType, problemDetail, resourceUrl);
                 throw new AcmeServerException(problem);
@@ -259,8 +258,8 @@ public class AccountTest {
         AcmeServerException ex = assertThrows(AcmeServerException.class, () ->
             account.preAuthorizeDomain("example.org")
         );
-        assertThat(ex.getType(), is(problemType));
-        assertThat(ex.getMessage(), is(problemDetail));
+        assertThat(ex.getType()).isEqualTo(problemType);
+        assertThat(ex.getMessage()).isEqualTo(problemDetail);
 
         provider.close();
     }
@@ -296,9 +295,9 @@ public class AccountTest {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder payload, Login login) {
                 try {
-                    assertThat(url, is(locationUrl));
-                    assertThat(login, is(notNullValue()));
-                    assertThat(login.getKeyPair(), is(sameInstance(oldKeyPair)));
+                    assertThat(url).isEqualTo(locationUrl);
+                    assertThat(login).isNotNull();
+                    assertThat(login.getKeyPair()).isSameAs(oldKeyPair);
 
                     JSON json = payload.toJSON();
                     String encodedHeader = json.get("protected").asString();
@@ -309,7 +308,7 @@ public class AccountTest {
                     JsonWebSignature jws = new JsonWebSignature();
                     jws.setCompactSerialization(serialized);
                     jws.setKey(newKeyPair.getPublic());
-                    assertThat(jws.verifySignature(), is(true));
+                    assertThat(jws.verifySignature()).isTrue();
 
                     String decodedPayload = jws.getPayload();
 
@@ -321,7 +320,7 @@ public class AccountTest {
                     expectedPayload.append("\"e\":\"").append(TestUtils.E).append("\",");
                     expectedPayload.append("\"n\":\"").append(TestUtils.N).append("\"");
                     expectedPayload.append("}}");
-                    assertThat(decodedPayload, sameJSONAs(expectedPayload.toString()));
+                    assertThatJson(decodedPayload).isEqualTo(expectedPayload.toString());
                 } catch (JoseException ex) {
                     fail(ex);
                 }
@@ -340,12 +339,12 @@ public class AccountTest {
         Session session = TestUtils.session(provider);
         Login login = new Login(locationUrl, oldKeyPair, session);
 
-        assertThat(login.getKeyPair(), is(sameInstance(oldKeyPair)));
+        assertThat(login.getKeyPair()).isSameAs(oldKeyPair);
 
         Account account = new Account(login);
         account.changeKey(newKeyPair);
 
-        assertThat(login.getKeyPair(), is(sameInstance(newKeyPair)));
+        assertThat(login.getKeyPair()).isSameAs(newKeyPair);
     }
 
     /**
@@ -373,9 +372,9 @@ public class AccountTest {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 JSON json = claims.toJSON();
-                assertThat(json.get("status").asString(), is("deactivated"));
-                assertThat(url, is(locationUrl));
-                assertThat(login, is(notNullValue()));
+                assertThat(json.get("status").asString()).isEqualTo("deactivated");
+                assertThat(url).isEqualTo(locationUrl);
+                assertThat(login).isNotNull();
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -388,7 +387,7 @@ public class AccountTest {
         Account account = new Account(provider.createLogin());
         account.deactivate();
 
-        assertThat(account.getStatus(), is(Status.DEACTIVATED));
+        assertThat(account.getStatus()).isEqualTo(Status.DEACTIVATED);
 
         provider.close();
     }
@@ -401,9 +400,9 @@ public class AccountTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
-                assertThat(url, is(locationUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("modifyAccount").toString()));
-                assertThat(login, is(notNullValue()));
+                assertThat(url).isEqualTo(locationUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("modifyAccount").toString());
+                assertThat(login).isNotNull();
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -422,17 +421,17 @@ public class AccountTest {
         account.setJSON(getJSON("newAccount"));
 
         EditableAccount editable = account.modify();
-        assertThat(editable, notNullValue());
+        assertThat(editable).isNotNull();
 
         editable.addContact("mailto:foo2@example.com");
         editable.getContacts().add(URI.create("mailto:foo3@example.com"));
         editable.commit();
 
-        assertThat(account.getLocation(), is(locationUrl));
-        assertThat(account.getContacts().size(), is(3));
-        assertThat(account.getContacts().get(0), is(URI.create("mailto:foo@example.com")));
-        assertThat(account.getContacts().get(1), is(URI.create("mailto:foo2@example.com")));
-        assertThat(account.getContacts().get(2), is(URI.create("mailto:foo3@example.com")));
+        assertThat(account.getLocation()).isEqualTo(locationUrl);
+        assertThat(account.getContacts()).hasSize(3);
+        assertThat(account.getContacts()).element(0).isEqualTo(URI.create("mailto:foo@example.com"));
+        assertThat(account.getContacts()).element(1).isEqualTo(URI.create("mailto:foo2@example.com"));
+        assertThat(account.getContacts()).element(2).isEqualTo(URI.create("mailto:foo3@example.com"));
 
         provider.close();
     }

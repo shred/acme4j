@@ -13,14 +13,14 @@
  */
 package org.shredzone.acme4j.provider.pebble;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -35,13 +35,15 @@ public class PebbleAcmeProviderTest {
     public void testAccepts() throws URISyntaxException {
         PebbleAcmeProvider provider = new PebbleAcmeProvider();
 
-        assertThat(provider.accepts(new URI("acme://pebble")), is(true));
-        assertThat(provider.accepts(new URI("acme://pebble/")), is(true));
-        assertThat(provider.accepts(new URI("acme://pebble/some-host.example.com")), is(true));
-        assertThat(provider.accepts(new URI("acme://pebble/some-host.example.com:12345")), is(true));
-        assertThat(provider.accepts(new URI("acme://example.com")), is(false));
-        assertThat(provider.accepts(new URI("http://example.com/acme")), is(false));
-        assertThat(provider.accepts(new URI("https://example.com/acme")), is(false));
+        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+            softly.assertThat(provider.accepts(new URI("acme://pebble"))).isTrue();
+            softly.assertThat(provider.accepts(new URI("acme://pebble/"))).isTrue();
+            softly.assertThat(provider.accepts(new URI("acme://pebble/some-host.example.com"))).isTrue();
+            softly.assertThat(provider.accepts(new URI("acme://pebble/some-host.example.com:12345"))).isTrue();
+            softly.assertThat(provider.accepts(new URI("acme://example.com"))).isFalse();
+            softly.assertThat(provider.accepts(new URI("http://example.com/acme"))).isFalse();
+            softly.assertThat(provider.accepts(new URI("https://example.com/acme"))).isFalse();
+        }
     }
 
     /**
@@ -51,16 +53,16 @@ public class PebbleAcmeProviderTest {
     public void testResolve() throws URISyntaxException {
         PebbleAcmeProvider provider = new PebbleAcmeProvider();
 
-        assertThat(provider.resolve(new URI("acme://pebble")),
-                        is(url("https://localhost:14000/dir")));
-        assertThat(provider.resolve(new URI("acme://pebble/")),
-                        is(url("https://localhost:14000/dir")));
-        assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com")),
-                        is(url("https://pebble.example.com:14000/dir")));
-        assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com:12345")),
-                        is(url("https://pebble.example.com:12345/dir")));
-        assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com:12345/")),
-                        is(url("https://pebble.example.com:12345/dir")));
+        assertThat(provider.resolve(new URI("acme://pebble")))
+                .isEqualTo(url("https://localhost:14000/dir"));
+        assertThat(provider.resolve(new URI("acme://pebble/")))
+                .isEqualTo(url("https://localhost:14000/dir"));
+        assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com")))
+                .isEqualTo(url("https://pebble.example.com:14000/dir"));
+        assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com:12345")))
+                .isEqualTo(url("https://pebble.example.com:12345/dir"));
+        assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com:12345/")))
+                .isEqualTo(url("https://pebble.example.com:12345/dir"));
 
         assertThrows(IllegalArgumentException.class, () -> {
             provider.resolve(new URI("acme://pebble/bad.example.com:port"));

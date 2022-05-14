@@ -13,14 +13,14 @@
  */
 package org.shredzone.acme4j.provider.letsencrypt;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -38,13 +38,15 @@ public class LetsEncryptAcmeProviderTest {
     public void testAccepts() throws URISyntaxException {
         LetsEncryptAcmeProvider provider = new LetsEncryptAcmeProvider();
 
-        assertThat(provider.accepts(new URI("acme://letsencrypt.org")), is(true));
-        assertThat(provider.accepts(new URI("acme://letsencrypt.org/")), is(true));
-        assertThat(provider.accepts(new URI("acme://letsencrypt.org/staging")), is(true));
-        assertThat(provider.accepts(new URI("acme://letsencrypt.org/v02")), is(true));
-        assertThat(provider.accepts(new URI("acme://example.com")), is(false));
-        assertThat(provider.accepts(new URI("http://example.com/acme")), is(false));
-        assertThat(provider.accepts(new URI("https://example.com/acme")), is(false));
+        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+            softly.assertThat(provider.accepts(new URI("acme://letsencrypt.org"))).isTrue();
+            softly.assertThat(provider.accepts(new URI("acme://letsencrypt.org/"))).isTrue();
+            softly.assertThat(provider.accepts(new URI("acme://letsencrypt.org/staging"))).isTrue();
+            softly.assertThat(provider.accepts(new URI("acme://letsencrypt.org/v02"))).isTrue();
+            softly.assertThat(provider.accepts(new URI("acme://example.com"))).isFalse();
+            softly.assertThat(provider.accepts(new URI("http://example.com/acme"))).isFalse();
+            softly.assertThat(provider.accepts(new URI("https://example.com/acme"))).isFalse();
+        }
     }
 
     /**
@@ -54,10 +56,10 @@ public class LetsEncryptAcmeProviderTest {
     public void testResolve() throws URISyntaxException {
         LetsEncryptAcmeProvider provider = new LetsEncryptAcmeProvider();
 
-        assertThat(provider.resolve(new URI("acme://letsencrypt.org")), is(url(V02_DIRECTORY_URL)));
-        assertThat(provider.resolve(new URI("acme://letsencrypt.org/")), is(url(V02_DIRECTORY_URL)));
-        assertThat(provider.resolve(new URI("acme://letsencrypt.org/v02")), is(url(V02_DIRECTORY_URL)));
-        assertThat(provider.resolve(new URI("acme://letsencrypt.org/staging")), is(url(STAGING_DIRECTORY_URL)));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org"))).isEqualTo(url(V02_DIRECTORY_URL));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org/"))).isEqualTo(url(V02_DIRECTORY_URL));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org/v02"))).isEqualTo(url(V02_DIRECTORY_URL));
+        assertThat(provider.resolve(new URI("acme://letsencrypt.org/staging"))).isEqualTo(url(STAGING_DIRECTORY_URL));
 
         assertThrows(IllegalArgumentException.class, () -> {
             provider.resolve(new URI("acme://letsencrypt.org/v99"));

@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j.exception;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Duration;
@@ -37,8 +36,8 @@ public class AcmeRetryAfterExceptionTest {
 
         AcmeRetryAfterException ex = new AcmeRetryAfterException(detail, retryAfter);
 
-        assertThat(ex.getMessage(), is(detail));
-        assertThat(ex.getRetryAfter(), is(retryAfter));
+        assertThat(ex.getMessage()).isEqualTo(detail);
+        assertThat(ex.getRetryAfter()).isEqualTo(retryAfter);
     }
 
     /**

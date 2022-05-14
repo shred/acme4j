@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j.util;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -48,11 +47,11 @@ public class KeyPairUtilsTest {
     @Test
     public void testCreateStandardKeyPair() {
         KeyPair pair = KeyPairUtils.createKeyPair();
-        assertThat(pair, is(notNullValue()));
-        assertThat(pair.getPublic(), is(instanceOf(ECPublicKey.class)));
+        assertThat(pair).isNotNull();
+        assertThat(pair.getPublic()).isInstanceOf(ECPublicKey.class);
         ECPublicKey pk = (ECPublicKey) pair.getPublic();
-        assertThat(pk.getAlgorithm(), is("ECDSA"));
-        assertThat(pk.getParams().getCurve().getField().getFieldSize(), is(384));
+        assertThat(pk.getAlgorithm()).isEqualTo("ECDSA");
+        assertThat(pk.getParams().getCurve().getField().getFieldSize()).isEqualTo(384);
     }
 
     /**
@@ -61,11 +60,11 @@ public class KeyPairUtilsTest {
     @Test
     public void testCreateKeyPair() {
         KeyPair pair = KeyPairUtils.createKeyPair(KEY_SIZE);
-        assertThat(pair, is(notNullValue()));
-        assertThat(pair.getPublic(), is(instanceOf(RSAPublicKey.class)));
+        assertThat(pair).isNotNull();
+        assertThat(pair.getPublic()).isInstanceOf(RSAPublicKey.class);
 
         RSAPublicKey pub = (RSAPublicKey) pair.getPublic();
-        assertThat(pub.getModulus().bitLength(), is(KEY_SIZE));
+        assertThat(pub.getModulus().bitLength()).isEqualTo(KEY_SIZE);
     }
 
     /**
@@ -84,10 +83,10 @@ public class KeyPairUtilsTest {
         }
 
         // Make sure PEM file is properly formatted
-        assertThat(pem, matchesPattern(
+        assertThat(pem).matches(
                   "-----BEGIN RSA PRIVATE KEY-----[\\r\\n]+"
                 + "([a-zA-Z0-9/+=]+[\\r\\n]+)+"
-                + "-----END RSA PRIVATE KEY-----[\\r\\n]*"));
+                + "-----END RSA PRIVATE KEY-----[\\r\\n]*");
 
         // Read keypair from PEM
         KeyPair readPair;
@@ -96,9 +95,9 @@ public class KeyPairUtilsTest {
         }
 
         // Verify that both keypairs are the same
-        assertThat(pair, not(sameInstance(readPair)));
-        assertThat(pair.getPublic().getEncoded(), is(equalTo(readPair.getPublic().getEncoded())));
-        assertThat(pair.getPrivate().getEncoded(), is(equalTo(readPair.getPrivate().getEncoded())));
+        assertThat(pair).isNotSameAs(readPair);
+        assertThat(pair.getPublic().getEncoded()).isEqualTo(readPair.getPublic().getEncoded());
+        assertThat(pair.getPrivate().getEncoded()).isEqualTo(readPair.getPrivate().getEncoded());
     }
 
     /**
@@ -107,8 +106,8 @@ public class KeyPairUtilsTest {
     @Test
     public void testCreateECCKeyPair() {
         KeyPair pair = KeyPairUtils.createECKeyPair(EC_CURVE);
-        assertThat(pair, is(notNullValue()));
-        assertThat(pair.getPublic(), is(instanceOf(ECPublicKey.class)));
+        assertThat(pair).isNotNull();
+        assertThat(pair.getPublic()).isInstanceOf(ECPublicKey.class);
     }
 
     /**
@@ -127,10 +126,10 @@ public class KeyPairUtilsTest {
         }
 
         // Make sure PEM file is properly formatted
-        assertThat(pem, matchesPattern(
+        assertThat(pem).matches(
                   "-----BEGIN EC PRIVATE KEY-----[\\r\\n]+"
                 + "([a-zA-Z0-9/+=]+[\\r\\n]+)+"
-                + "-----END EC PRIVATE KEY-----[\\r\\n]*"));
+                + "-----END EC PRIVATE KEY-----[\\r\\n]*");
 
         // Read keypair from PEM
         KeyPair readPair;
@@ -139,9 +138,9 @@ public class KeyPairUtilsTest {
         }
 
         // Verify that both keypairs are the same
-        assertThat(pair, not(sameInstance(readPair)));
-        assertThat(pair.getPublic().getEncoded(), is(equalTo(readPair.getPublic().getEncoded())));
-        assertThat(pair.getPrivate().getEncoded(), is(equalTo(readPair.getPrivate().getEncoded())));
+        assertThat(pair).isNotSameAs(readPair);
+        assertThat(pair.getPublic().getEncoded()).isEqualTo(readPair.getPublic().getEncoded());
+        assertThat(pair.getPrivate().getEncoded()).isEqualTo(readPair.getPrivate().getEncoded());
     }
 
     /**
@@ -150,7 +149,7 @@ public class KeyPairUtilsTest {
     @Test
     public void testPrivateConstructor() throws Exception {
         Constructor<KeyPairUtils> constructor = KeyPairUtils.class.getDeclaredConstructor();
-        assertThat(Modifier.isPrivate(constructor.getModifiers()), is(true));
+        assertThat(Modifier.isPrivate(constructor.getModifiers())).isTrue();
         constructor.setAccessible(true);
         constructor.newInstance();
     }

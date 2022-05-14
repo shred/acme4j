@@ -13,9 +13,7 @@
  */
 package org.shredzone.acme4j.connector;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -40,50 +38,50 @@ public class TrimmingInputStreamTest {
     @Test
     public void testEmpty() throws IOException {
         String out = trimByStream("");
-        assertThat(out, is(""));
+        assertThat(out).isEqualTo("");
     }
 
     @Test
     public void testLineBreakOnly() throws IOException {
         String out1 = trimByStream("\n");
-        assertThat(out1, is(""));
+        assertThat(out1).isEqualTo("");
 
         String out2 = trimByStream("\r");
-        assertThat(out2, is(""));
+        assertThat(out2).isEqualTo("");
 
         String out3 = trimByStream("\r\n");
-        assertThat(out2, is(""));
+        assertThat(out2).isEqualTo("");
     }
 
     @Test
     public void testTrim() throws IOException {
         String out = trimByStream(FULL_TEXT);
-        assertThat(out, is(TRIMMED_TEXT));
+        assertThat(out).isEqualTo(TRIMMED_TEXT);
     }
 
     @Test
     public void testTrimEndOnly() throws IOException {
         String out = trimByStream(FULL_TEXT + "\r\n\r\n");
-        assertThat(out, is(TRIMMED_TEXT + "\n"));
+        assertThat(out).isEqualTo(TRIMMED_TEXT + "\n");
     }
 
     @Test
     public void testTrimStartOnly() throws IOException {
         String out = trimByStream("\n\n" + FULL_TEXT);
-        assertThat(out, is(TRIMMED_TEXT));
+        assertThat(out).isEqualTo(TRIMMED_TEXT);
     }
 
     @Test
     public void testTrimFull() throws IOException {
         String out = trimByStream("\n\n" + FULL_TEXT + "\r\n\r\n");
-        assertThat(out, is(TRIMMED_TEXT + "\n"));
+        assertThat(out).isEqualTo(TRIMMED_TEXT + "\n");
     }
 
     @Test
     public void testAvailable() throws IOException {
         try (TrimmingInputStream in = new TrimmingInputStream(
                 new ByteArrayInputStream("Test".getBytes(StandardCharsets.US_ASCII)))) {
-            assertThat(in.available(), not(0));
+            assertThat(in.available()).isNotEqualTo(0);
         }
     }
 

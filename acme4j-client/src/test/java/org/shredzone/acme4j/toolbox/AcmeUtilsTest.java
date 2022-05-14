@@ -13,9 +13,8 @@
  */
 package org.shredzone.acme4j.toolbox;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.*;
 
@@ -30,17 +29,18 @@ import java.net.URI;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.hamcrest.BaseMatcher;
-import org.hamcrest.Description;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
@@ -59,7 +59,7 @@ public class AcmeUtilsTest {
     @Test
     public void testPrivateConstructor() throws Exception {
         Constructor<AcmeUtils> constructor = AcmeUtils.class.getDeclaredConstructor();
-        assertThat(Modifier.isPrivate(constructor.getModifiers()), is(true));
+        assertThat(Modifier.isPrivate(constructor.getModifiers())).isTrue();
         constructor.setAccessible(true);
         constructor.newInstance();
     }
@@ -70,7 +70,7 @@ public class AcmeUtilsTest {
     @Test
     public void testSha256HashHexEncode() {
         String hexEncode = hexEncode(sha256hash("foobar"));
-        assertThat(hexEncode, is("c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2"));
+        assertThat(hexEncode).isEqualTo("c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2");
     }
 
     /**
@@ -79,7 +79,7 @@ public class AcmeUtilsTest {
     @Test
     public void testBase64UrlEncode() {
         String base64UrlEncode = base64UrlEncode(sha256hash("foobar"));
-        assertThat(base64UrlEncode, is("w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI"));
+        assertThat(base64UrlEncode).isEqualTo("w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI");
     }
 
     /**
@@ -88,23 +88,36 @@ public class AcmeUtilsTest {
     @Test
     public void testBase64UrlDecode() {
         byte[] base64UrlDecode = base64UrlDecode("w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI");
-        assertThat(base64UrlDecode, is(sha256hash("foobar")));
+        assertThat(base64UrlDecode).isEqualTo(sha256hash("foobar"));
     }
 
     /**
-     * Test base64 URL validation.
+     * Test base64 URL validation for valid values
      */
-    @Test
-    public void testBase64UrlValidate() {
-        assertThat(isValidBase64Url(null), is(false));
-        assertThat(isValidBase64Url(""), is(true));
-        assertThat(isValidBase64Url("         "), is(false));
-        assertThat(isValidBase64Url("Zg"), is(true));
-        assertThat(isValidBase64Url("Zg="), is(false));
-        assertThat(isValidBase64Url("Zg=="), is(false));
-        assertThat(isValidBase64Url("Zm9v"), is(true));
-        assertThat(isValidBase64Url("   Zm9v   "), is(false));
-        assertThat(isValidBase64Url("<some>.illegal#Text"), is(false));
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "",
+            "Zg",
+            "Zm9v",
+    })
+    public void testBase64UrlValid(String url) {
+        assertThat(isValidBase64Url(url)).isTrue();
+    }
+
+    /**
+     * Test base64 URL validation for invalid values
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "         ",
+            "Zg=",
+            "Zg==",
+            "   Zm9v   ",
+            "<some>.illegal#Text",
+    })
+    @NullSource
+    public void testBase64UrlInvalid(String url) {
+        assertThat(isValidBase64Url(url)).isFalse();
     }
 
     /**
@@ -113,57 +126,64 @@ public class AcmeUtilsTest {
     @Test
     public void testToAce() {
         // Test ASCII domains in different notations
-        assertThat(toAce("example.com"), is("example.com"));
-        assertThat(toAce("   example.com  "), is("example.com"));
-        assertThat(toAce("ExAmPlE.CoM"), is("example.com"));
-        assertThat(toAce("foo.example.com"), is("foo.example.com"));
-        assertThat(toAce("bar.foo.example.com"), is("bar.foo.example.com"));
+        assertThat(toAce("example.com")).isEqualTo("example.com");
+        assertThat(toAce("   example.com  ")).isEqualTo("example.com");
+        assertThat(toAce("ExAmPlE.CoM")).isEqualTo("example.com");
+        assertThat(toAce("foo.example.com")).isEqualTo("foo.example.com");
+        assertThat(toAce("bar.foo.example.com")).isEqualTo("bar.foo.example.com");
 
         // Test IDN domains
-        assertThat(toAce("ExÄmþle.¢öM"), is("xn--exmle-hra7p.xn--m-7ba6w"));
+        assertThat(toAce("ExÄmþle.¢öM")).isEqualTo("xn--exmle-hra7p.xn--m-7ba6w");
 
         // Test alternate separators
-        assertThat(toAce("example\u3002com"), is("example.com"));
-        assertThat(toAce("example\uff0ecom"), is("example.com"));
-        assertThat(toAce("example\uff61com"), is("example.com"));
+        assertThat(toAce("example\u3002com")).isEqualTo("example.com");
+        assertThat(toAce("example\uff0ecom")).isEqualTo("example.com");
+        assertThat(toAce("example\uff61com")).isEqualTo("example.com");
 
         // Test ACE encoded domains, they must not change
-        assertThat(toAce("xn--exmle-hra7p.xn--m-7ba6w"),
-                                  is("xn--exmle-hra7p.xn--m-7ba6w"));
+        assertThat(toAce("xn--exmle-hra7p.xn--m-7ba6w"))
+                .isEqualTo("xn--exmle-hra7p.xn--m-7ba6w");
     }
 
     /**
      * Test valid strings.
      */
-    @Test
-    public void testParser() {
-        assertThat(parseTimestamp("2015-12-27T22:58:35.006769519Z"), isDate(2015, 12, 27, 22, 58, 35, 6));
-        assertThat(parseTimestamp("2015-12-27T22:58:35.00676951Z"), isDate(2015, 12, 27, 22, 58, 35, 6));
-        assertThat(parseTimestamp("2015-12-27T22:58:35.0067695Z"), isDate(2015, 12, 27, 22, 58, 35, 6));
-        assertThat(parseTimestamp("2015-12-27T22:58:35.006769Z"), isDate(2015, 12, 27, 22, 58, 35, 6));
-        assertThat(parseTimestamp("2015-12-27T22:58:35.00676Z"), isDate(2015, 12, 27, 22, 58, 35, 6));
-        assertThat(parseTimestamp("2015-12-27T22:58:35.0067Z"), isDate(2015, 12, 27, 22, 58, 35, 6));
-        assertThat(parseTimestamp("2015-12-27T22:58:35.006Z"), isDate(2015, 12, 27, 22, 58, 35, 6));
-        assertThat(parseTimestamp("2015-12-27T22:58:35.01Z"), isDate(2015, 12, 27, 22, 58, 35, 10));
-        assertThat(parseTimestamp("2015-12-27T22:58:35.2Z"), isDate(2015, 12, 27, 22, 58, 35, 200));
-        assertThat(parseTimestamp("2015-12-27T22:58:35Z"), isDate(2015, 12, 27, 22, 58, 35));
-        assertThat(parseTimestamp("2015-12-27t22:58:35z"), isDate(2015, 12, 27, 22, 58, 35));
+    @ParameterizedTest
+    @MethodSource("provideTimestamps")
+    public void testParser(String input, String expected) {
+        Arguments.of(input, expected, within(1, ChronoUnit.MILLIS));
+    }
 
-        assertThat(parseTimestamp("2015-12-27T22:58:35.006769519+02:00"), isDate(2015, 12, 27, 20, 58, 35, 6));
-        assertThat(parseTimestamp("2015-12-27T22:58:35.006+02:00"), isDate(2015, 12, 27, 20, 58, 35, 6));
-        assertThat(parseTimestamp("2015-12-27T22:58:35+02:00"), isDate(2015, 12, 27, 20, 58, 35));
+    private static Stream<Arguments> provideTimestamps() {
+        return Stream.of(
+            Arguments.of("2015-12-27T22:58:35.006769519Z", "2015-12-27T22:58:35.006Z"),
+            Arguments.of("2015-12-27T22:58:35.00676951Z", "2015-12-27T22:58:35.006Z"),
+            Arguments.of("2015-12-27T22:58:35.0067695Z", "2015-12-27T22:58:35.006Z"),
+            Arguments.of("2015-12-27T22:58:35.006769Z", "2015-12-27T22:58:35.006Z"),
+            Arguments.of("2015-12-27T22:58:35.00676Z", "2015-12-27T22:58:35.006Z"),
+            Arguments.of("2015-12-27T22:58:35.0067Z", "2015-12-27T22:58:35.006Z"),
+            Arguments.of("2015-12-27T22:58:35.006Z", "2015-12-27T22:58:35.006Z"),
+            Arguments.of("2015-12-27T22:58:35.01Z", "2015-12-27T22:58:35.010Z"),
+            Arguments.of("2015-12-27T22:58:35.2Z", "2015-12-27T22:58:35.200Z"),
+            Arguments.of("2015-12-27T22:58:35Z", "2015-12-27T22:58:35.000Z"),
+            Arguments.of("2015-12-27t22:58:35z", "2015-12-27T22:58:35.000Z"),
 
-        assertThat(parseTimestamp("2015-12-27T21:58:35.006769519-02:00"), isDate(2015, 12, 27, 23, 58, 35, 6));
-        assertThat(parseTimestamp("2015-12-27T21:58:35.006-02:00"), isDate(2015, 12, 27, 23, 58, 35, 6));
-        assertThat(parseTimestamp("2015-12-27T21:58:35-02:00"), isDate(2015, 12, 27, 23, 58, 35));
+            Arguments.of("2015-12-27T22:58:35.006769519+02:00", "2015-12-27T20:58:35.006Z"),
+            Arguments.of("2015-12-27T22:58:35.006+02:00", "2015-12-27T20:58:35.006Z"),
+            Arguments.of("2015-12-27T22:58:35+02:00", "2015-12-27T20:58:35.000Z"),
 
-        assertThat(parseTimestamp("2015-12-27T22:58:35.006769519+0200"), isDate(2015, 12, 27, 20, 58, 35, 6));
-        assertThat(parseTimestamp("2015-12-27T22:58:35.006+0200"), isDate(2015, 12, 27, 20, 58, 35, 6));
-        assertThat(parseTimestamp("2015-12-27T22:58:35+0200"), isDate(2015, 12, 27, 20, 58, 35));
+            Arguments.of("2015-12-27T21:58:35.006769519-02:00", "2015-12-27T23:58:35.006Z"),
+            Arguments.of("2015-12-27T21:58:35.006-02:00", "2015-12-27T23:58:35.006Z"),
+            Arguments.of("2015-12-27T21:58:35-02:00", "2015-12-27T23:58:35.000Z"),
 
-        assertThat(parseTimestamp("2015-12-27T21:58:35.006769519-0200"), isDate(2015, 12, 27, 23, 58, 35, 6));
-        assertThat(parseTimestamp("2015-12-27T21:58:35.006-0200"), isDate(2015, 12, 27, 23, 58, 35, 6));
-        assertThat(parseTimestamp("2015-12-27T21:58:35-0200"), isDate(2015, 12, 27, 23, 58, 35));
+            Arguments.of("2015-12-27T22:58:35.006769519+0200", "2015-12-27T20:58:35.006Z"),
+            Arguments.of("2015-12-27T22:58:35.006+0200", "2015-12-27T20:58:35.006Z"),
+            Arguments.of("2015-12-27T22:58:35+0200", "2015-12-27T20:58:35.000Z"),
+
+            Arguments.of("2015-12-27T21:58:35.006769519-0200", "2015-12-27T23:58:35.006Z"),
+            Arguments.of("2015-12-27T21:58:35.006-0200", "2015-12-27T23:58:35.006Z"),
+            Arguments.of("2015-12-27T21:58:35-0200", "2015-12-27T23:58:35.000Z")
+        );
     }
 
     /**
@@ -190,9 +210,9 @@ public class AcmeUtilsTest {
      */
     @Test
     public void testStripErrorPrefix() {
-        assertThat(stripErrorPrefix("urn:ietf:params:acme:error:unauthorized"), is("unauthorized"));
-        assertThat(stripErrorPrefix("urn:somethingelse:error:message"), is(nullValue()));
-        assertThat(stripErrorPrefix(null), is(nullValue()));
+        assertThat(stripErrorPrefix("urn:ietf:params:acme:error:unauthorized")).isEqualTo("unauthorized");
+        assertThat(stripErrorPrefix("urn:somethingelse:error:message")).isNull();
+        assertThat(stripErrorPrefix(null)).isNull();
     }
 
     /**
@@ -219,29 +239,33 @@ public class AcmeUtilsTest {
             }
         }
 
-        assertThat(pemFile.toByteArray(), is(originalFile.toByteArray()));
+        assertThat(pemFile.toByteArray()).isEqualTo(originalFile.toByteArray());
     }
 
     /**
-     * Test {@link AcmeUtils#getContentType(String)}.
+     * Test {@link AcmeUtils#getContentType(String)} for JSON types.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "application/json",
+            "application/json; charset=utf-8",
+            "application/json; charset=utf-8 (Plain text)",
+            "application/json; charset=\"utf-8\"",
+            "application/json; charset=\"UTF-8\"; foo=4",
+            " application/json ;foo=4",
+    })
+    public void testGetContentTypeForJson(String contentType) {
+        assertThat(AcmeUtils.getContentType(contentType)).isEqualTo("application/json");
+    }
+
+    /**
+     * Test {@link AcmeUtils#getContentType(String)} with other types.
      */
     @Test
     public void testGetContentType() {
-        assertThat(AcmeUtils.getContentType(null), is(nullValue()));
-        assertThat(AcmeUtils.getContentType("application/json"),
-                        is("application/json"));
-        assertThat(AcmeUtils.getContentType("Application/Problem+JSON"),
-                        is("application/problem+json"));
-        assertThat(AcmeUtils.getContentType("application/json; charset=utf-8"),
-                        is("application/json"));
-        assertThat(AcmeUtils.getContentType("application/json; charset=utf-8 (Plain text)"),
-                        is("application/json"));
-        assertThat(AcmeUtils.getContentType("application/json; charset=\"utf-8\""),
-                        is("application/json"));
-        assertThat(AcmeUtils.getContentType("application/json; charset=\"UTF-8\"; foo=4"),
-                        is("application/json"));
-        assertThat(AcmeUtils.getContentType(" application/json ;foo=4"),
-                        is("application/json"));
+        assertThat(AcmeUtils.getContentType(null)).isNull();
+        assertThat(AcmeUtils.getContentType("Application/Problem+JSON"))
+                .isEqualTo("application/problem+json");
         assertThrows(AcmeProtocolException.class,
                 () -> AcmeUtils.getContentType("application/json; charset=\"iso-8859-1\""));
     }
@@ -263,61 +287,6 @@ public class AcmeUtilsTest {
         assertThrows(IllegalArgumentException.class,
                 () -> AcmeUtils.validateContact(URI.create("mailto:?to=foo@example.com")),
                 "only hfields are accepted");
-    }
-
-    /**
-     * Matches the given time.
-     */
-    private InstantMatcher isDate(int year, int month, int dom, int hour, int minute, int second) {
-        return isDate(year, month, dom, hour, minute, second, 0);
-    }
-
-    /**
-     * Matches the given time and milliseconds.
-     */
-    private InstantMatcher isDate(int year, int month, int dom, int hour, int minute, int second, int ms) {
-        Instant cmp = ZonedDateTime.of(
-                    year, month, dom, hour, minute, second, ms * 1_000_000,
-                    ZoneId.of("UTC")).toInstant();
-        return new InstantMatcher(cmp);
-    }
-
-    /**
-     * Date matcher that gives a readable output on mismatch.
-     */
-    private static class InstantMatcher extends BaseMatcher<Instant> {
-        private final Instant cmp;
-        private final DateTimeFormatter dtf = DateTimeFormatter.ISO_INSTANT;
-
-        public InstantMatcher(Instant cmp) {
-            this.cmp = cmp;
-        }
-
-        @Override
-        public boolean matches(Object item) {
-            if (!(item instanceof Instant)) {
-                return false;
-            }
-
-            Instant date = (Instant) item;
-            return date.equals(cmp);
-        }
-
-        @Override
-        public void describeTo(Description description) {
-            description.appendValue(dtf.format(cmp));
-        }
-
-        @Override
-        public void describeMismatch(Object item, Description description) {
-            if (!(item instanceof Instant)) {
-                description.appendText("is not an Instant");
-                return;
-            }
-
-            Instant date = (Instant) item;
-            description.appendText("was ").appendValue(dtf.format(date));
-        }
     }
 
 }

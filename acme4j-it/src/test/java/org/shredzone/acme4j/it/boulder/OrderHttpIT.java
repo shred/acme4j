@@ -14,9 +14,8 @@
 package org.shredzone.acme4j.it.boulder;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
 
 import java.net.URI;
 import java.security.KeyPair;
@@ -67,7 +66,7 @@ public class OrderHttpIT {
 
         for (Authorization auth : order.getAuthorizations()) {
             Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
-            assertThat(challenge, is(notNullValue()));
+            assertThat(challenge).isNotNull();
 
             client.httpAddToken(challenge.getToken(), challenge.getAuthorization());
 
@@ -77,9 +76,9 @@ public class OrderHttpIT {
                 .pollInterval(1, SECONDS)
                 .timeout(30, SECONDS)
                 .conditionEvaluationListener(cond -> updateAuth(auth))
-                .until(auth::getStatus, not(oneOf(Status.PENDING, Status.PROCESSING)));
+                .untilAsserted(() -> assertThat(auth.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
 
-            assertThat(auth.getStatus(), is(Status.VALID));
+            assertThat(auth.getStatus()).isEqualTo(Status.VALID);
 
             client.httpRemoveToken(challenge.getToken());
         }
@@ -95,14 +94,14 @@ public class OrderHttpIT {
             .pollInterval(1, SECONDS)
             .timeout(30, SECONDS)
             .conditionEvaluationListener(cond -> updateOrder(order))
-            .until(order::getStatus, not(oneOf(Status.PENDING, Status.PROCESSING)));
+            .untilAsserted(() -> assertThat(order.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
 
         Certificate certificate = order.getCertificate();
         X509Certificate cert = certificate.getCertificate();
-        assertThat(cert, not(nullValue()));
-        assertThat(cert.getNotAfter(), not(nullValue()));
-        assertThat(cert.getNotBefore(), not(nullValue()));
-        assertThat(cert.getSubjectX500Principal().getName(), containsString("CN=" + TEST_DOMAIN));
+        assertThat(cert).isNotNull();
+        assertThat(cert.getNotAfter()).isNotNull();
+        assertThat(cert.getNotBefore()).isNotNull();
+        assertThat(cert.getSubjectX500Principal().getName()).contains("CN=" + TEST_DOMAIN);
     }
 
     /**

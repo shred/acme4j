@@ -13,9 +13,8 @@
  */
 package org.shredzone.acme4j.connector;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.net.URI;
 import java.net.URL;
@@ -41,9 +40,9 @@ public class SessionProviderTest {
      */
     @Test
     public void testNone() throws Exception {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Session(new URI("acme://example.org")).provider()
-        );
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> new Session(new URI("acme://example.org")).provider())
+                .withMessage("No ACME provider found for acme://example.org");
     }
 
     /**
@@ -55,11 +54,11 @@ public class SessionProviderTest {
         Session session = new Session(new URI("acme://example.com"));
 
         AcmeProvider provider = session.provider();
-        assertThat(provider, is(instanceOf(Provider1.class)));
+        assertThat(provider).isInstanceOf(Provider1.class);
 
         AcmeProvider provider2 = session.provider();
-        assertThat(provider2, is(instanceOf(Provider1.class)));
-        assertThat(provider2, is(sameInstance(provider)));
+        assertThat(provider2).isInstanceOf(Provider1.class);
+        assertThat(provider2).isSameAs(provider);
     }
 
     /**
@@ -68,9 +67,10 @@ public class SessionProviderTest {
      */
     @Test
     public void testDuplicate() throws Exception {
-        assertThrows(IllegalArgumentException.class, () ->
-            new Session(new URI("acme://example.net")).provider()
-        );
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> new Session(new URI("acme://example.net")).provider())
+                .withMessage("Both ACME providers Provider1 and Provider2 accept" +
+                        " acme://example.net. Please check your classpath.");
     }
 
     public static class Provider1 implements AcmeProvider {

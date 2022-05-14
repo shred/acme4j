@@ -14,8 +14,7 @@
 package org.shredzone.acme4j.smime.email;
 
 import static jakarta.mail.Message.RecipientType.TO;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
@@ -49,11 +48,11 @@ public class EmailProcessorTest extends SMIMETests {
         processor.expectedIdentifier(EmailIdentifier.email(expectedTo));
         processor.expectedIdentifier(new Identifier("email", expectedTo.getAddress()));
 
-        assertThat(processor.getSender(), is(expectedFrom));
-        assertThat(processor.getRecipient(), is(expectedTo));
-        assertThat(processor.getMessageId(), is(Optional.of("<A2299BB.FF7788@example.org>")));
-        assertThat(processor.getToken1(), is(TOKEN_PART1));
-        assertThat(processor.getReplyTo(), contains(email("acme-validator@example.org")));
+        assertThat(processor.getSender()).isEqualTo(expectedFrom);
+        assertThat(processor.getRecipient()).isEqualTo(expectedTo);
+        assertThat(processor.getMessageId()).isEqualTo(Optional.of("<A2299BB.FF7788@example.org>"));
+        assertThat(processor.getToken1()).isEqualTo(TOKEN_PART1);
+        assertThat(processor.getReplyTo()).contains(email("acme-validator@example.org"));
     }
 
     @Test
@@ -118,9 +117,9 @@ public class EmailProcessorTest extends SMIMETests {
 
         EmailProcessor processor = new EmailProcessor(message);
         processor.withChallenge(challenge);
-        assertThat(processor.getToken(), is(TOKEN));
-        assertThat(processor.getAuthorization(), is(KEY_AUTHORIZATION));
-        assertThat(processor.respond(), is(notNullValue()));
+        assertThat(processor.getToken()).isEqualTo(TOKEN);
+        assertThat(processor.getAuthorization()).isEqualTo(KEY_AUTHORIZATION);
+        assertThat(processor.respond()).isNotNull();
     }
 
     @Test
@@ -176,22 +175,22 @@ public class EmailProcessorTest extends SMIMETests {
 
     private void assertResponse(Message response, String expectedBody)
             throws MessagingException, IOException {
-        assertThat(response.getContentType(), is("text/plain"));
-        assertThat(response.getContent().toString(), is(expectedBody));
+        assertThat(response.getContentType()).isEqualTo("text/plain");
+        assertThat(response.getContent().toString()).isEqualTo(expectedBody);
 
         // This is a response, so the expected sender is the recipient of the challenge
-        assertThat(response.getFrom().length, is(1));
-        assertThat(response.getFrom()[0], is(expectedTo));
+        assertThat(response.getFrom()).hasSize(1);
+        assertThat(response.getFrom()[0]).isEqualTo(expectedTo);
 
         // There is a Reply-To header, so we expect the mail to go only there
-        assertThat(response.getRecipients(TO).length, is(1));
-        assertThat(response.getRecipients(TO)[0], is(expectedReplyTo));
+        assertThat(response.getRecipients(TO)).hasSize(1);
+        assertThat(response.getRecipients(TO)[0]).isEqualTo(expectedReplyTo);
 
-        assertThat(response.getSubject(), is("Re: ACME: " + TOKEN_PART1));
+        assertThat(response.getSubject()).isEqualTo("Re: ACME: " + TOKEN_PART1);
 
         String[] inReplyToHeader = response.getHeader("In-Reply-To");
-        assertThat(inReplyToHeader.length, is(1));
-        assertThat(inReplyToHeader[0], is("<A2299BB.FF7788@example.org>"));
+        assertThat(inReplyToHeader).hasSize(1);
+        assertThat(inReplyToHeader[0]).isEqualTo("<A2299BB.FF7788@example.org>");
     }
 
 }

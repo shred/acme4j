@@ -13,10 +13,9 @@
  */
 package org.shredzone.acme4j;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
@@ -25,6 +24,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Test;
@@ -58,22 +58,22 @@ public class AuthorizationTest {
 
         // A snail mail challenge is not available at all
         Challenge c1 = authorization.findChallenge(SNAILMAIL_TYPE);
-        assertThat(c1, is(nullValue()));
+        assertThat(c1).isNull();
 
         // HttpChallenge is available
         Challenge c2 = authorization.findChallenge(Http01Challenge.TYPE);
-        assertThat(c2, is(notNullValue()));
-        assertThat(c2, is(instanceOf(Http01Challenge.class)));
+        assertThat(c2).isNotNull();
+        assertThat(c2).isInstanceOf(Http01Challenge.class);
 
         // Dns01Challenge is available
         Challenge c3 = authorization.findChallenge(Dns01Challenge.TYPE);
-        assertThat(c3, is(notNullValue()));
-        assertThat(c3, is(instanceOf(Dns01Challenge.class)));
+        assertThat(c3).isNotNull();
+        assertThat(c3).isInstanceOf(Dns01Challenge.class);
 
         // TlsAlpn01Challenge is available
         Challenge c4 = authorization.findChallenge(TlsAlpn01Challenge.TYPE);
-        assertThat(c4, is(notNullValue()));
-        assertThat(c4, is(instanceOf(TlsAlpn01Challenge.class)));
+        assertThat(c4).isNotNull();
+        assertThat(c4).isInstanceOf(TlsAlpn01Challenge.class);
     }
 
     /**
@@ -85,19 +85,19 @@ public class AuthorizationTest {
 
         // A snail mail challenge is not available at all
         NonExistingChallenge c1 = authorization.findChallenge(NonExistingChallenge.class);
-        assertThat(c1, is(nullValue()));
+        assertThat(c1).isNull();
 
         // HttpChallenge is available
         Http01Challenge c2 = authorization.findChallenge(Http01Challenge.class);
-        assertThat(c2, is(notNullValue()));
+        assertThat(c2).isNotNull();
 
         // Dns01Challenge is available
         Dns01Challenge c3 = authorization.findChallenge(Dns01Challenge.class);
-        assertThat(c3, is(notNullValue()));
+        assertThat(c3).isNotNull();
 
         // TlsAlpn01Challenge is available
         TlsAlpn01Challenge c4 = authorization.findChallenge(TlsAlpn01Challenge.class);
-        assertThat(c4, is(notNullValue()));
+        assertThat(c4).isNotNull();
     }
 
     /**
@@ -120,7 +120,7 @@ public class AuthorizationTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
-                assertThat(url, is(locationUrl));
+                assertThat(url).isEqualTo(locationUrl);
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -144,16 +144,16 @@ public class AuthorizationTest {
         Authorization auth = new Authorization(login, locationUrl);
         auth.update();
 
-        assertThat(auth.getIdentifier().getDomain(), is("example.org"));
-        assertThat(auth.getStatus(), is(Status.VALID));
-        assertThat(auth.isWildcard(), is(false));
-        assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
-        assertThat(auth.getLocation(), is(locationUrl));
+        assertThat(auth.getIdentifier().getDomain()).isEqualTo("example.org");
+        assertThat(auth.getStatus()).isEqualTo(Status.VALID);
+        assertThat(auth.isWildcard()).isFalse();
+        assertThat(auth.getExpires()).isCloseTo("2016-01-02T17:12:40Z", within(1, ChronoUnit.SECONDS));
+        assertThat(auth.getLocation()).isEqualTo(locationUrl);
 
-        assertThat(auth.getChallenges(), containsInAnyOrder(
+        assertThat(auth.getChallenges()).containsExactlyInAnyOrder(
                         provider.getChallenge(Http01Challenge.TYPE),
                         provider.getChallenge(Dns01Challenge.TYPE),
-                        provider.getChallenge(TlsAlpn01Challenge.TYPE)));
+                        provider.getChallenge(TlsAlpn01Challenge.TYPE));
 
         provider.close();
     }
@@ -166,7 +166,7 @@ public class AuthorizationTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
-                assertThat(url, is(locationUrl));
+                assertThat(url).isEqualTo(locationUrl);
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -188,14 +188,14 @@ public class AuthorizationTest {
         Authorization auth = new Authorization(login, locationUrl);
         auth.update();
 
-        assertThat(auth.getIdentifier().getDomain(), is("example.org"));
-        assertThat(auth.getStatus(), is(Status.VALID));
-        assertThat(auth.isWildcard(), is(true));
-        assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
-        assertThat(auth.getLocation(), is(locationUrl));
+        assertThat(auth.getIdentifier().getDomain()).isEqualTo("example.org");
+        assertThat(auth.getStatus()).isEqualTo(Status.VALID);
+        assertThat(auth.isWildcard()).isTrue();
+        assertThat(auth.getExpires()).isCloseTo("2016-01-02T17:12:40Z", within(1, ChronoUnit.SECONDS));
+        assertThat(auth.getLocation()).isEqualTo(locationUrl);
 
-        assertThat(auth.getChallenges(), containsInAnyOrder(
-                        provider.getChallenge(Dns01Challenge.TYPE)));
+        assertThat(auth.getChallenges()).containsExactlyInAnyOrder(
+                        provider.getChallenge(Dns01Challenge.TYPE));
 
         provider.close();
     }
@@ -211,7 +211,7 @@ public class AuthorizationTest {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
                 requestWasSent.set(true);
-                assertThat(url, is(locationUrl));
+                assertThat(url).isEqualTo(locationUrl);
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -235,17 +235,17 @@ public class AuthorizationTest {
         Authorization auth = new Authorization(login, locationUrl);
 
         // Lazy loading
-        assertThat(requestWasSent.get(), is(false));
-        assertThat(auth.getIdentifier().getDomain(), is("example.org"));
-        assertThat(requestWasSent.get(), is(true));
+        assertThat(requestWasSent).isFalse();
+        assertThat(auth.getIdentifier().getDomain()).isEqualTo("example.org");
+        assertThat(requestWasSent).isTrue();
 
         // Subsequent queries do not trigger another load
         requestWasSent.set(false);
-        assertThat(auth.getIdentifier().getDomain(), is("example.org"));
-        assertThat(auth.getStatus(), is(Status.VALID));
-        assertThat(auth.isWildcard(), is(false));
-        assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
-        assertThat(requestWasSent.get(), is(false));
+        assertThat(auth.getIdentifier().getDomain()).isEqualTo("example.org");
+        assertThat(auth.getStatus()).isEqualTo(Status.VALID);
+        assertThat(auth.isWildcard()).isFalse();
+        assertThat(auth.getExpires()).isCloseTo("2016-01-02T17:12:40Z", within(1, ChronoUnit.SECONDS));
+        assertThat(requestWasSent).isFalse();
 
         provider.close();
     }
@@ -260,7 +260,7 @@ public class AuthorizationTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
-                assertThat(url, is(locationUrl));
+                assertThat(url).isEqualTo(locationUrl);
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -283,18 +283,18 @@ public class AuthorizationTest {
 
         Authorization auth = new Authorization(login, locationUrl);
         AcmeRetryAfterException ex = assertThrows(AcmeRetryAfterException.class, auth::update);
-        assertThat(ex.getRetryAfter(), is(retryAfter));
+        assertThat(ex.getRetryAfter()).isEqualTo(retryAfter);
 
-        assertThat(auth.getIdentifier().getDomain(), is("example.org"));
-        assertThat(auth.getStatus(), is(Status.VALID));
-        assertThat(auth.isWildcard(), is(false));
-        assertThat(auth.getExpires(), is(parseTimestamp("2016-01-02T17:12:40Z")));
-        assertThat(auth.getLocation(), is(locationUrl));
+        assertThat(auth.getIdentifier().getDomain()).isEqualTo("example.org");
+        assertThat(auth.getStatus()).isEqualTo(Status.VALID);
+        assertThat(auth.isWildcard()).isFalse();
+        assertThat(auth.getExpires()).isCloseTo("2016-01-02T17:12:40Z", within(1, ChronoUnit.SECONDS));
+        assertThat(auth.getLocation()).isEqualTo(locationUrl);
 
-        assertThat(auth.getChallenges(), containsInAnyOrder(
+        assertThat(auth.getChallenges()).containsExactlyInAnyOrder(
                         provider.getChallenge(Http01Challenge.TYPE),
                         provider.getChallenge(Dns01Challenge.TYPE),
-                        provider.getChallenge(TlsAlpn01Challenge.TYPE)));
+                        provider.getChallenge(TlsAlpn01Challenge.TYPE));
 
         provider.close();
     }
@@ -308,9 +308,9 @@ public class AuthorizationTest {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 JSON json = claims.toJSON();
-                assertThat(json.get("status").asString(), is("deactivated"));
-                assertThat(url, is(locationUrl));
-                assertThat(login, is(notNullValue()));
+                assertThat(json.get("status").asString()).isEqualTo("deactivated");
+                assertThat(url).isEqualTo(locationUrl);
+                assertThat(login).isNotNull();
                 return HttpURLConnection.HTTP_OK;
             }
 

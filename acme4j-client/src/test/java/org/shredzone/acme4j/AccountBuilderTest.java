@@ -13,11 +13,10 @@
  */
 package org.shredzone.acme4j;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -56,19 +55,19 @@ public class AccountBuilderTest {
 
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
-                assertThat(login, is(notNullValue()));
-                assertThat(url, is(locationUrl));
-                assertThat(isUpdate, is(false));
+                assertThat(login).isNotNull();
+                assertThat(url).isEqualTo(locationUrl);
+                assertThat(isUpdate).isFalse();
                 isUpdate = true;
                 return HttpURLConnection.HTTP_OK;
             }
 
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
-                assertThat(session, is(notNullValue()));
-                assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("newAccount").toString()));
-                assertThat(keypair, is(accountKey));
+                assertThat(session).isNotNull();
+                assertThat(url).isEqualTo(resourceUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("newAccount").toString());
+                assertThat(keypair).isEqualTo(accountKey);
                 isUpdate = false;
                 return HttpURLConnection.HTTP_CREATED;
             }
@@ -94,13 +93,13 @@ public class AccountBuilderTest {
         Session session = provider.createSession();
         Login login = builder.createLogin(session);
 
-        assertThat(login.getAccountLocation(), is(locationUrl));
+        assertThat(login.getAccountLocation()).isEqualTo(locationUrl);
 
         Account account = login.getAccount();
-        assertThat(account.getTermsOfServiceAgreed(), is(true));
-        assertThat(account.getLocation(), is(locationUrl));
-        assertThat(account.hasExternalAccountBinding(), is(false));
-        assertThat(account.getKeyIdentifier(), is(nullValue()));
+        assertThat(account.getTermsOfServiceAgreed()).isTrue();
+        assertThat(account.getLocation()).isEqualTo(locationUrl);
+        assertThat(account.hasExternalAccountBinding()).isFalse();
+        assertThat(account.getKeyIdentifier()).isNull();
 
         provider.close();
     }
@@ -117,9 +116,9 @@ public class AccountBuilderTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
-                assertThat(session, is(notNullValue()));
-                assertThat(url, is(resourceUrl));
-                assertThat(keypair, is(accountKey));
+                assertThat(session).isNotNull();
+                assertThat(url).isEqualTo(resourceUrl);
+                assertThat(keypair).isEqualTo(accountKey);
 
                 JSON binding = claims.toJSON()
                                 .get("externalAccountBinding")
@@ -155,7 +154,7 @@ public class AccountBuilderTest {
         Session session = provider.createSession();
         Login login = builder.createLogin(session);
 
-        assertThat(login.getAccountLocation(), is(locationUrl));
+        assertThat(login.getAccountLocation()).isEqualTo(locationUrl);
 
         provider.close();
     }
@@ -170,10 +169,10 @@ public class AccountBuilderTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
-                assertThat(session, is(notNullValue()));
-                assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("newAccountOnlyExisting").toString()));
-                assertThat(keypair, is(accountKey));
+                assertThat(session).isNotNull();
+                assertThat(url).isEqualTo(resourceUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("newAccountOnlyExisting").toString());
+                assertThat(keypair).isEqualTo(accountKey);
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -197,7 +196,7 @@ public class AccountBuilderTest {
         Session session = provider.createSession();
         Login login = builder.createLogin(session);
 
-        assertThat(login.getAccountLocation(), is(locationUrl));
+        assertThat(login.getAccountLocation()).isEqualTo(locationUrl);
 
         provider.close();
     }

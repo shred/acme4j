@@ -13,12 +13,10 @@
  */
 package org.shredzone.acme4j;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -58,8 +56,8 @@ public class CertificateTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendCertificateRequest(URL url, Login login) {
-                assertThat(url, is(locationUrl));
-                assertThat(login, is(notNullValue()));
+                assertThat(url).isEqualTo(locationUrl);
+                assertThat(login).isNotNull();
                 return HttpURLConnection.HTTP_OK;
             }
 
@@ -70,7 +68,7 @@ public class CertificateTest {
 
             @Override
             public Collection<URL> getLinks(String relation) {
-                assertThat(relation, is("alternate"));
+                assertThat(relation).isEqualTo("alternate");
                 return Arrays.asList(
                         url("https://example.com/acme/alt-cert/1"),
                         url("https://example.com/acme/alt-cert/2"));
@@ -81,12 +79,12 @@ public class CertificateTest {
         cert.download();
 
         X509Certificate downloadedCert = cert.getCertificate();
-        assertThat(downloadedCert.getEncoded(), is(originalCert.get(0).getEncoded()));
+        assertThat(downloadedCert.getEncoded()).isEqualTo(originalCert.get(0).getEncoded());
 
         List<X509Certificate> downloadedChain = cert.getCertificateChain();
-        assertThat(downloadedChain.size(), is(originalCert.size()));
+        assertThat(downloadedChain).hasSize(originalCert.size());
         for (int ix = 0; ix < downloadedChain.size(); ix++) {
-            assertThat(downloadedChain.get(ix).getEncoded(), is(originalCert.get(ix).getEncoded()));
+            assertThat(downloadedChain.get(ix).getEncoded()).isEqualTo(originalCert.get(ix).getEncoded());
         }
 
         byte[] writtenPem;
@@ -106,17 +104,23 @@ public class CertificateTest {
             }
             originalPem = baos.toByteArray();
         }
-        assertThat(writtenPem, is(originalPem));
+        assertThat(writtenPem).isEqualTo(originalPem);
 
-        assertThat(cert.getAlternates(), is(notNullValue()));
-        assertThat(cert.getAlternates().size(), is(2));
-        assertThat(cert.getAlternates().get(0), is(url("https://example.com/acme/alt-cert/1")));
-        assertThat(cert.getAlternates().get(1), is(url("https://example.com/acme/alt-cert/2")));
+        assertThat(cert.getAlternates()).isNotNull();
+        assertThat(cert.getAlternates()).hasSize(2);
+        assertThat(cert.getAlternates()).element(0).isEqualTo(url("https://example.com/acme/alt-cert/1"));
+        assertThat(cert.getAlternates()).element(1).isEqualTo(url("https://example.com/acme/alt-cert/2"));
 
-        assertThat(cert.getAlternateCertificates(), is(notNullValue()));
-        assertThat(cert.getAlternateCertificates().size(), is(2));
-        assertThat(cert.getAlternateCertificates().get(0).getLocation(), is(url("https://example.com/acme/alt-cert/1")));
-        assertThat(cert.getAlternateCertificates().get(1).getLocation(), is(url("https://example.com/acme/alt-cert/2")));
+        assertThat(cert.getAlternateCertificates()).isNotNull();
+        assertThat(cert.getAlternateCertificates()).hasSize(2);
+        assertThat(cert.getAlternateCertificates())
+                .element(0)
+                .extracting(Certificate::getLocation)
+                .isEqualTo(url("https://example.com/acme/alt-cert/1"));
+        assertThat(cert.getAlternateCertificates())
+                .element(1)
+                .extracting(Certificate::getLocation)
+                .isEqualTo(url("https://example.com/acme/alt-cert/2"));
 
         provider.close();
     }
@@ -133,30 +137,30 @@ public class CertificateTest {
 
             @Override
             public int sendCertificateRequest(URL url, Login login) {
-                assertThat(url, is(locationUrl));
-                assertThat(login, is(notNullValue()));
+                assertThat(url).isEqualTo(locationUrl);
+                assertThat(login).isNotNull();
                 certRequested = true;
                 return HttpURLConnection.HTTP_OK;
             }
 
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
-                assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("revokeCertificateRequest").toString()));
-                assertThat(login, is(notNullValue()));
+                assertThat(url).isEqualTo(resourceUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("revokeCertificateRequest").toString());
+                assertThat(login).isNotNull();
                 certRequested = false;
                 return HttpURLConnection.HTTP_OK;
             }
 
             @Override
             public List<X509Certificate> readCertificates() {
-                assertThat(certRequested, is(true));
+                assertThat(certRequested).isTrue();
                 return originalCert;
             }
 
             @Override
             public Collection<URL> getLinks(String relation) {
-                assertThat(relation, is("alternate"));
+                assertThat(relation).isEqualTo("alternate");
                 return Collections.emptyList();
             }
         };
@@ -181,30 +185,30 @@ public class CertificateTest {
 
             @Override
             public int sendCertificateRequest(URL url, Login login) {
-                assertThat(url, is(locationUrl));
-                assertThat(login, is(notNullValue()));
+                assertThat(url).isEqualTo(locationUrl);
+                assertThat(login).isNotNull();
                 certRequested = true;
                 return HttpURLConnection.HTTP_OK;
             }
 
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
-                assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("revokeCertificateWithReasonRequest").toString()));
-                assertThat(login, is(notNullValue()));
+                assertThat(url).isEqualTo(resourceUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("revokeCertificateWithReasonRequest").toString());
+                assertThat(login).isNotNull();
                 certRequested = false;
                 return HttpURLConnection.HTTP_OK;
             }
 
             @Override
             public List<X509Certificate> readCertificates() {
-                assertThat(certRequested, is(true));
+                assertThat(certRequested).isTrue();
                 return originalCert;
             }
 
             @Override
             public Collection<URL> getLinks(String relation) {
-                assertThat(relation, is("alternate"));
+                assertThat(relation).isEqualTo("alternate");
                 return Collections.emptyList();
             }
         };
@@ -222,7 +226,7 @@ public class CertificateTest {
      */
     @Test
     public void testRevocationReason() {
-        assertThat(RevocationReason.code(1), is(RevocationReason.KEY_COMPROMISE));
+        assertThat(RevocationReason.code(1)).isEqualTo(RevocationReason.KEY_COMPROMISE);
     }
 
     /**
@@ -236,10 +240,10 @@ public class CertificateTest {
         TestableConnectionProvider provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
-                assertThat(url, is(resourceUrl));
-                assertThat(claims.toString(), sameJSONAs(getJSON("revokeCertificateWithReasonRequest").toString()));
-                assertThat(session, is(notNullValue()));
-                assertThat(keypair, is(certKeyPair));
+                assertThat(url).isEqualTo(resourceUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("revokeCertificateWithReasonRequest").toString());
+                assertThat(session).isNotNull();
+                assertThat(keypair).isEqualTo(certKeyPair);
                 return HttpURLConnection.HTTP_OK;
             }
         };

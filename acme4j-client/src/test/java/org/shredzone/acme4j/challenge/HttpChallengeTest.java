@@ -13,11 +13,10 @@
  */
 package org.shredzone.acme4j.challenge;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Login;
@@ -44,15 +43,15 @@ public class HttpChallengeTest {
     public void testHttpChallenge() {
         Http01Challenge challenge = new Http01Challenge(login, getJSON("httpChallenge"));
 
-        assertThat(challenge.getType(), is(Http01Challenge.TYPE));
-        assertThat(challenge.getStatus(), is(Status.PENDING));
-        assertThat(challenge.getToken(), is(TOKEN));
-        assertThat(challenge.getAuthorization(), is(KEY_AUTHORIZATION));
+        assertThat(challenge.getType()).isEqualTo(Http01Challenge.TYPE);
+        assertThat(challenge.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(challenge.getToken()).isEqualTo(TOKEN);
+        assertThat(challenge.getAuthorization()).isEqualTo(KEY_AUTHORIZATION);
 
         JSONBuilder response = new JSONBuilder();
         challenge.prepareResponse(response);
 
-        assertThat(response.toString(), sameJSONAs("{}").allowingExtraUnexpectedFields());
+        assertThatJson(response.toString()).isEqualTo("{}");
     }
 
     /**

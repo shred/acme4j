@@ -13,9 +13,9 @@
  */
 package org.shredzone.acme4j.connector;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -28,15 +28,17 @@ public class ResourceTest {
      */
     @Test
     public void testPath() {
-        assertThat(Resource.NEW_NONCE.path(), is("newNonce"));
-        assertThat(Resource.NEW_ACCOUNT.path(), is("newAccount"));
-        assertThat(Resource.NEW_ORDER.path(), is("newOrder"));
-        assertThat(Resource.NEW_AUTHZ.path(), is("newAuthz"));
-        assertThat(Resource.REVOKE_CERT.path(), is("revokeCert"));
-        assertThat(Resource.KEY_CHANGE.path(), is("keyChange"));
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(Resource.NEW_NONCE.path()).isEqualTo("newNonce");
+            softly.assertThat(Resource.NEW_ACCOUNT.path()).isEqualTo("newAccount");
+            softly.assertThat(Resource.NEW_ORDER.path()).isEqualTo("newOrder");
+            softly.assertThat(Resource.NEW_AUTHZ.path()).isEqualTo("newAuthz");
+            softly.assertThat(Resource.REVOKE_CERT.path()).isEqualTo("revokeCert");
+            softly.assertThat(Resource.KEY_CHANGE.path()).isEqualTo("keyChange");
+        });
 
         // fails if there are untested future Resource values
-        assertThat(Resource.values().length, is(6));
+        assertThat(Resource.values()).hasSize(6);
     }
 
 }

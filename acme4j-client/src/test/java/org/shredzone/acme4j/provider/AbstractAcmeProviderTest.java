@@ -13,13 +13,11 @@
  */
 package org.shredzone.acme4j.provider;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
-import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -71,9 +69,9 @@ public class AbstractAcmeProviderTest {
         };
 
         Connection connection = provider.connect(SERVER_URI);
-        assertThat(connection, not(nullValue()));
-        assertThat(connection, instanceOf(DefaultConnection.class));
-        assertThat(invoked.get(), is(true));
+        assertThat(connection).isNotNull();
+        assertThat(connection).isInstanceOf(DefaultConnection.class);
+        assertThat(invoked).isTrue();
     }
 
     /**
@@ -89,7 +87,7 @@ public class AbstractAcmeProviderTest {
         AbstractAcmeProvider provider = new TestAbstractAcmeProvider(connection);
         JSON map = provider.directory(session, SERVER_URI);
 
-        assertThat(map.toString(), sameJSONAs(TestUtils.getJSON("directory").toString()));
+        assertThatJson(map.toString()).isEqualTo(TestUtils.getJSON("directory").toString());
 
         verify(connection).sendRequest(RESOLVED_URL, session, null);
         verify(connection).getNonce();
@@ -120,7 +118,7 @@ public class AbstractAcmeProviderTest {
         AbstractAcmeProvider provider = new TestAbstractAcmeProvider(connection);
         JSON map = provider.directory(session, SERVER_URI);
 
-        assertThat(map.toString(), sameJSONAs(TestUtils.getJSON("directory").toString()));
+        assertThatJson(map.toString()).isEqualTo(TestUtils.getJSON("directory").toString());
 
         verify(session).setDirectoryLastModified(eq(lastModified));
         verify(session).setDirectoryExpires(eq(expiryDate));
@@ -152,7 +150,7 @@ public class AbstractAcmeProviderTest {
         AbstractAcmeProvider provider = new TestAbstractAcmeProvider();
         JSON map = provider.directory(session, SERVER_URI);
 
-        assertThat(map, is(nullValue()));
+        assertThat(map).isNull();
 
         verify(session).getDirectoryExpires();
         verifyNoMoreInteractions(session);
@@ -179,7 +177,7 @@ public class AbstractAcmeProviderTest {
         AbstractAcmeProvider provider = new TestAbstractAcmeProvider(connection);
         JSON map = provider.directory(session, SERVER_URI);
 
-        assertThat(map.toString(), sameJSONAs(TestUtils.getJSON("directory").toString()));
+        assertThatJson(map.toString()).isEqualTo(TestUtils.getJSON("directory").toString());
 
         verify(session).setDirectoryExpires(eq(expiryDate));
         verify(session).setDirectoryLastModified(eq(null));
@@ -214,7 +212,7 @@ public class AbstractAcmeProviderTest {
         AbstractAcmeProvider provider = new TestAbstractAcmeProvider(connection);
         JSON map = provider.directory(session, SERVER_URI);
 
-        assertThat(map, is(nullValue()));
+        assertThat(map).isNull();
 
         verify(session).getDirectoryExpires();
         verify(session).getDirectoryLastModified();
@@ -254,27 +252,27 @@ public class AbstractAcmeProviderTest {
         AbstractAcmeProvider provider = new TestAbstractAcmeProvider();
 
         Challenge c1 = provider.createChallenge(login, getJSON("httpChallenge"));
-        assertThat(c1, not(nullValue()));
-        assertThat(c1, instanceOf(Http01Challenge.class));
+        assertThat(c1).isNotNull();
+        assertThat(c1).isInstanceOf(Http01Challenge.class);
 
         Challenge c2 = provider.createChallenge(login, getJSON("httpChallenge"));
-        assertThat(c2, not(sameInstance(c1)));
+        assertThat(c2).isNotSameAs(c1);
 
         Challenge c3 = provider.createChallenge(login, getJSON("dnsChallenge"));
-        assertThat(c3, not(nullValue()));
-        assertThat(c3, instanceOf(Dns01Challenge.class));
+        assertThat(c3).isNotNull();
+        assertThat(c3).isInstanceOf(Dns01Challenge.class);
 
         Challenge c4 = provider.createChallenge(login, getJSON("tlsAlpnChallenge"));
-        assertThat(c4, not(nullValue()));
-        assertThat(c4, instanceOf(TlsAlpn01Challenge.class));
+        assertThat(c4).isNotNull();
+        assertThat(c4).isInstanceOf(TlsAlpn01Challenge.class);
 
         JSON json6 = new JSONBuilder()
                     .put("type", "foobar-01")
                     .put("url", "https://example.com/some/challenge")
                     .toJSON();
         Challenge c6 = provider.createChallenge(login, json6);
-        assertThat(c6, not(nullValue()));
-        assertThat(c6, instanceOf(Challenge.class));
+        assertThat(c6).isNotNull();
+        assertThat(c6).isInstanceOf(Challenge.class);
 
         JSON json7 = new JSONBuilder()
                         .put("type", "foobar-01")
@@ -282,8 +280,8 @@ public class AbstractAcmeProviderTest {
                         .put("url", "https://example.com/some/challenge")
                         .toJSON();
         Challenge c7 = provider.createChallenge(login, json7);
-        assertThat(c7, not(nullValue()));
-        assertThat(c7, instanceOf(TokenChallenge.class));
+        assertThat(c7).isNotNull();
+        assertThat(c7).isInstanceOf(TokenChallenge.class);
 
         assertThrows(AcmeProtocolException.class, () -> {
             JSON json8 = new JSONBuilder()
@@ -310,19 +308,19 @@ public class AbstractAcmeProviderTest {
 
         @Override
         public boolean accepts(URI serverUri) {
-            assertThat(serverUri, is(SERVER_URI));
+            assertThat(serverUri).isEqualTo(SERVER_URI);
             return true;
         }
 
         @Override
         public URL resolve(URI serverUri) {
-            assertThat(serverUri, is(SERVER_URI));
+            assertThat(serverUri).isEqualTo(SERVER_URI);
             return RESOLVED_URL;
         }
 
         @Override
         public Connection connect(URI serverUri) {
-            assertThat(serverUri, is(SERVER_URI));
+            assertThat(serverUri).isEqualTo(SERVER_URI);
             return connection != null ? connection : super.connect(serverUri);
         }
     }

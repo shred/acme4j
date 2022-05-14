@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j.toolbox;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
 import java.security.KeyPair;
@@ -41,7 +40,7 @@ public class JSONBuilderTest {
     @Test
     public void testEmpty() {
         JSONBuilder cb = new JSONBuilder();
-        assertThat(cb.toString(), is("{}"));
+        assertThat(cb.toString()).isEqualTo("{}");
     }
 
     /**
@@ -54,27 +53,25 @@ public class JSONBuilderTest {
 
         JSONBuilder cb = new JSONBuilder();
         res = cb.put("fooStr", "String");
-        assertThat(res, is(sameInstance(cb)));
+        assertThat(res).isSameAs(cb);
 
         res = cb.put("fooInt", 123);
-        assertThat(res, is(sameInstance(cb)));
+        assertThat(res).isSameAs(cb);
 
         res = cb.put("fooInt", 456);
-        assertThat(res, is(sameInstance(cb)));
+        assertThat(res).isSameAs(cb);
 
-        assertThat(cb.toString(), is("{\"fooStr\":\"String\",\"fooInt\":456}"));
+        assertThat(cb.toString()).isEqualTo("{\"fooStr\":\"String\",\"fooInt\":456}");
 
         Map<String, Object> map = cb.toMap();
-        assertThat(map.keySet(), hasSize(2));
-        assertThat(map, allOf(
-                hasEntry("fooInt", 456),
-                hasEntry("fooStr", (Object) "String")
-        ));
+        assertThat(map.keySet()).hasSize(2);
+        assertThat(map).extracting("fooInt").isEqualTo(456);
+        assertThat(map).extracting("fooStr").isEqualTo("String");
 
         JSON json = cb.toJSON();
-        assertThat(json.keySet(), hasSize(2));
-        assertThat(json.get("fooInt").asInt(), is(456));
-        assertThat(json.get("fooStr").asString(), is("String"));
+        assertThat(json.keySet()).hasSize(2);
+        assertThat(json.get("fooInt").asInt()).isEqualTo(456);
+        assertThat(json.get("fooStr").asString()).isEqualTo("String");
     }
 
     /**
@@ -90,7 +87,7 @@ public class JSONBuilderTest {
         cb.put("fooDuration", duration);
         cb.put("fooNull", (Object) null);
 
-        assertThat(cb.toString(), is("{\"fooDate\":\"2016-06-01T03:13:46Z\",\"fooDuration\":300,\"fooNull\":null}"));
+        assertThat(cb.toString()).isEqualTo("{\"fooDate\":\"2016-06-01T03:13:46Z\",\"fooDuration\":300,\"fooNull\":null}");
     }
 
     /**
@@ -104,8 +101,8 @@ public class JSONBuilderTest {
 
         JSONBuilder cb = new JSONBuilder();
         res = cb.putBase64("foo", data);
-        assertThat(res, is(sameInstance(cb)));
-        assertThat(cb.toString(), is("{\"foo\":\"YWJjMTIz\"}"));
+        assertThat(res).isSameAs(cb);
+        assertThat(cb.toString()).isEqualTo("{\"foo\":\"YWJjMTIz\"}");
     }
 
     /**
@@ -119,16 +116,16 @@ public class JSONBuilderTest {
 
         JSONBuilder cb = new JSONBuilder();
         res = cb.putKey("foo", keyPair.getPublic());
-        assertThat(res, is(sameInstance(cb)));
+        assertThat(res).isSameAs(cb);
 
         Map<String, Object> json = JsonUtil.parseJson(cb.toString());
-        assertThat(json, hasKey("foo"));
+        assertThat(json).containsKey("foo");
 
         Map<String, String> jwk = (Map<String, String>) json.get("foo");
-        assertThat(jwk.keySet(), hasSize(3));
-        assertThat(jwk, hasEntry("n", TestUtils.N));
-        assertThat(jwk, hasEntry("e", TestUtils.E));
-        assertThat(jwk, hasEntry("kty", TestUtils.KTY));
+        assertThat(jwk.keySet()).hasSize(3);
+        assertThat(jwk).extracting("n").isEqualTo(TestUtils.N);
+        assertThat(jwk).extracting("e").isEqualTo(TestUtils.E);
+        assertThat(jwk).extracting("kty").isEqualTo(TestUtils.KTY);
     }
 
     /**
@@ -138,14 +135,14 @@ public class JSONBuilderTest {
     public void testObject() {
         JSONBuilder cb = new JSONBuilder();
         JSONBuilder sub = cb.object("sub");
-        assertThat(sub, not(sameInstance(cb)));
+        assertThat(sub).isNotSameAs(cb);
 
-        assertThat(cb.toString(), is("{\"sub\":{}}"));
+        assertThat(cb.toString()).isEqualTo("{\"sub\":{}}");
 
         cb.put("foo", 123);
         sub.put("foo", 456);
 
-        assertThat(cb.toString(), is("{\"sub\":{\"foo\":456},\"foo\":123}"));
+        assertThat(cb.toString()).isEqualTo("{\"sub\":{\"foo\":456},\"foo\":123}");
     }
 
     /**
@@ -157,18 +154,18 @@ public class JSONBuilderTest {
 
         JSONBuilder cb1 = new JSONBuilder();
         res = cb1.array("ar", Collections.emptyList());
-        assertThat(res, is(sameInstance(cb1)));
-        assertThat(cb1.toString(), is("{\"ar\":[]}"));
+        assertThat(res).isSameAs(cb1);
+        assertThat(cb1.toString()).isEqualTo("{\"ar\":[]}");
 
         JSONBuilder cb2 = new JSONBuilder();
         res = cb2.array("ar", Collections.singletonList(123));
-        assertThat(res, is(sameInstance(cb2)));
-        assertThat(cb2.toString(), is("{\"ar\":[123]}"));
+        assertThat(res).isSameAs(cb2);
+        assertThat(cb2.toString()).isEqualTo("{\"ar\":[123]}");
 
         JSONBuilder cb3 = new JSONBuilder();
         res = cb3.array("ar", Arrays.asList(123, "foo", 456));
-        assertThat(res, is(sameInstance(cb3)));
-        assertThat(cb3.toString(), is("{\"ar\":[123,\"foo\",456]}"));
+        assertThat(res).isSameAs(cb3);
+        assertThat(cb3.toString()).isEqualTo("{\"ar\":[123,\"foo\",456]}");
     }
 
 }
