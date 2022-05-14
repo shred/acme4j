@@ -40,7 +40,7 @@ public interface ResponseBodyGenerator {
     /**
      * The content-type of the response body: {@value #RESPONSE_BODY_TYPE}
      */
-    public static final String RESPONSE_BODY_TYPE = "text/plain";
+    String RESPONSE_BODY_TYPE = "text/plain";
 
     /**
      * Sets the content of the {@link Message}.

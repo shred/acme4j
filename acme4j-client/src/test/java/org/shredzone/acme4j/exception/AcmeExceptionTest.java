@@ -19,7 +19,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link AcmeException}.
@@ -48,7 +48,7 @@ public class AcmeExceptionTest {
 
         AcmeException ex = new AcmeException(message, cause);
         assertThat(ex.getMessage(), is(message));
-        assertThat(ex.getCause(), is((Throwable) cause));
+        assertThat(ex.getCause(), is(cause));
     }
 
 }

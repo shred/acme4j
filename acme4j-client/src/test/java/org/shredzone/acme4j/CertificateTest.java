@@ -33,7 +33,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;

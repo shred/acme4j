@@ -15,10 +15,11 @@ package org.shredzone.acme4j.challenge;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -57,10 +58,12 @@ public class HttpChallengeTest {
     /**
      * Test that an exception is thrown if there is no token.
      */
-    @Test(expected = AcmeProtocolException.class)
+    @Test
     public void testNoTokenSet() {
-        Http01Challenge challenge = new Http01Challenge(login, getJSON("httpNoTokenChallenge"));
-        challenge.getToken();
+        assertThrows(AcmeProtocolException.class, () -> {
+            Http01Challenge challenge = new Http01Challenge(login, getJSON("httpNoTokenChallenge"));
+            challenge.getToken();
+        });
     }
 
 }

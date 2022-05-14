@@ -15,11 +15,12 @@ package org.shredzone.acme4j.smime.challenge;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URI;
 import java.net.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.provider.AbstractAcmeProvider;
@@ -63,10 +64,12 @@ public class EmailReply00ChallengeTest extends SMIMETests {
     /**
      * Test that {@link EmailReply00Challenge#getAuthorization()} is not implemented.
      */
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testInvalidGetAuthorization() {
-        EmailReply00Challenge challenge = new EmailReply00Challenge(mockLogin(), getJSON("emailReplyChallenge"));
-        challenge.getAuthorization();
+        assertThrows(UnsupportedOperationException.class, () -> {
+            EmailReply00Challenge challenge = new EmailReply00Challenge(mockLogin(), getJSON("emailReplyChallenge"));
+            challenge.getAuthorization();
+        });
     }
 
     /**

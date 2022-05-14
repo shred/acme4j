@@ -67,7 +67,7 @@ public class AcmeUserActionRequiredException extends AcmeServerException {
         try {
             return instance.toURL();
         } catch (MalformedURLException ex) {
-            throw new AcmeProtocolException("Bad instance URL: " + instance.toString(), ex);
+            throw new AcmeProtocolException("Bad instance URL: " + instance, ex);
         }
     }
 

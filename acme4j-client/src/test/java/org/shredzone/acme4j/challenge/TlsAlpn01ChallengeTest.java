@@ -18,7 +18,7 @@ import static org.hamcrest.Matchers.is;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.toolbox.AcmeUtils;

@@ -16,14 +16,13 @@ package org.shredzone.acme4j.it.pebble;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Login;
@@ -192,11 +191,11 @@ public class AccountIT extends PebbleITBase {
         KeyPair newKeyPair = createKeyPair();
         acct.changeKey(newKeyPair);
 
-        assertThrows("Old account key is still accessible", AcmeServerException.class, () -> {
+        assertThrows(AcmeServerException.class, () -> {
             Session sessionOldKey = new Session(pebbleURI());
             Account oldAccount = sessionOldKey.login(location, keyPair).getAccount();
             oldAccount.update();
-        });
+        }, "Old account key is still accessible");
 
         Session sessionNewKey = new Session(pebbleURI());
         Account newAccount = sessionNewKey.login(location, newKeyPair).getAccount();
@@ -223,12 +222,12 @@ public class AccountIT extends PebbleITBase {
         assertThat(acct.getStatus(), is(Status.DEACTIVATED));
 
         // Make sure account cannot be accessed any more...
-        AcmeUnauthorizedException ex = assertThrows("Account can still be accessed",
-                AcmeUnauthorizedException.class, () -> {
+        AcmeUnauthorizedException ex = assertThrows(AcmeUnauthorizedException.class,
+                () -> {
             Session session2 = new Session(pebbleURI());
             Account acct2 = session2.login(location, keyPair).getAccount();
             acct2.update();
-        });
+        }, "Account can still be accessed");
         assertThat(ex.getMessage(), is("Account has been deactivated"));
     }
 

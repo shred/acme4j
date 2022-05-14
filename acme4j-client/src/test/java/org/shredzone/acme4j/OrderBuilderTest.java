@@ -15,8 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
@@ -29,9 +28,10 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -179,20 +179,22 @@ public class OrderBuilderTest {
     /**
      * Test that an auto-renewal {@link Order} cannot be created if unsupported by the CA.
      */
-    @Test(expected = AcmeException.class)
+    @Test
     public void testAutoRenewOrderCertificateFails() throws Exception {
-        TestableConnectionProvider provider = new TestableConnectionProvider();
-        provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
+        assertThrows(AcmeException.class, () -> {
+            TestableConnectionProvider provider = new TestableConnectionProvider();
+            provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
 
-        Login login = provider.createLogin();
+            Login login = provider.createLogin();
 
-        Account account = new Account(login);
-        account.newOrder()
-                        .domain("example.org")
-                        .autoRenewal()
-                        .create();
+            Account account = new Account(login);
+            account.newOrder()
+                            .domain("example.org")
+                            .autoRenewal()
+                            .create();
 
-        provider.close();
+            provider.close();
+        });
     }
 
     /**
@@ -207,35 +209,35 @@ public class OrderBuilderTest {
 
         Account account = new Account(login);
 
-        assertThrows("accepted notBefore", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             OrderBuilder ob = account.newOrder().autoRenewal();
             ob.notBefore(someInstant);
-        });
+        }, "accepted notBefore");
 
-        assertThrows("accepted notAfter", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             OrderBuilder ob = account.newOrder().autoRenewal();
             ob.notAfter(someInstant);
-        });
+        }, "accepted notAfter");
 
-        assertThrows("accepted autoRenewal", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             OrderBuilder ob = account.newOrder().notBefore(someInstant);
             ob.autoRenewal();
-        });
+        }, "accepted autoRenewal");
 
-        assertThrows("accepted autoRenewalStart", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             OrderBuilder ob = account.newOrder().notBefore(someInstant);
             ob.autoRenewalStart(someInstant);
-        });
+        }, "accepted autoRenewalStart");
 
-        assertThrows("accepted autoRenewalEnd", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             OrderBuilder ob = account.newOrder().notBefore(someInstant);
             ob.autoRenewalEnd(someInstant);
-        });
+        }, "accepted autoRenewalEnd");
 
-        assertThrows("accepted autoRenewalLifetime", IllegalArgumentException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             OrderBuilder ob = account.newOrder().notBefore(someInstant);
             ob.autoRenewalLifetime(Duration.ofDays(7));
-        });
+        }, "accepted autoRenewalLifetime");
 
         provider.close();
     }

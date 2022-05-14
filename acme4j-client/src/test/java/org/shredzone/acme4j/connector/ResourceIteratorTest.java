@@ -15,6 +15,7 @@ package org.shredzone.acme4j.connector;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.io.IOException;
@@ -27,8 +28,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
@@ -47,7 +48,7 @@ public class ResourceIteratorTest {
     private final List<URL> resourceURLs = new ArrayList<>(PAGES * RESOURCES_PER_PAGE);
     private final List<URL> pageURLs = new ArrayList<>(PAGES);
 
-    @Before
+    @BeforeEach
     public void setup() {
         resourceURLs.clear();
         for (int ix = 0; ix < RESOURCES_PER_PAGE * PAGES; ix++) {
@@ -63,13 +64,15 @@ public class ResourceIteratorTest {
     /**
      * Test if the {@link ResourceIterator} handles a {@code null} start URL.
      */
-    @Test(expected = NoSuchElementException.class)
+    @Test
     public void nullTest() throws IOException {
-        Iterator<Authorization> it = createIterator(null);
+        assertThrows(NoSuchElementException.class, () -> {
+            Iterator<Authorization> it = createIterator(null);
 
-        assertThat(it, not(nullValue()));
-        assertThat(it.hasNext(), is(false));
-        it.next(); // throws NoSuchElementException
+            assertThat(it, not(nullValue()));
+            assertThat(it.hasNext(), is(false));
+            it.next(); // throws NoSuchElementException
+        });
     }
 
     /**
@@ -114,11 +117,13 @@ public class ResourceIteratorTest {
     /**
      * Test that {@link Iterator#remove()} fails.
      */
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void removeTest() throws IOException {
-        Iterator<Authorization> it = createIterator(pageURLs.get(0));
-        it.next();
-        it.remove(); // throws UnsupportedOperationException
+        assertThrows(UnsupportedOperationException.class, () -> {
+            Iterator<Authorization> it = createIterator(pageURLs.get(0));
+            it.next();
+            it.remove(); // throws UnsupportedOperationException
+        });
     }
 
     /**

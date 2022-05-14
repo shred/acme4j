@@ -15,8 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
@@ -26,7 +25,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyPair;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;

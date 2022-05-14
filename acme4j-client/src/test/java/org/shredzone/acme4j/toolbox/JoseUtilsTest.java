@@ -16,7 +16,7 @@ package org.shredzone.acme4j.toolbox;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -33,7 +33,7 @@ import org.jose4j.jwk.PublicJsonWebKey;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.CompactSerializer;
 import org.jose4j.lang.JoseException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link JoseUtils}.
@@ -307,7 +307,7 @@ public class JoseUtilsTest {
             expectedPayload.append("}");
             assertThat(decodedPayload, sameJSONAs(expectedPayload.toString()));
         } catch (JoseException ex) {
-            fail(ex.getMessage());
+            fail(ex);
         }
     }
 

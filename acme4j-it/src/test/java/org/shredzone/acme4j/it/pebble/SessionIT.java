@@ -19,7 +19,7 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 import java.net.URI;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Metadata;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.connector.Resource;

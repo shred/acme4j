@@ -18,7 +18,7 @@ import static org.hamcrest.Matchers.is;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests of {@link EmailIdentifier}.

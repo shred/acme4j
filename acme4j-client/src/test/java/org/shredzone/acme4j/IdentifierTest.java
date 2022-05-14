@@ -15,14 +15,13 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 
@@ -74,9 +73,11 @@ public class IdentifierTest {
         assertThat(id2.getDomain(), is("xn--xml-qla7ae5k.com"));
     }
 
-    @Test(expected = AcmeProtocolException.class)
+    @Test
     public void testNoDns() {
-        new Identifier("foo", "example.com").getDomain();
+        assertThrows(AcmeProtocolException.class, () ->
+            new Identifier("foo", "example.com").getDomain()
+        );
     }
 
     @Test
@@ -97,9 +98,11 @@ public class IdentifierTest {
         assertThat(id3.getIP().getHostAddress(), is("192.168.2.99"));
     }
 
-    @Test(expected = AcmeProtocolException.class)
+    @Test
     public void testNoIp() {
-        new Identifier("foo", "example.com").getIP();
+        assertThrows(AcmeProtocolException.class, () ->
+            new Identifier("foo", "example.com").getIP()
+        );
     }
 
     @Test

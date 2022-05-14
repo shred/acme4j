@@ -16,7 +16,7 @@ package org.shredzone.acme4j.exception;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link AcmeProtocolException}.

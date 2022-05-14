@@ -18,8 +18,8 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
@@ -51,8 +51,8 @@ import java.util.Optional;
 
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.CompactSerializer;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
@@ -85,7 +85,7 @@ public class DefaultConnectionTest {
     private Login login;
     private KeyPair keyPair;
 
-    @Before
+    @BeforeEach
     public void setup() throws AcmeException, IOException {
         mockUrlConnection = mock(HttpURLConnection.class);
 
@@ -390,8 +390,6 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             conn.handleRetryAfter("no header");
-        } catch (AcmeRetryAfterException ex) {
-            fail("an AcmeRetryAfterException was thrown");
         }
 
         verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
@@ -407,8 +405,6 @@ public class DefaultConnectionTest {
         try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
             conn.conn = mockUrlConnection;
             conn.handleRetryAfter("http ok");
-        } catch (AcmeRetryAfterException ex) {
-            fail("an AcmeRetryAfterException was thrown");
         }
     }
 
@@ -725,22 +721,15 @@ public class DefaultConnectionTest {
             @Override
             public void resetNonce(Session session) {
                 assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                if (session.getNonce() == null) {
-                    session.setNonce(nonce1);
-                } else {
-                    fail("unknown nonce");
-                }
+                assertThat(session.getNonce(), nullValue());
+                session.setNonce(nonce1);
             }
 
             @Override
             public String getNonce() {
                 assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                if (session.getNonce() == nonce1) {
-                    return nonce2;
-                } else {
-                    fail("unknown nonce");
-                    return null;
-                }
+                assertThat(session.getNonce(), is(nonce1));
+                return nonce2;
             }
         }) {
             JSONBuilder cb = new JSONBuilder();
@@ -800,22 +789,15 @@ public class DefaultConnectionTest {
             @Override
             public void resetNonce(Session session) {
                 assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                if (session.getNonce() == null) {
-                    session.setNonce(nonce1);
-                } else {
-                    fail("unknown nonce");
-                }
+                assertThat(session.getNonce(), nullValue());
+                session.setNonce(nonce1);
             }
 
             @Override
             public String getNonce() {
                 assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                if (session.getNonce() == nonce1) {
-                    return nonce2;
-                } else {
-                    fail("unknown nonce");
-                    return null;
-                }
+                assertThat(session.getNonce(), is(nonce1));
+                return nonce2;
             }
         }) {
             conn.sendSignedPostAsGetRequest(requestUrl, login);
@@ -873,22 +855,15 @@ public class DefaultConnectionTest {
             @Override
             public void resetNonce(Session session) {
                 assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                if (session.getNonce() == null) {
-                    session.setNonce(nonce1);
-                } else {
-                    fail("unknown nonce");
-                }
+                assertThat(session.getNonce(), nullValue());
+                session.setNonce(nonce1);
             }
 
             @Override
             public String getNonce() {
                 assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                if (session.getNonce() == nonce1) {
-                    return nonce2;
-                } else {
-                    fail("unknown nonce");
-                    return null;
-                }
+                assertThat(session.getNonce(), is(nonce1));
+                return nonce2;
             }
         }) {
             conn.sendCertificateRequest(requestUrl, login);
@@ -924,22 +899,15 @@ public class DefaultConnectionTest {
             @Override
             public void resetNonce(Session session) {
                 assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                if (session.getNonce() == null) {
-                    session.setNonce(nonce1);
-                } else {
-                    fail("unknown nonce");
-                }
+                assertThat(session.getNonce(), nullValue());
+                session.setNonce(nonce1);
             }
 
             @Override
             public String getNonce() {
                 assertThat(session, is(sameInstance(DefaultConnectionTest.this.session)));
-                if (session.getNonce() == nonce1) {
-                    return nonce2;
-                } else {
-                    fail("unknown nonce");
-                    return null;
-                }
+                assertThat(session.getNonce(), is(nonce1));
+                return nonce2;
             }
         }) {
             JSONBuilder cb = new JSONBuilder();
@@ -989,17 +957,19 @@ public class DefaultConnectionTest {
     /**
      * Test signed POST requests if there is no nonce.
      */
-    @Test(expected = AcmeException.class)
+    @Test
     public void testSendSignedRequestNoNonce() throws Exception {
         when(mockHttpConnection.openConnection(eq(new URL("https://example.com/acme/new-nonce")), any()))
                 .thenReturn(mockUrlConnection);
         when(mockUrlConnection.getResponseCode())
                 .thenReturn(HttpURLConnection.HTTP_NOT_FOUND);
 
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            JSONBuilder cb = new JSONBuilder();
-            conn.sendSignedRequest(requestUrl, cb, DefaultConnectionTest.this.session, DefaultConnectionTest.this.keyPair);
-        }
+        assertThrows(AcmeException.class, () -> {
+            try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+                JSONBuilder cb = new JSONBuilder();
+                conn.sendSignedRequest(requestUrl, cb, DefaultConnectionTest.this.session, DefaultConnectionTest.this.keyPair);
+            }
+        });
     }
 
     /**
@@ -1061,7 +1031,7 @@ public class DefaultConnectionTest {
     /**
      * Test that a bad certificate throws an exception.
      */
-    @Test(expected = AcmeProtocolException.class)
+    @Test
     public void testReadBadCertificate() throws Exception {
         // Build a broken certificate chain PEM file
         byte[] brokenPem;
@@ -1079,10 +1049,12 @@ public class DefaultConnectionTest {
         when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/pem-certificate-chain");
         when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(brokenPem));
 
-        try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
-            conn.readCertificates();
-        }
+        assertThrows(AcmeProtocolException.class, () -> {
+            try (DefaultConnection conn = new DefaultConnection(mockHttpConnection)) {
+                conn.conn = mockUrlConnection;
+                conn.readCertificates();
+            }
+        });
     }
 
     /**

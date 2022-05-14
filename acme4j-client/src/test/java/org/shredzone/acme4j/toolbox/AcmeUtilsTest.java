@@ -16,8 +16,7 @@ package org.shredzone.acme4j.toolbox;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.*;
 
 import java.io.ByteArrayOutputStream;
@@ -40,17 +39,16 @@ import java.util.List;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
-import org.shredzone.acme4j.toolbox.AcmeUtils.*;
 
 /**
  * Unit tests for {@link AcmeUtils}.
  */
 public class AcmeUtilsTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         Security.addProvider(new BouncyCastleProvider());
     }
@@ -173,14 +171,18 @@ public class AcmeUtilsTest {
      */
     @Test
     public void testInvalid() {
-        assertThrows("accepted empty string", IllegalArgumentException.class,
-                () -> parseTimestamp(""));
-        assertThrows("accepted nonsense string", IllegalArgumentException.class,
-                () -> parseTimestamp("abc"));
-        assertThrows("accepted date only string", IllegalArgumentException.class,
-                () -> parseTimestamp("2015-12-27"));
-        assertThrows("accepted string without time", IllegalArgumentException.class,
-                () -> parseTimestamp("2015-12-27T"));
+        assertThrows(IllegalArgumentException.class,
+                () -> parseTimestamp(""),
+                "accepted empty string");
+        assertThrows(IllegalArgumentException.class,
+                () -> parseTimestamp("abc"),
+                "accepted nonsense string");
+        assertThrows(IllegalArgumentException.class,
+                () -> parseTimestamp("2015-12-27"),
+                "accepted date only string");
+        assertThrows(IllegalArgumentException.class,
+                () -> parseTimestamp("2015-12-27T"),
+                "accepted string without time");
     }
 
     /**
@@ -252,12 +254,15 @@ public class AcmeUtilsTest {
     public void testValidateContact() {
         AcmeUtils.validateContact(URI.create("mailto:foo@example.com"));
 
-        assertThrows("multiple recipients are accepted", IllegalArgumentException.class,
-                () -> AcmeUtils.validateContact(URI.create("mailto:foo@example.com,bar@example.com")));
-        assertThrows("hfields are accepted", IllegalArgumentException.class,
-                () -> AcmeUtils.validateContact(URI.create("mailto:foo@example.com?to=bar@example.com")));
-        assertThrows("only hfields are accepted", IllegalArgumentException.class,
-                () -> AcmeUtils.validateContact(URI.create("mailto:?to=foo@example.com")));
+        assertThrows(IllegalArgumentException.class,
+                () -> AcmeUtils.validateContact(URI.create("mailto:foo@example.com,bar@example.com")),
+                "multiple recipients are accepted");
+        assertThrows(IllegalArgumentException.class,
+                () -> AcmeUtils.validateContact(URI.create("mailto:foo@example.com?to=bar@example.com")),
+                "hfields are accepted");
+        assertThrows(IllegalArgumentException.class,
+                () -> AcmeUtils.validateContact(URI.create("mailto:?to=foo@example.com")),
+                "only hfields are accepted");
     }
 
     /**

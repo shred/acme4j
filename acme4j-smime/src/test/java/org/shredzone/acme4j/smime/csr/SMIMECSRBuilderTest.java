@@ -16,7 +16,7 @@ package org.shredzone.acme4j.smime.csr;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -47,9 +47,8 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 import org.hamcrest.Matchers;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.util.KeyPairUtils;
 
 /**
@@ -60,7 +59,7 @@ public class SMIMECSRBuilderTest {
     private static KeyPair testKey;
     private static KeyPair testEcKey;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         Security.addProvider(new BouncyCastleProvider());
 
@@ -241,10 +240,12 @@ public class SMIMECSRBuilderTest {
     /**
      * Make sure an exception is thrown when nothing is set.
      */
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testNoEmail() throws IOException {
-        SMIMECSRBuilder builder = new SMIMECSRBuilder();
-        builder.sign(testKey);
+        assertThrows(IllegalStateException.class, () -> {
+            SMIMECSRBuilder builder = new SMIMECSRBuilder();
+            builder.sign(testKey);
+        });
     }
 
     /**
@@ -254,13 +255,13 @@ public class SMIMECSRBuilderTest {
     public void testNoSign() throws IOException {
         SMIMECSRBuilder builder = new SMIMECSRBuilder();
 
-        assertThrows("getCSR", IllegalStateException.class, builder::getCSR);
-        assertThrows("getEncoded", IllegalStateException.class, builder::getEncoded);
-        assertThrows("write", IllegalStateException.class,() -> {
+        assertThrows(IllegalStateException.class, builder::getCSR, "getCSR");
+        assertThrows(IllegalStateException.class, builder::getEncoded, "getEncoded");
+        assertThrows(IllegalStateException.class, () -> {
             try (StringWriter w = new StringWriter()) {
                 builder.write(w);
             }
-        });
+        },"write");
     }
 
     /**

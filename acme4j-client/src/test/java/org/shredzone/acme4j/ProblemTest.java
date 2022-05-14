@@ -23,7 +23,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.shredzone.acme4j.toolbox.TestUtils;

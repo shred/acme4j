@@ -15,8 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
@@ -28,7 +27,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
@@ -105,10 +104,12 @@ public class AuthorizationTest {
      * Test that {@link Authorization#findChallenge(String)} fails on duplicate
      * challenges.
      */
-    @Test(expected = AcmeProtocolException.class)
+    @Test
     public void testFailDuplicateChallenges() throws IOException {
-        Authorization authorization = createChallengeAuthorization();
-        authorization.findChallenge(DUPLICATE_TYPE);
+        assertThrows(AcmeProtocolException.class, () -> {
+            Authorization authorization = createChallengeAuthorization();
+            authorization.findChallenge(DUPLICATE_TYPE);
+        });
     }
 
     /**

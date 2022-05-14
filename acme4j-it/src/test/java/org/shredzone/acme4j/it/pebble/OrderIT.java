@@ -17,8 +17,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URI;
 import java.security.KeyPair;
@@ -27,7 +26,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Authorization;
@@ -43,7 +42,6 @@ import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeServerException;
-import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.it.BammBammClient;
 import org.shredzone.acme4j.util.CSRBuilder;
 
@@ -186,9 +184,7 @@ public class OrderIT extends PebbleITBase {
                 .conditionEvaluationListener(cond -> updateAuth(auth))
                 .until(auth::getStatus, not(oneOf(Status.PENDING, Status.PROCESSING)));
 
-            if (auth.getStatus() != Status.VALID) {
-                fail("Authorization failed");
-            }
+            assertThat(auth.getStatus(), is(Status.VALID));
         }
 
         CSRBuilder csr = new CSRBuilder();
@@ -204,9 +200,7 @@ public class OrderIT extends PebbleITBase {
             .conditionEvaluationListener(cond -> updateOrder(order))
             .until(order::getStatus, not(oneOf(Status.PENDING, Status.PROCESSING, Status.READY)));
 
-        if (order.getStatus() != Status.VALID) {
-            fail("Order failed");
-        }
+        assertThat(order.getStatus(), is(Status.VALID));
 
         Certificate certificate = order.getCertificate();
         X509Certificate cert = certificate.getCertificate();
@@ -224,16 +218,17 @@ public class OrderIT extends PebbleITBase {
         revoker.revoke(session, certificate, keyPair, domainKeyPair);
 
         // Make sure certificate is revoked
-        AcmeException ex = assertThrows("Could download revoked cert", AcmeException.class, () -> {
+        AcmeException ex = assertThrows(AcmeException.class, () -> {
             Login login2 = session.login(account.getLocation(), keyPair);
             Certificate cert2 = login2.bindCertificate(certificate.getLocation());
             cert2.download();
-        });
+        }, "Could download revoked cert");
         assertThat(ex.getMessage(), is("HTTP 404: Not Found"));
 
         // Try to revoke again
-        AcmeServerException ex2 = assertThrows("Could revoke again", AcmeServerException.class,
-                () -> certificate.revoke());
+        AcmeServerException ex2 = assertThrows(AcmeServerException.class,
+                () -> certificate.revoke(),
+                "Could revoke again");
         assertThat(ex2.getProblem().getType(), is(URI.create("urn:ietf:params:acme:error:alreadyRevoked")));
     }
 

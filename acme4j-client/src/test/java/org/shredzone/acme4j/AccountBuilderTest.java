@@ -26,7 +26,7 @@ import java.security.KeyPair;
 import javax.crypto.SecretKey;
 
 import org.jose4j.jwx.CompactSerializer;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;

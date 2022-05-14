@@ -15,8 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.*;
 
@@ -27,7 +26,7 @@ import java.security.KeyPair;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -61,10 +60,12 @@ public class SessionTest {
         assertThat(session3, not(nullValue()));
         assertThat(session3.getServerUri(), is(serverUri));
 
-        assertThrows("Bad URI in constructor", IllegalArgumentException.class,
-                () -> new Session("#*aBaDuRi*#"));
-        assertThrows("Unsupported URI", IllegalArgumentException.class,
-                () -> new Session(URI.create("acme://invalid"), new GenericAcmeProvider()));
+        assertThrows(IllegalArgumentException.class,
+                () -> new Session("#*aBaDuRi*#"),
+                "Bad URI in constructor");
+        assertThrows(IllegalArgumentException.class,
+                () -> new Session(URI.create("acme://invalid"), new GenericAcmeProvider()),
+                "Unsupported URI");
     }
 
     /**

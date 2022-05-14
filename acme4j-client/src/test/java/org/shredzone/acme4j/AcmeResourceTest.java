@@ -15,8 +15,7 @@ package org.shredzone.acme4j;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -25,7 +24,7 @@ import java.io.ObjectOutputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
@@ -97,16 +96,18 @@ public class AcmeResourceTest {
     /**
      * Test if a rebind attempt fails.
      */
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testRebind() throws Exception {
-        Login login = TestUtils.login();
-        URL location = new URL("http://example.com/acme/resource");
+        assertThrows(IllegalStateException.class, () -> {
+            Login login = TestUtils.login();
+            URL location = new URL("http://example.com/acme/resource");
 
-        AcmeResource resource = new DummyResource(login, location);
-        assertThat(resource.getLogin(), is(login));
+            AcmeResource resource = new DummyResource(login, location);
+            assertThat(resource.getLogin(), is(login));
 
-        Login login2 = TestUtils.login();
-        resource.rebind(login2); // fails to rebind to another login
+            Login login2 = TestUtils.login();
+            resource.rebind(login2); // fails to rebind to another login
+        });
     }
 
     /**

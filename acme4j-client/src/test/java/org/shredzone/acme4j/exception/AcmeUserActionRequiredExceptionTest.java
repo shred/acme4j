@@ -22,7 +22,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Problem;
 
 /**

@@ -23,8 +23,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.time.Duration;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link HttpConnector}.
@@ -59,7 +59,7 @@ public class HttpConnectorTest {
      * builds.
      */
     @Test
-    @Category(HttpURLConnection.class)
+    @Tag("requires-network")
     public void testOpenConnection() throws IOException {
         NetworkSettings settings = new NetworkSettings();
         HttpConnector connector = new HttpConnector();

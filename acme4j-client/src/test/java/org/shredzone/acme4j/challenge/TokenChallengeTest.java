@@ -13,12 +13,11 @@
  */
 package org.shredzone.acme4j.challenge;
 
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;

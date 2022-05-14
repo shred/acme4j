@@ -189,7 +189,7 @@ public class DefaultConnection implements Connection {
             }
 
             JSON result = JSON.parse(in);
-            LOG.debug("Result JSON: {}", result.toString());
+            LOG.debug("Result JSON: {}", result);
             return result;
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);

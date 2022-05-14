@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.BERTags;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Identifier;
 import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 import org.shredzone.acme4j.toolbox.AcmeUtils;

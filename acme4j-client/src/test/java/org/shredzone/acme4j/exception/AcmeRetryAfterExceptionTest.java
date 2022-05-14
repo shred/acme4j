@@ -15,11 +15,12 @@ package org.shredzone.acme4j.exception;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Duration;
 import java.time.Instant;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link AcmeRetryAfterException}.
@@ -43,9 +44,11 @@ public class AcmeRetryAfterExceptionTest {
     /**
      * Test that date is required.
      */
-    @Test(expected = NullPointerException.class)
-    public void testRequiredAcmeRetryAfterException() throws AcmeException {
-        throw new AcmeRetryAfterException("null-test", null);
+    @Test
+    public void testRequiredAcmeRetryAfterException() {
+        assertThrows(NullPointerException.class, () -> {
+            throw new AcmeRetryAfterException("null-test", null);
+        });
     }
 
 }

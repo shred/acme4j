@@ -16,6 +16,7 @@ package org.shredzone.acme4j.smime.email;
 import static jakarta.mail.Message.RecipientType.TO;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -23,7 +24,7 @@ import java.util.Optional;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Identifier;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.smime.EmailIdentifier;
@@ -35,10 +36,10 @@ import org.shredzone.acme4j.smime.challenge.EmailReply00Challenge;
  */
 public class EmailProcessorTest extends SMIMETests {
 
-    private InternetAddress expectedFrom = email("acme-generator@example.org");
-    private InternetAddress expectedTo = email("alexey@example.com");
-    private InternetAddress expectedReplyTo = email("acme-validator@example.org");
-    private Message message = mockMessage("challenge");
+    private final InternetAddress expectedFrom = email("acme-generator@example.org");
+    private final InternetAddress expectedTo = email("alexey@example.com");
+    private final InternetAddress expectedReplyTo = email("acme-validator@example.org");
+    private final Message message = mockMessage("challenge");
 
     @Test
     public void testEmailParser() throws MessagingException {
@@ -55,46 +56,60 @@ public class EmailProcessorTest extends SMIMETests {
         assertThat(processor.getReplyTo(), contains(email("acme-validator@example.org")));
     }
 
-    @Test(expected = AcmeProtocolException.class)
+    @Test
     public void textExpectedFromFails() {
-        EmailProcessor processor = new EmailProcessor(message);
-        processor.expectedFrom(expectedTo);
+        assertThrows(AcmeProtocolException.class, () -> {
+            EmailProcessor processor = new EmailProcessor(message);
+            processor.expectedFrom(expectedTo);
+        });
     }
 
-    @Test(expected = AcmeProtocolException.class)
+    @Test
     public void textExpectedToFails() {
-        EmailProcessor processor = new EmailProcessor(message);
-        processor.expectedTo(expectedFrom);
+        assertThrows(AcmeProtocolException.class, () -> {
+            EmailProcessor processor = new EmailProcessor(message);
+            processor.expectedTo(expectedFrom);
+        });
     }
 
-    @Test(expected = AcmeProtocolException.class)
+    @Test
     public void textExpectedIdentifierFails1() {
-        EmailProcessor processor = new EmailProcessor(message);
-        processor.expectedIdentifier(EmailIdentifier.email(expectedFrom));
+        assertThrows(AcmeProtocolException.class, () -> {
+            EmailProcessor processor = new EmailProcessor(message);
+            processor.expectedIdentifier(EmailIdentifier.email(expectedFrom));
+        });
     }
 
-    @Test(expected = AcmeProtocolException.class)
+    @Test
     public void textExpectedIdentifierFails2() {
-        EmailProcessor processor = new EmailProcessor(message);
-        processor.expectedIdentifier(Identifier.ip("192.168.0.1"));
+        assertThrows(AcmeProtocolException.class, () -> {
+            EmailProcessor processor = new EmailProcessor(message);
+            processor.expectedIdentifier(Identifier.ip("192.168.0.1"));
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void textNoChallengeFails1() {
-        EmailProcessor processor = new EmailProcessor(message);
-        processor.getToken();
+        assertThrows(IllegalStateException.class, () -> {
+            EmailProcessor processor = new EmailProcessor(message);
+            processor.getToken();
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void textNoChallengeFails2() {
-        EmailProcessor processor = new EmailProcessor(message);
-        processor.getAuthorization();
+        assertThrows(IllegalStateException.class, () -> {
+            EmailProcessor processor = new EmailProcessor(message);
+            processor.getAuthorization();
+        });
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void textNoChallengeFails3() {
-        EmailProcessor processor = new EmailProcessor(message);
-        processor.respond();
+        assertThrows(IllegalStateException.class, () -> {
+            EmailProcessor processor = new EmailProcessor(message);
+            processor.respond();
+        });
     }
 
     @Test
@@ -108,11 +123,13 @@ public class EmailProcessorTest extends SMIMETests {
         assertThat(processor.respond(), is(notNullValue()));
     }
 
-    @Test(expected = AcmeProtocolException.class)
+    @Test
     public void testChallengeMismatch() {
-        EmailReply00Challenge challenge = mockChallenge("emailReplyChallengeMismatch");
-        EmailProcessor processor = new EmailProcessor(message);
-        processor.withChallenge(challenge);
+        assertThrows(AcmeProtocolException.class, () -> {
+            EmailReply00Challenge challenge = mockChallenge("emailReplyChallengeMismatch");
+            EmailProcessor processor = new EmailProcessor(message);
+            processor.withChallenge(challenge);
+        });
     }
 
     @Test

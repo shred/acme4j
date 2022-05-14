@@ -15,14 +15,13 @@ package org.shredzone.acme4j.connector;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.time.Duration;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link NetworkSettings}.
@@ -52,14 +51,18 @@ public class NetworkSettingsTest {
     public void testInvalidTimeouts() {
         NetworkSettings settings = new NetworkSettings();
 
-        assertThrows("timeout accepted null", IllegalArgumentException.class,
-                () -> settings.setTimeout(null));
-        assertThrows("timeout accepted zero duration", IllegalArgumentException.class,
-                () -> settings.setTimeout(Duration.ZERO));
-        assertThrows("timeout accepted negative duration", IllegalArgumentException.class,
-                () -> settings.setTimeout(Duration.ofSeconds(20).negated()));
-        assertThrows("timeout accepted out of range value", IllegalArgumentException.class,
-                () -> settings.setTimeout(Duration.ofMillis(Integer.MAX_VALUE + 1L)));
+        assertThrows(IllegalArgumentException.class,
+                () -> settings.setTimeout(null),
+                "timeout accepted null");
+        assertThrows(IllegalArgumentException.class,
+                () -> settings.setTimeout(Duration.ZERO),
+                "timeout accepted zero duration");
+        assertThrows(IllegalArgumentException.class,
+                () -> settings.setTimeout(Duration.ofSeconds(20).negated()),
+                "timeout accepted negative duration");
+        assertThrows(IllegalArgumentException.class,
+                () -> settings.setTimeout(Duration.ofMillis(Integer.MAX_VALUE + 1L)),
+                "timeout accepted out of range value");
     }
 
 }

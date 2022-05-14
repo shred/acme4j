@@ -25,7 +25,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collection;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Problem;
 
 /**

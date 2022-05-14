@@ -17,13 +17,12 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.fail;
 
 import java.net.URI;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Authorization;
@@ -80,9 +79,7 @@ public class OrderHttpIT {
                 .conditionEvaluationListener(cond -> updateAuth(auth))
                 .until(auth::getStatus, not(oneOf(Status.PENDING, Status.PROCESSING)));
 
-            if (auth.getStatus() != Status.VALID) {
-                fail("Authorization failed");
-            }
+            assertThat(auth.getStatus(), is(Status.VALID));
 
             client.httpRemoveToken(challenge.getToken());
         }

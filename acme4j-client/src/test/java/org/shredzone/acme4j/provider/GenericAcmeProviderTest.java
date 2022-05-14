@@ -20,7 +20,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 

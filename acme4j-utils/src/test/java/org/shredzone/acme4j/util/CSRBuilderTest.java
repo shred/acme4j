@@ -15,8 +15,7 @@ package org.shredzone.acme4j.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -24,6 +23,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.Security;
 import java.util.Arrays;
@@ -45,8 +45,8 @@ import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Identifier;
 
 /**
@@ -57,7 +57,7 @@ public class CSRBuilderTest {
     private static KeyPair testKey;
     private static KeyPair testEcKey;
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         Security.addProvider(new BouncyCastleProvider());
 
@@ -230,25 +230,29 @@ public class CSRBuilderTest {
             builder.write(baos);
             pemBytes = baos.toByteArray();
         }
-        assertThat(new String(pemBytes, "utf-8"), is(equalTo(pem)));
+        assertThat(new String(pemBytes, StandardCharsets.UTF_8), is(equalTo(pem)));
     }
 
     /**
      * Make sure an exception is thrown when no domain is set.
      */
-    @Test(expected = IllegalStateException.class)
+    @Test
     public void testNoDomain() throws IOException {
-        CSRBuilder builder = new CSRBuilder();
-        builder.sign(testKey);
+        assertThrows(IllegalStateException.class, () -> {
+            CSRBuilder builder = new CSRBuilder();
+            builder.sign(testKey);
+        });
     }
 
     /**
      * Make sure an exception is thrown when an unknown identifier type is used.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testUnknownType() {
-        CSRBuilder builder = new CSRBuilder();
-        builder.addIdentifier(new Identifier("UnKnOwN", "123"));
+        assertThrows(IllegalArgumentException.class, () -> {
+            CSRBuilder builder = new CSRBuilder();
+            builder.addIdentifier(new Identifier("UnKnOwN", "123"));
+        });
     }
 
     /**
@@ -258,13 +262,13 @@ public class CSRBuilderTest {
     public void testNoSign() throws IOException {
         CSRBuilder builder = new CSRBuilder();
 
-        assertThrows("getCSR()", IllegalStateException.class, builder::getCSR);
-        assertThrows("getEncoded()", IllegalStateException.class, builder::getEncoded);
-        assertThrows("write()", IllegalStateException.class, () -> {
+        assertThrows(IllegalStateException.class, builder::getCSR, "getCSR()");
+        assertThrows(IllegalStateException.class, builder::getEncoded, "getEncoded()");
+        assertThrows(IllegalStateException.class, () -> {
             try (StringWriter w = new StringWriter()) {
                 builder.write(w);
-            };
-        });
+            }
+        }, "write()");
     }
 
     /**

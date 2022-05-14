@@ -15,12 +15,13 @@ package org.shredzone.acme4j.connector;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URI;
 import java.net.URL;
 import java.util.ServiceLoader;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -38,9 +39,11 @@ public class SessionProviderTest {
      * There are no testing providers accepting {@code acme://example.org}. Test that
      * connecting to this URI will result in an {@link IllegalArgumentException}.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNone() throws Exception {
-        new Session(new URI("acme://example.org")).provider();
+        assertThrows(IllegalArgumentException.class, () ->
+            new Session(new URI("acme://example.org")).provider()
+        );
     }
 
     /**
@@ -63,9 +66,11 @@ public class SessionProviderTest {
      * There are two testing providers accepting {@code acme://example.net}. Test that
      * connecting to this URI will result in an {@link IllegalArgumentException}.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testDuplicate() throws Exception {
-        new Session(new URI("acme://example.net")).provider();
+        assertThrows(IllegalArgumentException.class, () ->
+            new Session(new URI("acme://example.net")).provider()
+        );
     }
 
     public static class Provider1 implements AcmeProvider {

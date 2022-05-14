@@ -19,7 +19,7 @@ import static org.mockito.Mockito.mock;
 
 import java.net.URL;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.AcmeResource;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.toolbox.TestUtils;

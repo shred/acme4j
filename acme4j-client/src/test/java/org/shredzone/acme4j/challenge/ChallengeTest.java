@@ -16,8 +16,7 @@ package org.shredzone.acme4j.challenge;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
@@ -29,7 +28,7 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Status;
@@ -85,9 +84,11 @@ public class ChallengeTest {
     /**
      * Test that an exception is thrown on challenge type mismatch.
      */
-    @Test(expected = AcmeProtocolException.class)
+    @Test
     public void testNotAcceptable() {
-        new Http01Challenge(TestUtils.login(), getJSON("dnsChallenge"));
+        assertThrows(AcmeProtocolException.class, () ->
+            new Http01Challenge(TestUtils.login(), getJSON("dnsChallenge"))
+        );
     }
 
     /**
@@ -197,9 +198,11 @@ public class ChallengeTest {
     /**
      * Test that unmarshalling something different like a challenge fails.
      */
-    @Test(expected = AcmeProtocolException.class)
+    @Test
     public void testBadUnmarshall() {
-        new Challenge(TestUtils.login(), getJSON("updateAccountResponse"));
+        assertThrows(AcmeProtocolException.class, () ->
+            new Challenge(TestUtils.login(), getJSON("updateAccountResponse"))
+        );
     }
 
 }

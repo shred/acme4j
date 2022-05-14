@@ -19,7 +19,7 @@ import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.IOException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link AcmeNetworkException}.

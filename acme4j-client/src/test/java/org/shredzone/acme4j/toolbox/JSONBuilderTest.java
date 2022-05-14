@@ -28,7 +28,7 @@ import java.util.Map;
 
 import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit test for {@link JSONBuilder}.

@@ -27,8 +27,8 @@ import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link KeyPairUtils}.
@@ -37,7 +37,7 @@ public class KeyPairUtilsTest {
     private static final int KEY_SIZE = 2048;
     private static final String EC_CURVE = "secp256r1";
 
-    @BeforeClass
+    @BeforeAll
     public static void setup() {
         Security.addProvider(new BouncyCastleProvider());
     }

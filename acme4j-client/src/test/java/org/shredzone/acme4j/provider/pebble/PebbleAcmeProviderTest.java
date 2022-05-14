@@ -15,14 +15,13 @@ package org.shredzone.acme4j.provider.pebble;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * Unit tests for {@link PebbleAcmeProvider}.

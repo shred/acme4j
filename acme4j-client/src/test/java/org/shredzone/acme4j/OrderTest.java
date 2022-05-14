@@ -27,7 +27,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;

@@ -22,7 +22,7 @@ import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Order;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -51,7 +51,7 @@ public abstract class PebbleITBase {
 
     private final List<CleanupCallback> cleanup = new ArrayList<>();
 
-    @After
+    @AfterEach
     public void performCleanup() throws Exception {
         for (CleanupCallback callback : cleanup) {
             callback.cleanup();

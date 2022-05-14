@@ -17,7 +17,8 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
@@ -34,7 +35,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.CompactSerializer;
 import org.jose4j.lang.JoseException;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Account.EditableAccount;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
@@ -255,13 +256,11 @@ public class AccountTest {
 
         Account account = new Account(login);
 
-        try {
-            account.preAuthorizeDomain("example.org");
-            fail("preauthorization was accepted");
-        } catch (AcmeServerException ex) {
-            assertThat(ex.getType(), is(problemType));
-            assertThat(ex.getMessage(), is(problemDetail));
-        }
+        AcmeServerException ex = assertThrows(AcmeServerException.class, () ->
+            account.preAuthorizeDomain("example.org")
+        );
+        assertThat(ex.getType(), is(problemType));
+        assertThat(ex.getMessage(), is(problemDetail));
 
         provider.close();
     }
@@ -278,27 +277,9 @@ public class AccountTest {
         Login login = provider.createLogin();
         Account account = login.getAccount();
 
-        try {
-            account.preAuthorizeDomain(null);
-            fail("null domain was accepted");
-        } catch (NullPointerException ex) {
-            // expected
-        }
-
-        try {
-            account.preAuthorizeDomain("");
-            fail("empty domain string was accepted");
-        } catch (IllegalArgumentException ex) {
-            // expected
-        }
-
-        try {
-            account.preAuthorizeDomain("example.com");
-            fail("preauthorization was accepted");
-        } catch (AcmeException ex) {
-            // expected
-            assertThat(ex.getMessage(), is("Server does not offer newAuthz"));
-        }
+        assertThrows(NullPointerException.class, () -> account.preAuthorizeDomain(null));
+        assertThrows(IllegalArgumentException.class, () -> account.preAuthorizeDomain(""));
+        assertThrows(AcmeException.class, () -> account.preAuthorizeDomain("example.com"));
 
         provider.close();
     }
@@ -342,7 +323,7 @@ public class AccountTest {
                     expectedPayload.append("}}");
                     assertThat(decodedPayload, sameJSONAs(expectedPayload.toString()));
                 } catch (JoseException ex) {
-                    fail("decoding inner payload failed");
+                    fail(ex);
                 }
 
                 return HttpURLConnection.HTTP_OK;
@@ -370,15 +351,17 @@ public class AccountTest {
     /**
      * Test that the same account key is not accepted for change.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testChangeSameKey() throws Exception {
-        TestableConnectionProvider provider = new TestableConnectionProvider();
-        Login login = provider.createLogin();
+        assertThrows(IllegalArgumentException.class, () -> {
+            TestableConnectionProvider provider = new TestableConnectionProvider();
+            Login login = provider.createLogin();
 
-        Account account = new Account(login);
-        account.changeKey(login.getKeyPair());
+            Account account = new Account(login);
+            account.changeKey(login.getKeyPair());
 
-        provider.close();
+            provider.close();
+        });
     }
 
     /**
