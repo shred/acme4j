@@ -14,6 +14,8 @@
 package org.shredzone.acme4j.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
@@ -29,6 +31,7 @@ import java.util.Arrays;
 
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.pkcs.Attribute;
@@ -42,6 +45,7 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Identifier;
@@ -54,6 +58,9 @@ public class CSRBuilderTest {
     private static KeyPair testKey;
     private static KeyPair testEcKey;
 
+    /**
+     * Add provider, create some key pairs
+     */
     @BeforeAll
     public static void setup() {
         Security.addProvider(new BouncyCastleProvider());
@@ -67,34 +74,7 @@ public class CSRBuilderTest {
      */
     @Test
     public void testGenerate() throws IOException {
-        CSRBuilder builder = new CSRBuilder();
-        builder.addDomain("abc.de");
-        builder.addDomain("fg.hi");
-        builder.addDomains("jklm.no", "pqr.st");
-        builder.addDomains(Arrays.asList("uv.wx", "y.z"));
-        builder.addDomain("*.wild.card");
-        builder.addIP(InetAddress.getByName("192.168.0.1"));
-        builder.addIP(InetAddress.getByName("192.168.0.2"));
-        builder.addIPs(InetAddress.getByName("10.0.0.1"), InetAddress.getByName("10.0.0.2"));
-        builder.addIPs(Arrays.asList(InetAddress.getByName("fd00::1"), InetAddress.getByName("fd00::2")));
-        builder.addIdentifier(Identifier.dns("ide1.nt"));
-        builder.addIdentifier(Identifier.ip("192.168.5.5"));
-        builder.addIdentifiers(Identifier.dns("ide2.nt"), Identifier.ip("192.168.5.6"));
-        builder.addIdentifiers(Arrays.asList(Identifier.dns("ide3.nt"), Identifier.ip("192.168.5.7")));
-
-        builder.setCountry("XX");
-        builder.setLocality("Testville");
-        builder.setOrganization("Testing Co");
-        builder.setOrganizationalUnit("Testunit");
-        builder.setState("ABC");
-
-        assertThat(builder.toString()).isEqualTo("CN=abc.de,C=XX,L=Testville,O=Testing Co,"
-                        + "OU=Testunit,ST=ABC,"
-                        + "DNS=abc.de,DNS=fg.hi,DNS=jklm.no,DNS=pqr.st,DNS=uv.wx,DNS=y.z,DNS=*.wild.card,"
-                        + "DNS=ide1.nt,DNS=ide2.nt,DNS=ide3.nt,"
-                        + "IP=192.168.0.1,IP=192.168.0.2,IP=10.0.0.1,IP=10.0.0.2,"
-                        + "IP=fd00:0:0:0:0:0:0:1,IP=fd00:0:0:0:0:0:0:2,"
-                        + "IP=192.168.5.5,IP=192.168.5.6,IP=192.168.5.7");
+        CSRBuilder builder = createBuilderWithValues();
 
         builder.sign(testKey);
 
@@ -111,6 +91,109 @@ public class CSRBuilderTest {
      */
     @Test
     public void testECCGenerate() throws IOException {
+        CSRBuilder builder = createBuilderWithValues();
+
+        builder.sign(testEcKey);
+
+        PKCS10CertificationRequest csr = builder.getCSR();
+        assertThat(csr).isNotNull();
+        assertThat(csr.getEncoded()).isEqualTo(builder.getEncoded());
+
+        csrTest(csr);
+        writerTest(builder);
+    }
+
+    /**
+     * Make sure an exception is thrown when no domain is set.
+     */
+    @Test
+    public void testNoDomain() throws IOException {
+        IllegalStateException ise = assertThrows(IllegalStateException.class, () -> {
+            CSRBuilder builder = new CSRBuilder();
+            builder.sign(testKey);
+        });
+        Assert.assertEquals("unexpected exception message", "No domain or IP address was set", ise.getMessage());
+    }
+
+    /**
+     * Make sure an exception is thrown when an unknown identifier type is used.
+     */
+    @Test
+    public void testUnknownType() {
+        IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, () -> {
+            CSRBuilder builder = new CSRBuilder();
+            builder.addIdentifier(new Identifier("UnKnOwN", "123"));
+        });
+        Assert.assertEquals("unexpected exception message", "Unknown identifier type: UnKnOwN", iae.getMessage());
+    }
+
+    /**
+     * Make sure all getters will fail if the CSR is not signed.
+     */
+    @Test
+    public void testNoSign() throws IOException {
+        CSRBuilder builder = new CSRBuilder();
+        IllegalStateException ise;
+
+        ise = assertThrows(IllegalStateException.class, builder::getCSR, "getCSR()");
+        Assert.assertEquals("unexpected exception message", "sign CSR first", ise.getMessage());
+        ise = assertThrows(IllegalStateException.class, builder::getEncoded, "getEncoded()");
+        Assert.assertEquals("unexpected exception message", "sign CSR first", ise.getMessage());
+        ise = assertThrows(IllegalStateException.class, () -> {
+            try (StringWriter w = new StringWriter()) {
+                builder.write(w);
+            }
+        }, "write()");
+        assertEquals("unexpected exception message", "sign CSR first", ise.getMessage());
+    }
+    
+    @Test
+    public void testAddAttrValues() throws Exception {
+        CSRBuilder builder = new CSRBuilder();
+        Exception ex;
+        String invAttNameExMessage = "";
+        try {
+            X500Name.getDefaultStyle().attrNameToOID("UNKNOWNATT");
+            fail("exception expected");
+        }
+        catch(IllegalArgumentException iae) {
+            invAttNameExMessage = iae.getMessage();
+        }
+        
+        assertEquals("unexpected X500Name", "", builder.toString());
+        
+        ex = assertThrows(NullPointerException.class, () -> new CSRBuilder().addValue((String) null, "value"), "addValue(String, String)");
+        assertEquals("unexpected exception message", "attribute name must not be null", ex.getMessage());
+        ex = assertThrows(NullPointerException.class, () -> new CSRBuilder().addValue((ASN1ObjectIdentifier) null, "value"), "addValue(ASN1ObjectIdentifier, String)");
+        assertEquals("unexpected exception message", "OID must not be null", ex.getMessage());
+        ex = assertThrows(NullPointerException.class, () -> new CSRBuilder().addValue("C", null), "addValue(String, null)");
+        assertEquals("unexpected exception message", "attribute value must not be null", ex.getMessage());
+        ex = assertThrows(IllegalArgumentException.class, () -> new CSRBuilder().addValue("UNKNOWNATT", "val"), "addValue(String, null)");
+        assertEquals("unexpected exception message", invAttNameExMessage, ex.getMessage());
+        
+        assertEquals("unexpected X500Name", "", builder.toString());
+
+        builder.addValue("C", "DE");
+        assertEquals("unexpected X500Name", "C=DE", builder.toString());
+        builder.addValue("E", "contact@example.com");
+        assertEquals("unexpected X500Name", "C=DE,E=contact@example.com", builder.toString());
+        builder.addValue("CN", "firstcn.example.com");
+        assertEquals("unexpected X500Name", "C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com", builder.toString());
+        builder.addValue("CN", "scnd.example.com");
+        assertEquals("unexpected X500Name", "C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com,DNS=scnd.example.com", builder.toString());
+        
+        builder = new CSRBuilder();
+        builder.addValue(BCStyle.C, "DE");
+        assertEquals("unexpected X500Name", "C=DE", builder.toString());
+        builder.addValue(BCStyle.EmailAddress, "contact@example.com");
+        assertEquals("unexpected X500Name", "C=DE,E=contact@example.com", builder.toString());
+        builder.addValue(BCStyle.CN, "firstcn.example.com");
+        assertEquals("unexpected X500Name", "C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com", builder.toString());
+        builder.addValue(BCStyle.CN, "scnd.example.com");
+        assertEquals("unexpected X500Name", "C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com,DNS=scnd.example.com", builder.toString());
+    }
+
+    private CSRBuilder createBuilderWithValues() throws UnknownHostException {
         CSRBuilder builder = new CSRBuilder();
         builder.addDomain("abc.de");
         builder.addDomain("fg.hi");
@@ -139,15 +222,7 @@ public class CSRBuilderTest {
                         + "IP=192.168.0.1,IP=192.168.0.2,IP=10.0.0.1,IP=10.0.0.2,"
                         + "IP=fd00:0:0:0:0:0:0:1,IP=fd00:0:0:0:0:0:0:2,"
                         + "IP=192.168.5.5,IP=192.168.5.6,IP=192.168.5.7");
-
-        builder.sign(testEcKey);
-
-        PKCS10CertificationRequest csr = builder.getCSR();
-        assertThat(csr).isNotNull();
-        assertThat(csr.getEncoded()).isEqualTo(builder.getEncoded());
-
-        csrTest(csr);
-        writerTest(builder);
+        return builder;
     }
 
     /**
@@ -236,44 +311,6 @@ public class CSRBuilderTest {
             pemBytes = baos.toByteArray();
         }
         assertThat(new String(pemBytes, StandardCharsets.UTF_8)).isEqualTo(pem);
-    }
-
-    /**
-     * Make sure an exception is thrown when no domain is set.
-     */
-    @Test
-    public void testNoDomain() throws IOException {
-        assertThrows(IllegalStateException.class, () -> {
-            CSRBuilder builder = new CSRBuilder();
-            builder.sign(testKey);
-        });
-    }
-
-    /**
-     * Make sure an exception is thrown when an unknown identifier type is used.
-     */
-    @Test
-    public void testUnknownType() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            CSRBuilder builder = new CSRBuilder();
-            builder.addIdentifier(new Identifier("UnKnOwN", "123"));
-        });
-    }
-
-    /**
-     * Make sure all getters will fail if the CSR is not signed.
-     */
-    @Test
-    public void testNoSign() throws IOException {
-        CSRBuilder builder = new CSRBuilder();
-
-        assertThrows(IllegalStateException.class, builder::getCSR, "getCSR()");
-        assertThrows(IllegalStateException.class, builder::getEncoded, "getEncoded()");
-        assertThrows(IllegalStateException.class, () -> {
-            try (StringWriter w = new StringWriter()) {
-                builder.write(w);
-            }
-        }, "write()");
     }
 
     /**
