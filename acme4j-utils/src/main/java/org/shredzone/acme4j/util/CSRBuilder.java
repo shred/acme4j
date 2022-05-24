@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Objects;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
+
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
@@ -65,7 +67,7 @@ public class CSRBuilder {
     private final List<String> namelist = new ArrayList<>();
     private final List<InetAddress> iplist = new ArrayList<>();
     private @Nullable PKCS10CertificationRequest csr = null;
-
+    
     /**
      * Adds a domain name to the CSR. The first domain name added will also be the
      * <em>Common Name</em>. All domain names will be added as <em>Subject Alternative
@@ -182,6 +184,33 @@ public class CSRBuilder {
      */
     public void addIdentifiers(Identifier... ids) {
         Arrays.stream(ids).forEach(this::addIdentifier);
+    }
+    
+    /**
+     * Sets an entry of the subject used for the CSR
+     * <p>
+     * Note that it is at the discretion of the ACME server to accept this parameter.
+     * @param attName The BCStyle attribute name
+     * @param value The value
+     */
+    public void addValue(String attName, String value) {
+        ASN1ObjectIdentifier oid = X500Name.getDefaultStyle().attrNameToOID(requireNonNull(attName, "attribute name must not be null"));
+        addValue(oid, value);
+    }
+
+    /**
+     * Sets an entry of the subject used for the CSR
+     * <p>
+     * Note that it is at the discretion of the ACME server to accept this parameter.
+     * @param oid The OID of the attribute to be added
+     * @param value The value
+     */
+    public void addValue(ASN1ObjectIdentifier oid, String value) {
+        if (requireNonNull(oid, "OID must not be null").equals(BCStyle.CN)) {
+            addDomain(value);
+            return;
+        }
+        namebuilder.addRDN(oid, requireNonNull(value, "attribute value must not be null"));
     }
 
     /**
