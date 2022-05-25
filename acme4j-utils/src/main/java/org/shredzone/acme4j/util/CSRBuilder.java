@@ -192,6 +192,7 @@ public class CSRBuilder {
      * Note that it is at the discretion of the ACME server to accept this parameter.
      * @param attName The BCStyle attribute name
      * @param value The value
+     * @since 2.14
      */
     public void addValue(String attName, String value) {
         ASN1ObjectIdentifier oid = X500Name.getDefaultStyle().attrNameToOID(requireNonNull(attName, "attribute name must not be null"));
@@ -204,6 +205,7 @@ public class CSRBuilder {
      * Note that it is at the discretion of the ACME server to accept this parameter.
      * @param oid The OID of the attribute to be added
      * @param value The value
+     * @since 2.14
      */
     public void addValue(ASN1ObjectIdentifier oid, String value) {
         if (requireNonNull(oid, "OID must not be null").equals(BCStyle.CN)) {

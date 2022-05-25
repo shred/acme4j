@@ -14,8 +14,8 @@
 package org.shredzone.acme4j.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
@@ -31,6 +31,7 @@ import java.util.Arrays;
 
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DEROctetString;
@@ -45,7 +46,6 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMParser;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Identifier;
@@ -112,7 +112,8 @@ public class CSRBuilderTest {
             CSRBuilder builder = new CSRBuilder();
             builder.sign(testKey);
         });
-        Assert.assertEquals("unexpected exception message", "No domain or IP address was set", ise.getMessage());
+        assertThat(ise.getMessage())
+            .isEqualTo("No domain or IP address was set");
     }
 
     /**
@@ -124,7 +125,8 @@ public class CSRBuilderTest {
             CSRBuilder builder = new CSRBuilder();
             builder.addIdentifier(new Identifier("UnKnOwN", "123"));
         });
-        Assert.assertEquals("unexpected exception message", "Unknown identifier type: UnKnOwN", iae.getMessage());
+        assertThat(iae.getMessage())
+            .isEqualTo("Unknown identifier type: UnKnOwN");
     }
 
     /**
@@ -135,10 +137,16 @@ public class CSRBuilderTest {
         CSRBuilder builder = new CSRBuilder();
         IllegalStateException ise;
 
-        ise = assertThrows(IllegalStateException.class, builder::getCSR, "getCSR()");
-        Assert.assertEquals("unexpected exception message", "sign CSR first", ise.getMessage());
-        ise = assertThrows(IllegalStateException.class, builder::getEncoded, "getEncoded()");
-        Assert.assertEquals("unexpected exception message", "sign CSR first", ise.getMessage());
+        assertThatExceptionOfType(IllegalStateException.class)
+            .isThrownBy(builder::getCSR)
+            .as("getCSR()")
+            .withMessage("sign CSR first");
+        
+        assertThatExceptionOfType(IllegalStateException.class)
+            .isThrownBy(builder::getEncoded)
+            .as("getCSR()")
+            .withMessage("sign CSR first");
+
         ise = assertThrows(IllegalStateException.class, () -> {
             try (StringWriter w = new StringWriter()) {
                 builder.write(w);
@@ -150,47 +158,45 @@ public class CSRBuilderTest {
     @Test
     public void testAddAttrValues() throws Exception {
         CSRBuilder builder = new CSRBuilder();
-        Exception ex;
-        String invAttNameExMessage = "";
-        try {
-            X500Name.getDefaultStyle().attrNameToOID("UNKNOWNATT");
-            fail("exception expected");
-        }
-        catch(IllegalArgumentException iae) {
-            invAttNameExMessage = iae.getMessage();
-        }
+        String invAttNameExMessage = assertThrows(IllegalArgumentException.class,
+                () -> X500Name.getDefaultStyle().attrNameToOID("UNKNOWNATT")).getMessage();
         
-        assertEquals("unexpected X500Name", "", builder.toString());
+        assertThat(builder.toString()).isEqualTo("");
         
-        ex = assertThrows(NullPointerException.class, () -> new CSRBuilder().addValue((String) null, "value"), "addValue(String, String)");
-        assertEquals("unexpected exception message", "attribute name must not be null", ex.getMessage());
-        ex = assertThrows(NullPointerException.class, () -> new CSRBuilder().addValue((ASN1ObjectIdentifier) null, "value"), "addValue(ASN1ObjectIdentifier, String)");
-        assertEquals("unexpected exception message", "OID must not be null", ex.getMessage());
-        ex = assertThrows(NullPointerException.class, () -> new CSRBuilder().addValue("C", null), "addValue(String, null)");
-        assertEquals("unexpected exception message", "attribute value must not be null", ex.getMessage());
-        ex = assertThrows(IllegalArgumentException.class, () -> new CSRBuilder().addValue("UNKNOWNATT", "val"), "addValue(String, null)");
-        assertEquals("unexpected exception message", invAttNameExMessage, ex.getMessage());
+        assertThatExceptionOfType(NullPointerException.class)
+            .isThrownBy(() -> new CSRBuilder().addValue((String) null, "value"))
+            .as("addValue(String, String)");
+        assertThatExceptionOfType(NullPointerException.class)
+            .isThrownBy(() -> new CSRBuilder().addValue((ASN1ObjectIdentifier) null, "value"))
+            .as("addValue(ASN1ObjectIdentifier, String)");
+        assertThatExceptionOfType(NullPointerException.class)
+            .isThrownBy(() -> new CSRBuilder().addValue("C", null))
+            .as("addValue(String, null)");
+        assertThatExceptionOfType(IllegalArgumentException.class)
+            .isThrownBy(() -> new CSRBuilder().addValue("UNKNOWNATT", "val"))
+            .as("addValue(String, null)")
+            .withMessage(invAttNameExMessage);
         
-        assertEquals("unexpected X500Name", "", builder.toString());
+        assertThat(builder.toString()).isEqualTo("");
 
         builder.addValue("C", "DE");
-        assertEquals("unexpected X500Name", "C=DE", builder.toString());
+        assertThat(builder.toString()).isEqualTo("C=DE");
         builder.addValue("E", "contact@example.com");
-        assertEquals("unexpected X500Name", "C=DE,E=contact@example.com", builder.toString());
+        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com");
         builder.addValue("CN", "firstcn.example.com");
-        assertEquals("unexpected X500Name", "C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com", builder.toString());
+        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com");
         builder.addValue("CN", "scnd.example.com");
-        assertEquals("unexpected X500Name", "C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com,DNS=scnd.example.com", builder.toString());
+        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com,DNS=scnd.example.com");
         
         builder = new CSRBuilder();
         builder.addValue(BCStyle.C, "DE");
-        assertEquals("unexpected X500Name", "C=DE", builder.toString());
+        assertThat(builder.toString()).isEqualTo("C=DE");
         builder.addValue(BCStyle.EmailAddress, "contact@example.com");
-        assertEquals("unexpected X500Name", "C=DE,E=contact@example.com", builder.toString());
+        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com");
         builder.addValue(BCStyle.CN, "firstcn.example.com");
-        assertEquals("unexpected X500Name", "C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com", builder.toString());
+        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com");
         builder.addValue(BCStyle.CN, "scnd.example.com");
-        assertEquals("unexpected X500Name", "C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com,DNS=scnd.example.com", builder.toString());
+        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com,DNS=scnd.example.com");
     }
 
     private CSRBuilder createBuilderWithValues() throws UnknownHostException {
@@ -264,7 +270,7 @@ public class CSRBuilderTest {
         GeneralNames names = GeneralNames.fromExtensions((Extensions) extensions[0], Extension.subjectAlternativeName);
         assertThat(names.getNames())
                 .filteredOn(gn -> gn.getTagNo() == GeneralName.dNSName)
-                .extracting(gn -> DERIA5String.getInstance(gn.getName()).getString())
+                .extracting(gn -> ASN1IA5String.getInstance(gn.getName()).getString())
                 .containsExactlyInAnyOrder("abc.de", "fg.hi", "jklm.no", "pqr.st",
                         "uv.wx", "y.z", "*.wild.card", "ide1.nt", "ide2.nt", "ide3.nt");
 
