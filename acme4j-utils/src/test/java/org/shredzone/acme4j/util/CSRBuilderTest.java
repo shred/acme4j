@@ -15,7 +15,6 @@ package org.shredzone.acme4j.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
-import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
@@ -134,7 +133,6 @@ public class CSRBuilderTest {
     @Test
     public void testNoSign() throws IOException {
         CSRBuilder builder = new CSRBuilder();
-        IllegalStateException ise;
 
         assertThatExceptionOfType(IllegalStateException.class)
             .isThrownBy(builder::getCSR)
@@ -146,14 +144,24 @@ public class CSRBuilderTest {
             .as("getCSR()")
             .withMessage("sign CSR first");
 
-        ise = assertThrows(IllegalStateException.class, () -> {
-            try (StringWriter w = new StringWriter()) {
-                builder.write(w);
-            }
-        }, "write()");
-        assertEquals("unexpected exception message", "sign CSR first", ise.getMessage());
+        assertThatExceptionOfType(IllegalStateException.class)
+            .isThrownBy(() -> {
+                try (StringWriter w = new StringWriter()) {
+                    builder.write(w);
+                }
+            })
+            .as("builder.write()")
+            .withMessage("sign CSR first");
     }
     
+    /**
+     * Checks that addValue behaves correctly in dependence of the
+     * attributes being added. If a common name is set, it should
+     * be handled in the same way when it's added by using
+     * <code>addDomain</code>
+     * @throws Exception Will be thrown if there was an error
+     * while performing the test
+     */
     @Test
     public void testAddAttrValues() throws Exception {
         CSRBuilder builder = new CSRBuilder();
