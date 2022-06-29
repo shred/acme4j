@@ -32,6 +32,7 @@ import java.util.List;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
@@ -142,6 +143,49 @@ public class SMIMECSRBuilder {
      */
     public void addIdentifiers(Identifier... ids) {
         Arrays.stream(ids).forEach(this::addIdentifier);
+    }
+
+    /**
+     * Sets an entry of the subject used for the CSR.
+     * <p>
+     * This method is meant as "expert mode" for setting attributes that are not covered
+     * by the other methods. It is at the discretion of the ACME server to accept this
+     * parameter.
+     *
+     * @param attName
+     *         The BCStyle attribute name
+     * @param value
+     *         The value
+     * @throws AddressException
+     *         if a common name is added, but the value is not a valid email address.
+     * @since 2.14
+     */
+    public void addValue(String attName, String value) throws AddressException {
+        ASN1ObjectIdentifier oid = X500Name.getDefaultStyle().attrNameToOID(requireNonNull(attName, "attribute name must not be null"));
+        addValue(oid, value);
+    }
+
+    /**
+     * Sets an entry of the subject used for the CSR
+     * <p>
+     * This method is meant as "expert mode" for setting attributes that are not covered
+     * by the other methods. It is at the discretion of the ACME server to accept this
+     * parameter.
+     *
+     * @param oid
+     *         The OID of the attribute to be added
+     * @param value
+     *         The value
+     * @throws AddressException
+     *         if a common name is added, but the value is not a valid email address.
+     * @since 2.14
+     */
+    public void addValue(ASN1ObjectIdentifier oid, String value) throws AddressException {
+        if (requireNonNull(oid, "OID must not be null").equals(BCStyle.CN)) {
+            addEmail(new InternetAddress(value));
+            return;
+        }
+        namebuilder.addRDN(oid, requireNonNull(value, "attribute value must not be null"));
     }
 
     /**

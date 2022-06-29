@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Objects;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
-
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -185,13 +184,18 @@ public class CSRBuilder {
     public void addIdentifiers(Identifier... ids) {
         Arrays.stream(ids).forEach(this::addIdentifier);
     }
-    
+
     /**
-     * Sets an entry of the subject used for the CSR
+     * Sets an entry of the subject used for the CSR.
      * <p>
-     * Note that it is at the discretion of the ACME server to accept this parameter.
-     * @param attName The BCStyle attribute name
-     * @param value The value
+     * This method is meant as "expert mode" for setting attributes that are not covered
+     * by the other methods. It is at the discretion of the ACME server to accept this
+     * parameter.
+     *
+     * @param attName
+     *         The BCStyle attribute name
+     * @param value
+     *         The value
      * @since 2.14
      */
     public void addValue(String attName, String value) {
@@ -200,11 +204,16 @@ public class CSRBuilder {
     }
 
     /**
-     * Sets an entry of the subject used for the CSR
+     * Sets an entry of the subject used for the CSR.
      * <p>
-     * Note that it is at the discretion of the ACME server to accept this parameter.
-     * @param oid The OID of the attribute to be added
-     * @param value The value
+     * This method is meant as "expert mode" for setting attributes that are not covered
+     * by the other methods. It is at the discretion of the ACME server to accept this
+     * parameter.
+     *
+     * @param oid
+     *         The OID of the attribute to be added
+     * @param value
+     *         The value
      * @since 2.14
      */
     public void addValue(ASN1ObjectIdentifier oid, String value) {

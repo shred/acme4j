@@ -15,6 +15,7 @@ package org.shredzone.acme4j.smime.csr;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
@@ -29,6 +30,7 @@ import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.pkcs.Attribute;
@@ -142,6 +144,58 @@ public class SMIMECSRBuilderTest {
         PKCS10CertificationRequest csr = builder.getCSR();
         assertThat(csr).isNotNull();
         keyUsageTest(csr, KeyUsage.digitalSignature | KeyUsage.keyEncipherment);
+    }
+
+    /**
+     * Checks that addValue behaves correctly in dependence of the attributes being added.
+     * If a common name is set, it should be handled in the same way when it's added by
+     * using {@link SMIMECSRBuilder#addEmail(InternetAddress)}.
+     */
+    @Test
+    public void testAddAttrValues() throws Exception {
+        SMIMECSRBuilder builder = new SMIMECSRBuilder();
+        String invAttNameExMessage = assertThrows(IllegalArgumentException.class,
+                () -> X500Name.getDefaultStyle().attrNameToOID("UNKNOWNATT")).getMessage();
+
+        assertThat(builder.toString()).isEqualTo(",TYPE=SIGNING_AND_ENCRYPTION");
+
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(() -> new SMIMECSRBuilder().addValue((String) null, "value"))
+                .as("addValue(String, String)");
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(() -> new SMIMECSRBuilder().addValue((ASN1ObjectIdentifier) null, "value"))
+                .as("addValue(ASN1ObjectIdentifier, String)");
+        assertThatExceptionOfType(NullPointerException.class)
+                .isThrownBy(() -> new SMIMECSRBuilder().addValue("C", null))
+                .as("addValue(String, null)");
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> new SMIMECSRBuilder().addValue("UNKNOWNATT", "val"))
+                .as("addValue(String, null)")
+                .withMessage(invAttNameExMessage);
+        assertThatExceptionOfType(AddressException.class)
+                .isThrownBy(() -> new SMIMECSRBuilder().addValue("CN", "invalid@example..com"))
+                .as("addValue(String, invalid String)");
+
+        assertThat(builder.toString()).isEqualTo(",TYPE=SIGNING_AND_ENCRYPTION");
+
+        builder.addValue("C", "DE");
+        assertThat(builder.toString()).isEqualTo("C=DE,TYPE=SIGNING_AND_ENCRYPTION");
+        builder.addValue("E", "contact@example.com");
+        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,TYPE=SIGNING_AND_ENCRYPTION");
+        builder.addValue("CN", "firstcn@example.com");
+        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,CN=firstcn@example.com,EMAIL=firstcn@example.com,TYPE=SIGNING_AND_ENCRYPTION");
+        builder.addValue("CN", "scnd@example.com");
+        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,CN=firstcn@example.com,EMAIL=firstcn@example.com,EMAIL=scnd@example.com,TYPE=SIGNING_AND_ENCRYPTION");
+
+        builder = new SMIMECSRBuilder();
+        builder.addValue(BCStyle.C, "DE");
+        assertThat(builder.toString()).isEqualTo("C=DE,TYPE=SIGNING_AND_ENCRYPTION");
+        builder.addValue(BCStyle.EmailAddress, "contact@example.com");
+        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,TYPE=SIGNING_AND_ENCRYPTION");
+        builder.addValue(BCStyle.CN, "firstcn@example.com");
+        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,CN=firstcn@example.com,EMAIL=firstcn@example.com,TYPE=SIGNING_AND_ENCRYPTION");
+        builder.addValue(BCStyle.CN, "scnd@example.com");
+        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,CN=firstcn@example.com,EMAIL=firstcn@example.com,EMAIL=scnd@example.com,TYPE=SIGNING_AND_ENCRYPTION");
     }
 
     /**
