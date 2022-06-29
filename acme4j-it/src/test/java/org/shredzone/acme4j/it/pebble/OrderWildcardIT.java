@@ -87,7 +87,7 @@ public class OrderWildcardIT extends PebbleITBase {
             Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
             assertThat(challenge).isNotNull();
 
-            String challengeDomainName = "_acme-challenge." + TEST_DOMAIN;
+            String challengeDomainName = Dns01Challenge.toRRName(TEST_DOMAIN);
 
             client.dnsAddTxtRecord(challengeDomainName, challenge.getDigest());
             cleanup(() -> client.dnsRemoveTxtRecord(challengeDomainName));

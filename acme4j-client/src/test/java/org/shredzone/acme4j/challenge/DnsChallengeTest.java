@@ -15,11 +15,14 @@ package org.shredzone.acme4j.challenge;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 
 import org.junit.jupiter.api.Test;
+import org.shredzone.acme4j.Identifier;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Status;
+import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.shredzone.acme4j.toolbox.TestUtils;
 
@@ -46,6 +49,18 @@ public class DnsChallengeTest {
         challenge.prepareResponse(response);
 
         assertThatJson(response.toString()).isEqualTo("{}");
+    }
+
+    @Test
+    public void testToRRName() {
+        assertThat(Dns01Challenge.toRRName("www.example.org"))
+                .isEqualTo("_acme-challenge.www.example.org.");
+        assertThat(Dns01Challenge.toRRName(Identifier.dns("www.example.org")))
+                .isEqualTo("_acme-challenge.www.example.org.");
+        assertThatExceptionOfType(AcmeProtocolException.class)
+                .isThrownBy(() -> Dns01Challenge.toRRName(Identifier.ip("127.0.0.10")));
+        assertThat(Dns01Challenge.RECORD_NAME_PREFIX)
+                .isEqualTo("_acme-challenge");
     }
 
 }

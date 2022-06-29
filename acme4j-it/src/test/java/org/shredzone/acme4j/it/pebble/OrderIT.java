@@ -81,7 +81,7 @@ public class OrderIT extends PebbleITBase {
             Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
             assertThat(challenge).isNotNull();
 
-            String challengeDomainName = "_acme-challenge." + auth.getIdentifier().getDomain();
+            String challengeDomainName = Dns01Challenge.toRRName(auth.getIdentifier());
 
             client.dnsAddTxtRecord(challengeDomainName, challenge.getDigest());
 

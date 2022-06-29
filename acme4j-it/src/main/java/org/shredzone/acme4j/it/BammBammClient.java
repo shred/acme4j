@@ -107,13 +107,13 @@ public class BammBammClient {
      * another TXT Record is set, it will replace the existing one.
      *
      * @param domain
-     *            Domain to add the TXT Record to
+     *            Domain name to add the TXT Record to
      * @param txt
      *            TXT record to add
      */
     public void dnsAddTxtRecord(String domain, String txt) throws IOException {
         JSONBuilder jb = new JSONBuilder();
-        jb.put("host", domain + '.');
+        jb.put("host", domain);
         jb.put("value", txt);
         sendRequest("set-txt", jb.toString());
     }

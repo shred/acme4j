@@ -362,15 +362,14 @@ public class ClientTest {
 
         // Output the challenge, wait for acknowledge...
         LOG.info("Please create a TXT record:");
-        LOG.info("_acme-challenge.{}. IN TXT {}",
-                auth.getIdentifier().getDomain(), challenge.getDigest());
+        LOG.info("{} IN TXT {}",
+                Dns01Challenge.toRRName(auth.getIdentifier()), challenge.getDigest());
         LOG.info("If you're ready, dismiss the dialog...");
 
         StringBuilder message = new StringBuilder();
         message.append("Please create a TXT record:\n\n");
-        message.append("_acme-challenge.")
-                .append(auth.getIdentifier().getDomain())
-                .append(". IN TXT ")
+        message.append(Dns01Challenge.toRRName(auth.getIdentifier()))
+                .append(" IN TXT ")
                 .append(challenge.getDigest());
         acceptChallenge(message.toString());
 
