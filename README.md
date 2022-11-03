@@ -36,7 +36,7 @@ It is an independent open source implementation that is not affiliated with or e
 
 ## Contribute
 
-* Fork the [Source code at GitHub](https://github.com/shred/acme4j). Feel free to send pull requests.
+* Fork the [Source code at GitHub](https://github.com/shred/acme4j). Feel free to send pull requests (see [Contributing](CONTRIBUTING.md) for the rules).
 * Found a bug? [File a bug report!](https://github.com/shred/acme4j/issues)
 
 ## License
