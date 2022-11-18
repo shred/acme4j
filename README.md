@@ -21,6 +21,7 @@ It is an independent open source implementation that is not affiliated with or e
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
 * Extensive unit and integration tests
 * Reported to work on Android. However, this platform is not officially supported.
+* Adheres to [Semantic Versioning](https://semver.org/)
 
 ## Dependencies
 

@@ -25,6 +25,7 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
 * Extensive unit and integration tests
 * Reported to work on Android. However, this platform is not officially supported.
+* Adheres to [Semantic Versioning](https://semver.org/)
 
 ## Dependencies
 
