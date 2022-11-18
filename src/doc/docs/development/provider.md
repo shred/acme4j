@@ -18,7 +18,7 @@ Every CA that provides an ACME server should also have an own `AcmeProvider`, an
 
 However, it is also possible to adapt the behavior of wide parts of _acme4j_ to special characteristics of the CA, just by overriding methods and extending classes.
 
-A client provider implements the [`AcmeProvider`](../apidocs/org/shredzone/acme4j/provider/AcmeProvider.html) interface, but usually it is easier to extend [`AbstractAcmeProvider`](../apidocs/org/shredzone/acme4j/provider/AbstractAcmeProvider.html) and implement only these two methods:
+A client provider implements the [`AcmeProvider`](../acme4j-client/apidocs/org.shredzone.acme4j/org/shredzone/acme4j/provider/AcmeProvider.html) interface, but usually it is easier to extend [`AbstractAcmeProvider`](../acme4j-client/apidocs/org.shredzone.acme4j/org/shredzone/acme4j/provider/AbstractAcmeProvider.html) and implement only these two methods:
 
 * `accepts(URI)` checks if the client provider is accepting the provided URI. Usually it would be an URI like `acme://example.com`. Note that the `http` and `https` schemes are reserved for the generic provider and cannot be used by other providers.
 * `resolve(URI)` parses the URI and returns the corresponding URL of the directory service.

@@ -60,7 +60,7 @@ acme4j-example
 :   This module only contains [an example code](example.md) that demonstrates how to get a certificate with _acme4j_. It depends on `acme4j-client` and `acme4j-utils`. It is not useful as a dependency in other projects.
 
 acme4j-it
-:   [`acme4j-it`](https://mvnrepository.com/artifact/org.shredzone.acme4j/acme4j-it/latest) mainly serves as integration test suite for _acme4j_ itself. It is not really useful as a dependency in other projects. However if you write own integration tests using [pebble](https://github.com/letsencrypt/pebble) and [pebble-challtestsrv](https://hub.docker.com/r/letsencrypt/pebble-challtestsrv), you may find the [`challtestsrv` configuration client](https://shredzone.org/maven/acme4j/acme4j-it/apidocs/org/shredzone/acme4j/it/BammBammClient.html) useful in your project.
+:   [`acme4j-it`](https://mvnrepository.com/artifact/org.shredzone.acme4j/acme4j-it/latest) mainly serves as integration test suite for _acme4j_ itself. It is not really useful as a dependency in other projects. However if you write own integration tests using [pebble](https://github.com/letsencrypt/pebble) and [pebble-challtestsrv](https://hub.docker.com/r/letsencrypt/pebble-challtestsrv), you may find the [`challtestsrv` configuration client](acme4j-it/apidocs/org.shredzone.acme4j.it/org/shredzone/acme4j/it/BammBammClient.html) useful in your project.
 
     The Java module name is `org.shredzone.acme4j.it`.
 

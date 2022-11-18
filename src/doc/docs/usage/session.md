@@ -1,6 +1,6 @@
 # Creating a Session
 
-Central part of the communication is a [`Session`](../apidocs/org/shredzone/acme4j/Session.html) object. A session is used to track the communication with the ACME server.
+Central part of the communication is a [`Session`](../acme4j-client/apidocs/org.shredzone.acme4j/org/shredzone/acme4j/Session.html) object. A session is used to track the communication with the ACME server.
 
 The first step is to create a `Session` instance. The `Session` constructor expects the URI of the ACME server's directory service, as it is documented by the CA. For example, this is how to connect to the _Let's Encrypt_ staging server:
 
