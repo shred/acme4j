@@ -18,13 +18,17 @@ module org.shredzone.acme4j.smime {
 
     requires transitive jakarta.mail;
     requires static com.github.spotbugs.annotations;
+    requires org.bouncycastle.util;
+    requires org.bouncycastle.mail;
     requires org.bouncycastle.pkix;
     requires org.bouncycastle.provider;
+    requires org.slf4j;
 
     exports org.shredzone.acme4j.smime;
     exports org.shredzone.acme4j.smime.challenge;
     exports org.shredzone.acme4j.smime.csr;
     exports org.shredzone.acme4j.smime.email;
+    exports org.shredzone.acme4j.smime.exception;
 
     provides org.shredzone.acme4j.provider.ChallengeProvider
             with org.shredzone.acme4j.smime.challenge.EmailReply00ChallengeProvider;

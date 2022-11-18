@@ -23,6 +23,9 @@ import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.util.Properties;
 
 import jakarta.mail.Message;
@@ -122,6 +125,22 @@ public abstract class SMIMETests {
             return JSON.parse(SMIMETests.class.getResourceAsStream("/json/" + key + ".json"));
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
+        }
+    }
+
+    /**
+     * Reads a certificate from the given resource.
+     *
+     * @param name
+     *         Resource name of the certificate
+     * @return X509Certificate that was read
+     */
+    protected X509Certificate readCertificate(String name) throws IOException {
+        try (InputStream in = SMIMETests.class.getResourceAsStream("/" + name + ".pem")) {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            return (X509Certificate) cf.generateCertificate(in);
+        } catch (CertificateException ex) {
+            throw new IOException(ex);
         }
     }
 

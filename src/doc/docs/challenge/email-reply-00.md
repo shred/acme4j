@@ -14,7 +14,7 @@ To use the S/MIME support, you need to:
 * add the `acme4j-smime` module to your list of dependencies
 * make sure that `BouncyCastleProvider` is added as security provider
 
-[RFC 8823](https://tools.ietf.org/html/rfc8823) requires that the DKIM or S/MIME signature of incoming mails _must_ be checked. Outgoing mails _must_ have a valid DKIM or S/MIME signature. This is out of the scope of `acme4j-smime`, but is usually performed by a MTA.
+[RFC 8823](https://tools.ietf.org/html/rfc8823) requires that the DKIM or S/MIME signature of incoming mails _must_ be checked. Outgoing mails _must_ have a valid DKIM signature. Starting with v2.15, _acme4j_ is able to validate and sign S/MIME verification mails. DKIM is usually done by the MTA and thus out of the scope of `acme4j-smime`.
 
 ## Ordering
 
@@ -59,7 +59,7 @@ EmailReply00Challenge challenge        = // challenge that is requested by the C
 EmailIdentifier       identifier       = // email address to get the S/MIME cert for
 javax.mail.Session    mailSession      = // javax.mail session
 
-Message response = new EmailProcessor(challengeMessage)
+Message response = EmailProcessor.plainMessage(challengeMessage)
             .expectedIdentifier(identifier)
             .withChallenge(challenge)
             .respond()
@@ -69,4 +69,28 @@ Transport.send(response);   // send response to the CA
 challenge.trigger();        // trigger the challenge
 ```
 
-The `EmailProcessor` and the related `ResponseGenerator` offer more methods for validating and for customizing the response email.
+The `EmailProcessor` and the related `ResponseGenerator` offer more methods for validating and for customizing the response email, see [the autodocs](../acme4j-smime/apidocs/org.shredzone.acme4j.smime/module-summary.html).
+
+## Validating S/MIME Challenge E-Mails
+
+The `EmailProcessor` is able to validate challenge e-mails that were signed by the CA using S/MIME. To do so, invoke the processor like this:
+
+```java
+Message               challengeMessage = // incoming challenge message from the CA
+EmailReply00Challenge challenge        = // challenge that is requested by the CA
+EmailIdentifier       identifier       = // email address to get the S/MIME cert for
+javax.mail.Session    mailSession      = // javax.mail session
+X509Certificate       signCert         = // CA's signing certificate, for validation
+boolean               strict           = // strict checks?
+
+Message response = EmailProcessor.smimeMessage(challengeMessage, mailSession, signCert, strict)
+            .expectedIdentifier(identifier)
+            .withChallenge(challenge)
+            .respond()
+            .generateResponse(mailSession);
+
+Transport.send(response);   // send response to the CA
+challenge.trigger();        // trigger the challenge
+```
+
+If `strict` is set to `true`, the S/MIME protected headers `From:`, `To:`, and `Subject:` inside the e-mail **must** match these headers of the wrapping `challengeMessage`. It is recommended to do strict checks. However, if the inbound MTA is changing the headers of the wrapping mail, this flag can be set to `false` instead. In this case, the wrapping headers are ignored, and only the protected headers are used for responding to the challenge.

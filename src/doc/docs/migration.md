@@ -2,6 +2,11 @@
 
 This document will help you migrate your code to the latest _acme4j_ version.
 
+## Migration to Version 2.15
+
+- `acme4j-smime` requires BouncyCastle now. The `BouncyCastleProvider` must also be added as security provider.
+- In `acme4j-smime`, the `EmailProcessor` constructor is private now. Use `EmailProcessor.plainMessage()` as drop-in replacement.
+
 ## Migration to Version 2.13
 
 - The `acme4j-smime` module has switched from _JavaMail_ to _Jakarta Mail_. Unfortunately, this is a breaking API change because classes like `javax.mail.internet.InternetAddress` have moved to respective `jakarta.mail` packages.

@@ -31,7 +31,7 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 * [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home)
 * [slf4j](http://www.slf4j.org/)
 * For `acme4j-utils`: [Bouncy Castle](https://www.bouncycastle.org/)
-* For `acme4j-smime`: [Jakarta Mail](https://eclipse-ee4j.github.io/mail/)
+* For `acme4j-smime`: [Jakarta Mail](https://eclipse-ee4j.github.io/mail/), [Bouncy Castle](https://www.bouncycastle.org/)
 
 ## Quick Start
 

@@ -28,9 +28,8 @@ import jakarta.mail.internet.MimeMessage;
 /**
  * A helper for creating an email response to the "challenge" email.
  * <p>
- * According to RFC-8823, the response email must have a DKIM or S/MIME signature. This is
- * <em>not</em> done by the response generator, because it is usually performed by the
- * outbound MTA.
+ * According to RFC-8823, the response email <em>must</em> be DKIM signed. This is
+ * <em>not</em> done by the response generator, but must be done by the outbound MTA.
  *
  * @see <a href="https://datatracker.ietf.org/doc/html/rfc8823">RFC 8823</a>
  * @since 2.12
