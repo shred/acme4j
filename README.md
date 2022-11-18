@@ -17,11 +17,12 @@ It is an independent open source implementation that is not affiliated with or e
 * Supports [RFC 8739](https://tools.ietf.org/html/rfc8739) short-term automatic certificate renewal (experimental)
 * Supports [RFC 8823](https://tools.ietf.org/html/rfc8823) for S/MIME certificates (experimental)
 * Easy to use Java API
-* Requires JRE 8 (update 101) or higher. For building the project, Java 9 or higher is required.
+* Requires JRE 11 or higher
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
 * Extensive unit and integration tests
-* Reported to work on Android. However, this platform is not officially supported.
 * Adheres to [Semantic Versioning](https://semver.org/)
+
+If you require Java 8 or Android compatibility, you can use [acme4j v2](https://shredzone.org/maven/acme4j-v2/index.html) instead. Version 2 is still receiving bugfixes and security updates until September 2023.
 
 ## Dependencies
 
