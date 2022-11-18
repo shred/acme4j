@@ -54,24 +54,24 @@ public class AuthorizationTest {
      */
     @Test
     public void testFindChallenge() throws IOException {
-        Authorization authorization = createChallengeAuthorization();
+        var authorization = createChallengeAuthorization();
 
         // A snail mail challenge is not available at all
-        Challenge c1 = authorization.findChallenge(SNAILMAIL_TYPE);
+        var c1 = authorization.findChallenge(SNAILMAIL_TYPE);
         assertThat(c1).isNull();
 
         // HttpChallenge is available
-        Challenge c2 = authorization.findChallenge(Http01Challenge.TYPE);
+        var c2 = authorization.findChallenge(Http01Challenge.TYPE);
         assertThat(c2).isNotNull();
         assertThat(c2).isInstanceOf(Http01Challenge.class);
 
         // Dns01Challenge is available
-        Challenge c3 = authorization.findChallenge(Dns01Challenge.TYPE);
+        var c3 = authorization.findChallenge(Dns01Challenge.TYPE);
         assertThat(c3).isNotNull();
         assertThat(c3).isInstanceOf(Dns01Challenge.class);
 
         // TlsAlpn01Challenge is available
-        Challenge c4 = authorization.findChallenge(TlsAlpn01Challenge.TYPE);
+        var c4 = authorization.findChallenge(TlsAlpn01Challenge.TYPE);
         assertThat(c4).isNotNull();
         assertThat(c4).isInstanceOf(TlsAlpn01Challenge.class);
     }
@@ -81,22 +81,22 @@ public class AuthorizationTest {
      */
     @Test
     public void testFindChallengeByType() throws IOException {
-        Authorization authorization = createChallengeAuthorization();
+        var authorization = createChallengeAuthorization();
 
         // A snail mail challenge is not available at all
-        NonExistingChallenge c1 = authorization.findChallenge(NonExistingChallenge.class);
+        var c1 = authorization.findChallenge(NonExistingChallenge.class);
         assertThat(c1).isNull();
 
         // HttpChallenge is available
-        Http01Challenge c2 = authorization.findChallenge(Http01Challenge.class);
+        var c2 = authorization.findChallenge(Http01Challenge.class);
         assertThat(c2).isNotNull();
 
         // Dns01Challenge is available
-        Dns01Challenge c3 = authorization.findChallenge(Dns01Challenge.class);
+        var c3 = authorization.findChallenge(Dns01Challenge.class);
         assertThat(c3).isNotNull();
 
         // TlsAlpn01Challenge is available
-        TlsAlpn01Challenge c4 = authorization.findChallenge(TlsAlpn01Challenge.class);
+        var c4 = authorization.findChallenge(TlsAlpn01Challenge.class);
         assertThat(c4).isNotNull();
     }
 
@@ -105,9 +105,9 @@ public class AuthorizationTest {
      * challenges.
      */
     @Test
-    public void testFailDuplicateChallenges() throws IOException {
+    public void testFailDuplicateChallenges() {
         assertThrows(AcmeProtocolException.class, () -> {
-            Authorization authorization = createChallengeAuthorization();
+            var authorization = createChallengeAuthorization();
             authorization.findChallenge(DUPLICATE_TYPE);
         });
     }
@@ -117,7 +117,7 @@ public class AuthorizationTest {
      */
     @Test
     public void testUpdate() throws Exception {
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
                 assertThat(url).isEqualTo(locationUrl);
@@ -135,13 +135,13 @@ public class AuthorizationTest {
             }
         };
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
         provider.putTestChallenge("http-01", Http01Challenge::new);
         provider.putTestChallenge("dns-01", Dns01Challenge::new);
         provider.putTestChallenge("tls-alpn-01", TlsAlpn01Challenge::new);
 
-        Authorization auth = new Authorization(login, locationUrl);
+        var auth = new Authorization(login, locationUrl);
         auth.update();
 
         assertThat(auth.getIdentifier().getDomain()).isEqualTo("example.org");
@@ -163,7 +163,7 @@ public class AuthorizationTest {
      */
     @Test
     public void testWildcard() throws Exception {
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
                 assertThat(url).isEqualTo(locationUrl);
@@ -181,11 +181,11 @@ public class AuthorizationTest {
             }
         };
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
         provider.putTestChallenge("dns-01", Dns01Challenge::new);
 
-        Authorization auth = new Authorization(login, locationUrl);
+        var auth = new Authorization(login, locationUrl);
         auth.update();
 
         assertThat(auth.getIdentifier().getDomain()).isEqualTo("example.org");
@@ -205,9 +205,9 @@ public class AuthorizationTest {
      */
     @Test
     public void testLazyLoading() throws Exception {
-        final AtomicBoolean requestWasSent = new AtomicBoolean(false);
+        var requestWasSent = new AtomicBoolean(false);
 
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
                 requestWasSent.set(true);
@@ -226,13 +226,13 @@ public class AuthorizationTest {
             }
         };
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
         provider.putTestChallenge("http-01", Http01Challenge::new);
         provider.putTestChallenge("dns-01", Dns01Challenge::new);
         provider.putTestChallenge("tls-alpn-01", TlsAlpn01Challenge::new);
 
-        Authorization auth = new Authorization(login, locationUrl);
+        var auth = new Authorization(login, locationUrl);
 
         // Lazy loading
         assertThat(requestWasSent).isFalse();
@@ -255,9 +255,9 @@ public class AuthorizationTest {
      */
     @Test
     public void testUpdateRetryAfter() throws Exception {
-        final Instant retryAfter = Instant.now().plus(Duration.ofSeconds(30));
+        var retryAfter = Instant.now().plus(Duration.ofSeconds(30));
 
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
                 assertThat(url).isEqualTo(locationUrl);
@@ -275,14 +275,14 @@ public class AuthorizationTest {
             }
         };
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
         provider.putTestChallenge("http-01", Http01Challenge::new);
         provider.putTestChallenge("dns-01", Dns01Challenge::new);
         provider.putTestChallenge("tls-alpn-01", TlsAlpn01Challenge::new);
 
-        Authorization auth = new Authorization(login, locationUrl);
-        AcmeRetryAfterException ex = assertThrows(AcmeRetryAfterException.class, auth::update);
+        var auth = new Authorization(login, locationUrl);
+        var ex = assertThrows(AcmeRetryAfterException.class, auth::update);
         assertThat(ex.getRetryAfter()).isEqualTo(retryAfter);
 
         assertThat(auth.getIdentifier().getDomain()).isEqualTo("example.org");
@@ -304,10 +304,10 @@ public class AuthorizationTest {
      */
     @Test
     public void testDeactivate() throws Exception {
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
-                JSON json = claims.toJSON();
+                var json = claims.toJSON();
                 assertThat(json.get("status").asString()).isEqualTo("deactivated");
                 assertThat(url).isEqualTo(locationUrl);
                 assertThat(login).isNotNull();
@@ -320,13 +320,13 @@ public class AuthorizationTest {
             }
         };
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
         provider.putTestChallenge("http-01", Http01Challenge::new);
         provider.putTestChallenge("dns-01", Dns01Challenge::new);
         provider.putTestChallenge("tls-alpn-01", TlsAlpn01Challenge::new);
 
-        Authorization auth = new Authorization(login, locationUrl);
+        var auth = new Authorization(login, locationUrl);
         auth.deactivate();
 
         provider.close();
@@ -336,15 +336,15 @@ public class AuthorizationTest {
      * Creates an {@link Authorization} instance with a set of challenges.
      */
     private Authorization createChallengeAuthorization() throws IOException {
-        try (TestableConnectionProvider provider = new TestableConnectionProvider()) {
-            Login login = provider.createLogin();
+        try (var provider = new TestableConnectionProvider()) {
+            var login = provider.createLogin();
 
             provider.putTestChallenge(Http01Challenge.TYPE, Http01Challenge::new);
             provider.putTestChallenge(Dns01Challenge.TYPE, Dns01Challenge::new);
             provider.putTestChallenge(TlsAlpn01Challenge.TYPE, TlsAlpn01Challenge::new);
             provider.putTestChallenge(DUPLICATE_TYPE, Challenge::new);
 
-            Authorization authorization = new Authorization(login, locationUrl);
+            var authorization = new Authorization(login, locationUrl);
             authorization.setJSON(getJSON("authorizationChallenges"));
             return authorization;
         }

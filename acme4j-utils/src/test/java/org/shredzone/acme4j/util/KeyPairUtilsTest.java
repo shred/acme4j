@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.security.KeyPair;
 import java.security.Security;
@@ -46,10 +45,10 @@ public class KeyPairUtilsTest {
      */
     @Test
     public void testCreateStandardKeyPair() {
-        KeyPair pair = KeyPairUtils.createKeyPair();
+        var pair = KeyPairUtils.createKeyPair();
         assertThat(pair).isNotNull();
         assertThat(pair.getPublic()).isInstanceOf(ECPublicKey.class);
-        ECPublicKey pk = (ECPublicKey) pair.getPublic();
+        var pk = (ECPublicKey) pair.getPublic();
         assertThat(pk.getAlgorithm()).isEqualTo("ECDSA");
         assertThat(pk.getParams().getCurve().getField().getFieldSize()).isEqualTo(384);
     }
@@ -59,11 +58,11 @@ public class KeyPairUtilsTest {
      */
     @Test
     public void testCreateKeyPair() {
-        KeyPair pair = KeyPairUtils.createKeyPair(KEY_SIZE);
+        var pair = KeyPairUtils.createKeyPair(KEY_SIZE);
         assertThat(pair).isNotNull();
         assertThat(pair.getPublic()).isInstanceOf(RSAPublicKey.class);
 
-        RSAPublicKey pub = (RSAPublicKey) pair.getPublic();
+        var pub = (RSAPublicKey) pair.getPublic();
         assertThat(pub.getModulus().bitLength()).isEqualTo(KEY_SIZE);
     }
 
@@ -73,11 +72,11 @@ public class KeyPairUtilsTest {
     @Test
     public void testWriteAndRead() throws IOException {
         // Generate a test keypair
-        KeyPair pair = KeyPairUtils.createKeyPair(KEY_SIZE);
+        var pair = KeyPairUtils.createKeyPair(KEY_SIZE);
 
         // Write keypair to PEM
         String pem;
-        try (StringWriter out = new StringWriter()) {
+        try (var out = new StringWriter()) {
             KeyPairUtils.writeKeyPair(pair, out);
             pem = out.toString();
         }
@@ -90,7 +89,7 @@ public class KeyPairUtilsTest {
 
         // Read keypair from PEM
         KeyPair readPair;
-        try (StringReader in = new StringReader(pem)) {
+        try (var in = new StringReader(pem)) {
             readPair = KeyPairUtils.readKeyPair(in);
         }
 
@@ -105,7 +104,7 @@ public class KeyPairUtilsTest {
      */
     @Test
     public void testCreateECCKeyPair() {
-        KeyPair pair = KeyPairUtils.createECKeyPair(EC_CURVE);
+        var pair = KeyPairUtils.createECKeyPair(EC_CURVE);
         assertThat(pair).isNotNull();
         assertThat(pair.getPublic()).isInstanceOf(ECPublicKey.class);
     }
@@ -116,11 +115,11 @@ public class KeyPairUtilsTest {
     @Test
     public void testWriteAndReadEC() throws IOException {
         // Generate a test keypair
-        KeyPair pair = KeyPairUtils.createECKeyPair(EC_CURVE);
+        var pair = KeyPairUtils.createECKeyPair(EC_CURVE);
 
         // Write keypair to PEM
         String pem;
-        try (StringWriter out = new StringWriter()) {
+        try (var out = new StringWriter()) {
             KeyPairUtils.writeKeyPair(pair, out);
             pem = out.toString();
         }
@@ -133,7 +132,7 @@ public class KeyPairUtilsTest {
 
         // Read keypair from PEM
         KeyPair readPair;
-        try (StringReader in = new StringReader(pem)) {
+        try (var in = new StringReader(pem)) {
             readPair = KeyPairUtils.readKeyPair(in);
         }
 
@@ -148,7 +147,7 @@ public class KeyPairUtilsTest {
      */
     @Test
     public void testPrivateConstructor() throws Exception {
-        Constructor<KeyPairUtils> constructor = KeyPairUtils.class.getDeclaredConstructor();
+        var constructor = KeyPairUtils.class.getDeclaredConstructor();
         assertThat(Modifier.isPrivate(constructor.getModifiers())).isTrue();
         constructor.setAccessible(true);
         constructor.newInstance();

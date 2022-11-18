@@ -13,28 +13,23 @@
  */
 package org.shredzone.acme4j;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.net.URI;
-import java.net.URL;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
-import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.ResourceIterator;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
-import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.shredzone.acme4j.toolbox.JoseUtils;
@@ -73,11 +68,11 @@ public class Account extends AcmeJsonResource {
      * List of contact addresses (emails, phone numbers etc).
      */
     public List<URI> getContacts() {
-        return Collections.unmodifiableList(getJSON().get(KEY_CONTACT)
-                    .asArray()
-                    .stream()
-                    .map(JSON.Value::asURI)
-                    .collect(toList()));
+        return getJSON().get(KEY_CONTACT)
+                .asArray()
+                .stream()
+                .map(Value::asURI)
+                .collect(toUnmodifiableList());
     }
 
     /**
@@ -126,8 +121,8 @@ public class Account extends AcmeJsonResource {
      *         {@link Order} objects in a different order.
      */
     public Iterator<Order> getOrders() {
-        Optional<URL> ordersUrl = getJSON().get(KEY_ORDERS).optional().map(Value::asURL);
-        if (!ordersUrl.isPresent()) {
+        var ordersUrl = getJSON().get(KEY_ORDERS).optional().map(Value::asURL);
+        if (ordersUrl.isEmpty()) {
             // Let's Encrypt does not provide this field at the moment although it's required.
             // See https://github.com/letsencrypt/boulder/issues/3335
             throw new AcmeProtocolException("This ACME server does not support getOrders()");
@@ -191,21 +186,21 @@ public class Account extends AcmeJsonResource {
     public Authorization preAuthorize(Identifier identifier) throws AcmeException {
         Objects.requireNonNull(identifier, "identifier");
 
-        URL newAuthzUrl = getSession().resourceUrl(Resource.NEW_AUTHZ);
+        var newAuthzUrl = getSession().resourceUrl(Resource.NEW_AUTHZ);
 
         LOG.debug("preAuthorize {}", identifier);
-        try (Connection conn = getSession().connect()) {
-            JSONBuilder claims = new JSONBuilder();
+        try (var conn = getSession().connect()) {
+            var claims = new JSONBuilder();
             claims.put("identifier", identifier.toMap());
 
             conn.sendSignedRequest(newAuthzUrl, claims, getLogin());
 
-            URL authLocation = conn.getLocation();
+            var authLocation = conn.getLocation();
             if (authLocation == null) {
                 throw new AcmeProtocolException("Server did not provide an authorization location");
             }
 
-            Authorization auth = getLogin().bindAuthorization(authLocation);
+            var auth = getLogin().bindAuthorization(authLocation);
             auth.setJSON(conn.readJsonResponse());
             return auth;
         }
@@ -229,14 +224,14 @@ public class Account extends AcmeJsonResource {
 
         LOG.debug("key-change");
 
-        try (Connection conn = getSession().connect()) {
-            URL keyChangeUrl = getSession().resourceUrl(Resource.KEY_CHANGE);
+        try (var conn = getSession().connect()) {
+            var keyChangeUrl = getSession().resourceUrl(Resource.KEY_CHANGE);
 
-            JSONBuilder payloadClaim = new JSONBuilder();
+            var payloadClaim = new JSONBuilder();
             payloadClaim.put("account", getLocation());
             payloadClaim.putKey("oldKey", getLogin().getKeyPair().getPublic());
 
-            JSONBuilder jose = JoseUtils.createJoseRequest(keyChangeUrl, newKeyPair,
+            var jose = JoseUtils.createJoseRequest(keyChangeUrl, newKeyPair,
                     payloadClaim, null, null);
 
             conn.sendSignedRequest(keyChangeUrl, jose, getLogin());
@@ -253,8 +248,8 @@ public class Account extends AcmeJsonResource {
      */
     public void deactivate() throws AcmeException {
         LOG.debug("deactivate");
-        try (Connection conn = getSession().connect()) {
-            JSONBuilder claims = new JSONBuilder();
+        try (var conn = getSession().connect()) {
+            var claims = new JSONBuilder();
             claims.put(KEY_STATUS, "deactivated");
 
             conn.sendSignedRequest(getLocation(), claims, getLogin());
@@ -336,8 +331,8 @@ public class Account extends AcmeJsonResource {
          */
         public void commit() throws AcmeException {
             LOG.debug("modify/commit");
-            try (Connection conn = getSession().connect()) {
-                JSONBuilder claims = new JSONBuilder();
+            try (var conn = getSession().connect()) {
+                var claims = new JSONBuilder();
                 if (!editContacts.isEmpty()) {
                     claims.put(KEY_CONTACT, editContacts);
                 }

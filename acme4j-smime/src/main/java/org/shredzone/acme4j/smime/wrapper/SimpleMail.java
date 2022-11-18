@@ -14,14 +14,13 @@
 package org.shredzone.acme4j.smime.wrapper;
 
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
-import jakarta.mail.Address;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
@@ -48,7 +47,7 @@ public class SimpleMail implements Mail {
     @Override
     public InternetAddress getFrom() throws AcmeInvalidMessageException {
         try {
-            Address[] from = message.getFrom();
+            var from = message.getFrom();
             if (from == null) {
                 throw new AcmeInvalidMessageException("Missing required 'From' header");
             }
@@ -67,7 +66,7 @@ public class SimpleMail implements Mail {
     @Override
     public InternetAddress getTo() throws AcmeInvalidMessageException {
         try {
-            Address[] to = message.getRecipients(Message.RecipientType.TO);
+            var to = message.getRecipients(Message.RecipientType.TO);
             if (to == null) {
                 throw new AcmeInvalidMessageException("Missing required 'To' header");
             }
@@ -86,7 +85,7 @@ public class SimpleMail implements Mail {
     @Override
     public String getSubject() throws AcmeInvalidMessageException {
         try {
-            String subject = message.getSubject();
+            var subject = message.getSubject();
             if (subject == null) {
                 throw new AcmeInvalidMessageException("Message must have a subject");
             }
@@ -99,14 +98,14 @@ public class SimpleMail implements Mail {
     @Override
     public Collection<InternetAddress> getReplyTo() throws AcmeInvalidMessageException {
         try {
-            Address[] rto = message.getReplyTo();
+            var rto = message.getReplyTo();
             if (rto == null) {
                 return Collections.emptyList();
             }
-            return Collections.unmodifiableList(Arrays.stream(rto)
+            return Arrays.stream(rto)
                     .filter(InternetAddress.class::isInstance)
                     .map(InternetAddress.class::cast)
-                    .collect(Collectors.toList()));
+                    .collect(toUnmodifiableList());
         } catch (MessagingException ex) {
             throw new AcmeInvalidMessageException("Could not read 'Reply-To' header", ex);
         }
@@ -115,7 +114,7 @@ public class SimpleMail implements Mail {
     @Override
     public Optional<String> getMessageId() throws AcmeInvalidMessageException {
         try {
-            String[] mid = message.getHeader(HEADER_MESSAGE_ID);
+            var mid = message.getHeader(HEADER_MESSAGE_ID);
             if (mid == null || mid.length == 0) {
                 return Optional.empty();
             }
@@ -131,7 +130,7 @@ public class SimpleMail implements Mail {
     @Override
     public boolean isAutoSubmitted() throws AcmeInvalidMessageException {
         try {
-            String[] autoSubmitted = message.getHeader(HEADER_AUTO_SUBMITTED);
+            var autoSubmitted = message.getHeader(HEADER_AUTO_SUBMITTED);
             if (autoSubmitted == null) {
                 return false;
             }

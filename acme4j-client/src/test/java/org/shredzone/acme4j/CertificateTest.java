@@ -20,7 +20,6 @@ import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -51,9 +50,9 @@ public class CertificateTest {
      */
     @Test
     public void testDownload() throws Exception {
-        final List<X509Certificate> originalCert = TestUtils.createCertificate();
+        var originalCert = TestUtils.createCertificate();
 
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendCertificateRequest(URL url, Login login) {
                 assertThat(url).isEqualTo(locationUrl);
@@ -75,30 +74,28 @@ public class CertificateTest {
             }
         };
 
-        Certificate cert = new Certificate(provider.createLogin(), locationUrl);
+        var cert = new Certificate(provider.createLogin(), locationUrl);
         cert.download();
 
-        X509Certificate downloadedCert = cert.getCertificate();
+        var downloadedCert = cert.getCertificate();
         assertThat(downloadedCert.getEncoded()).isEqualTo(originalCert.get(0).getEncoded());
 
-        List<X509Certificate> downloadedChain = cert.getCertificateChain();
+        var downloadedChain = cert.getCertificateChain();
         assertThat(downloadedChain).hasSize(originalCert.size());
-        for (int ix = 0; ix < downloadedChain.size(); ix++) {
+        for (var ix = 0; ix < downloadedChain.size(); ix++) {
             assertThat(downloadedChain.get(ix).getEncoded()).isEqualTo(originalCert.get(ix).getEncoded());
         }
 
         byte[] writtenPem;
         byte[] originalPem;
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                OutputStreamWriter w = new OutputStreamWriter(baos)) {
+        try (var baos = new ByteArrayOutputStream(); var w = new OutputStreamWriter(baos)) {
             cert.writeCertificate(w);
             w.flush();
             writtenPem = baos.toByteArray();
         }
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                InputStream in = getClass().getResourceAsStream("/cert.pem")) {
+        try (var baos = new ByteArrayOutputStream(); var in = getClass().getResourceAsStream("/cert.pem")) {
             int len;
-            byte[] buffer = new byte[2048];
+            var buffer = new byte[2048];
             while((len = in.read(buffer)) >= 0) {
                 baos.write(buffer, 0, len);
             }
@@ -130,9 +127,9 @@ public class CertificateTest {
      */
     @Test
     public void testRevokeCertificate() throws AcmeException, IOException {
-        final List<X509Certificate> originalCert = TestUtils.createCertificate();
+        var originalCert = TestUtils.createCertificate();
 
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             private boolean certRequested = false;
 
             @Override
@@ -167,7 +164,7 @@ public class CertificateTest {
 
         provider.putTestResource(Resource.REVOKE_CERT, resourceUrl);
 
-        Certificate cert = new Certificate(provider.createLogin(), locationUrl);
+        var cert = new Certificate(provider.createLogin(), locationUrl);
         cert.revoke();
 
         provider.close();
@@ -178,9 +175,9 @@ public class CertificateTest {
      */
     @Test
     public void testRevokeCertificateWithReason() throws AcmeException, IOException {
-        final List<X509Certificate> originalCert = TestUtils.createCertificate();
+        var originalCert = TestUtils.createCertificate();
 
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             private boolean certRequested = false;
 
             @Override
@@ -215,7 +212,7 @@ public class CertificateTest {
 
         provider.putTestResource(Resource.REVOKE_CERT, resourceUrl);
 
-        Certificate cert = new Certificate(provider.createLogin(), locationUrl);
+        var cert = new Certificate(provider.createLogin(), locationUrl);
         cert.revoke(RevocationReason.KEY_COMPROMISE);
 
         provider.close();
@@ -234,10 +231,10 @@ public class CertificateTest {
      */
     @Test
     public void testRevokeCertificateByKeyPair() throws AcmeException, IOException {
-        final List<X509Certificate> originalCert = TestUtils.createCertificate();
-        final KeyPair certKeyPair = TestUtils.createDomainKeyPair();
+        var originalCert = TestUtils.createCertificate();
+        var certKeyPair = TestUtils.createDomainKeyPair();
 
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
                 assertThat(url).isEqualTo(resourceUrl);
@@ -250,7 +247,7 @@ public class CertificateTest {
 
         provider.putTestResource(Resource.REVOKE_CERT, resourceUrl);
 
-        Session session = provider.createSession();
+        var session = provider.createSession();
 
         Certificate.revoke(session, certKeyPair, originalCert.get(0), RevocationReason.KEY_COMPROMISE);
 

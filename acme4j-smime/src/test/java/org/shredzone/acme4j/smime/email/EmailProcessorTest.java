@@ -19,13 +19,11 @@ import static org.assertj.core.api.Assertions.*;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.Security;
-import java.security.cert.X509Certificate;
 import java.util.Optional;
 
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
@@ -34,7 +32,6 @@ import org.shredzone.acme4j.Identifier;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.smime.EmailIdentifier;
 import org.shredzone.acme4j.smime.SMIMETests;
-import org.shredzone.acme4j.smime.challenge.EmailReply00Challenge;
 import org.shredzone.acme4j.smime.exception.AcmeInvalidMessageException;
 
 /**
@@ -54,7 +51,7 @@ public class EmailProcessorTest extends SMIMETests {
 
     @Test
     public void testEmailParser() throws AcmeInvalidMessageException {
-        EmailProcessor processor = EmailProcessor.plainMessage(message);
+        var processor = EmailProcessor.plainMessage(message);
         processor.expectedFrom(expectedFrom);
         processor.expectedTo(expectedTo);
         processor.expectedIdentifier(EmailIdentifier.email(expectedTo));
@@ -70,17 +67,17 @@ public class EmailProcessorTest extends SMIMETests {
     @Test
     public void testValidSignature() {
         assertThatNoException().isThrownBy(() -> {
-            MimeMessage message = mockMessage("valid-mail");
-            X509Certificate certificate = readCertificate("valid-signer");
+            var message = mockMessage("valid-mail");
+            var certificate = readCertificate("valid-signer");
             EmailProcessor.builder().certificate(certificate).strict().build(message);
         });
     }
 
     @Test
     public void testInvalidSignature() {
-        AcmeInvalidMessageException ex = catchThrowableOfType(() -> {
-                    MimeMessage message = mockMessage("invalid-signed-mail");
-                    X509Certificate certificate = readCertificate("valid-signer");
+        var ex = catchThrowableOfType(() -> {
+                    var message = mockMessage("invalid-signed-mail");
+                    var certificate = readCertificate("valid-signer");
                     EmailProcessor.builder().certificate(certificate).strict().build(message);
                 }, AcmeInvalidMessageException.class);
 
@@ -97,8 +94,8 @@ public class EmailProcessorTest extends SMIMETests {
     public void testValidSignatureButNoSAN() {
         assertThatExceptionOfType(AcmeInvalidMessageException.class)
                 .isThrownBy(() -> {
-                    MimeMessage message = mockMessage("invalid-nosan");
-                    X509Certificate certificate = readCertificate("valid-signer-nosan");
+                    var message = mockMessage("invalid-nosan");
+                    var certificate = readCertificate("valid-signer-nosan");
                     EmailProcessor.builder().certificate(certificate).strict().build(message);
                 })
                 .withMessage("Certificate does not have a subjectAltName extension");
@@ -106,9 +103,9 @@ public class EmailProcessorTest extends SMIMETests {
 
     @Test
     public void testSANDoesNotMatchFrom() {
-        AcmeInvalidMessageException ex = catchThrowableOfType(() -> {
-                    MimeMessage message = mockMessage("invalid-cert-mismatch");
-                    X509Certificate certificate = readCertificate("valid-signer");
+        var ex = catchThrowableOfType(() -> {
+                    var message = mockMessage("invalid-cert-mismatch");
+                    var certificate = readCertificate("valid-signer");
                     EmailProcessor.builder().certificate(certificate).strict().build(message);
                 }, AcmeInvalidMessageException.class);
 
@@ -120,9 +117,9 @@ public class EmailProcessorTest extends SMIMETests {
 
     @Test
     public void testInvalidProtectedFromHeader() {
-        AcmeInvalidMessageException ex = catchThrowableOfType(() -> {
-                    MimeMessage message = mockMessage("invalid-protected-mail-from");
-                    X509Certificate certificate = readCertificate("valid-signer");
+        var ex = catchThrowableOfType(() -> {
+                    var message = mockMessage("invalid-protected-mail-from");
+                    var certificate = readCertificate("valid-signer");
                     EmailProcessor.builder().certificate(certificate).strict().build(message);
                 }, AcmeInvalidMessageException.class);
 
@@ -136,8 +133,8 @@ public class EmailProcessorTest extends SMIMETests {
     public void testInvalidProtectedToHeader() {
         assertThatExceptionOfType(AcmeInvalidMessageException.class)
                 .isThrownBy(() -> {
-                    MimeMessage message = mockMessage("invalid-protected-mail-to");
-                    X509Certificate certificate = readCertificate("valid-signer");
+                    var message = mockMessage("invalid-protected-mail-to");
+                    var certificate = readCertificate("valid-signer");
                     EmailProcessor.builder().certificate(certificate).strict().build(message);
                 })
                 .withMessage("Secured header 'To' does not match envelope header");
@@ -147,8 +144,8 @@ public class EmailProcessorTest extends SMIMETests {
     public void testInvalidProtectedSubjectHeader() {
         assertThatExceptionOfType(AcmeInvalidMessageException.class)
                 .isThrownBy(() -> {
-                    MimeMessage message = mockMessage("invalid-protected-mail-subject");
-                    X509Certificate certificate = readCertificate("valid-signer");
+                    var message = mockMessage("invalid-protected-mail-subject");
+                    var certificate = readCertificate("valid-signer");
                     EmailProcessor.builder().certificate(certificate).strict().build(message);
                 })
                 .withMessage("Secured header 'Subject' does not match envelope header");
@@ -158,8 +155,8 @@ public class EmailProcessorTest extends SMIMETests {
     public void testNonStrictInvalidProtectedSubjectHeader() {
         assertThatNoException()
                 .isThrownBy(() -> {
-                    MimeMessage message = mockMessage("invalid-protected-mail-subject");
-                    X509Certificate certificate = readCertificate("valid-signer");
+                    var message = mockMessage("invalid-protected-mail-subject");
+                    var certificate = readCertificate("valid-signer");
                     EmailProcessor.builder().certificate(certificate).relaxed().build(message);
                 });
     }
@@ -170,12 +167,12 @@ public class EmailProcessorTest extends SMIMETests {
     @Disabled
     @Test
     public void testValidSignatureRfc7508() throws Exception {
-        MimeMessage message = mockMessage("valid-mail-7508");
+        var message = mockMessage("valid-mail-7508");
 
-        KeyStore keyStore = KeyStore.getInstance("JKS");
+        var keyStore = KeyStore.getInstance("JKS");
         keyStore.load(EmailProcessorTest.class.getResourceAsStream("/7508-valid-ca.jks"), "test123".toCharArray());
 
-        EmailProcessor processor = EmailProcessor.builder().trustStore(keyStore).build(message);
+        var processor = EmailProcessor.builder().trustStore(keyStore).build(message);
         assertThat(processor.getSender()).isEqualTo(new InternetAddress("acme-challenge@dc-bsd.my.corp"));
         assertThat(processor.getRecipient()).isEqualTo(new InternetAddress("gitlab@dc-bsd.my.corp"));
         assertThat(processor.getToken1()).isEqualTo("ABxfL5s4bjvmyVRvl6y-Y_GhdzTdWpKqlmrKAIVe");
@@ -186,9 +183,9 @@ public class EmailProcessorTest extends SMIMETests {
     @Disabled
     @Test
     public void testInvalidSignatureRfc7508() throws Exception {
-        MimeMessage message = mockMessage("valid-mail-7508");
+        var message = mockMessage("valid-mail-7508");
 
-        KeyStore keyStore = KeyStore.getInstance("JKS");
+        var keyStore = KeyStore.getInstance("JKS");
         keyStore.load(EmailProcessorTest.class.getResourceAsStream("/7508-fake-ca.jks"), "test123".toCharArray());
 
         assertThatExceptionOfType(AcmeInvalidMessageException.class)
@@ -199,7 +196,7 @@ public class EmailProcessorTest extends SMIMETests {
     public void textExpectedFromFails() {
         assertThatExceptionOfType(AcmeProtocolException.class)
                 .isThrownBy(() -> {
-                    EmailProcessor processor = EmailProcessor.plainMessage(message);
+                    var processor = EmailProcessor.plainMessage(message);
                     processor.expectedFrom(expectedTo);
                 })
                 .withMessage("Message is not sent by the expected sender");
@@ -209,7 +206,7 @@ public class EmailProcessorTest extends SMIMETests {
     public void textExpectedToFails() {
         assertThatExceptionOfType(AcmeProtocolException.class)
                 .isThrownBy(() -> {
-                    EmailProcessor processor = EmailProcessor.plainMessage(message);
+                    var processor = EmailProcessor.plainMessage(message);
                     processor.expectedTo(expectedFrom);
                 })
                 .withMessage("Message is not addressed to expected recipient");
@@ -219,7 +216,7 @@ public class EmailProcessorTest extends SMIMETests {
     public void textExpectedIdentifierFails1() {
         assertThatExceptionOfType(AcmeProtocolException.class)
                 .isThrownBy(() -> {
-                    EmailProcessor processor = EmailProcessor.plainMessage(message);
+                    var processor = EmailProcessor.plainMessage(message);
                     processor.expectedIdentifier(EmailIdentifier.email(expectedFrom));
                 })
                 .withMessage("Message is not addressed to expected recipient");
@@ -229,7 +226,7 @@ public class EmailProcessorTest extends SMIMETests {
     public void textExpectedIdentifierFails2() {
         assertThatExceptionOfType(AcmeProtocolException.class)
                 .isThrownBy(() -> {
-                    EmailProcessor processor = EmailProcessor.plainMessage(message);
+                    var processor = EmailProcessor.plainMessage(message);
                     processor.expectedIdentifier(Identifier.ip("192.168.0.1"));
                 })
                 .withMessage("Wrong identifier type: ip");
@@ -239,7 +236,7 @@ public class EmailProcessorTest extends SMIMETests {
     public void textNoChallengeFails1() {
         assertThatExceptionOfType(IllegalStateException.class)
                 .isThrownBy(() -> {
-                    EmailProcessor processor = EmailProcessor.plainMessage(message);
+                    var processor = EmailProcessor.plainMessage(message);
                     processor.getToken();
                 })
                 .withMessage("No challenge has been set yet");
@@ -249,7 +246,7 @@ public class EmailProcessorTest extends SMIMETests {
     public void textNoChallengeFails2() {
         assertThatExceptionOfType(IllegalStateException.class)
                 .isThrownBy(() -> {
-                    EmailProcessor processor = EmailProcessor.plainMessage(message);
+                    var processor = EmailProcessor.plainMessage(message);
                     processor.getAuthorization();
                 })
                 .withMessage("No challenge has been set yet");
@@ -259,7 +256,7 @@ public class EmailProcessorTest extends SMIMETests {
     public void textNoChallengeFails3() {
         assertThatExceptionOfType(IllegalStateException.class)
                 .isThrownBy(() -> {
-                    EmailProcessor processor = EmailProcessor.plainMessage(message);
+                    var processor = EmailProcessor.plainMessage(message);
                     processor.respond();
                 })
                 .withMessage("No challenge has been set yet");
@@ -267,9 +264,9 @@ public class EmailProcessorTest extends SMIMETests {
 
     @Test
     public void testChallenge() throws AcmeInvalidMessageException {
-        EmailReply00Challenge challenge = mockChallenge("emailReplyChallenge");
+        var challenge = mockChallenge("emailReplyChallenge");
 
-        EmailProcessor processor = EmailProcessor.plainMessage(message);
+        var processor = EmailProcessor.plainMessage(message);
         processor.withChallenge(challenge);
         assertThat(processor.getToken()).isEqualTo(TOKEN);
         assertThat(processor.getAuthorization()).isEqualTo(KEY_AUTHORIZATION);
@@ -280,8 +277,8 @@ public class EmailProcessorTest extends SMIMETests {
     public void testChallengeMismatch() {
         assertThatExceptionOfType(AcmeProtocolException.class)
                 .isThrownBy(() -> {
-                    EmailReply00Challenge challenge = mockChallenge("emailReplyChallengeMismatch");
-                    EmailProcessor processor = EmailProcessor.plainMessage(message);
+                    var challenge = mockChallenge("emailReplyChallengeMismatch");
+                    var processor = EmailProcessor.plainMessage(message);
                     processor.withChallenge(challenge);
                 })
                 .withMessage("Message is not sent by the expected sender");
@@ -289,9 +286,9 @@ public class EmailProcessorTest extends SMIMETests {
 
     @Test
     public void testResponse() throws IOException, MessagingException, AcmeInvalidMessageException {
-        EmailReply00Challenge challenge = mockChallenge("emailReplyChallenge");
+        var challenge = mockChallenge("emailReplyChallenge");
 
-        Message response = EmailProcessor.plainMessage(message)
+        var response = EmailProcessor.plainMessage(message)
                 .withChallenge(challenge)
                 .respond()
                 .generateResponse(mailSession);
@@ -301,9 +298,9 @@ public class EmailProcessorTest extends SMIMETests {
 
     @Test
     public void testResponseWithHeaderFooter() throws IOException, MessagingException, AcmeInvalidMessageException {
-        EmailReply00Challenge challenge = mockChallenge("emailReplyChallenge");
+        var challenge = mockChallenge("emailReplyChallenge");
 
-        Message response = EmailProcessor.plainMessage(message)
+        var response = EmailProcessor.plainMessage(message)
                 .withChallenge(challenge)
                 .respond()
                 .withHeader("This is an introduction.")
@@ -318,9 +315,9 @@ public class EmailProcessorTest extends SMIMETests {
 
     @Test
     public void testResponseWithCallback() throws IOException, MessagingException, AcmeInvalidMessageException {
-        EmailReply00Challenge challenge = mockChallenge("emailReplyChallenge");
+        var challenge = mockChallenge("emailReplyChallenge");
 
-        Message response = EmailProcessor.plainMessage(message)
+        var response = EmailProcessor.plainMessage(message)
                 .withChallenge(challenge)
                 .respond()
                 .withGenerator((msg, body) -> msg.setContent("Head\r\n" + body + "Foot", "text/plain"))
@@ -344,7 +341,7 @@ public class EmailProcessorTest extends SMIMETests {
 
         assertThat(response.getSubject()).isEqualTo("Re: ACME: " + TOKEN_PART1);
 
-        String[] inReplyToHeader = response.getHeader("In-Reply-To");
+        var inReplyToHeader = response.getHeader("In-Reply-To");
         assertThat(inReplyToHeader).hasSize(1);
         assertThat(inReplyToHeader[0]).isEqualTo("<A2299BB.FF7788@example.org>");
     }

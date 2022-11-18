@@ -33,9 +33,9 @@ public class PebbleAcmeProviderTest {
      */
     @Test
     public void testAccepts() throws URISyntaxException {
-        PebbleAcmeProvider provider = new PebbleAcmeProvider();
+        var provider = new PebbleAcmeProvider();
 
-        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+        try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(provider.accepts(new URI("acme://pebble"))).isTrue();
             softly.assertThat(provider.accepts(new URI("acme://pebble/"))).isTrue();
             softly.assertThat(provider.accepts(new URI("acme://pebble/some-host.example.com"))).isTrue();
@@ -51,7 +51,7 @@ public class PebbleAcmeProviderTest {
      */
     @Test
     public void testResolve() throws URISyntaxException {
-        PebbleAcmeProvider provider = new PebbleAcmeProvider();
+        var provider = new PebbleAcmeProvider();
 
         assertThat(provider.resolve(new URI("acme://pebble")))
                 .isEqualTo(url("https://localhost:14000/dir"));
@@ -64,13 +64,11 @@ public class PebbleAcmeProviderTest {
         assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com:12345/")))
                 .isEqualTo(url("https://pebble.example.com:12345/dir"));
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            provider.resolve(new URI("acme://pebble/bad.example.com:port"));
-        });
+        assertThrows(IllegalArgumentException.class, () ->
+                provider.resolve(new URI("acme://pebble/bad.example.com:port")));
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            provider.resolve(new URI("acme://pebble/bad.example.com:1234/foo"));
-        });
+        assertThrows(IllegalArgumentException.class, () ->
+                provider.resolve(new URI("acme://pebble/bad.example.com:1234/foo")));
     }
 
 }

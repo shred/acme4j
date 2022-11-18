@@ -24,7 +24,6 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
 import java.time.Duration;
-import java.time.Instant;
 import java.util.Arrays;
 
 import org.assertj.core.api.AutoCloseableSoftAssertions;
@@ -49,10 +48,10 @@ public class OrderBuilderTest {
      */
     @Test
     public void testOrderCertificate() throws Exception {
-        Instant notBefore = parseTimestamp("2016-01-01T00:00:00Z");
-        Instant notAfter = parseTimestamp("2016-01-08T00:00:00Z");
+        var notBefore = parseTimestamp("2016-01-01T00:00:00Z");
+        var notAfter = parseTimestamp("2016-01-08T00:00:00Z");
 
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 assertThat(url).isEqualTo(resourceUrl);
@@ -72,12 +71,12 @@ public class OrderBuilderTest {
             }
         };
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
         provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
 
-        Account account = new Account(login);
-        Order order = account.newOrder()
+        var account = new Account(login);
+        var order = account.newOrder()
                         .domains("example.com", "www.example.com")
                         .domain("example.org")
                         .domains(Arrays.asList("m.example.com", "m.example.org"))
@@ -89,7 +88,7 @@ public class OrderBuilderTest {
                         .notAfter(notAfter)
                         .create();
 
-        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+        try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(order.getIdentifiers()).containsExactlyInAnyOrder(
                         Identifier.dns("example.com"),
                         Identifier.dns("www.example.com"),
@@ -122,12 +121,12 @@ public class OrderBuilderTest {
      */
     @Test
     public void testAutoRenewOrderCertificate() throws Exception {
-        Instant autoRenewStart = parseTimestamp("2018-01-01T00:00:00Z");
-        Instant autoRenewEnd = parseTimestamp("2019-01-01T00:00:00Z");
-        Duration validity = Duration.ofDays(7);
-        Duration predate = Duration.ofDays(6);
+        var autoRenewStart = parseTimestamp("2018-01-01T00:00:00Z");
+        var autoRenewEnd = parseTimestamp("2019-01-01T00:00:00Z");
+        var validity = Duration.ofDays(7);
+        var predate = Duration.ofDays(6);
 
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 assertThat(url).isEqualTo(resourceUrl);
@@ -147,13 +146,13 @@ public class OrderBuilderTest {
             }
         };
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
         provider.putMetadata("auto-renewal", JSON.empty());
         provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
 
-        Account account = new Account(login);
-        Order order = account.newOrder()
+        var account = new Account(login);
+        var order = account.newOrder()
                         .domain("example.org")
                         .autoRenewal()
                         .autoRenewalStart(autoRenewStart)
@@ -163,7 +162,7 @@ public class OrderBuilderTest {
                         .autoRenewalEnableGet()
                         .create();
 
-        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+        try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(order.getIdentifiers()).containsExactlyInAnyOrder(Identifier.dns("example.org"));
             softly.assertThat(order.getNotBefore()).isNull();
             softly.assertThat(order.getNotAfter()).isNull();
@@ -183,14 +182,14 @@ public class OrderBuilderTest {
      * Test that an auto-renewal {@link Order} cannot be created if unsupported by the CA.
      */
     @Test
-    public void testAutoRenewOrderCertificateFails() throws Exception {
+    public void testAutoRenewOrderCertificateFails() {
         assertThrows(AcmeException.class, () -> {
-            TestableConnectionProvider provider = new TestableConnectionProvider();
+            var provider = new TestableConnectionProvider();
             provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
 
-            Login login = provider.createLogin();
+            var login = provider.createLogin();
 
-            Account account = new Account(login);
+            var account = new Account(login);
             account.newOrder()
                             .domain("example.org")
                             .autoRenewal()
@@ -205,12 +204,12 @@ public class OrderBuilderTest {
      */
     @Test
     public void testAutoRenewNotMixed() throws Exception {
-        Instant someInstant = parseTimestamp("2018-01-01T00:00:00Z");
+        var someInstant = parseTimestamp("2018-01-01T00:00:00Z");
 
-        TestableConnectionProvider provider = new TestableConnectionProvider();
-        Login login = provider.createLogin();
+        var provider = new TestableConnectionProvider();
+        var login = provider.createLogin();
 
-        Account account = new Account(login);
+        var account = new Account(login);
 
         assertThrows(IllegalArgumentException.class, () -> {
             OrderBuilder ob = account.newOrder().autoRenewal();

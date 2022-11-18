@@ -17,10 +17,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 import org.junit.jupiter.api.Test;
-import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 
 /**
@@ -33,7 +31,7 @@ public class GenericAcmeProviderTest {
      */
     @Test
     public void testAccepts() throws URISyntaxException {
-        GenericAcmeProvider provider = new GenericAcmeProvider();
+        var provider = new GenericAcmeProvider();
 
         assertThat(provider.accepts(new URI("http://example.com/acme"))).isTrue();
         assertThat(provider.accepts(new URI("https://example.com/acme"))).isTrue();
@@ -45,14 +43,14 @@ public class GenericAcmeProviderTest {
      */
     @Test
     public void testResolve() throws URISyntaxException {
-        URI serverUri = new URI("http://example.com/acme");
+        var serverUri = new URI("http://example.com/acme");
 
-        GenericAcmeProvider provider = new GenericAcmeProvider();
+        var provider = new GenericAcmeProvider();
 
-        URL resolvedUrl = provider.resolve(serverUri);
+        var resolvedUrl = provider.resolve(serverUri);
         assertThat(resolvedUrl.toString()).isEqualTo(serverUri.toString());
 
-        Connection connection = provider.connect(serverUri);
+        var connection = provider.connect(serverUri);
         assertThat(connection).isInstanceOf(DefaultConnection.class);
     }
 

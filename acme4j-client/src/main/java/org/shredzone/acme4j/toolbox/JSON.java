@@ -96,8 +96,8 @@ public final class JSON implements Serializable {
      * @return {@link JSON} of the read content.
      */
     public static JSON parse(InputStream in) throws IOException {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(in, UTF_8))) {
-            String json = reader.lines().map(String::trim).collect(joining());
+        try (var reader = new BufferedReader(new InputStreamReader(in, UTF_8))) {
+            var json = reader.lines().map(String::trim).collect(joining());
             return parse(json);
         }
     }
@@ -346,7 +346,7 @@ public final class JSON implements Serializable {
         public JSON asEncodedObject() {
             required();
             try {
-                byte[] raw = AcmeUtils.base64UrlDecode(val.toString());
+                var raw = AcmeUtils.base64UrlDecode(val.toString());
                 return new JSON(path, JsonUtil.parseJson(new String(raw, UTF_8)));
             } catch (IllegalArgumentException | JoseException ex) {
                 throw new AcmeProtocolException(path + ": expected an encoded object", ex);

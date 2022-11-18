@@ -58,7 +58,7 @@ public class AcmeUserActionRequiredException extends AcmeServerException {
      * be taken by a human.
      */
     public URL getInstance() {
-        URI instance = getProblem().getInstance();
+        var instance = getProblem().getInstance();
 
         if (instance == null) {
             throw new AcmeProtocolException("Instance URL required, but missing.");

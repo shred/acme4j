@@ -52,7 +52,7 @@ public abstract class PebbleITBase {
 
     @AfterEach
     public void performCleanup() throws Exception {
-        for (CleanupCallback callback : cleanup) {
+        for (var callback : cleanup) {
             callback.cleanup();
         }
         cleanup.clear();

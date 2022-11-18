@@ -16,7 +16,6 @@ package org.shredzone.acme4j.provider.pebble;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.shredzone.acme4j.connector.HttpConnector;
@@ -46,9 +45,9 @@ public class PebbleAcmeProvider extends AbstractAcmeProvider {
     @Override
     public URL resolve(URI serverUri) {
         try {
-            String path = serverUri.getPath();
+            var path = serverUri.getPath();
 
-            URL baseUrl = new URL("https://localhost:14000/dir");
+            var baseUrl = new URL("https://localhost:14000/dir");
 
             if (path != null && !path.isEmpty() && !"/".equals(path)) {
                 baseUrl = parsePath(path);
@@ -68,10 +67,10 @@ public class PebbleAcmeProvider extends AbstractAcmeProvider {
      * @return URL of the server's base
      */
     private URL parsePath(String path) throws MalformedURLException {
-        Matcher m = HOST_PATTERN.matcher(path);
+        var m = HOST_PATTERN.matcher(path);
         if (m.matches()) {
-            String host = m.group(1);
-            int port = 14000;
+            var host = m.group(1);
+            var port = 14000;
             if (m.group(2) != null) {
                 port = Integer.parseInt(m.group(2));
             }

@@ -21,7 +21,6 @@ import java.net.URI;
 import java.net.URL;
 
 import org.junit.jupiter.api.Test;
-import org.shredzone.acme4j.Problem;
 
 /**
  * Unit tests for {@link AcmeUserActionRequiredException}.
@@ -33,15 +32,14 @@ public class AcmeUserActionRequiredExceptionTest {
      */
     @Test
     public void testAcmeUserActionRequiredException() throws MalformedURLException {
-        URI type = URI.create("urn:ietf:params:acme:error:userActionRequired");
-        String detail = "Accept new TOS";
-        URI tosUri = URI.create("http://example.com/agreement.pdf");
-        URL instanceUrl = new URL("http://example.com/howToAgree.html");
+        var type = URI.create("urn:ietf:params:acme:error:userActionRequired");
+        var detail = "Accept new TOS";
+        var tosUri = URI.create("http://example.com/agreement.pdf");
+        var instanceUrl = new URL("http://example.com/howToAgree.html");
 
-        Problem problem = createProblem(type, detail, instanceUrl);
+        var problem = createProblem(type, detail, instanceUrl);
 
-        AcmeUserActionRequiredException ex
-            = new AcmeUserActionRequiredException(problem, tosUri);
+        var ex = new AcmeUserActionRequiredException(problem, tosUri);
 
         assertThat(ex.getType()).isEqualTo(type);
         assertThat(ex.getMessage()).isEqualTo(detail);
@@ -54,14 +52,13 @@ public class AcmeUserActionRequiredExceptionTest {
      */
     @Test
     public void testNullAcmeUserActionRequiredException() throws MalformedURLException {
-        URI type = URI.create("urn:ietf:params:acme:error:userActionRequired");
-        String detail = "Call our service";
-        URL instanceUrl = new URL("http://example.com/howToContactUs.html");
+        var type = URI.create("urn:ietf:params:acme:error:userActionRequired");
+        var detail = "Call our service";
+        var instanceUrl = new URL("http://example.com/howToContactUs.html");
 
-        Problem problem = createProblem(type, detail, instanceUrl);
+        var problem = createProblem(type, detail, instanceUrl);
 
-        AcmeUserActionRequiredException ex
-            = new AcmeUserActionRequiredException(problem, null);
+        var ex = new AcmeUserActionRequiredException(problem, null);
 
         assertThat(ex.getType()).isEqualTo(type);
         assertThat(ex.getMessage()).isEqualTo(detail);

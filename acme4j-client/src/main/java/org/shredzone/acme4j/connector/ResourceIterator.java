@@ -24,7 +24,6 @@ import java.util.function.BiFunction;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.AcmeResource;
 import org.shredzone.acme4j.Login;
-import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
@@ -102,7 +101,7 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
             fetch();
         }
 
-        URL next = urlList.poll();
+        var next = urlList.poll();
         if (next == null) {
             eol = true;
             throw new NoSuchElementException("no more " + field);
@@ -140,8 +139,8 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
      * there is a "next" header, it is used for the next batch of URLs.
      */
     private void readAndQueue() throws AcmeException {
-        Session session = login.getSession();
-        try (Connection conn = session.connect()) {
+        var session = login.getSession();
+        try (var conn = session.connect()) {
             conn.sendSignedPostAsGetRequest(nextUrl, login);
             fillUrlList(conn.readJsonResponse());
 

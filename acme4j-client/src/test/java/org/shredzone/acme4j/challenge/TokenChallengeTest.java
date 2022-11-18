@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
-import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -33,15 +32,15 @@ public class TokenChallengeTest {
      */
     @Test
     public void testInvalidToken() throws IOException {
-        TestableConnectionProvider provider = new TestableConnectionProvider();
-        Login login = provider.createLogin();
+        var provider = new TestableConnectionProvider();
+        var login = provider.createLogin();
 
-        JSONBuilder jb = new JSONBuilder();
+        var jb = new JSONBuilder();
         jb.put("url", "https://example.com/acme/1234");
         jb.put("type", "generic");
         jb.put("token", "<script>someMaliciousCode()</script>");
 
-        TokenChallenge challenge = new TokenChallenge(login, jb.toJSON());
+        var challenge = new TokenChallenge(login, jb.toJSON());
         assertThrows(AcmeProtocolException.class, challenge::getToken);
         provider.close();
     }

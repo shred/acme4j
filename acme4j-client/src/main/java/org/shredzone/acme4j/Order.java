@@ -13,16 +13,14 @@
  */
 package org.shredzone.acme4j;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
-import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
@@ -73,11 +71,11 @@ public class Order extends AcmeJsonResource {
      * @since 2.3
      */
     public List<Identifier> getIdentifiers() {
-        return Collections.unmodifiableList(getJSON().get("identifiers")
+        return getJSON().get("identifiers")
                     .asArray()
                     .stream()
                     .map(Value::asIdentifier)
-                    .collect(toList()));
+                    .collect(toUnmodifiableList());
     }
 
     /**
@@ -100,13 +98,13 @@ public class Order extends AcmeJsonResource {
      * Gets the {@link Authorization} required for this order, in no specific order.
      */
     public List<Authorization> getAuthorizations() {
-        Login login = getLogin();
-        return Collections.unmodifiableList(getJSON().get("authorizations")
+        var login = getLogin();
+        return getJSON().get("authorizations")
                     .asArray()
                     .stream()
                     .map(Value::asURL)
                     .map(login::bindAuthorization)
-                    .collect(toList()));
+                    .collect(toUnmodifiableList());
     }
 
     /**
@@ -159,8 +157,8 @@ public class Order extends AcmeJsonResource {
      */
     public void execute(byte[] csr) throws AcmeException {
         LOG.debug("finalize");
-        try (Connection conn = getSession().connect()) {
-            JSONBuilder claims = new JSONBuilder();
+        try (var conn = getSession().connect()) {
+            var claims = new JSONBuilder();
             claims.putBase64("csr", csr);
 
             conn.sendSignedRequest(getFinalizeLocation(), claims, getLogin());
@@ -277,8 +275,8 @@ public class Order extends AcmeJsonResource {
         }
 
         LOG.debug("cancel");
-        try (Connection conn = getSession().connect()) {
-            JSONBuilder claims = new JSONBuilder();
+        try (var conn = getSession().connect()) {
+            var claims = new JSONBuilder();
             claims.put("status", "canceled");
 
             conn.sendSignedRequest(getLocation(), claims, getLogin());

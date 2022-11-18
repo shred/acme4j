@@ -44,7 +44,7 @@ public class LetsEncryptAcmeProvider extends AbstractAcmeProvider {
 
     @Override
     public URL resolve(URI serverUri) {
-        String path = serverUri.getPath();
+        var path = serverUri.getPath();
         String directoryUrl;
         if (path == null || "".equals(path) || "/".equals(path) || "/v02".equals(path)) {
             directoryUrl = V02_DIRECTORY_URL;

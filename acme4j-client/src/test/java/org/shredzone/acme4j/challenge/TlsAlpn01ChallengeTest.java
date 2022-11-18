@@ -40,7 +40,7 @@ public class TlsAlpn01ChallengeTest {
      */
     @Test
     public void testTlsAlpn01Challenge() {
-        TlsAlpn01Challenge challenge = new TlsAlpn01Challenge(login, getJSON("tlsAlpnChallenge"));
+        var challenge = new TlsAlpn01Challenge(login, getJSON("tlsAlpnChallenge"));
 
         assertThat(challenge.getType()).isEqualTo(TlsAlpn01Challenge.TYPE);
         assertThat(challenge.getStatus()).isEqualTo(Status.PENDING);
@@ -48,7 +48,7 @@ public class TlsAlpn01ChallengeTest {
         assertThat(challenge.getAuthorization()).isEqualTo(KEY_AUTHORIZATION);
         assertThat(challenge.getAcmeValidation()).isEqualTo(AcmeUtils.sha256hash(KEY_AUTHORIZATION));
 
-        JSONBuilder response = new JSONBuilder();
+        var response = new JSONBuilder();
         challenge.prepareResponse(response);
 
         assertThatJson(response.toString()).isEqualTo("{}");

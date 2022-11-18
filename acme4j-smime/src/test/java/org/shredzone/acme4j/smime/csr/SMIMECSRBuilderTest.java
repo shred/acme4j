@@ -29,11 +29,9 @@ import java.util.Arrays;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import org.assertj.core.api.AutoCloseableSoftAssertions;
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -68,7 +66,7 @@ public class SMIMECSRBuilderTest {
      */
     @Test
     public void testSMIMEGenerate() throws IOException, AddressException {
-        SMIMECSRBuilder builder = new SMIMECSRBuilder();
+        var builder = new SMIMECSRBuilder();
         builder.addEmail(new InternetAddress("Contact <mail@example.com>"));
         builder.addEmail(new InternetAddress("Info <info@example.com>"));
         builder.addEmails(new InternetAddress("Sales Dept <sales@example.com>"),
@@ -93,7 +91,7 @@ public class SMIMECSRBuilderTest {
 
         builder.sign(testKey);
 
-        PKCS10CertificationRequest csr = builder.getCSR();
+        var csr = builder.getCSR();
         assertThat(csr).isNotNull();
         assertThat(csr.getEncoded()).isEqualTo(builder.getEncoded());
 
@@ -107,11 +105,11 @@ public class SMIMECSRBuilderTest {
      */
     @Test
     public void testSMIMEEncryptOnly() throws IOException, AddressException {
-        SMIMECSRBuilder builder = new SMIMECSRBuilder();
+        var builder = new SMIMECSRBuilder();
         builder.addEmail(new InternetAddress("mail@example.com"));
         builder.setKeyUsageType(KeyUsageType.ENCRYPTION_ONLY);
         builder.sign(testKey);
-        PKCS10CertificationRequest csr = builder.getCSR();
+        var csr = builder.getCSR();
         assertThat(csr).isNotNull();
         keyUsageTest(csr, KeyUsage.keyEncipherment);
     }
@@ -121,11 +119,11 @@ public class SMIMECSRBuilderTest {
      */
     @Test
     public void testSMIMESigningOnly() throws IOException, AddressException {
-        SMIMECSRBuilder builder = new SMIMECSRBuilder();
+        var builder = new SMIMECSRBuilder();
         builder.addEmail(new InternetAddress("mail@example.com"));
         builder.setKeyUsageType(KeyUsageType.SIGNING_ONLY);
         builder.sign(testKey);
-        PKCS10CertificationRequest csr = builder.getCSR();
+        var csr = builder.getCSR();
         assertThat(csr).isNotNull();
         keyUsageTest(csr, KeyUsage.digitalSignature);
     }
@@ -135,11 +133,11 @@ public class SMIMECSRBuilderTest {
      */
     @Test
     public void testSMIMESigningAndEncryption() throws IOException, AddressException {
-        SMIMECSRBuilder builder = new SMIMECSRBuilder();
+        var builder = new SMIMECSRBuilder();
         builder.addEmail(new InternetAddress("mail@example.com"));
         builder.setKeyUsageType(KeyUsageType.SIGNING_AND_ENCRYPTION);
         builder.sign(testKey);
-        PKCS10CertificationRequest csr = builder.getCSR();
+        var csr = builder.getCSR();
         assertThat(csr).isNotNull();
         keyUsageTest(csr, KeyUsage.digitalSignature | KeyUsage.keyEncipherment);
     }
@@ -151,8 +149,8 @@ public class SMIMECSRBuilderTest {
      */
     @Test
     public void testAddAttrValues() throws Exception {
-        SMIMECSRBuilder builder = new SMIMECSRBuilder();
-        String invAttNameExMessage = assertThrows(IllegalArgumentException.class,
+        var builder = new SMIMECSRBuilder();
+        var invAttNameExMessage = assertThrows(IllegalArgumentException.class,
                 () -> X500Name.getDefaultStyle().attrNameToOID("UNKNOWNATT")).getMessage();
 
         assertThat(builder.toString()).isEqualTo(",TYPE=SIGNING_AND_ENCRYPTION");
@@ -204,9 +202,9 @@ public class SMIMECSRBuilderTest {
      * Bouncy Castle encodes it properly.
      */
     private void smimeCsrTest(PKCS10CertificationRequest csr) {
-        X500Name name = csr.getSubject();
+        var name = csr.getSubject();
 
-        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+        try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(name.getRDNs(BCStyle.CN)).as("CN")
                     .extracting(rdn -> rdn.getFirst().getValue().toString())
                     .contains("mail@example.com");
@@ -227,13 +225,13 @@ public class SMIMECSRBuilderTest {
                     .contains("ABC");
         }
 
-        Attribute[] attr = csr.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+        var attr = csr.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
         assertThat(attr).hasSize(1);
 
-        ASN1Encodable[] extensions = attr[0].getAttrValues().toArray();
+        var extensions = attr[0].getAttrValues().toArray();
         assertThat(extensions).hasSize(1);
 
-        GeneralNames names = GeneralNames.fromExtensions((Extensions) extensions[0], Extension.subjectAlternativeName);
+        var names = GeneralNames.fromExtensions((Extensions) extensions[0], Extension.subjectAlternativeName);
         assertThat(names.getNames())
                 .filteredOn(gn -> gn.getTagNo() == GeneralName.rfc822Name)
                 .extracting(gn -> ASN1IA5String.getInstance(gn.getName()).getString())
@@ -252,11 +250,11 @@ public class SMIMECSRBuilderTest {
      *         set or reset. If {@code null}, validation fails if key usage bits are set.
      */
     private void keyUsageTest(PKCS10CertificationRequest csr, Integer expectedUsageBits) {
-        Attribute[] attr = csr.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+        var attr = csr.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
         assertThat(attr).hasSize(1);
-        ASN1Encodable[] extensions = attr[0].getAttrValues().toArray();
+        var extensions = attr[0].getAttrValues().toArray();
         assertThat(extensions).hasSize(1);
-        DERBitString keyUsageBits = (DERBitString) ((Extensions) extensions[0]).getExtensionParsedValue(Extension.keyUsage);
+        var keyUsageBits = (DERBitString) ((Extensions) extensions[0]).getExtensionParsedValue(Extension.keyUsage);
         if (expectedUsageBits != null) {
             assertThat(keyUsageBits.intValue()).isEqualTo(expectedUsageBits);
         } else {
@@ -271,7 +269,7 @@ public class SMIMECSRBuilderTest {
     private void writerTest(SMIMECSRBuilder builder) throws IOException {
         // Write CSR to PEM
         String pem;
-        try (StringWriter out = new StringWriter()) {
+        try (var out = new StringWriter()) {
             builder.write(out);
             pem = out.toString();
         }
@@ -284,7 +282,7 @@ public class SMIMECSRBuilderTest {
 
         // Read CSR from PEM
         PKCS10CertificationRequest readCsr;
-        try (PEMParser parser = new PEMParser(new StringReader(pem))) {
+        try (var parser = new PEMParser(new StringReader(pem))) {
             readCsr = (PKCS10CertificationRequest) parser.readObject();
         }
 
@@ -294,7 +292,7 @@ public class SMIMECSRBuilderTest {
 
         // OutputStream is identical?
         byte[] pemBytes;
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try (var baos = new ByteArrayOutputStream()) {
             builder.write(baos);
             pemBytes = baos.toByteArray();
         }
@@ -307,7 +305,7 @@ public class SMIMECSRBuilderTest {
     @Test
     public void testNoEmail() {
         assertThrows(IllegalStateException.class, () -> {
-            SMIMECSRBuilder builder = new SMIMECSRBuilder();
+            var builder = new SMIMECSRBuilder();
             builder.sign(testKey);
         });
     }
@@ -317,12 +315,12 @@ public class SMIMECSRBuilderTest {
      */
     @Test
     public void testNoSign() {
-        SMIMECSRBuilder builder = new SMIMECSRBuilder();
+        var builder = new SMIMECSRBuilder();
 
         assertThrows(IllegalStateException.class, builder::getCSR, "getCSR");
         assertThrows(IllegalStateException.class, builder::getEncoded, "getEncoded");
         assertThrows(IllegalStateException.class, () -> {
-            try (StringWriter w = new StringWriter()) {
+            try (var w = new StringWriter()) {
                 builder.write(w);
             }
         },"write");

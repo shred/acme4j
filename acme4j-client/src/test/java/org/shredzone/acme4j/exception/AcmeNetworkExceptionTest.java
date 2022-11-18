@@ -26,9 +26,9 @@ public class AcmeNetworkExceptionTest {
 
     @Test
     public void testAcmeNetworkException() {
-        IOException cause = new IOException("Network not reachable");
+        var cause = new IOException("Network not reachable");
 
-        AcmeNetworkException ex = new AcmeNetworkException(cause);
+        var ex = new AcmeNetworkException(cause);
 
         assertThat(ex.getMessage()).isNotNull();
         assertThat(ex.getCause()).isEqualTo(cause);

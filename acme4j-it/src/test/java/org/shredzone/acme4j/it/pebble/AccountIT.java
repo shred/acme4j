@@ -17,7 +17,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URI;
-import java.net.URL;
 import java.security.KeyPair;
 
 import org.junit.jupiter.api.Test;
@@ -40,30 +39,30 @@ public class AccountIT extends PebbleITBase {
      */
     @Test
     public void testCreate() throws AcmeException {
-        KeyPair keyPair = createKeyPair();
-        Session session = new Session(pebbleURI());
+        var keyPair = createKeyPair();
+        var session = new Session(pebbleURI());
 
         // Register a new user
-        Login login = new AccountBuilder()
+        var login = new AccountBuilder()
                         .addContact("mailto:acme@example.com")
                         .agreeToTermsOfService()
                         .useKeyPair(keyPair)
                         .createLogin(session);
 
-        URL location = login.getAccountLocation();
+        var location = login.getAccountLocation();
         assertIsPebbleUrl(location);
 
         // Check registered data
-        Account acct = login.getAccount();
+        var acct = login.getAccount();
         assertThat(acct.getLocation()).isEqualTo(location);
         assertThat(acct.getContacts()).contains(URI.create("mailto:acme@example.com"));
         assertThat(acct.getStatus()).isEqualTo(Status.VALID);
 
         // Bind another Account object
-        Session session2 = new Session(pebbleURI());
-        Login login2 = new Login(location, keyPair, session2);
+        var session2 = new Session(pebbleURI());
+        var login2 = new Login(location, keyPair, session2);
         assertThat(login2.getAccountLocation()).isEqualTo(location);
-        Account acct2 = login2.getAccount();
+        var acct2 = login2.getAccount();
         assertThat(acct2.getLocation()).isEqualTo(location);
         assertThat(acct2.getContacts()).contains(URI.create("mailto:acme@example.com"));
         assertThat(acct2.getStatus()).isEqualTo(Status.VALID);
@@ -74,28 +73,28 @@ public class AccountIT extends PebbleITBase {
      */
     @Test
     public void testReCreate() throws AcmeException {
-        KeyPair keyPair = createKeyPair();
+        var keyPair = createKeyPair();
 
         // Register a new user
-        Session session1 = new Session(pebbleURI());
-        Login login1 = new AccountBuilder()
+        var session1 = new Session(pebbleURI());
+        var login1 = new AccountBuilder()
                         .addContact("mailto:acme@example.com")
                         .agreeToTermsOfService()
                         .useKeyPair(keyPair)
                         .createLogin(session1);
 
-        URL location1 = login1.getAccountLocation();
+        var location1 = login1.getAccountLocation();
         assertIsPebbleUrl(location1);
 
         // Try to register the same account again
-        Session session2 = new Session(pebbleURI());
-        Login login2 = new AccountBuilder()
+        var session2 = new Session(pebbleURI());
+        var login2 = new AccountBuilder()
                         .addContact("mailto:acme@example.com")
                         .agreeToTermsOfService()
                         .useKeyPair(keyPair)
                         .createLogin(session2);
 
-        URL location2 = login2.getAccountLocation();
+        var location2 = login2.getAccountLocation();
         assertIsPebbleUrl(location2);
 
         assertThat(location1).isEqualTo(location2);
@@ -106,24 +105,24 @@ public class AccountIT extends PebbleITBase {
      */
     @Test
     public void testCreateOnlyExisting() throws AcmeException {
-        KeyPair keyPair = createKeyPair();
+        var keyPair = createKeyPair();
 
-        Session session1 = new Session(pebbleURI());
-        Login login1 = new AccountBuilder()
+        var session1 = new Session(pebbleURI());
+        var login1 = new AccountBuilder()
                         .agreeToTermsOfService()
                         .useKeyPair(keyPair)
                         .createLogin(session1);
 
-        URL location1 = login1.getAccountLocation();
+        var location1 = login1.getAccountLocation();
         assertIsPebbleUrl(location1);
 
-        Session session2 = new Session(pebbleURI());
-        Login login2 = new AccountBuilder()
+        var session2 = new Session(pebbleURI());
+        var login2 = new AccountBuilder()
                         .onlyExisting()
                         .useKeyPair(keyPair)
                         .createLogin(session2);
 
-        URL location2 = login2.getAccountLocation();
+        var location2 = login2.getAccountLocation();
         assertIsPebbleUrl(location2);
 
         assertThat(location1).isEqualTo(location2);
@@ -134,8 +133,8 @@ public class AccountIT extends PebbleITBase {
      * error is returned.
      */
     @Test
-    public void testNotExisting() throws AcmeException {
-        AcmeServerException ex = assertThrows(AcmeServerException.class, () -> {
+    public void testNotExisting() {
+        var ex = assertThrows(AcmeServerException.class, () -> {
             KeyPair keyPair = createKeyPair();
             Session session = new Session(pebbleURI());
             new AccountBuilder().onlyExisting().useKeyPair(keyPair).create(session);
@@ -148,15 +147,15 @@ public class AccountIT extends PebbleITBase {
      */
     @Test
     public void testModify() throws AcmeException {
-        KeyPair keyPair = createKeyPair();
-        Session session = new Session(pebbleURI());
+        var keyPair = createKeyPair();
+        var session = new Session(pebbleURI());
 
-        Account acct = new AccountBuilder()
+        var acct = new AccountBuilder()
                         .addContact("mailto:acme@example.com")
                         .agreeToTermsOfService()
                         .useKeyPair(keyPair)
                         .create(session);
-        URL location = acct.getLocation();
+        var location = acct.getLocation();
         assertIsPebbleUrl(location);
 
         acct.modify().addContact("mailto:acme2@example.com").commit();
@@ -177,16 +176,16 @@ public class AccountIT extends PebbleITBase {
      */
     @Test
     public void testKeyChange() throws AcmeException {
-        KeyPair keyPair = createKeyPair();
-        Session session = new Session(pebbleURI());
+        var keyPair = createKeyPair();
+        var session = new Session(pebbleURI());
 
-        Account acct = new AccountBuilder()
+        var acct = new AccountBuilder()
                         .agreeToTermsOfService()
                         .useKeyPair(keyPair)
                         .create(session);
-        URL location = acct.getLocation();
+        var location = acct.getLocation();
 
-        KeyPair newKeyPair = createKeyPair();
+        var newKeyPair = createKeyPair();
         acct.changeKey(newKeyPair);
 
         assertThrows(AcmeServerException.class, () -> {
@@ -195,8 +194,8 @@ public class AccountIT extends PebbleITBase {
             oldAccount.update();
         }, "Old account key is still accessible");
 
-        Session sessionNewKey = new Session(pebbleURI());
-        Account newAccount = sessionNewKey.login(location, newKeyPair).getAccount();
+        var sessionNewKey = new Session(pebbleURI());
+        var newAccount = sessionNewKey.login(location, newKeyPair).getAccount();
         assertThat(newAccount.getStatus()).isEqualTo(Status.VALID);
     }
 
@@ -205,14 +204,14 @@ public class AccountIT extends PebbleITBase {
      */
     @Test
     public void testDeactivate() throws AcmeException {
-        KeyPair keyPair = createKeyPair();
-        Session session = new Session(pebbleURI());
+        var keyPair = createKeyPair();
+        var session = new Session(pebbleURI());
 
-        Account acct = new AccountBuilder()
+        var acct = new AccountBuilder()
                         .agreeToTermsOfService()
                         .useKeyPair(keyPair)
                         .create(session);
-        URL location = acct.getLocation();
+        var location = acct.getLocation();
 
         acct.deactivate();
 
@@ -220,7 +219,7 @@ public class AccountIT extends PebbleITBase {
         assertThat(acct.getStatus()).isEqualTo(Status.DEACTIVATED);
 
         // Make sure account cannot be accessed any more...
-        AcmeUnauthorizedException ex = assertThrows(AcmeUnauthorizedException.class,
+        var ex = assertThrows(AcmeUnauthorizedException.class,
                 () -> {
             Session session2 = new Session(pebbleURI());
             Account acct2 = session2.login(location, keyPair).getAccount();

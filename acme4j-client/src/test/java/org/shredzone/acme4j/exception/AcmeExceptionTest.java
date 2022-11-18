@@ -26,25 +26,25 @@ public class AcmeExceptionTest {
 
     @Test
     public void testAcmeException() {
-        AcmeException ex = new AcmeException();
+        var ex = new AcmeException();
         assertThat(ex.getMessage()).isNull();
         assertThat(ex.getCause()).isNull();
     }
 
     @Test
     public void testMessageAcmeException() {
-        String message = "Failure";
-        AcmeException ex = new AcmeException(message);
+        var message = "Failure";
+        var ex = new AcmeException(message);
         assertThat(ex.getMessage()).isEqualTo(message);
         assertThat(ex.getCause()).isNull();
     }
 
     @Test
     public void testCausedAcmeException() {
-        String message = "Failure";
-        IOException cause = new IOException("No network");
+        var message = "Failure";
+        var cause = new IOException("No network");
 
-        AcmeException ex = new AcmeException(message, cause);
+        var ex = new AcmeException(message, cause);
         assertThat(ex.getMessage()).isEqualTo(message);
         assertThat(ex.getCause()).isEqualTo(cause);
     }

@@ -22,7 +22,6 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.security.KeyPair;
-import java.security.PrivateKey;
 import java.security.interfaces.ECKey;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,11 +41,9 @@ import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyUsage;
-import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
-import org.bouncycastle.pkcs.PKCS10CertificationRequestBuilder;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequestBuilder;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
@@ -161,7 +158,7 @@ public class SMIMECSRBuilder {
      * @since 2.14
      */
     public void addValue(String attName, String value) throws AddressException {
-        ASN1ObjectIdentifier oid = X500Name.getDefaultStyle().attrNameToOID(requireNonNull(attName, "attribute name must not be null"));
+        var oid = X500Name.getDefaultStyle().attrNameToOID(requireNonNull(attName, "attribute name must not be null"));
         addValue(oid, value);
     }
 
@@ -257,28 +254,26 @@ public class SMIMECSRBuilder {
         }
 
         try {
-            int ix = 0;
-            GeneralName[] gns = new GeneralName[emaillist.size()];
-            for (InternetAddress email : emaillist) {
+            var ix = 0;
+            var gns = new GeneralName[emaillist.size()];
+            for (var email : emaillist) {
                 gns[ix++] = new GeneralName(GeneralName.rfc822Name, email.getAddress());
             }
-            GeneralNames subjectAltName = new GeneralNames(gns);
+            var subjectAltName = new GeneralNames(gns);
 
-            PKCS10CertificationRequestBuilder p10Builder =
-                            new JcaPKCS10CertificationRequestBuilder(namebuilder.build(), keypair.getPublic());
+            var p10Builder = new JcaPKCS10CertificationRequestBuilder(namebuilder.build(), keypair.getPublic());
 
-            ExtensionsGenerator extensionsGenerator = new ExtensionsGenerator();
+            var extensionsGenerator = new ExtensionsGenerator();
             extensionsGenerator.addExtension(Extension.subjectAlternativeName, false, subjectAltName);
 
-            KeyUsage keyUsage = new KeyUsage(keyUsageType.getKeyUsageBits());
+            var keyUsage = new KeyUsage(keyUsageType.getKeyUsageBits());
             extensionsGenerator.addExtension(Extension.keyUsage, true, keyUsage);
 
             p10Builder.addAttribute(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest, extensionsGenerator.generate());
 
-            PrivateKey pk = keypair.getPrivate();
-            JcaContentSignerBuilder csBuilder = new JcaContentSignerBuilder(
-                            pk instanceof ECKey ? EC_SIGNATURE_ALG : SIGNATURE_ALG);
-            ContentSigner signer = csBuilder.build(pk);
+            var pk = keypair.getPrivate();
+            var csBuilder = new JcaContentSignerBuilder(pk instanceof ECKey ? EC_SIGNATURE_ALG : SIGNATURE_ALG);
+            var signer = csBuilder.build(pk);
 
             csr = p10Builder.build(signer);
         } catch (OperatorCreationException ex) {
@@ -316,7 +311,7 @@ public class SMIMECSRBuilder {
             throw new IllegalStateException("sign CSR first");
         }
 
-        try (PemWriter pw = new PemWriter(w)) {
+        try (var pw = new PemWriter(w)) {
             pw.writeObject(new PemObject("CERTIFICATE REQUEST", getEncoded()));
         }
     }
@@ -334,7 +329,7 @@ public class SMIMECSRBuilder {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
         sb.append(namebuilder.build());
         if (!emaillist.isEmpty()) {
             sb.append(emaillist.stream()

@@ -33,10 +33,8 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.function.Function;
 
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
@@ -84,8 +82,8 @@ public final class CertificateUtils {
      * @return CSR that was read
      */
     public static PKCS10CertificationRequest readCSR(InputStream in) throws IOException {
-        try (PEMParser pemParser = new PEMParser(new InputStreamReader(in, StandardCharsets.US_ASCII))) {
-            Object parsedObj = pemParser.readObject();
+        try (var pemParser = new PEMParser(new InputStreamReader(in, StandardCharsets.US_ASCII))) {
+            var parsedObj = pemParser.readObject();
             if (!(parsedObj instanceof PKCS10CertificationRequest)) {
                 throw new IOException("Not a PKCS10 CSR");
             }
@@ -115,18 +113,18 @@ public final class CertificateUtils {
             throw new IllegalArgumentException("Bad acmeValidation parameter");
         }
 
-        final long now = System.currentTimeMillis();
+        var now = System.currentTimeMillis();
 
-        X500Name issuer = new X500Name("CN=acme.invalid");
-        BigInteger serial = BigInteger.valueOf(now);
-        Instant notBefore = Instant.ofEpochMilli(now);
-        Instant notAfter = notBefore.plus(Duration.ofDays(7));
+        var issuer = new X500Name("CN=acme.invalid");
+        var serial = BigInteger.valueOf(now);
+        var notBefore = Instant.ofEpochMilli(now);
+        var notAfter = notBefore.plus(Duration.ofDays(7));
 
-        JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+        var certBuilder = new JcaX509v3CertificateBuilder(
                     issuer, serial, Date.from(notBefore), Date.from(notAfter),
                     issuer, keypair.getPublic());
 
-        GeneralName[] gns = new GeneralName[1];
+        var gns = new GeneralName[1];
 
         switch (id.getType()) {
             case Identifier.TYPE_DNS:
@@ -169,7 +167,7 @@ public final class CertificateUtils {
         Objects.requireNonNull(notAfter, "notAfter");
         Objects.requireNonNull(keypair, "keypair");
 
-        JcaX509v1CertificateBuilder certBuilder = new JcaX509v1CertificateBuilder(
+        var certBuilder = new JcaX509v1CertificateBuilder(
                 new X500Name(subject),
                 BigInteger.valueOf(System.currentTimeMillis()),
                 Date.from(notBefore),
@@ -212,7 +210,7 @@ public final class CertificateUtils {
         Objects.requireNonNull(issuer, "issuer");
         Objects.requireNonNull(issuerPrivateKey, "issuerPrivateKey");
 
-        JcaX509v1CertificateBuilder certBuilder = new JcaX509v1CertificateBuilder(
+        var certBuilder = new JcaX509v1CertificateBuilder(
                 new X500Name(issuer.getIssuerX500Principal().getName()),
                 BigInteger.valueOf(System.currentTimeMillis()),
                 Date.from(notBefore),
@@ -257,9 +255,9 @@ public final class CertificateUtils {
         Objects.requireNonNull(issuerPrivateKey, "issuerPrivateKey");
 
         try {
-            JcaPKCS10CertificationRequest jcaCsr = new JcaPKCS10CertificationRequest(csr);
+            var jcaCsr = new JcaPKCS10CertificationRequest(csr);
 
-            JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+            var certBuilder = new JcaX509v3CertificateBuilder(
                     new X500Name(issuer.getIssuerX500Principal().getName()),
                     BigInteger.valueOf(System.currentTimeMillis()),
                     Date.from(notBefore),
@@ -267,11 +265,11 @@ public final class CertificateUtils {
                     csr.getSubject(),
                     jcaCsr.getPublicKey());
 
-            Attribute[] attr = csr.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+            var attr = csr.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
             if (attr.length > 0) {
-                ASN1Encodable[] extensions = attr[0].getAttrValues().toArray();
+                var extensions = attr[0].getAttrValues().toArray();
                 if (extensions.length > 0 && extensions[0] instanceof Extensions) {
-                    GeneralNames san = GeneralNames.fromExtensions((Extensions) extensions[0], Extension.subjectAlternativeName);
+                    var san = GeneralNames.fromExtensions((Extensions) extensions[0], Extension.subjectAlternativeName);
                     certBuilder.addExtension(Extension.subjectAlternativeName, false, san);
                 }
             }
@@ -294,9 +292,9 @@ public final class CertificateUtils {
      */
     private static X509Certificate buildCertificate(Function<ContentSigner, X509CertificateHolder> builder, PrivateKey privateKey) {
         try {
-            JcaContentSignerBuilder signerBuilder = new JcaContentSignerBuilder("SHA256withRSA");
-            byte[] cert = builder.apply(signerBuilder.build(privateKey)).getEncoded();
-            CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
+            var signerBuilder = new JcaContentSignerBuilder("SHA256withRSA");
+            var cert = builder.apply(signerBuilder.build(privateKey)).getEncoded();
+            var certificateFactory = CertificateFactory.getInstance("X.509");
             return (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(cert));
         } catch (CertificateException | OperatorCreationException | IOException ex) {
             throw new IllegalArgumentException("Could not build certificate", ex);

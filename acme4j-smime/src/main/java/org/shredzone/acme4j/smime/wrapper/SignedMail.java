@@ -13,9 +13,6 @@
  */
 package org.shredzone.acme4j.smime.wrapper;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.unmodifiableSet;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,14 +28,12 @@ import jakarta.mail.Header;
 import jakarta.mail.Message;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
-import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Enumerated;
 import org.bouncycastle.asn1.ASN1Integer;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1String;
-import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.cms.SignerInformation;
 import org.shredzone.acme4j.smime.exception.AcmeInvalidMessageException;
@@ -56,9 +51,9 @@ public class SignedMail implements Mail {
     private static final ASN1ObjectIdentifier SECURE_HEADER_FIELDS_ID
             = PKCSObjectIdentifiers.pkcs_9.branch("16.2.55");
     private static final Set<String> IGNORE_HEADERS
-            = unmodifiableSet(new TreeSet<>(asList("CONTENT-TYPE", "MIME-VERSION", "RECEIVED")));
+            = Set.of("CONTENT-TYPE", "MIME-VERSION", "RECEIVED");
     private static final Set<String> REQUIRED_HEADERS
-            = unmodifiableSet(new TreeSet<>(asList("FROM", "TO", "SUBJECT")));
+            = Set.of("FROM", "TO", "SUBJECT");
 
     private final List<MailHeader> headers = new ArrayList<>();
 
@@ -77,8 +72,8 @@ public class SignedMail implements Mail {
     public void importUntrustedHeaders(Enumeration<Header> en) {
         headers.clear();
         while (en.hasMoreElements()) {
-            Header h = en.nextElement();
-            String name = h.getName();
+            var h = en.nextElement();
+            var name = h.getName();
             if (IGNORE_HEADERS.contains(name.toUpperCase())) {
                 continue;
             }
@@ -98,14 +93,14 @@ public class SignedMail implements Mail {
      */
     public void importTrustedHeaders(Enumeration<Header> en) throws AcmeInvalidMessageException {
         while (en.hasMoreElements()) {
-            Header h = en.nextElement();
-            String name = h.getName();
+            var h = en.nextElement();
+            var name = h.getName();
             if (IGNORE_HEADERS.contains(name.toUpperCase())) {
                 continue;
             }
 
-            String value = h.getValue();
-            long count = headers.stream()
+            var value = h.getValue();
+            var count = headers.stream()
                     .filter(mh -> mh.nameEquals(name, false) && mh.valueEquals(value, false))
                     .peek(MailHeader::setTrusted)
                     .count();
@@ -125,8 +120,8 @@ public class SignedMail implements Mail {
      */
     public void importTrustedHeadersRelaxed(Enumeration<Header> en) {
         while (en.hasMoreElements()) {
-            Header h = en.nextElement();
-            String name = h.getName();
+            var h = en.nextElement();
+            var name = h.getName();
             if (IGNORE_HEADERS.contains(name.toUpperCase())) {
                 continue;
             }
@@ -146,15 +141,15 @@ public class SignedMail implements Mail {
      *         if the signature header conflicts with the envelope header.
      */
     public void importSignatureHeaders(SignerInformation si) throws AcmeInvalidMessageException {
-        Attribute attr = si.getSignedAttributes().get(SECURE_HEADER_FIELDS_ID);
+        var attr = si.getSignedAttributes().get(SECURE_HEADER_FIELDS_ID);
         if (attr == null) {
             return;
         }
 
-        boolean relaxed = false;
-        for (ASN1Encodable element : (ASN1Set) attr.getAttributeValues()[0]) {
+        var relaxed = false;
+        for (var element : (ASN1Set) attr.getAttributeValues()[0]) {
             if (element instanceof ASN1Enumerated) {
-                int algorithm = ((ASN1Enumerated) element).intValueExact();
+                var algorithm = ((ASN1Enumerated) element).intValueExact();
                 switch (algorithm) {
                     case 0:
                         relaxed = false;
@@ -168,13 +163,13 @@ public class SignedMail implements Mail {
             }
         }
 
-        for (ASN1Encodable element : (ASN1Set) attr.getAttributeValues()[0]) {
+        for (var element : (ASN1Set) attr.getAttributeValues()[0]) {
             if (element instanceof ASN1Sequence) {
-                for (ASN1Encodable sequenceElement : (ASN1Sequence) element) {
-                    ASN1Sequence headerField = (ASN1Sequence) sequenceElement;
-                    String fieldName = ((ASN1String) headerField.getObjectAt(0)).getString();
-                    String fieldValue = ((ASN1String) headerField.getObjectAt(1)).getString();
-                    int fieldStatus = 0;
+                for (var sequenceElement : (ASN1Sequence) element) {
+                    var headerField = (ASN1Sequence) sequenceElement;
+                    var fieldName = ((ASN1String) headerField.getObjectAt(0)).getString();
+                    var fieldValue = ((ASN1String) headerField.getObjectAt(1)).getString();
+                    var fieldStatus = 0;
                     if (headerField.size() >= 3) {
                         fieldStatus = ((ASN1Integer) headerField.getObjectAt(2)).intValueExact();
                     }
@@ -230,7 +225,7 @@ public class SignedMail implements Mail {
 
     @Override
     public Collection<InternetAddress> getReplyTo() throws AcmeInvalidMessageException {
-        List<String> replyToList = headers.stream()
+        var replyToList = headers.stream()
                 .filter(mh -> "REPLY-TO".equalsIgnoreCase(mh.name))
                 .map(mh -> mh.value)
                 .map(String::trim)
@@ -241,8 +236,8 @@ public class SignedMail implements Mail {
         }
 
         try {
-            List<InternetAddress> result = new ArrayList<>(replyToList.size());
-            for (String replyTo : replyToList) {
+            var result = new ArrayList<InternetAddress>(replyToList.size());
+            for (var replyTo : replyToList) {
                 result.add(new InternetAddress(replyTo));
             }
             return Collections.unmodifiableList(result);
@@ -267,7 +262,7 @@ public class SignedMail implements Mail {
      * the message must be refused.
      */
     public Set<String> getMissingSecuredHeaders() {
-        Set<String> missing = new TreeSet<>(REQUIRED_HEADERS);
+        var missing = new TreeSet<>(REQUIRED_HEADERS);
         headers.stream()
                 .filter(mh -> mh.trusted)
                 .map(mh -> mh.name)
@@ -290,7 +285,7 @@ public class SignedMail implements Mail {
      *         if a header with the same value was not found
      */
     protected void checkDuplicatedField(String header, String value, boolean relaxed) throws AcmeInvalidMessageException {
-        long count = headers.stream()
+        var count = headers.stream()
                 .filter(mh -> mh.nameEquals(header, relaxed) && mh.valueEquals(value, relaxed))
                 .peek(MailHeader::setTrusted)
                 .count();
@@ -355,7 +350,7 @@ public class SignedMail implements Mail {
      *         trusted
      */
     private String fetchTrustedHeader(String name) throws AcmeInvalidMessageException {
-        List<String> candidates = headers.stream()
+        var candidates = headers.stream()
                 .filter(mh -> name.equalsIgnoreCase(mh.name))
                 .filter(mh -> mh.trusted)
                 .map(mh -> mh.value)
@@ -377,8 +372,8 @@ public class SignedMail implements Mail {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (MailHeader mh : headers) {
+        var sb = new StringBuilder();
+        for (var mh : headers) {
             sb.append(mh.toString()).append('\n');
         }
         return sb.toString();
@@ -454,8 +449,8 @@ public class SignedMail implements Mail {
                 return false;
             }
 
-            String normalizedValue = value.replaceAll("\\s+", " ").trim();
-            String normalizedExpected = expected.replaceAll("\\s+", " ").trim();
+            var normalizedValue = value.replaceAll("\\s+", " ").trim();
+            var normalizedExpected = expected.replaceAll("\\s+", " ").trim();
             return normalizedValue.equals(normalizedExpected);
         }
 

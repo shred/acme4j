@@ -27,8 +27,8 @@ public class StatusTest {
      */
     @Test
     public void testParse() {
-        for (Status s : Status.values()) {
-            Status parsed = Status.parse(s.name().toLowerCase());
+        for (var s : Status.values()) {
+            var parsed = Status.parse(s.name().toLowerCase());
             assertThat(parsed).isEqualTo(s);
         }
 

@@ -18,24 +18,16 @@ import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
-import java.security.KeyPair;
-import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.junit.jupiter.api.Test;
-import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.AccountBuilder;
-import org.shredzone.acme4j.Authorization;
-import org.shredzone.acme4j.Certificate;
-import org.shredzone.acme4j.Order;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
-import org.shredzone.acme4j.it.BammBammClient;
 import org.shredzone.acme4j.util.CSRBuilder;
 
 /**
@@ -52,21 +44,21 @@ public class OrderWildcardIT extends PebbleITBase {
      */
     @Test
     public void testDnsValidation() throws Exception {
-        BammBammClient client = getBammBammClient();
-        KeyPair keyPair = createKeyPair();
-        Session session = new Session(pebbleURI());
+        var client = getBammBammClient();
+        var keyPair = createKeyPair();
+        var session = new Session(pebbleURI());
 
-        Account account = new AccountBuilder()
+        var account = new AccountBuilder()
                     .agreeToTermsOfService()
                     .useKeyPair(keyPair)
                     .create(session);
 
-        KeyPair domainKeyPair = createKeyPair();
+        var domainKeyPair = createKeyPair();
 
-        Instant notBefore = Instant.now().truncatedTo(ChronoUnit.MILLIS);
-        Instant notAfter = notBefore.plus(Duration.ofDays(20L));
+        var notBefore = Instant.now().truncatedTo(ChronoUnit.MILLIS);
+        var notAfter = notBefore.plus(Duration.ofDays(20L));
 
-        Order order = account.newOrder()
+        var order = account.newOrder()
                     .domain(TEST_WILDCARD_DOMAIN)
                     .domain(TEST_DOMAIN)
                     .notBefore(notBefore)
@@ -76,7 +68,7 @@ public class OrderWildcardIT extends PebbleITBase {
         assertThat(order.getNotAfter()).isEqualTo(notAfter);
         assertThat(order.getStatus()).isEqualTo(Status.PENDING);
 
-        for (Authorization auth : order.getAuthorizations()) {
+        for (var auth : order.getAuthorizations()) {
             assertThat(auth.getIdentifier().getDomain()).isEqualTo(TEST_DOMAIN);
             assertThat(auth.getStatus()).isEqualTo(Status.PENDING);
 
@@ -84,10 +76,10 @@ public class OrderWildcardIT extends PebbleITBase {
                 continue;
             }
 
-            Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
+            var challenge = auth.findChallenge(Dns01Challenge.class);
             assertThat(challenge).isNotNull();
 
-            String challengeDomainName = Dns01Challenge.toRRName(TEST_DOMAIN);
+            var challengeDomainName = Dns01Challenge.toRRName(TEST_DOMAIN);
 
             client.dnsAddTxtRecord(challengeDomainName, challenge.getDigest());
             cleanup(() -> client.dnsRemoveTxtRecord(challengeDomainName));
@@ -104,11 +96,11 @@ public class OrderWildcardIT extends PebbleITBase {
             assertThat(auth.getStatus()).isEqualTo(Status.VALID);
         }
 
-        CSRBuilder csr = new CSRBuilder();
+        var csr = new CSRBuilder();
         csr.addDomain(TEST_DOMAIN);
         csr.addDomain(TEST_WILDCARD_DOMAIN);
         csr.sign(domainKeyPair);
-        byte[] encodedCsr = csr.getEncoded();
+        var encodedCsr = csr.getEncoded();
 
         order.execute(encodedCsr);
 
@@ -120,14 +112,14 @@ public class OrderWildcardIT extends PebbleITBase {
                     order.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
 
 
-        Certificate certificate = order.getCertificate();
-        X509Certificate cert = certificate.getCertificate();
+        var certificate = order.getCertificate();
+        var cert = certificate.getCertificate();
         assertThat(cert).isNotNull();
         assertThat(cert.getNotAfter()).isNotEqualTo(notBefore);
         assertThat(cert.getNotBefore()).isNotEqualTo(notAfter);
         assertThat(cert.getSubjectX500Principal().getName()).contains("CN=" + TEST_DOMAIN);
 
-        List<String> san = cert.getSubjectAlternativeNames().stream()
+        var san = cert.getSubjectAlternativeNames().stream()
                 .filter(it -> ((Number) it.get(0)).intValue() == GeneralName.dNSName)
                 .map(it -> (String) it.get(1))
                 .collect(toList());

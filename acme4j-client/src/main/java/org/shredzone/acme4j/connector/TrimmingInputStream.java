@@ -39,7 +39,7 @@ public class TrimmingInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        int ch = in.read();
+        var ch = in.read();
 
         if (!isLineSeparator(ch)) {
             startOfFile = false;
@@ -71,7 +71,7 @@ public class TrimmingInputStream extends InputStream {
         // of the BufferedInputStream by reading 1 byte ahead.
         if (in.available() == 0) {
             in.mark(1);
-            int read = in.read();
+            var read = in.read();
             in.reset();
             if (read < 0) {
                 return 0;

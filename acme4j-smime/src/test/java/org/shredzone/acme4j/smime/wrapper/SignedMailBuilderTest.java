@@ -15,7 +15,6 @@ package org.shredzone.acme4j.smime.wrapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.security.KeyStore;
 import java.security.KeyStoreException;
 
 import org.junit.jupiter.api.Test;
@@ -27,12 +26,12 @@ public class SignedMailBuilderTest {
 
     @Test
     public void testDefaultTrustStoreIsCreated() throws KeyStoreException {
-        KeyStore keyStore = SignedMailBuilder.getCaCertsTrustStore();
+        var keyStore = SignedMailBuilder.getCaCertsTrustStore();
         assertThat(keyStore).isNotNull();
         assertThat(keyStore.size()).isGreaterThan(0);
 
         // Make sure the instance is cached
-        KeyStore keyStore2 = SignedMailBuilder.getCaCertsTrustStore();
+        var keyStore2 = SignedMailBuilder.getCaCertsTrustStore();
         assertThat(keyStore2).isSameAs(keyStore);
     }
 

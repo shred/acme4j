@@ -21,9 +21,7 @@ import java.net.URL;
 
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Status;
-import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.provider.AbstractAcmeProvider;
-import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.smime.SMIMETests;
 
 /**
@@ -36,9 +34,9 @@ public class EmailReply00ChallengeTest extends SMIMETests {
      */
     @Test
     public void testCreateChallenge() {
-        AcmeProvider provider = new TestAcmeProvider();
+        var provider = new TestAcmeProvider();
 
-        Challenge challenge = provider.createChallenge(mockLogin(), getJSON("emailReplyChallenge"));
+        var challenge = provider.createChallenge(mockLogin(), getJSON("emailReplyChallenge"));
         assertThat(challenge).isNotNull();
         assertThat(challenge).isInstanceOf(EmailReply00Challenge.class);
     }
@@ -48,7 +46,7 @@ public class EmailReply00ChallengeTest extends SMIMETests {
      */
     @Test
     public void testEmailReplyChallenge() {
-        EmailReply00Challenge challenge = new EmailReply00Challenge(mockLogin(), getJSON("emailReplyChallenge"));
+        var challenge = new EmailReply00Challenge(mockLogin(), getJSON("emailReplyChallenge"));
 
         assertThat(challenge.getType()).isEqualTo(EmailReply00Challenge.TYPE);
         assertThat(challenge.getStatus()).isEqualTo(Status.PENDING);
@@ -66,7 +64,7 @@ public class EmailReply00ChallengeTest extends SMIMETests {
     @Test
     public void testInvalidGetAuthorization() {
         assertThrows(UnsupportedOperationException.class, () -> {
-            EmailReply00Challenge challenge = new EmailReply00Challenge(mockLogin(), getJSON("emailReplyChallenge"));
+            var challenge = new EmailReply00Challenge(mockLogin(), getJSON("emailReplyChallenge"));
             challenge.getAuthorization();
         });
     }

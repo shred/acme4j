@@ -37,49 +37,49 @@ public class TrimmingInputStreamTest {
 
     @Test
     public void testEmpty() throws IOException {
-        String out = trimByStream("");
+        var out = trimByStream("");
         assertThat(out).isEqualTo("");
     }
 
     @Test
     public void testLineBreakOnly() throws IOException {
-        String out1 = trimByStream("\n");
+        var out1 = trimByStream("\n");
         assertThat(out1).isEqualTo("");
 
-        String out2 = trimByStream("\r");
+        var out2 = trimByStream("\r");
         assertThat(out2).isEqualTo("");
 
-        String out3 = trimByStream("\r\n");
-        assertThat(out2).isEqualTo("");
+        var out3 = trimByStream("\r\n");
+        assertThat(out3).isEqualTo("");
     }
 
     @Test
     public void testTrim() throws IOException {
-        String out = trimByStream(FULL_TEXT);
+        var out = trimByStream(FULL_TEXT);
         assertThat(out).isEqualTo(TRIMMED_TEXT);
     }
 
     @Test
     public void testTrimEndOnly() throws IOException {
-        String out = trimByStream(FULL_TEXT + "\r\n\r\n");
+        var out = trimByStream(FULL_TEXT + "\r\n\r\n");
         assertThat(out).isEqualTo(TRIMMED_TEXT + "\n");
     }
 
     @Test
     public void testTrimStartOnly() throws IOException {
-        String out = trimByStream("\n\n" + FULL_TEXT);
+        var out = trimByStream("\n\n" + FULL_TEXT);
         assertThat(out).isEqualTo(TRIMMED_TEXT);
     }
 
     @Test
     public void testTrimFull() throws IOException {
-        String out = trimByStream("\n\n" + FULL_TEXT + "\r\n\r\n");
+        var out = trimByStream("\n\n" + FULL_TEXT + "\r\n\r\n");
         assertThat(out).isEqualTo(TRIMMED_TEXT + "\n");
     }
 
     @Test
     public void testAvailable() throws IOException {
-        try (TrimmingInputStream in = new TrimmingInputStream(
+        try (var in = new TrimmingInputStream(
                 new ByteArrayInputStream("Test".getBytes(StandardCharsets.US_ASCII)))) {
             assertThat(in.available()).isNotEqualTo(0);
         }
@@ -89,9 +89,9 @@ public class TrimmingInputStreamTest {
      * Trims a string by running it through the {@link TrimmingInputStream}.
      */
     private String trimByStream(String str) throws IOException {
-        StringBuilder out = new StringBuilder();
+        var out = new StringBuilder();
 
-        try (TrimmingInputStream in = new TrimmingInputStream(
+        try (var in = new TrimmingInputStream(
                         new ByteArrayInputStream(str.getBytes(StandardCharsets.US_ASCII)))) {
             int ch;
             while ((ch = in.read()) >= 0) {

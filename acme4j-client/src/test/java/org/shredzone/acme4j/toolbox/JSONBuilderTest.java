@@ -16,9 +16,7 @@ package org.shredzone.acme4j.toolbox;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.security.KeyPair;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -39,7 +37,7 @@ public class JSONBuilderTest {
      */
     @Test
     public void testEmpty() {
-        JSONBuilder cb = new JSONBuilder();
+        var cb = new JSONBuilder();
         assertThat(cb.toString()).isEqualTo("{}");
     }
 
@@ -51,7 +49,7 @@ public class JSONBuilderTest {
     public void testBasics() {
         JSONBuilder res;
 
-        JSONBuilder cb = new JSONBuilder();
+        var cb = new JSONBuilder();
         res = cb.put("fooStr", "String");
         assertThat(res).isSameAs(cb);
 
@@ -63,12 +61,12 @@ public class JSONBuilderTest {
 
         assertThat(cb.toString()).isEqualTo("{\"fooStr\":\"String\",\"fooInt\":456}");
 
-        Map<String, Object> map = cb.toMap();
+        var map = cb.toMap();
         assertThat(map.keySet()).hasSize(2);
         assertThat(map).extracting("fooInt").isEqualTo(456);
         assertThat(map).extracting("fooStr").isEqualTo("String");
 
-        JSON json = cb.toJSON();
+        var json = cb.toJSON();
         assertThat(json.keySet()).hasSize(2);
         assertThat(json.get("fooInt").asInt()).isEqualTo(456);
         assertThat(json.get("fooStr").asString()).isEqualTo("String");
@@ -79,10 +77,10 @@ public class JSONBuilderTest {
      */
     @Test
     public void testDate() {
-        Instant date = ZonedDateTime.of(2016, 6, 1, 5, 13, 46, 0, ZoneId.of("GMT+2")).toInstant();
-        Duration duration = Duration.ofMinutes(5);
+        var date = ZonedDateTime.of(2016, 6, 1, 5, 13, 46, 0, ZoneId.of("GMT+2")).toInstant();
+        var duration = Duration.ofMinutes(5);
 
-        JSONBuilder cb = new JSONBuilder();
+        var cb = new JSONBuilder();
         cb.put("fooDate", date);
         cb.put("fooDuration", duration);
         cb.put("fooNull", (Object) null);
@@ -95,11 +93,11 @@ public class JSONBuilderTest {
      */
     @Test
     public void testBase64() {
-        byte[] data = "abc123".getBytes();
+        var data = "abc123".getBytes();
 
         JSONBuilder res;
 
-        JSONBuilder cb = new JSONBuilder();
+        var cb = new JSONBuilder();
         res = cb.putBase64("foo", data);
         assertThat(res).isSameAs(cb);
         assertThat(cb.toString()).isEqualTo("{\"foo\":\"YWJjMTIz\"}");
@@ -110,18 +108,18 @@ public class JSONBuilderTest {
      */
     @Test
     public void testKey() throws IOException, JoseException {
-        KeyPair keyPair = TestUtils.createKeyPair();
+        var keyPair = TestUtils.createKeyPair();
 
         JSONBuilder res;
 
-        JSONBuilder cb = new JSONBuilder();
+        var cb = new JSONBuilder();
         res = cb.putKey("foo", keyPair.getPublic());
         assertThat(res).isSameAs(cb);
 
-        Map<String, Object> json = JsonUtil.parseJson(cb.toString());
+        var json = JsonUtil.parseJson(cb.toString());
         assertThat(json).containsKey("foo");
 
-        Map<String, String> jwk = (Map<String, String>) json.get("foo");
+        var jwk = (Map<String, String>) json.get("foo");
         assertThat(jwk.keySet()).hasSize(3);
         assertThat(jwk).extracting("n").isEqualTo(TestUtils.N);
         assertThat(jwk).extracting("e").isEqualTo(TestUtils.E);
@@ -133,8 +131,8 @@ public class JSONBuilderTest {
      */
     @Test
     public void testObject() {
-        JSONBuilder cb = new JSONBuilder();
-        JSONBuilder sub = cb.object("sub");
+        var cb = new JSONBuilder();
+        var sub = cb.object("sub");
         assertThat(sub).isNotSameAs(cb);
 
         assertThat(cb.toString()).isEqualTo("{\"sub\":{}}");
@@ -152,17 +150,17 @@ public class JSONBuilderTest {
     public void testArray() {
         JSONBuilder res;
 
-        JSONBuilder cb1 = new JSONBuilder();
+        var cb1 = new JSONBuilder();
         res = cb1.array("ar", Collections.emptyList());
         assertThat(res).isSameAs(cb1);
         assertThat(cb1.toString()).isEqualTo("{\"ar\":[]}");
 
-        JSONBuilder cb2 = new JSONBuilder();
+        var cb2 = new JSONBuilder();
         res = cb2.array("ar", Collections.singletonList(123));
         assertThat(res).isSameAs(cb2);
         assertThat(cb2.toString()).isEqualTo("{\"ar\":[123]}");
 
-        JSONBuilder cb3 = new JSONBuilder();
+        var cb3 = new JSONBuilder();
         res = cb3.array("ar", Arrays.asList(123, "foo", 456));
         assertThat(res).isSameAs(cb3);
         assertThat(cb3.toString()).isEqualTo("{\"ar\":[123,\"foo\",456]}");

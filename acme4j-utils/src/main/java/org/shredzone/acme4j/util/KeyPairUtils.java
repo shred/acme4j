@@ -24,7 +24,6 @@ import java.security.NoSuchProviderException;
 import java.security.SecureRandom;
 
 import org.bouncycastle.jce.ECNamedCurveTable;
-import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.bouncycastle.openssl.PEMException;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
@@ -64,7 +63,7 @@ public class KeyPairUtils {
      */
     public static KeyPair createKeyPair(int keysize) {
         try {
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+            var keyGen = KeyPairGenerator.getInstance("RSA");
             keyGen.initialize(keysize);
             return keyGen.generateKeyPair();
         } catch (NoSuchAlgorithmException ex) {
@@ -81,8 +80,8 @@ public class KeyPairUtils {
      */
     public static KeyPair createECKeyPair(String name) {
         try {
-            ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec(name);
-            KeyPairGenerator g = KeyPairGenerator.getInstance("ECDSA", "BC");
+            var ecSpec = ECNamedCurveTable.getParameterSpec(name);
+            var g = KeyPairGenerator.getInstance("ECDSA", "BC");
             g.initialize(ecSpec, new SecureRandom());
             return g.generateKeyPair();
         } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException ex) {
@@ -101,8 +100,8 @@ public class KeyPairUtils {
      * @return {@link KeyPair} read
      */
     public static KeyPair readKeyPair(Reader r) throws IOException {
-        try (PEMParser parser = new PEMParser(r)) {
-            PEMKeyPair keyPair = (PEMKeyPair) parser.readObject();
+        try (var parser = new PEMParser(r)) {
+            var keyPair = (PEMKeyPair) parser.readObject();
             return new JcaPEMKeyConverter().getKeyPair(keyPair);
         } catch (PEMException ex) {
             throw new IOException("Invalid PEM file", ex);
@@ -119,7 +118,7 @@ public class KeyPairUtils {
      *            after use.
      */
     public static void writeKeyPair(KeyPair keypair, Writer w) throws IOException {
-        try (JcaPEMWriter jw = new JcaPEMWriter(w)) {
+        try (var jw = new JcaPEMWriter(w)) {
             jw.writeObject(keypair);
         }
     }

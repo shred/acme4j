@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.List;
 
 import jakarta.mail.Header;
 import jakarta.mail.internet.InternetAddress;
@@ -33,7 +32,7 @@ public class SignedMailTest {
 
     @Test
     public void testCheckDuplicatedStrictGood() throws Exception {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "From", "foo@example.com"
         ));
@@ -46,7 +45,7 @@ public class SignedMailTest {
 
     @Test
     public void testCheckDuplicatedStrictBad() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "From", "  foo@example.com "
         ));
@@ -59,7 +58,7 @@ public class SignedMailTest {
 
     @Test
     public void testCheckDuplicatedRelaxedGood() throws Exception {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "FROM", "  foo@example.com "
         ));
@@ -72,7 +71,7 @@ public class SignedMailTest {
 
     @Test
     public void testCheckDuplicatedRelaxedBad() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "From", "bar@example.com"
         ));
@@ -85,7 +84,7 @@ public class SignedMailTest {
 
     @Test
     public void testDeleteFieldStrictGood() throws Exception {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "From", "foo@example.com"
         ));
@@ -99,8 +98,8 @@ public class SignedMailTest {
     }
 
     @Test
-    public void testDeleteFieldStrictBad() throws Exception {
-        SignedMail signedMail = new SignedMail();
+    public void testDeleteFieldStrictBad() {
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "From", "bar@example.com"
         ));
@@ -113,7 +112,7 @@ public class SignedMailTest {
 
     @Test
     public void testDeleteFieldRelaxedGood() throws Exception {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "FROM", "   foo@example.com "
         ));
@@ -127,8 +126,8 @@ public class SignedMailTest {
     }
 
     @Test
-    public void testDeleteFieldRelaxedBad() throws Exception {
-        SignedMail signedMail = new SignedMail();
+    public void testDeleteFieldRelaxedBad() {
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "FROM", "bar@example.com"
         ));
@@ -141,7 +140,7 @@ public class SignedMailTest {
 
     @Test
     public void testModifyFieldStrictGood() throws Exception {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "From", "foo@example.com"
         ));
@@ -154,7 +153,7 @@ public class SignedMailTest {
 
     @Test
     public void testModifyFieldStrictBad() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "FROM", "foo@example.com"
         ));
@@ -167,7 +166,7 @@ public class SignedMailTest {
 
     @Test
     public void testModifyFieldRelaxedGood() throws Exception {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "FROM", "foo@example.com"
         ));
@@ -180,7 +179,7 @@ public class SignedMailTest {
 
     @Test
     public void testModifyFieldRelaxedBad() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "To", "foo@example.com"
         ));
@@ -193,7 +192,7 @@ public class SignedMailTest {
 
     @Test
     public void testImportUntrusted() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "From", "foo@example.com",
                 "Message-Id", "123456ABCDEF"
@@ -209,7 +208,7 @@ public class SignedMailTest {
 
     @Test
     public void testImportTrustedStrict() throws Exception {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "From", "foo@example.com",
                 "Message-Id", "123456ABCDEF"
@@ -227,7 +226,7 @@ public class SignedMailTest {
 
     @Test
     public void testImportTrustedRelaxed() throws Exception {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "Message-Id", "123456ABCDEF"
         ));
@@ -244,7 +243,7 @@ public class SignedMailTest {
 
     @Test
     public void testImportStrictFails() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
 
         // Fails because there is no matching untrusted header
         assertThatExceptionOfType(AcmeInvalidMessageException.class)
@@ -255,7 +254,7 @@ public class SignedMailTest {
 
     @Test
     public void testFromEmpty() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         assertThatExceptionOfType(AcmeInvalidMessageException.class)
                 .isThrownBy(signedMail::getFrom)
                 .withMessage("Protected 'FROM' header is required, but missing");
@@ -263,7 +262,7 @@ public class SignedMailTest {
 
     @Test
     public void testFromUntrusted() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "From", "foo@example.com"
         ));
@@ -275,7 +274,7 @@ public class SignedMailTest {
 
     @Test
     public void testFromTrusted() throws Exception {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importTrustedHeadersRelaxed(withHeaders(
                 "From", "foo@example.com"
         ));
@@ -285,7 +284,7 @@ public class SignedMailTest {
 
     @Test
     public void testToEmpty() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         assertThatExceptionOfType(AcmeInvalidMessageException.class)
                 .isThrownBy(signedMail::getTo)
                 .withMessage("Protected 'TO' header is required, but missing");
@@ -293,7 +292,7 @@ public class SignedMailTest {
 
     @Test
     public void testToUntrusted() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "To", "foo@example.com"
         ));
@@ -305,7 +304,7 @@ public class SignedMailTest {
 
     @Test
     public void testToTrusted() throws Exception {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importTrustedHeadersRelaxed(withHeaders(
                 "To", "foo@example.com"
         ));
@@ -315,7 +314,7 @@ public class SignedMailTest {
 
     @Test
     public void testSubjectEmpty() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         assertThatExceptionOfType(AcmeInvalidMessageException.class)
                 .isThrownBy(signedMail::getSubject)
                 .withMessage("Protected 'SUBJECT' header is required, but missing");
@@ -323,7 +322,7 @@ public class SignedMailTest {
 
     @Test
     public void testSubjectUntrusted() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "Subject", "abc123"
         ));
@@ -335,7 +334,7 @@ public class SignedMailTest {
 
     @Test
     public void testSubjectTrusted() throws Exception {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importTrustedHeadersRelaxed(withHeaders(
                 "Subject", "abc123"
         ));
@@ -345,13 +344,13 @@ public class SignedMailTest {
 
     @Test
     public void testMessageIdEmpty() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         assertThat(signedMail.getMessageId()).isEmpty();
     }
 
     @Test
     public void testMessageId() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "Message-Id", "12345ABCDE"
         ));
@@ -361,13 +360,13 @@ public class SignedMailTest {
 
     @Test
     public void testReplyToEmpty() throws Exception {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         assertThat(signedMail.getReplyTo()).isEmpty();
     }
 
     @Test
     public void testReplyTo() throws Exception {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "Reply-To", "foo@example.com",
                 "Reply-To", "bar@example.org"
@@ -381,7 +380,7 @@ public class SignedMailTest {
 
     @Test
     public void testIsAutoSubmitted() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "Auto-Submitted", "auto-generated; type=acme"
         ));
@@ -391,7 +390,7 @@ public class SignedMailTest {
 
     @Test
     public void testIsNotAutoSubmitted() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "Auto-Submitted", "no"
         ));
@@ -401,19 +400,19 @@ public class SignedMailTest {
 
     @Test
     public void testIsAutoSubmittedMissing() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         assertThat(signedMail.isAutoSubmitted()).isFalse();
     }
 
     @Test
     public void testMissingSecuredHeadersEmpty() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         assertThat(signedMail.getMissingSecuredHeaders()).contains("FROM", "TO", "SUBJECT");
     }
 
     @Test
     public void testMissingSecuredHeadersGood() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importTrustedHeadersRelaxed(withHeaders(
                 "From", "foo@example.com",
                 "To", "bar@example.org",
@@ -425,7 +424,7 @@ public class SignedMailTest {
 
     @Test
     public void testMissingSecuredHeadersTrustedBad() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importTrustedHeadersRelaxed(withHeaders(
                 "From", "foo@example.com",
                 "To", "bar@example.org"
@@ -436,7 +435,7 @@ public class SignedMailTest {
 
     @Test
     public void testMissingSecuredHeadersUntustedBad() {
-        SignedMail signedMail = new SignedMail();
+        var signedMail = new SignedMail();
         signedMail.importUntrustedHeaders(withHeaders(
                 "From", "foo@example.com",
                 "To", "bar@example.org",
@@ -447,8 +446,8 @@ public class SignedMailTest {
     }
 
     private Enumeration<Header> withHeaders(String... kv) {
-        List<Header> headers = new ArrayList<>();
-        for (int ix = 0; ix < kv.length; ix += 2) {
+        var headers = new ArrayList<Header>();
+        for (var ix = 0; ix < kv.length; ix += 2) {
             headers.add(new Header(kv[ix], kv[ix+1]));
         }
         return Collections.enumeration(headers);

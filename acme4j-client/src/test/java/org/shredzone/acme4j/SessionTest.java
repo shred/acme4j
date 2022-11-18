@@ -21,7 +21,6 @@ import static org.shredzone.acme4j.toolbox.TestUtils.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
-import java.security.KeyPair;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 
@@ -44,19 +43,19 @@ public class SessionTest {
      */
     @Test
     public void testConstructor() {
-        URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
+        var serverUri = URI.create(TestUtils.ACME_SERVER_URI);
 
         assertThrows(NullPointerException.class, () -> new Session((URI) null));
 
-        Session session = new Session(serverUri);
+        var session = new Session(serverUri);
         assertThat(session).isNotNull();
         assertThat(session.getServerUri()).isEqualTo(serverUri);
 
-        Session session2 = new Session(TestUtils.ACME_SERVER_URI);
+        var session2 = new Session(TestUtils.ACME_SERVER_URI);
         assertThat(session2).isNotNull();
         assertThat(session2.getServerUri()).isEqualTo(serverUri);
 
-        Session session3 = new Session(serverUri, new GenericAcmeProvider());
+        var session3 = new Session(serverUri, new GenericAcmeProvider());
         assertThat(session3).isNotNull();
         assertThat(session3.getServerUri()).isEqualTo(serverUri);
 
@@ -73,10 +72,10 @@ public class SessionTest {
      */
     @Test
     public void testGettersAndSetters() {
-        URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
-        ZonedDateTime now = ZonedDateTime.now();
+        var serverUri = URI.create(TestUtils.ACME_SERVER_URI);
+        var now = ZonedDateTime.now();
 
-        Session session = new Session(serverUri);
+        var session = new Session(serverUri);
 
         assertThat(session.getNonce()).isNull();
         session.setNonce(DUMMY_NONCE);
@@ -103,13 +102,13 @@ public class SessionTest {
      */
     @Test
     public void testLogin() throws IOException {
-        URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
-        URL accountLocation = url(TestUtils.ACCOUNT_URL);
-        KeyPair accountKeyPair = TestUtils.createKeyPair();
+        var serverUri = URI.create(TestUtils.ACME_SERVER_URI);
+        var accountLocation = url(TestUtils.ACCOUNT_URL);
+        var accountKeyPair = TestUtils.createKeyPair();
 
-        Session session = new Session(serverUri);
+        var session = new Session(serverUri);
 
-        Login login = session.login(accountLocation, accountKeyPair);
+        var login = session.login(accountLocation, accountKeyPair);
         assertThat(login).isNotNull();
         assertThat(login.getSession()).isEqualTo(session);
         assertThat(login.getAccountLocation()).isEqualTo(accountLocation);
@@ -121,15 +120,15 @@ public class SessionTest {
      */
     @Test
     public void testDirectory() throws AcmeException, IOException {
-        URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
+        var serverUri = URI.create(TestUtils.ACME_SERVER_URI);
 
-        final AcmeProvider mockProvider = mock(AcmeProvider.class);
+        var mockProvider = mock(AcmeProvider.class);
         when(mockProvider.directory(
                         ArgumentMatchers.any(Session.class),
                         ArgumentMatchers.eq(serverUri)))
                 .thenReturn(getJSON("directory"));
 
-        Session session = new Session(serverUri) {
+        var session = new Session(serverUri) {
             @Override
             public AcmeProvider provider() {
                 return mockProvider;
@@ -152,8 +151,8 @@ public class SessionTest {
 
         assertThrows(AcmeException.class, () -> session.resourceUrl(Resource.REVOKE_CERT));
 
-        Metadata meta = session.getMetadata();
-        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+        var meta = session.getMetadata();
+        try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(meta).isNotNull();
             softly.assertThat(meta.getTermsOfService())
                     .isEqualTo(URI.create("https://example.com/acme/terms"));
@@ -178,15 +177,15 @@ public class SessionTest {
      */
     @Test
     public void testNoMeta() throws AcmeException, IOException {
-        URI serverUri = URI.create(TestUtils.ACME_SERVER_URI);
+        var serverUri = URI.create(TestUtils.ACME_SERVER_URI);
 
-        final AcmeProvider mockProvider = mock(AcmeProvider.class);
+        var mockProvider = mock(AcmeProvider.class);
         when(mockProvider.directory(
                         ArgumentMatchers.any(Session.class),
                         ArgumentMatchers.eq(serverUri)))
                 .thenReturn(getJSON("directoryNoMeta"));
 
-        Session session = new Session(serverUri) {
+        var session = new Session(serverUri) {
             @Override
             public AcmeProvider provider() {
                 return mockProvider;
@@ -200,8 +199,8 @@ public class SessionTest {
         assertThat(session.resourceUrl(Resource.NEW_ORDER))
                 .isEqualTo(new URL("https://example.com/acme/new-order"));
 
-        Metadata meta = session.getMetadata();
-        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+        var meta = session.getMetadata();
+        try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(meta).isNotNull();
             softly.assertThat(meta.getTermsOfService()).isNull();
             softly.assertThat(meta.getWebsite()).isNull();

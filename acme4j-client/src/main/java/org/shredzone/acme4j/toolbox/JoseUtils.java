@@ -65,9 +65,9 @@ public final class JoseUtils {
     public static JSONBuilder createJoseRequest(URL url, KeyPair keypair,
                 @Nullable JSONBuilder payload, @Nullable String nonce, @Nullable String kid) {
         try {
-            PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(keypair.getPublic());
+            var jwk = PublicJsonWebKey.Factory.newPublicJwk(keypair.getPublic());
 
-            JsonWebSignature jws = new JsonWebSignature();
+            var jws = new JsonWebSignature();
             jws.getHeaders().setObjectHeaderValue("url", url);
 
             if (kid != null) {
@@ -93,7 +93,7 @@ public final class JoseUtils {
                 LOG.debug("  JWS Header: {}", jws.getHeaders().getFullHeaderAsJsonString());
             }
 
-            JSONBuilder jb = new JSONBuilder();
+            var jb = new JSONBuilder();
             jb.put("protected", jws.getHeaders().getEncodedHeader());
             jb.put("payload", jws.getEncodedPayload());
             jb.put("signature", jws.getEncodedSignature());
@@ -119,9 +119,9 @@ public final class JoseUtils {
     public static Map<String, Object> createExternalAccountBinding(String kid,
             PublicKey accountKey, SecretKey macKey, URL resource) {
         try {
-            PublicJsonWebKey keyJwk = PublicJsonWebKey.Factory.newPublicJwk(accountKey);
+            var keyJwk = PublicJsonWebKey.Factory.newPublicJwk(accountKey);
 
-            JsonWebSignature innerJws = new JsonWebSignature();
+            var innerJws = new JsonWebSignature();
             innerJws.setPayload(keyJwk.toJson());
             innerJws.getHeaders().setObjectHeaderValue("url", resource);
             innerJws.getHeaders().setObjectHeaderValue("kid", kid);
@@ -130,7 +130,7 @@ public final class JoseUtils {
             innerJws.setDoKeyValidation(false);
             innerJws.sign();
 
-            JSONBuilder outerClaim = new JSONBuilder();
+            var outerClaim = new JSONBuilder();
             outerClaim.put("protected", innerJws.getHeaders().getEncodedHeader());
             outerClaim.put("signature", innerJws.getEncodedSignature());
             outerClaim.put("payload", innerJws.getEncodedPayload());
@@ -180,7 +180,7 @@ public final class JoseUtils {
      */
     public static byte[] thumbprint(PublicKey key) {
         try {
-            PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(key);
+            var jwk = PublicJsonWebKey.Factory.newPublicJwk(key);
             return jwk.calculateThumbprint("SHA-256");
         } catch (JoseException ex) {
             throw new IllegalArgumentException("Bad public key", ex);
@@ -199,7 +199,7 @@ public final class JoseUtils {
      */
     public static String keyAlgorithm(JsonWebKey jwk) {
         if (jwk instanceof EllipticCurveJsonWebKey) {
-            EllipticCurveJsonWebKey ecjwk = (EllipticCurveJsonWebKey) jwk;
+            var ecjwk = (EllipticCurveJsonWebKey) jwk;
 
             switch (ecjwk.getCurveName()) {
                 case "P-256":
@@ -239,7 +239,7 @@ public final class JoseUtils {
             throw new IllegalArgumentException("Bad algorithm: " + macKey.getAlgorithm());
         }
 
-        int size = macKey.getEncoded().length * 8;
+        var size = macKey.getEncoded().length * 8;
         switch (size) {
             case 256:
                 return AlgorithmIdentifiers.HMAC_SHA256;

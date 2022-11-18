@@ -26,12 +26,10 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import org.junit.jupiter.api.Test;
-import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Certificate;
 import org.shredzone.acme4j.Login;
-import org.shredzone.acme4j.Order;
 import org.shredzone.acme4j.RevocationReason;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
@@ -41,7 +39,6 @@ import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeServerException;
-import org.shredzone.acme4j.it.BammBammClient;
 import org.shredzone.acme4j.util.CSRBuilder;
 
 /**
@@ -57,9 +54,9 @@ public class OrderIT extends PebbleITBase {
     @Test
     public void testHttpValidation() throws Exception {
         orderCertificate(TEST_DOMAIN, auth -> {
-            BammBammClient client = getBammBammClient();
+            var client = getBammBammClient();
 
-            Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
+            var challenge = auth.findChallenge(Http01Challenge.class);
             assertThat(challenge).isNotNull();
 
             client.httpAddToken(challenge.getToken(), challenge.getAuthorization());
@@ -76,12 +73,12 @@ public class OrderIT extends PebbleITBase {
     @Test
     public void testDnsValidation() throws Exception {
         orderCertificate(TEST_DOMAIN, auth -> {
-            BammBammClient client = getBammBammClient();
+            var client = getBammBammClient();
 
-            Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
+            var challenge = auth.findChallenge(Dns01Challenge.class);
             assertThat(challenge).isNotNull();
 
-            String challengeDomainName = Dns01Challenge.toRRName(auth.getIdentifier());
+            var challengeDomainName = Dns01Challenge.toRRName(auth.getIdentifier());
 
             client.dnsAddTxtRecord(challengeDomainName, challenge.getDigest());
 
@@ -97,9 +94,9 @@ public class OrderIT extends PebbleITBase {
     @Test
     public void testTlsAlpnValidation() throws Exception {
         orderCertificate(TEST_DOMAIN, auth -> {
-            BammBammClient client = getBammBammClient();
+            var client = getBammBammClient();
 
-            TlsAlpn01Challenge challenge = auth.findChallenge(TlsAlpn01Challenge.TYPE);
+            var challenge = auth.findChallenge(TlsAlpn01Challenge.class);
             assertThat(challenge).isNotNull();
 
             client.tlsAlpnAddCertificate(
@@ -118,9 +115,9 @@ public class OrderIT extends PebbleITBase {
     @Test
     public void testDomainKeyRevocation() throws Exception {
         orderCertificate(TEST_DOMAIN, auth -> {
-            BammBammClient client = getBammBammClient();
+            var client = getBammBammClient();
 
-            Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
+            var challenge = auth.findChallenge(Http01Challenge.class);
             assertThat(challenge).isNotNull();
 
             client.httpAddToken(challenge.getToken(), challenge.getAuthorization());
@@ -144,20 +141,20 @@ public class OrderIT extends PebbleITBase {
      */
     private void orderCertificate(String domain, Validator validator, Revoker revoker)
             throws Exception {
-        KeyPair keyPair = createKeyPair();
-        Session session = new Session(pebbleURI());
+        var keyPair = createKeyPair();
+        var session = new Session(pebbleURI());
 
-        Account account = new AccountBuilder()
+        var account = new AccountBuilder()
                     .agreeToTermsOfService()
                     .useKeyPair(keyPair)
                     .create(session);
 
-        KeyPair domainKeyPair = createKeyPair();
+        var domainKeyPair = createKeyPair();
 
-        Instant notBefore = Instant.now().truncatedTo(ChronoUnit.SECONDS);
-        Instant notAfter = notBefore.plus(Duration.ofDays(20L));
+        var notBefore = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        var notAfter = notBefore.plus(Duration.ofDays(20L));
 
-        Order order = account.newOrder()
+        var order = account.newOrder()
                     .domain(domain)
                     .notBefore(notBefore)
                     .notAfter(notAfter)
@@ -166,7 +163,7 @@ public class OrderIT extends PebbleITBase {
         assertThat(order.getNotAfter()).isEqualTo(notAfter);
         assertThat(order.getStatus()).isEqualTo(Status.PENDING);
 
-        for (Authorization auth : order.getAuthorizations()) {
+        for (var auth : order.getAuthorizations()) {
             assertThat(auth.getIdentifier().getDomain()).isEqualTo(domain);
             assertThat(auth.getStatus()).isEqualTo(Status.PENDING);
 
@@ -174,7 +171,7 @@ public class OrderIT extends PebbleITBase {
                 continue;
             }
 
-            Challenge challenge = validator.prepare(auth);
+            var challenge = validator.prepare(auth);
             challenge.trigger();
 
             await()
@@ -186,10 +183,10 @@ public class OrderIT extends PebbleITBase {
             assertThat(auth.getStatus()).isEqualTo(Status.VALID);
         }
 
-        CSRBuilder csr = new CSRBuilder();
+        var csr = new CSRBuilder();
         csr.addDomain(domain);
         csr.sign(domainKeyPair);
-        byte[] encodedCsr = csr.getEncoded();
+        var encodedCsr = csr.getEncoded();
 
         order.execute(encodedCsr);
 
@@ -202,14 +199,14 @@ public class OrderIT extends PebbleITBase {
 
         assertThat(order.getStatus()).isEqualTo(Status.VALID);
 
-        Certificate certificate = order.getCertificate();
-        X509Certificate cert = certificate.getCertificate();
+        var certificate = order.getCertificate();
+        var cert = certificate.getCertificate();
         assertThat(cert).isNotNull();
         assertThat(cert.getNotBefore().toInstant()).isEqualTo(notBefore);
         assertThat(cert.getNotAfter().toInstant()).isEqualTo(notAfter);
         assertThat(cert.getSubjectX500Principal().getName()).contains("CN=" + domain);
 
-        for (Authorization auth :  order.getAuthorizations()) {
+        for (var auth :  order.getAuthorizations()) {
             assertThat(auth.getStatus()).isEqualTo(Status.VALID);
             auth.deactivate();
             assertThat(auth.getStatus()).isEqualTo(Status.DEACTIVATED);
@@ -218,7 +215,7 @@ public class OrderIT extends PebbleITBase {
         revoker.revoke(session, certificate, keyPair, domainKeyPair);
 
         // Make sure certificate is revoked
-        AcmeException ex = assertThrows(AcmeException.class, () -> {
+        var ex = assertThrows(AcmeException.class, () -> {
             Login login2 = session.login(account.getLocation(), keyPair);
             Certificate cert2 = login2.bindCertificate(certificate.getLocation());
             cert2.download();
@@ -226,8 +223,8 @@ public class OrderIT extends PebbleITBase {
         assertThat(ex.getMessage()).isEqualTo("HTTP 404: Not Found");
 
         // Try to revoke again
-        AcmeServerException ex2 = assertThrows(AcmeServerException.class,
-                () -> certificate.revoke(),
+        var ex2 = assertThrows(AcmeServerException.class,
+                certificate::revoke,
                 "Could revoke again");
         assertThat(ex2.getProblem().getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:alreadyRevoked"));
     }

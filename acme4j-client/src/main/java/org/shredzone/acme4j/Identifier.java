@@ -187,7 +187,7 @@ public class Identifier implements Serializable {
             return false;
         }
 
-        Identifier i = (Identifier) obj;
+        var i = (Identifier) obj;
         return type.equals(i.type) && value.equals(i.value);
     }
 

@@ -24,7 +24,6 @@ import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -134,7 +133,7 @@ public final class EmailProcessor {
     public static EmailProcessor smimeMessage(Message message, Session mailSession,
                                               X509Certificate signCert, boolean strict)
             throws AcmeInvalidMessageException {
-        Builder builder = builder()
+        var builder = builder()
                 .mailSession(mailSession)
                 .certificate(signCert);
         if (strict) {
@@ -160,8 +159,8 @@ public final class EmailProcessor {
             throw new AcmeInvalidMessageException("Message is not auto-generated");
         }
 
-        String subject = message.getSubject();
-        Matcher m = SUBJECT_PATTERN.matcher(subject);
+        var subject = message.getSubject();
+        var m = SUBJECT_PATTERN.matcher(subject);
         if (!m.matches()) {
             throw new AcmeProtocolException("Invalid subject: " + subject);
         }

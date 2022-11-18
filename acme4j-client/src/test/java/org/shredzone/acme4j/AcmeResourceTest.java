@@ -36,12 +36,12 @@ public class AcmeResourceTest {
      */
     @Test
     public void testConstructor() throws Exception {
-        Login login = TestUtils.login();
-        URL location = new URL("http://example.com/acme/resource");
+        var login = TestUtils.login();
+        var location = new URL("http://example.com/acme/resource");
 
         assertThrows(NullPointerException.class, () -> new DummyResource(null, null));
 
-        AcmeResource resource = new DummyResource(login, location);
+        var resource = new DummyResource(login, location);
         assertThat(resource.getLogin()).isEqualTo(login);
         assertThat(resource.getLocation()).isEqualTo(location);
     }
@@ -51,32 +51,32 @@ public class AcmeResourceTest {
      */
     @Test
     public void testSerialization() throws Exception {
-        Login login = TestUtils.login();
-        URL location = new URL("http://example.com/acme/resource");
+        var login = TestUtils.login();
+        var location = new URL("http://example.com/acme/resource");
 
         // Create a Challenge for testing
-        DummyResource challenge = new DummyResource(login, location);
+        var challenge = new DummyResource(login, location);
         assertThat(challenge.getLogin()).isEqualTo(login);
 
         // Serialize it
         byte[] serialized;
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            try (ObjectOutputStream out = new ObjectOutputStream(baos)) {
+        try (var baos = new ByteArrayOutputStream()) {
+            try (var out = new ObjectOutputStream(baos)) {
                 out.writeObject(challenge);
             }
             serialized = baos.toByteArray();
         }
 
         // Make sure there is no PrivateKey in the stream
-        String str = new String(serialized, StandardCharsets.ISO_8859_1);
+        var str = new String(serialized, StandardCharsets.ISO_8859_1);
         assertThat(str).as("serialized stream contains a PrivateKey")
                 .doesNotContain("Ljava/security/PrivateKey");
 
         // Deserialize to new object
         DummyResource restored;
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(serialized);
-                ObjectInputStream in = new ObjectInputStream(bais)) {
-            Object obj = in.readObject();
+        try (var bais = new ByteArrayInputStream(serialized);
+                var in = new ObjectInputStream(bais)) {
+            var obj = in.readObject();
             assertThat(obj).isInstanceOf(DummyResource.class);
             restored = (DummyResource) obj;
         }
@@ -96,15 +96,15 @@ public class AcmeResourceTest {
      * Test if a rebind attempt fails.
      */
     @Test
-    public void testRebind() throws Exception {
+    public void testRebind() {
         assertThrows(IllegalStateException.class, () -> {
-            Login login = TestUtils.login();
-            URL location = new URL("http://example.com/acme/resource");
+            var login = TestUtils.login();
+            var location = new URL("http://example.com/acme/resource");
 
-            AcmeResource resource = new DummyResource(login, location);
+            var resource = new DummyResource(login, location);
             assertThat(resource.getLogin()).isEqualTo(login);
 
-            Login login2 = TestUtils.login();
+            var login2 = TestUtils.login();
             resource.rebind(login2); // fails to rebind to another login
         });
     }

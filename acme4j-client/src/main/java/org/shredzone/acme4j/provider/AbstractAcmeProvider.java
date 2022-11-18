@@ -53,15 +53,15 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
 
     @Override
     public JSON directory(Session session, URI serverUri) throws AcmeException {
-        ZonedDateTime expires = session.getDirectoryExpires();
+        var expires = session.getDirectoryExpires();
         if (expires != null && expires.isAfter(ZonedDateTime.now())) {
             // The cached directory is still valid
             return null;
         }
 
-        try (Connection conn = connect(serverUri)) {
-            ZonedDateTime lastModified = session.getDirectoryLastModified();
-            int rc = conn.sendRequest(resolve(serverUri), session, lastModified);
+        try (var conn = connect(serverUri)) {
+            var lastModified = session.getDirectoryLastModified();
+            var rc = conn.sendRequest(resolve(serverUri), session, lastModified);
             if (lastModified != null && rc == HttpURLConnection.HTTP_NOT_MODIFIED) {
                 // The server has not been modified since
                 return null;
@@ -72,7 +72,7 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
             session.setDirectoryExpires(conn.getExpiration().orElse(null));
 
             // use nonce header if there is one, saves a HEAD request...
-            String nonce = conn.getNonce();
+            var nonce = conn.getNonce();
             if (nonce != null) {
                 session.setNonce(nonce);
             }
@@ -82,20 +82,20 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
     }
 
     private static Map<String, ChallengeProvider> challengeMap() {
-        Map<String, ChallengeProvider> map = new HashMap<>();
+        var map = new HashMap<String, ChallengeProvider>();
 
         map.put(Dns01Challenge.TYPE, Dns01Challenge::new);
         map.put(Http01Challenge.TYPE, Http01Challenge::new);
         map.put(TlsAlpn01Challenge.TYPE, TlsAlpn01Challenge::new);
 
-        for (ChallengeProvider provider : ServiceLoader.load(ChallengeProvider.class)) {
-            ChallengeType typeAnno = provider.getClass().getAnnotation(ChallengeType.class);
+        for (var provider : ServiceLoader.load(ChallengeProvider.class)) {
+            var typeAnno = provider.getClass().getAnnotation(ChallengeType.class);
             if (typeAnno == null) {
                 throw new IllegalStateException("ChallengeProvider "
                         + provider.getClass().getName()
                         + " has no @ChallengeType annotation");
             }
-            String type = typeAnno.value();
+            var type = typeAnno.value();
             if (type == null || type.trim().isEmpty()) {
                 throw new IllegalStateException("ChallengeProvider "
                         + provider.getClass().getName()
@@ -127,9 +127,9 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
         Objects.requireNonNull(login, "login");
         Objects.requireNonNull(data, "data");
 
-        String type = data.get("type").asString();
+        var type = data.get("type").asString();
 
-        ChallengeProvider constructor = CHALLENGES.get(type);
+        var constructor = CHALLENGES.get(type);
         if (constructor != null) {
             return constructor.create(login, data);
         }

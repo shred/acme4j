@@ -17,9 +17,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
@@ -71,7 +69,7 @@ public abstract class SMIMETests {
      * @return Mock {@link MimeMessage} that was created
      */
     protected MimeMessage mockMessage(String name) {
-        try (InputStream in = SMIMETests.class.getResourceAsStream("/email/" + name + ".eml")) {
+        try (var in = SMIMETests.class.getResourceAsStream("/email/" + name + ".eml")) {
             return new MimeMessage(mailSession, in);
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
@@ -84,7 +82,7 @@ public abstract class SMIMETests {
      * Returns a mock account key pair to be used for signing.
      */
     protected KeyPair mockAccountKey() {
-        try (Reader r = new InputStreamReader(
+        try (var r = new InputStreamReader(
                         SMIMETests.class.getResourceAsStream("/key.pem"),
                         StandardCharsets.UTF_8)) {
             return KeyPairUtils.readKeyPair(r);
@@ -97,7 +95,7 @@ public abstract class SMIMETests {
      * Returns a mock {@link Login} that can be used for signing.
      */
     protected Login mockLogin() {
-        Login login = mock(Login.class);
+        var login = mock(Login.class);
         when(login.getKeyPair()).thenReturn(mockAccountKey());
         return login;
     }
@@ -136,8 +134,8 @@ public abstract class SMIMETests {
      * @return X509Certificate that was read
      */
     protected X509Certificate readCertificate(String name) throws IOException {
-        try (InputStream in = SMIMETests.class.getResourceAsStream("/" + name + ".pem")) {
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        try (var in = SMIMETests.class.getResourceAsStream("/" + name + ".pem")) {
+            var cf = CertificateFactory.getInstance("X.509");
             return (X509Certificate) cf.generateCertificate(in);
         } catch (CertificateException ex) {
             throw new IOException(ex);

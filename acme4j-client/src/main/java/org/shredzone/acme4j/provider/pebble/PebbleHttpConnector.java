@@ -14,7 +14,6 @@
 package org.shredzone.acme4j.provider.pebble;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyManagementException;
@@ -42,9 +41,9 @@ public class PebbleHttpConnector extends HttpConnector {
 
     @Override
     public HttpURLConnection openConnection(URL url, NetworkSettings settings) throws IOException {
-        HttpURLConnection conn = super.openConnection(url, settings);
+        var conn = super.openConnection(url, settings);
         if (conn instanceof HttpsURLConnection) {
-            HttpsURLConnection conns = (HttpsURLConnection) conn;
+            var conns = (HttpsURLConnection) conn;
             conns.setSSLSocketFactory(createSocketFactory());
             conns.setHostnameVerifier((h, s) -> true);
         }
@@ -57,14 +56,14 @@ public class PebbleHttpConnector extends HttpConnector {
      */
     protected synchronized SSLSocketFactory createSocketFactory() throws IOException {
         if (sslSocketFactory == null) {
-            try (InputStream in = getClass().getResourceAsStream("/org/shredzone/acme4j/provider/pebble/pebble.truststore")) {
-                KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            try (var in = getClass().getResourceAsStream("/org/shredzone/acme4j/provider/pebble/pebble.truststore")) {
+                var keystore = KeyStore.getInstance(KeyStore.getDefaultType());
                 keystore.load(in, "acme4j".toCharArray());
 
-                TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+                var tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
                 tmf.init(keystore);
 
-                SSLContext ctx = SSLContext.getInstance("TLS");
+                var ctx = SSLContext.getInstance("TLS");
                 ctx.init(null, tmf.getTrustManagers(), null);
 
                 sslSocketFactory = ctx.getSocketFactory();

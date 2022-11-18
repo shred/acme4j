@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.net.URI;
 
 import org.junit.jupiter.api.Test;
-import org.shredzone.acme4j.Metadata;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -31,7 +30,7 @@ public class SessionIT extends PebbleITBase {
 
     @Test
     public void testResources() throws AcmeException {
-        Session session = new Session(pebbleURI());
+        var session = new Session(pebbleURI());
 
         assertIsPebbleUrl(session.resourceUrl(Resource.NEW_ACCOUNT));
         assertIsPebbleUrl(session.resourceUrl(Resource.NEW_NONCE));
@@ -40,9 +39,9 @@ public class SessionIT extends PebbleITBase {
 
     @Test
     public void testMetadata() throws AcmeException {
-        Session session = new Session(pebbleURI());
+        var session = new Session(pebbleURI());
 
-        Metadata meta = session.getMetadata();
+        var meta = session.getMetadata();
         assertThat(meta).isNotNull();
 
         assertThat(meta.getTermsOfService()).isEqualTo(URI.create("data:text/plain,Do%20what%20thou%20wilt"));

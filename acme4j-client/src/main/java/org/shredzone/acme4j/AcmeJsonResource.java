@@ -17,7 +17,6 @@ import java.net.URL;
 import java.util.Objects;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
-import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
@@ -111,9 +110,9 @@ public abstract class AcmeJsonResource extends AcmeResource {
      *             of the resource is updated even if this exception was thrown.
      */
     public void update() throws AcmeException {
-        String resourceType = getClass().getSimpleName();
+        var resourceType = getClass().getSimpleName();
         LOG.debug("update {}", resourceType);
-        try (Connection conn = getSession().connect()) {
+        try (var conn = getSession().connect()) {
             conn.sendSignedPostAsGetRequest(getLocation(), getLogin());
             setJSON(conn.readJsonResponse());
             conn.handleRetryAfter(resourceType + " is not completed yet");

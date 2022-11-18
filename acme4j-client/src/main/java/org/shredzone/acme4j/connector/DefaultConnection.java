@@ -17,8 +17,6 @@ import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -38,7 +36,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -110,7 +107,7 @@ public class DefaultConnection implements Connection {
         try {
             session.setNonce(null);
 
-            URL newNonceUrl = session.resourceUrl(Resource.NEW_NONCE);
+            var newNonceUrl = session.resourceUrl(Resource.NEW_NONCE);
 
             LOG.debug("HEAD {}", newNonceUrl);
 
@@ -121,12 +118,12 @@ public class DefaultConnection implements Connection {
 
             logHeaders();
 
-            int rc = conn.getResponseCode();
+            var rc = conn.getResponseCode();
             if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_NO_CONTENT) {
                 throwAcmeException();
             }
 
-            String nonce = getNonce();
+            var nonce = getNonce();
             if (nonce == null) {
                 throw new AcmeProtocolException("Server did not provide a nonce");
             }
@@ -176,19 +173,18 @@ public class DefaultConnection implements Connection {
             throw new AcmeProtocolException("Empty response");
         }
 
-        String contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
+        var contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
         if (!(MIME_JSON.equals(contentType) || MIME_JSON_PROBLEM.equals(contentType))) {
             throw new AcmeProtocolException("Unexpected content type: " + contentType);
         }
 
         try {
-            InputStream in =
-                    conn.getResponseCode() < 400 ? conn.getInputStream() : conn.getErrorStream();
+            var in = conn.getResponseCode() < 400 ? conn.getInputStream() : conn.getErrorStream();
             if (in == null) {
                 throw new AcmeProtocolException("JSON response is empty");
             }
 
-            JSON result = JSON.parse(in);
+            var result = JSON.parse(in);
             LOG.debug("Result JSON: {}", result);
             return result;
         } catch (IOException ex) {
@@ -200,13 +196,13 @@ public class DefaultConnection implements Connection {
     public List<X509Certificate> readCertificates() throws AcmeException {
         assertConnectionIsOpen();
 
-        String contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
+        var contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
         if (!(MIME_CERTIFICATE_CHAIN.equals(contentType))) {
             throw new AcmeProtocolException("Unexpected content type: " + contentType);
         }
 
-        try (InputStream in = new TrimmingInputStream(conn.getInputStream())) {
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+        try (var in = new TrimmingInputStream(conn.getInputStream())) {
+            var cf = CertificateFactory.getInstance("X.509");
             return cf.generateCertificates(in).stream()
                     .map(c -> (X509Certificate) c)
                     .collect(toList());
@@ -221,7 +217,7 @@ public class DefaultConnection implements Connection {
     public void handleRetryAfter(String message) throws AcmeException {
         assertConnectionIsOpen();
 
-        Optional<Instant> retryAfter = getRetryAfterHeader();
+        var retryAfter = getRetryAfterHeader();
         if (retryAfter.isPresent()) {
             throw new AcmeRetryAfterException(message, retryAfter.get());
         }
@@ -232,7 +228,7 @@ public class DefaultConnection implements Connection {
     public String getNonce() {
         assertConnectionIsOpen();
 
-        String nonceHeader = conn.getHeaderField(REPLAY_NONCE_HEADER);
+        var nonceHeader = conn.getHeaderField(REPLAY_NONCE_HEADER);
         if (nonceHeader == null || nonceHeader.trim().isEmpty()) {
             return null;
         }
@@ -251,7 +247,7 @@ public class DefaultConnection implements Connection {
     public URL getLocation() {
         assertConnectionIsOpen();
 
-        String location = conn.getHeaderField(LOCATION_HEADER);
+        var location = conn.getHeaderField(LOCATION_HEADER);
         if (location == null) {
             return null;
         }
@@ -264,7 +260,7 @@ public class DefaultConnection implements Connection {
     public Optional<ZonedDateTime> getLastModified() {
         assertConnectionIsOpen();
 
-        String header = conn.getHeaderField(LAST_MODIFIED_HEADER);
+        var header = conn.getHeaderField(LAST_MODIFIED_HEADER);
         if (header != null) {
             try {
                 return Optional.of(ZonedDateTime.parse(header, RFC_1123_DATE_TIME));
@@ -279,15 +275,15 @@ public class DefaultConnection implements Connection {
     public Optional<ZonedDateTime> getExpiration() {
         assertConnectionIsOpen();
 
-        String cacheHeader = conn.getHeaderField(CACHE_CONTROL_HEADER);
+        var cacheHeader = conn.getHeaderField(CACHE_CONTROL_HEADER);
         if (cacheHeader != null) {
             if (NO_CACHE_PATTERN.matcher(cacheHeader).matches()) {
                 return Optional.empty();
             }
 
-            Matcher m = MAX_AGE_PATTERN.matcher(cacheHeader);
+            var m = MAX_AGE_PATTERN.matcher(cacheHeader);
             if (m.matches()) {
-                int maxAge = Integer.parseInt(m.group(1));
+                var maxAge = Integer.parseInt(m.group(1));
                 if (maxAge == 0) {
                     return Optional.empty();
                 }
@@ -296,7 +292,7 @@ public class DefaultConnection implements Connection {
             }
         }
 
-        String expiresHeader = conn.getHeaderField(EXPIRES_HEADER);
+        var expiresHeader = conn.getHeaderField(EXPIRES_HEADER);
         if (expiresHeader != null) {
             try {
                 return Optional.of(ZonedDateTime.parse(expiresHeader, RFC_1123_DATE_TIME));
@@ -358,12 +354,12 @@ public class DefaultConnection implements Connection {
 
             logHeaders();
 
-            String nonce = getNonce();
+            var nonce = getNonce();
             if (nonce != null) {
                 session.setNonce(nonce);
             }
 
-            int rc = conn.getResponseCode();
+            var rc = conn.getResponseCode();
             if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_CREATED
                 && (rc != HttpURLConnection.HTTP_NOT_MODIFIED || ifModifiedSince == null)) {
                 throwAcmeException();
@@ -401,7 +397,7 @@ public class DefaultConnection implements Connection {
         Objects.requireNonNull(accept, "accept");
         assertConnectionIsClosed();
 
-        int attempt = 1;
+        var attempt = 1;
         while (true) {
             try {
                 return performRequest(url, claims, session, keypair, accountLocation, accept);
@@ -453,7 +449,7 @@ public class DefaultConnection implements Connection {
             conn.setRequestProperty(CONTENT_TYPE_HEADER, "application/jose+json");
             conn.setDoOutput(true);
 
-            JSONBuilder jose = JoseUtils.createJoseRequest(
+            var jose = JoseUtils.createJoseRequest(
                     url,
                     keypair,
                     claims,
@@ -461,12 +457,12 @@ public class DefaultConnection implements Connection {
                     accountLocation != null ? accountLocation.toString() : null
             );
 
-            byte[] outputData = jose.toString().getBytes(StandardCharsets.UTF_8);
+            var outputData = jose.toString().getBytes(StandardCharsets.UTF_8);
 
             conn.setFixedLengthStreamingMode(outputData.length);
             conn.connect();
 
-            try (OutputStream out = conn.getOutputStream()) {
+            try (var out = conn.getOutputStream()) {
                 out.write(outputData);
             }
 
@@ -474,7 +470,7 @@ public class DefaultConnection implements Connection {
 
             session.setNonce(getNonce());
 
-            int rc = conn.getResponseCode();
+            var rc = conn.getResponseCode();
             if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_CREATED) {
                 throwAcmeException();
             }
@@ -489,18 +485,18 @@ public class DefaultConnection implements Connection {
      */
     private Optional<Instant> getRetryAfterHeader() {
         // See RFC 2616 section 14.37
-        String header = conn.getHeaderField(RETRY_AFTER_HEADER);
+        var header = conn.getHeaderField(RETRY_AFTER_HEADER);
         if (header != null) {
             try {
                 // delta-seconds
                 if (header.matches("^\\d+$")) {
-                    int delta = Integer.parseInt(header);
-                    long date = conn.getHeaderFieldDate(DATE_HEADER, System.currentTimeMillis());
+                    var delta = Integer.parseInt(header);
+                    var date = conn.getHeaderFieldDate(DATE_HEADER, System.currentTimeMillis());
                     return Optional.of(Instant.ofEpochMilli(date).plusSeconds(delta));
                 }
 
                 // HTTP-date
-                long date = conn.getHeaderFieldDate(RETRY_AFTER_HEADER, 0L);
+                var date = conn.getHeaderFieldDate(RETRY_AFTER_HEADER, 0L);
                 if (date != 0) {
                     return Optional.of(Instant.ofEpochMilli(date));
                 }
@@ -518,21 +514,21 @@ public class DefaultConnection implements Connection {
      */
     private void throwAcmeException() throws AcmeException {
         try {
-            String contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
+            var contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
             if (!MIME_JSON_PROBLEM.equals(contentType)) {
                 throw new AcmeException("HTTP " + conn.getResponseCode() + ": " + conn.getResponseMessage());
             }
 
-            Problem problem = new Problem(readJsonResponse(), conn.getURL());
+            var problem = new Problem(readJsonResponse(), conn.getURL());
 
-            String error = AcmeUtils.stripErrorPrefix(problem.getType().toString());
+            var error = AcmeUtils.stripErrorPrefix(problem.getType().toString());
 
             if ("unauthorized".equals(error)) {
                 throw new AcmeUnauthorizedException(problem);
             }
 
             if ("userActionRequired".equals(error)) {
-                URI tos = collectLinks("terms-of-service").stream()
+                var tos = collectLinks("terms-of-service").stream()
                         .findFirst()
                         .map(this::resolveUri)
                         .orElse(null);
@@ -540,8 +536,8 @@ public class DefaultConnection implements Connection {
             }
 
             if ("rateLimited".equals(error)) {
-                Optional<Instant> retryAfter = getRetryAfterHeader();
-                Collection<URL> rateLimits = getLinks("help");
+                var retryAfter = getRetryAfterHeader();
+                var rateLimits = getLinks("help");
                 throw new AcmeRateLimitedException(problem, retryAfter.orElse(null), rateLimits);
             }
 
@@ -594,15 +590,15 @@ public class DefaultConnection implements Connection {
     private Collection<String> collectLinks(String relation) {
         assertConnectionIsOpen();
 
-        List<String> result = new ArrayList<>();
+        var result = new ArrayList<String>();
 
-        List<String> links = conn.getHeaderFields().get(LINK_HEADER);
+        var links = conn.getHeaderFields().get(LINK_HEADER);
         if (links != null) {
-            Pattern p = Pattern.compile("<(.*?)>\\s*;\\s*rel=\"?"+ Pattern.quote(relation) + "\"?");
-            for (String link : links) {
-                Matcher m = p.matcher(link);
+            var p = Pattern.compile("<(.*?)>\\s*;\\s*rel=\"?"+ Pattern.quote(relation) + "\"?");
+            for (var link : links) {
+                var m = p.matcher(link);
                 if (m.matches()) {
-                    String location = m.group(1);
+                    var location = m.group(1);
                     LOG.debug("Link: {} -> {}", relation, location);
                     result.add(location);
                 }

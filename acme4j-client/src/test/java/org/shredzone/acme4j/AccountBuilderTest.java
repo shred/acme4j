@@ -22,8 +22,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyPair;
 
-import javax.crypto.SecretKey;
-
 import org.jose4j.jwx.CompactSerializer;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -48,9 +46,9 @@ public class AccountBuilderTest {
      */
     @Test
     public void testRegistration() throws Exception {
-        KeyPair accountKey = TestUtils.createKeyPair();
+        var accountKey = TestUtils.createKeyPair();
 
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             private boolean isUpdate;
 
             @Override
@@ -85,17 +83,17 @@ public class AccountBuilderTest {
 
         provider.putTestResource(Resource.NEW_ACCOUNT, resourceUrl);
 
-        AccountBuilder builder = new AccountBuilder();
+        var builder = new AccountBuilder();
         builder.addContact("mailto:foo@example.com");
         builder.agreeToTermsOfService();
         builder.useKeyPair(accountKey);
 
-        Session session = provider.createSession();
-        Login login = builder.createLogin(session);
+        var session = provider.createSession();
+        var login = builder.createLogin(session);
 
         assertThat(login.getAccountLocation()).isEqualTo(locationUrl);
 
-        Account account = login.getAccount();
+        var account = login.getAccount();
         assertThat(account.getTermsOfServiceAgreed()).isTrue();
         assertThat(account.getLocation()).isEqualTo(locationUrl);
         assertThat(account.hasExternalAccountBinding()).isFalse();
@@ -109,25 +107,25 @@ public class AccountBuilderTest {
      */
     @Test
     public void testRegistrationWithKid() throws Exception {
-        KeyPair accountKey = TestUtils.createKeyPair();
-        String keyIdentifier = "NCC-1701";
-        SecretKey macKey = TestUtils.createSecretKey("SHA-256");
+        var accountKey = TestUtils.createKeyPair();
+        var keyIdentifier = "NCC-1701";
+        var macKey = TestUtils.createSecretKey("SHA-256");
 
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
                 assertThat(session).isNotNull();
                 assertThat(url).isEqualTo(resourceUrl);
                 assertThat(keypair).isEqualTo(accountKey);
 
-                JSON binding = claims.toJSON()
+                var binding = claims.toJSON()
                                 .get("externalAccountBinding")
                                 .asObject();
 
-                String encodedHeader = binding.get("protected").asString();
-                String encodedSignature = binding.get("signature").asString();
-                String encodedPayload = binding.get("payload").asString();
-                String serialized = CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature);
+                var encodedHeader = binding.get("protected").asString();
+                var encodedSignature = binding.get("signature").asString();
+                var encodedPayload = binding.get("payload").asString();
+                var serialized = CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature);
 
                 JoseUtilsTest.assertExternalAccountBinding(serialized, resourceUrl, keyIdentifier, macKey);
 
@@ -147,12 +145,12 @@ public class AccountBuilderTest {
 
         provider.putTestResource(Resource.NEW_ACCOUNT, resourceUrl);
 
-        AccountBuilder builder = new AccountBuilder();
+        var builder = new AccountBuilder();
         builder.useKeyPair(accountKey);
         builder.withKeyIdentifier(keyIdentifier, AcmeUtils.base64UrlEncode(macKey.getEncoded()));
 
-        Session session = provider.createSession();
-        Login login = builder.createLogin(session);
+        var session = provider.createSession();
+        var login = builder.createLogin(session);
 
         assertThat(login.getAccountLocation()).isEqualTo(locationUrl);
 
@@ -164,9 +162,9 @@ public class AccountBuilderTest {
      */
     @Test
     public void testOnlyExistingRegistration() throws Exception {
-        KeyPair accountKey = TestUtils.createKeyPair();
+        var accountKey = TestUtils.createKeyPair();
 
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
                 assertThat(session).isNotNull();
@@ -189,12 +187,12 @@ public class AccountBuilderTest {
 
         provider.putTestResource(Resource.NEW_ACCOUNT, resourceUrl);
 
-        AccountBuilder builder = new AccountBuilder();
+        var builder = new AccountBuilder();
         builder.useKeyPair(accountKey);
         builder.onlyExisting();
 
-        Session session = provider.createSession();
-        Login login = builder.createLogin(session);
+        var session = provider.createSession();
+        var login = builder.createLogin(session);
 
         assertThat(login.getAccountLocation()).isEqualTo(locationUrl);
 
@@ -203,7 +201,7 @@ public class AccountBuilderTest {
 
     @Test
     public void testEmailAddresses() {
-        AccountBuilder builder = Mockito.spy(AccountBuilder.class);
+        var builder = Mockito.spy(AccountBuilder.class);
         builder.addEmail("foo@example.com");
         Mockito.verify(builder).addContact(Mockito.eq("mailto:foo@example.com"));
     }

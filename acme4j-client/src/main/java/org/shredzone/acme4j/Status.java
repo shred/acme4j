@@ -84,7 +84,7 @@ public enum Status {
      *         no match
      */
     public static Status parse(String str) {
-        String check = str.toUpperCase();
+        var check = str.toUpperCase();
         return Arrays.stream(values())
                 .filter(s -> s.name().equals(check))
                 .findFirst()

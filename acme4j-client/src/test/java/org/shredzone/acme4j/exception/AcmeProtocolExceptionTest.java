@@ -24,8 +24,8 @@ public class AcmeProtocolExceptionTest {
 
     @Test
     public void testAcmeProtocolException() {
-        String msg = "Bad content";
-        AcmeProtocolException ex = new AcmeProtocolException(msg);
+        var msg = "Bad content";
+        var ex = new AcmeProtocolException(msg);
         assertThat(ex).isInstanceOf(RuntimeException.class);
         assertThat(ex.getMessage()).isEqualTo(msg);
         assertThat(ex.getCause()).isNull();
@@ -33,9 +33,9 @@ public class AcmeProtocolExceptionTest {
 
     @Test
     public void testCausedAcmeProtocolException() {
-        String message = "Bad content";
-        NumberFormatException cause = new NumberFormatException("Not a number: abc");
-        AcmeProtocolException ex = new AcmeProtocolException(message, cause);
+        var message = "Bad content";
+        var cause = new NumberFormatException("Not a number: abc");
+        var ex = new AcmeProtocolException(message, cause);
         assertThat(ex.getMessage()).isEqualTo(message);
         assertThat(ex.getCause()).isEqualTo(cause);
     }

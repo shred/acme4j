@@ -20,7 +20,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -33,7 +32,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -56,21 +54,21 @@ public class CertificateUtilsTest {
      */
     @Test
     public void testReadCSR() throws IOException {
-        KeyPair keypair = KeyPairUtils.createKeyPair(2048);
+        var keypair = KeyPairUtils.createKeyPair(2048);
 
-        CSRBuilder builder = new CSRBuilder();
+        var builder = new CSRBuilder();
         builder.addDomains("example.com", "example.org");
         builder.sign(keypair);
 
-        PKCS10CertificationRequest original = builder.getCSR();
+        var original = builder.getCSR();
         byte[] pemFile;
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try (var baos = new ByteArrayOutputStream()) {
             builder.write(baos);
             pemFile = baos.toByteArray();
         }
 
-        try (ByteArrayInputStream bais = new ByteArrayInputStream(pemFile)) {
-            PKCS10CertificationRequest read = CertificateUtils.readCSR(bais);
+        try (var bais = new ByteArrayInputStream(pemFile)) {
+            var read = CertificateUtils.readCSR(bais);
             assertThat(original.getEncoded()).isEqualTo(read.getEncoded());
         }
     }
@@ -80,7 +78,7 @@ public class CertificateUtilsTest {
      */
     @Test
     public void testPrivateConstructor() throws Exception {
-        Constructor<CertificateUtils> constructor = CertificateUtils.class.getDeclaredConstructor();
+        var constructor = CertificateUtils.class.getDeclaredConstructor();
         assertThat(Modifier.isPrivate(constructor.getModifiers())).isTrue();
         constructor.setAccessible(true);
         constructor.newInstance();
@@ -93,14 +91,14 @@ public class CertificateUtilsTest {
      */
     @Test
     public void testCreateTlsAlpn01Certificate() throws IOException, CertificateParsingException {
-        KeyPair keypair = KeyPairUtils.createKeyPair(2048);
-        String subject = "example.com";
-        byte[] acmeValidationV1 = AcmeUtils.sha256hash("rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ");
+        var keypair = KeyPairUtils.createKeyPair(2048);
+        var subject = "example.com";
+        var acmeValidationV1 = AcmeUtils.sha256hash("rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ");
 
-        X509Certificate cert = CertificateUtils.createTlsAlpn01Certificate(keypair, Identifier.dns(subject), acmeValidationV1);
+        var cert = CertificateUtils.createTlsAlpn01Certificate(keypair, Identifier.dns(subject), acmeValidationV1);
 
-        Instant now = Instant.now();
-        Instant end = now.plus(Duration.ofDays(8));
+        var now = Instant.now();
+        var end = now.plus(Duration.ofDays(8));
 
         assertThat(cert).isNotNull();
         assertThat(cert.getNotAfter()).isAfter(Date.from(now));
@@ -112,13 +110,13 @@ public class CertificateUtilsTest {
 
         assertThat(cert.getCriticalExtensionOIDs()).contains(TlsAlpn01Challenge.ACME_VALIDATION_OID);
 
-        byte[] encodedExtensionValue = cert.getExtensionValue(TlsAlpn01Challenge.ACME_VALIDATION_OID);
+        var encodedExtensionValue = cert.getExtensionValue(TlsAlpn01Challenge.ACME_VALIDATION_OID);
         assertThat(encodedExtensionValue).isNotNull();
 
-        try (ASN1InputStream asn = new ASN1InputStream(new ByteArrayInputStream(encodedExtensionValue))) {
-            DEROctetString derOctetString = (DEROctetString) asn.readObject();
+        try (var asn = new ASN1InputStream(new ByteArrayInputStream(encodedExtensionValue))) {
+            var derOctetString = (DEROctetString) asn.readObject();
 
-            byte[] test = new byte[acmeValidationV1.length + 2];
+            var test = new byte[acmeValidationV1.length + 2];
             test[0] = BERTags.OCTET_STRING;
             test[1] = (byte) acmeValidationV1.length;
             System.arraycopy(acmeValidationV1, 0, test, 2, acmeValidationV1.length);
@@ -134,11 +132,11 @@ public class CertificateUtilsTest {
      */
     @Test
     public void testCreateTlsAlpn01CertificateWithIp() throws IOException, CertificateParsingException {
-        KeyPair keypair = KeyPairUtils.createKeyPair(2048);
-        InetAddress subject = InetAddress.getLocalHost();
-        byte[] acmeValidationV1 = AcmeUtils.sha256hash("rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ");
+        var keypair = KeyPairUtils.createKeyPair(2048);
+        var subject = InetAddress.getLocalHost();
+        var acmeValidationV1 = AcmeUtils.sha256hash("rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ");
 
-        X509Certificate cert = CertificateUtils.createTlsAlpn01Certificate(keypair, Identifier.ip(subject), acmeValidationV1);
+        var cert = CertificateUtils.createTlsAlpn01Certificate(keypair, Identifier.ip(subject), acmeValidationV1);
 
         assertThat(cert.getSubjectX500Principal().getName()).isEqualTo("CN=acme.invalid");
         assertThat(getIpSANs(cert)).contains(subject);
@@ -150,12 +148,12 @@ public class CertificateUtilsTest {
      */
     @Test
     public void testCreateTestRootCertificate() throws Exception {
-        KeyPair keypair = KeyPairUtils.createKeyPair(2048);
-        String subject = "CN=Test Root Certificate";
-        Instant notBefore = Instant.now().truncatedTo(SECONDS);
-        Instant notAfter = notBefore.plus(Duration.ofDays(14)).truncatedTo(SECONDS);
+        var keypair = KeyPairUtils.createKeyPair(2048);
+        var subject = "CN=Test Root Certificate";
+        var notBefore = Instant.now().truncatedTo(SECONDS);
+        var notAfter = notBefore.plus(Duration.ofDays(14)).truncatedTo(SECONDS);
 
-        X509Certificate cert = CertificateUtils.createTestRootCertificate(subject,
+        var cert = CertificateUtils.createTestRootCertificate(subject,
                 notBefore, notAfter, keypair);
 
         assertThat(cert.getIssuerX500Principal().getName()).isEqualTo(subject);
@@ -174,20 +172,20 @@ public class CertificateUtilsTest {
      */
     @Test
     public void testCreateTestIntermediateCertificate() throws Exception {
-        KeyPair rootKeypair = KeyPairUtils.createKeyPair(2048);
-        String rootSubject = "CN=Test Root Certificate";
-        Instant rootNotBefore = Instant.now().minus(Duration.ofDays(1)).truncatedTo(SECONDS);
-        Instant rootNotAfter = rootNotBefore.plus(Duration.ofDays(14)).truncatedTo(SECONDS);
+        var rootKeypair = KeyPairUtils.createKeyPair(2048);
+        var rootSubject = "CN=Test Root Certificate";
+        var rootNotBefore = Instant.now().minus(Duration.ofDays(1)).truncatedTo(SECONDS);
+        var rootNotAfter = rootNotBefore.plus(Duration.ofDays(14)).truncatedTo(SECONDS);
 
-        X509Certificate rootCert = CertificateUtils.createTestRootCertificate(rootSubject,
+        var rootCert = CertificateUtils.createTestRootCertificate(rootSubject,
                 rootNotBefore, rootNotAfter, rootKeypair);
 
-        KeyPair keypair = KeyPairUtils.createKeyPair(2048);
-        String subject = "CN=Test Intermediate Certificate";
-        Instant notBefore = Instant.now().truncatedTo(SECONDS);
-        Instant notAfter = notBefore.plus(Duration.ofDays(7)).truncatedTo(SECONDS);
+        var keypair = KeyPairUtils.createKeyPair(2048);
+        var subject = "CN=Test Intermediate Certificate";
+        var notBefore = Instant.now().truncatedTo(SECONDS);
+        var notAfter = notBefore.plus(Duration.ofDays(7)).truncatedTo(SECONDS);
 
-        X509Certificate cert = CertificateUtils.createTestIntermediateCertificate(subject,
+        var cert = CertificateUtils.createTestIntermediateCertificate(subject,
                 notBefore, notAfter, keypair.getPublic(), rootCert, rootKeypair.getPrivate());
 
         assertThat(cert.getIssuerX500Principal().getName()).isEqualTo(rootSubject);
@@ -206,25 +204,25 @@ public class CertificateUtilsTest {
      */
     @Test
     public void testCreateTestCertificate() throws Exception {
-        KeyPair rootKeypair = KeyPairUtils.createKeyPair(2048);
-        String rootSubject = "CN=Test Root Certificate";
-        Instant rootNotBefore = Instant.now().minus(Duration.ofDays(1)).truncatedTo(SECONDS);
-        Instant rootNotAfter = rootNotBefore.plus(Duration.ofDays(14)).truncatedTo(SECONDS);
+        var rootKeypair = KeyPairUtils.createKeyPair(2048);
+        var rootSubject = "CN=Test Root Certificate";
+        var rootNotBefore = Instant.now().minus(Duration.ofDays(1)).truncatedTo(SECONDS);
+        var rootNotAfter = rootNotBefore.plus(Duration.ofDays(14)).truncatedTo(SECONDS);
 
-        X509Certificate rootCert = CertificateUtils.createTestRootCertificate(rootSubject,
+        var rootCert = CertificateUtils.createTestRootCertificate(rootSubject,
                 rootNotBefore, rootNotAfter, rootKeypair);
 
-        KeyPair keypair = KeyPairUtils.createKeyPair(2048);
-        Instant notBefore = Instant.now().truncatedTo(SECONDS);
-        Instant notAfter = notBefore.plus(Duration.ofDays(7)).truncatedTo(SECONDS);
+        var keypair = KeyPairUtils.createKeyPair(2048);
+        var notBefore = Instant.now().truncatedTo(SECONDS);
+        var notAfter = notBefore.plus(Duration.ofDays(7)).truncatedTo(SECONDS);
 
-        CSRBuilder builder = new CSRBuilder();
+        var builder = new CSRBuilder();
         builder.addDomains("example.org", "www.example.org");
         builder.addIP(InetAddress.getByName("192.168.0.1"));
         builder.sign(keypair);
-        PKCS10CertificationRequest csr = builder.getCSR();
+        var csr = builder.getCSR();
 
-        X509Certificate cert = CertificateUtils.createTestCertificate(csr, notBefore,
+        var cert = CertificateUtils.createTestCertificate(csr, notBefore,
                 notAfter, rootCert, rootKeypair.getPrivate());
 
         assertThat(cert.getIssuerX500Principal().getName()).isEqualTo(rootSubject);
@@ -247,9 +245,9 @@ public class CertificateUtilsTest {
      * @return Set of DNSName
      */
     private Set<String> getSANs(X509Certificate cert) throws CertificateParsingException {
-        Set<String> result = new HashSet<>();
+        var result = new HashSet<String>();
 
-        for (List<?> list : cert.getSubjectAlternativeNames()) {
+        for (var list : cert.getSubjectAlternativeNames()) {
             if (((Number) list.get(0)).intValue() == GeneralName.dNSName) {
                 result.add((String) list.get(1));
             }
@@ -266,9 +264,9 @@ public class CertificateUtilsTest {
      * @return Set of IPAddresses
      */
     private Set<InetAddress> getIpSANs(X509Certificate cert) throws CertificateParsingException, UnknownHostException {
-        Set<InetAddress> result = new HashSet<>();
+        var result = new HashSet<InetAddress>();
 
-        for (List<?> list : cert.getSubjectAlternativeNames()) {
+        for (var list : cert.getSubjectAlternativeNames()) {
             if (((Number) list.get(0)).intValue() == GeneralName.iPAddress) {
                 result.add(InetAddress.getByName(list.get(1).toString()));
             }

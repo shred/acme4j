@@ -20,7 +20,6 @@ import java.security.KeyPair;
 import java.util.Objects;
 
 import org.shredzone.acme4j.challenge.Challenge;
-import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -130,8 +129,7 @@ public class Login {
      * @since 2.8
      */
     public Challenge bindChallenge(URL location) {
-        try {
-            Connection connect = session.connect();
+        try (var connect = session.connect()) {
             connect.sendSignedPostAsGetRequest(location, this);
             return createChallenge(connect.readJsonResponse());
         } catch (AcmeException ex) {
@@ -153,7 +151,7 @@ public class Login {
      * @since 2.12
      */
     public <C extends Challenge> C bindChallenge(URL location, Class<C> type) {
-        Challenge challenge = bindChallenge(location);
+        var challenge = bindChallenge(location);
         if (!type.isInstance(challenge)) {
             throw new AcmeProtocolException("Challenge type " + challenge.getType()
                     + " does not match requested class " + type);
@@ -169,7 +167,7 @@ public class Login {
      * @return {@link Challenge} instance
      */
     public Challenge createChallenge(JSON data) {
-        Challenge challenge = session.provider().createChallenge(this, data);
+        var challenge = session.provider().createChallenge(this, data);
         if (challenge == null) {
             throw new AcmeProtocolException("Could not create challenge for: " + data);
         }

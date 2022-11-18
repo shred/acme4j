@@ -18,14 +18,11 @@ import static org.shredzone.acme4j.toolbox.TestUtils.createProblem;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.net.URI;
-import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Collection;
 
 import org.junit.jupiter.api.Test;
-import org.shredzone.acme4j.Problem;
 
 /**
  * Unit tests for {@link AcmeRateLimitedException}.
@@ -37,17 +34,16 @@ public class AcmeRateLimitedExceptionTest {
      */
     @Test
     public void testAcmeRateLimitedException() {
-        URI type = URI.create("urn:ietf:params:acme:error:rateLimited");
-        String detail = "Too many requests per minute";
-        Instant retryAfter = Instant.now().plus(Duration.ofMinutes(1));
-        Collection<URL> documents = Arrays.asList(
+        var type = URI.create("urn:ietf:params:acme:error:rateLimited");
+        var detail = "Too many requests per minute";
+        var retryAfter = Instant.now().plus(Duration.ofMinutes(1));
+        var documents = Arrays.asList(
                         url("http://example.com/doc1.html"),
                         url("http://example.com/doc2.html"));
 
-        Problem problem = createProblem(type, detail, null);
+        var problem = createProblem(type, detail, null);
 
-        AcmeRateLimitedException ex
-                = new AcmeRateLimitedException(problem, retryAfter, documents);
+        var ex = new AcmeRateLimitedException(problem, retryAfter, documents);
 
         assertThat(ex.getType()).isEqualTo(type);
         assertThat(ex.getMessage()).isEqualTo(detail);
@@ -60,13 +56,12 @@ public class AcmeRateLimitedExceptionTest {
      */
     @Test
     public void testNullAcmeRateLimitedException() {
-        URI type = URI.create("urn:ietf:params:acme:error:rateLimited");
-        String detail = "Too many requests per minute";
+        var type = URI.create("urn:ietf:params:acme:error:rateLimited");
+        var detail = "Too many requests per minute";
 
-        Problem problem = createProblem(type, detail, null);
+        var problem = createProblem(type, detail, null);
 
-        AcmeRateLimitedException ex
-                = new AcmeRateLimitedException(problem, null, null);
+        var ex = new AcmeRateLimitedException(problem, null, null);
 
         assertThat(ex.getType()).isEqualTo(type);
         assertThat(ex.getMessage()).isEqualTo(detail);

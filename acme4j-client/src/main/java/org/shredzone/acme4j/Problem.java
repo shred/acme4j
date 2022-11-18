@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j;
 
-import static java.util.Collections.unmodifiableList;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -124,13 +123,11 @@ public class Problem implements Serializable {
      * Returns a list of sub-problems. May be empty, but is never {@code null}.
      */
     public List<Problem> getSubProblems() {
-        return unmodifiableList(
-                problemJson.get("subproblems")
+        return problemJson.get("subproblems")
                         .asArray()
                         .stream()
                         .map(o -> o.asProblem(baseUrl))
-                        .collect(toList())
-        );
+                        .collect(toUnmodifiableList());
     }
 
     /**
@@ -153,7 +150,7 @@ public class Problem implements Serializable {
      */
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        var sb = new StringBuilder();
 
         if (getDetail() != null) {
             sb.append(getDetail());
@@ -163,12 +160,12 @@ public class Problem implements Serializable {
             sb.append(getType());
         }
 
-        List<Problem> subproblems = getSubProblems();
+        var subproblems = getSubProblems();
 
         if (!subproblems.isEmpty()) {
             sb.append(" (");
-            boolean first = true;
-            for (Problem sub : subproblems) {
+            var first = true;
+            for (var sub : subproblems) {
                 if (!first) {
                     sb.append(" ‒ ");
                 }

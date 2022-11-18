@@ -32,12 +32,12 @@ public class AcmeLazyLoadingExceptionTest {
 
     @Test
     public void testAcmeLazyLoadingException() {
-        Login login = mock(Login.class);
-        AcmeResource resource = new TestResource(login, resourceUrl);
+        var login = mock(Login.class);
+        var resource = new TestResource(login, resourceUrl);
 
-        AcmeException cause = new AcmeException("Something went wrong");
+        var cause = new AcmeException("Something went wrong");
 
-        AcmeLazyLoadingException ex = new AcmeLazyLoadingException(resource, cause);
+        var ex = new AcmeLazyLoadingException(resource, cause);
         assertThat(ex).isInstanceOf(RuntimeException.class);
         assertThat(ex.getMessage()).contains(resourceUrl.toString());
         assertThat(ex.getMessage()).contains(TestResource.class.getSimpleName());

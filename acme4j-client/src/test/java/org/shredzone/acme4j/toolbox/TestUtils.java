@@ -14,13 +14,11 @@
 package org.shredzone.acme4j.toolbox;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.unmodifiableList;
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -31,8 +29,6 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -43,7 +39,6 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
 
 import javax.crypto.SecretKey;
@@ -90,9 +85,9 @@ public final class TestUtils {
      * @return Resource content as byte array.
      */
     public static byte[] getResourceAsByteArray(String name) throws IOException {
-        byte[] buffer = new byte[2048];
-        try (InputStream in = TestUtils.class.getResourceAsStream(name);
-                ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+        var buffer = new byte[2048];
+        try (var in = TestUtils.class.getResourceAsStream(name);
+                var out = new ByteArrayOutputStream()) {
             int len;
             while ((len = in.read(buffer)) >= 0) {
                 out.write(buffer, 0, len);
@@ -182,15 +177,13 @@ public final class TestUtils {
      */
     public static KeyPair createKeyPair() throws IOException {
         try {
-            KeyFactory keyFactory = KeyFactory.getInstance(KTY);
+            var keyFactory = KeyFactory.getInstance(KTY);
 
-            X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(
-                    getResourceAsByteArray("/public.key"));
-            PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
+            var publicKeySpec = new X509EncodedKeySpec(getResourceAsByteArray("/public.key"));
+            var publicKey = keyFactory.generatePublic(publicKeySpec);
 
-            PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(
-                    getResourceAsByteArray("/private.key"));
-            PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
+            var privateKeySpec = new PKCS8EncodedKeySpec(getResourceAsByteArray("/private.key"));
+            var privateKey = keyFactory.generatePrivate(privateKeySpec);
 
             return new KeyPair(publicKey, privateKey);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
@@ -209,15 +202,13 @@ public final class TestUtils {
      */
     public static KeyPair createDomainKeyPair() throws IOException {
         try {
-            KeyFactory keyFactory = KeyFactory.getInstance(KTY);
+            var keyFactory = KeyFactory.getInstance(KTY);
 
-            X509EncodedKeySpec publicKeySpec = new X509EncodedKeySpec(
-                    getResourceAsByteArray("/domain-public.key"));
-            PublicKey publicKey = keyFactory.generatePublic(publicKeySpec);
+            var publicKeySpec = new X509EncodedKeySpec(getResourceAsByteArray("/domain-public.key"));
+            var publicKey = keyFactory.generatePublic(publicKeySpec);
 
-            PKCS8EncodedKeySpec privateKeySpec = new PKCS8EncodedKeySpec(
-                    getResourceAsByteArray("/domain-private.key"));
-            PrivateKey privateKey = keyFactory.generatePrivate(privateKeySpec);
+            var privateKeySpec = new PKCS8EncodedKeySpec(getResourceAsByteArray("/domain-private.key"));
+            var privateKey = keyFactory.generatePrivate(privateKeySpec);
 
             return new KeyPair(publicKey, privateKey);
         } catch (NoSuchAlgorithmException | InvalidKeySpecException ex) {
@@ -234,8 +225,8 @@ public final class TestUtils {
      */
     public static KeyPair createECKeyPair(String name) throws IOException {
         try {
-            ECGenParameterSpec ecSpec = new ECGenParameterSpec(name);
-            KeyPairGenerator keyGen = KeyPairGenerator.getInstance("EC");
+            var ecSpec = new ECGenParameterSpec(name);
+            var keyGen = KeyPairGenerator.getInstance("EC");
             keyGen.initialize(ecSpec, new SecureRandom());
             return keyGen.generateKeyPair();
         } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException ex) {
@@ -252,9 +243,9 @@ public final class TestUtils {
      */
     public static SecretKey createSecretKey(String algorithm) throws IOException {
         try {
-            MessageDigest md = MessageDigest.getInstance(algorithm);
+            var md = MessageDigest.getInstance(algorithm);
             md.update("Turpentine".getBytes()); // A random password
-            byte[] macKey = md.digest();
+            var macKey = md.digest();
             return new HmacKey(macKey);
         } catch (NoSuchAlgorithmException ex) {
             throw new IOException(ex);
@@ -268,11 +259,11 @@ public final class TestUtils {
      * @return List of {@link X509Certificate} for testing
      */
     public static List<X509Certificate> createCertificate() throws IOException {
-        try (InputStream in = TestUtils.class.getResourceAsStream("/cert.pem")) {
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-            return unmodifiableList(cf.generateCertificates(in).stream()
+        try (var in = TestUtils.class.getResourceAsStream("/cert.pem")) {
+            var cf = CertificateFactory.getInstance("X.509");
+            return cf.generateCertificates(in).stream()
                        .map(c -> (X509Certificate) c)
-                       .collect(toList()));
+                       .collect(toUnmodifiableList());
         } catch (CertificateException ex) {
             throw new IOException(ex);
         }
@@ -290,7 +281,7 @@ public final class TestUtils {
      * @return Created {@link Problem} object
      */
     public static Problem createProblem(URI type, String detail, URL instance) {
-        JSONBuilder jb = new JSONBuilder();
+        var jb = new JSONBuilder();
         jb.put("type", type);
         jb.put("detail", detail);
         if (instance != null) {
@@ -305,23 +296,23 @@ public final class TestUtils {
      * parameters to be set in the {@link TestUtils} class.
      */
     public static void main(String... args) throws Exception {
-        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+        var keyGen = KeyPairGenerator.getInstance("RSA");
         keyGen.initialize(2048);
-        KeyPair keyPair = keyGen.generateKeyPair();
+        var keyPair = keyGen.generateKeyPair();
 
-        try (FileOutputStream out = new FileOutputStream("public.key")) {
+        try (var out = new FileOutputStream("public.key")) {
             out.write(keyPair.getPublic().getEncoded());
         }
 
-        try (FileOutputStream out = new FileOutputStream("private.key")) {
+        try (var out = new FileOutputStream("private.key")) {
             out.write(keyPair.getPrivate().getEncoded());
         }
 
-        final JsonWebKey jwk = JsonWebKey.Factory.newJwk(keyPair.getPublic());
-        Map<String, Object> params = new TreeMap<>(jwk.toParams(OutputControlLevel.PUBLIC_ONLY));
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        var jwk = JsonWebKey.Factory.newJwk(keyPair.getPublic());
+        var params = new TreeMap<>(jwk.toParams(OutputControlLevel.PUBLIC_ONLY));
+        var md = MessageDigest.getInstance("SHA-256");
         md.update(JsonUtil.toJson(params).getBytes(UTF_8));
-        byte[] thumbprint = md.digest();
+        var thumbprint = md.digest();
 
         System.out.println("N = " + params.get("n"));
         System.out.println("E = " + params.get("e"));

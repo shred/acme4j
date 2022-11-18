@@ -19,13 +19,10 @@ import static org.awaitility.Awaitility.await;
 
 import java.net.URI;
 import java.security.KeyPair;
-import java.security.cert.X509Certificate;
 
 import org.junit.jupiter.api.Test;
-import org.shredzone.acme4j.Account;
 import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Authorization;
-import org.shredzone.acme4j.Certificate;
 import org.shredzone.acme4j.Order;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
@@ -52,20 +49,20 @@ public class OrderHttpIT {
      */
     @Test
     public void testHttpValidation() throws Exception {
-        Session session = new Session(boulderURI());
-        KeyPair keyPair = createKeyPair();
+        var session = new Session(boulderURI());
+        var keyPair = createKeyPair();
 
-        Account account = new AccountBuilder()
+        var account = new AccountBuilder()
                     .agreeToTermsOfService()
                     .useKeyPair(keyPair)
                     .create(session);
 
-        KeyPair domainKeyPair = createKeyPair();
+        var domainKeyPair = createKeyPair();
 
-        Order order = account.newOrder().domain(TEST_DOMAIN).create();
+        var order = account.newOrder().domain(TEST_DOMAIN).create();
 
-        for (Authorization auth : order.getAuthorizations()) {
-            Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);
+        for (var auth : order.getAuthorizations()) {
+            var challenge = auth.findChallenge(Http01Challenge.class);
             assertThat(challenge).isNotNull();
 
             client.httpAddToken(challenge.getToken(), challenge.getAuthorization());
@@ -83,10 +80,10 @@ public class OrderHttpIT {
             client.httpRemoveToken(challenge.getToken());
         }
 
-        CSRBuilder csr = new CSRBuilder();
+        var csr = new CSRBuilder();
         csr.addDomain(TEST_DOMAIN);
         csr.sign(domainKeyPair);
-        byte[] encodedCsr = csr.getEncoded();
+        var encodedCsr = csr.getEncoded();
 
         order.execute(encodedCsr);
 
@@ -96,8 +93,8 @@ public class OrderHttpIT {
             .conditionEvaluationListener(cond -> updateOrder(order))
             .untilAsserted(() -> assertThat(order.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
 
-        Certificate certificate = order.getCertificate();
-        X509Certificate cert = certificate.getCertificate();
+        var certificate = order.getCertificate();
+        var cert = certificate.getCertificate();
         assertThat(cert).isNotNull();
         assertThat(cert.getNotAfter()).isNotNull();
         assertThat(cert.getNotBefore()).isNotNull();

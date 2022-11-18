@@ -78,7 +78,7 @@ public class AcmeInvalidMessageException extends AcmeException {
      */
     public AcmeInvalidMessageException(String msg, Throwable cause) {
         super(msg, cause);
-        List<ErrorBundle> errors = new ArrayList<>(1);
+        var errors = new ArrayList<ErrorBundle>(1);
         Optional.ofNullable(cause)
                 .filter(LocalizedException.class::isInstance)
                 .map(LocalizedException.class::cast)

@@ -22,7 +22,6 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.assertj.core.api.AutoCloseableSoftAssertions;
@@ -45,7 +44,7 @@ public class OrderTest {
      */
     @Test
     public void testUpdate() throws Exception {
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
                 assertThat(url).isEqualTo(locationUrl);
@@ -63,12 +62,12 @@ public class OrderTest {
             }
         };
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
-        Order order = new Order(login, locationUrl);
+        var order = new Order(login, locationUrl);
         order.update();
 
-        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+        try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(order.getStatus()).isEqualTo(Status.PENDING);
             softly.assertThat(order.getExpires()).isEqualTo("2015-03-01T14:09:00Z");
             softly.assertThat(order.getLocation()).isEqualTo(locationUrl);
@@ -95,7 +94,7 @@ public class OrderTest {
             softly.assertThat(order.getError().getDetail())
                     .isEqualTo("connection refused");
 
-            List<Authorization> auths = order.getAuthorizations();
+            var auths = order.getAuthorizations();
             softly.assertThat(auths).hasSize(2);
             softly.assertThat(auths.stream())
                     .map(Authorization::getLocation)
@@ -112,9 +111,9 @@ public class OrderTest {
      */
     @Test
     public void testLazyLoading() throws Exception {
-        final AtomicBoolean requestWasSent = new AtomicBoolean(false);
+        var requestWasSent = new AtomicBoolean(false);
 
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
                 requestWasSent.set(true);
@@ -133,11 +132,11 @@ public class OrderTest {
             }
         };
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
-        Order order = new Order(login, locationUrl);
+        var order = new Order(login, locationUrl);
 
-        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+        try (var softly = new AutoCloseableSoftAssertions()) {
             // Lazy loading
             softly.assertThat(requestWasSent).isFalse();
             softly.assertThat(order.getCertificate().getLocation())
@@ -161,9 +160,9 @@ public class OrderTest {
      */
     @Test
     public void testFinalize() throws Exception {
-        byte[] csr = TestUtils.getResourceAsByteArray("/csr.der");
+        var csr = TestUtils.getResourceAsByteArray("/csr.der");
 
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             private boolean isFinalized = false;
 
             @Override
@@ -192,12 +191,12 @@ public class OrderTest {
             }
         };
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
-        Order order = new Order(login, locationUrl);
+        var order = new Order(login, locationUrl);
         order.execute(csr);
 
-        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+        try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(order.getStatus()).isEqualTo(Status.VALID);
             softly.assertThat(order.getExpires()).isEqualTo("2015-03-01T14:09:00Z");
             softly.assertThat(order.getLocation()).isEqualTo(locationUrl);
@@ -212,7 +211,7 @@ public class OrderTest {
             softly.assertThat(order.getAutoRenewalCertificate()).isNull();
             softly.assertThat(order.getFinalizeLocation()).isEqualTo(finalizeUrl);
 
-            List<Authorization> auths = order.getAuthorizations();
+            var auths = order.getAuthorizations();
             softly.assertThat(auths).hasSize(2);
             softly.assertThat(auths.stream())
                     .map(Authorization::getLocation)
@@ -229,7 +228,7 @@ public class OrderTest {
      */
     @Test
     public void testAutoRenewUpdate() throws Exception {
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
                 assertThat(url).isEqualTo(locationUrl);
@@ -249,12 +248,12 @@ public class OrderTest {
 
         provider.putMetadata("auto-renewal", JSON.empty());
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
-        Order order = new Order(login, locationUrl);
+        var order = new Order(login, locationUrl);
         order.update();
 
-        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+        try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(order.isAutoRenewing()).isTrue();
             softly.assertThat(order.getAutoRenewalStartDate()).isEqualTo("2016-01-01T00:00:00Z");
             softly.assertThat(order.getAutoRenewalEndDate()).isEqualTo("2017-01-01T00:00:00Z");
@@ -273,7 +272,7 @@ public class OrderTest {
      */
     @Test
     public void testAutoRenewFinalize() throws Exception {
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
                 assertThat(url).isEqualTo(locationUrl);
@@ -291,10 +290,10 @@ public class OrderTest {
             }
         };
 
-        Login login = provider.createLogin();
-        Order order = login.bindOrder(locationUrl);
+        var login = provider.createLogin();
+        var order = login.bindOrder(locationUrl);
 
-        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+        try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(order.getCertificate()).isNull();
             softly.assertThat(order.getAutoRenewalCertificate().getLocation())
                     .isEqualTo(url("https://example.com/acme/cert/1234"));
@@ -316,10 +315,10 @@ public class OrderTest {
      */
     @Test
     public void testCancel() throws Exception {
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
-                JSON json = claims.toJSON();
+                var json = claims.toJSON();
                 assertThat(json.get("status").asString()).isEqualTo("canceled");
                 assertThat(url).isEqualTo(locationUrl);
                 assertThat(login).isNotNull();
@@ -334,9 +333,9 @@ public class OrderTest {
 
         provider.putMetadata("auto-renewal", JSON.empty());
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
-        Order order = new Order(login, locationUrl);
+        var order = new Order(login, locationUrl);
         order.cancelAutoRenewal();
 
         assertThat(order.getStatus()).isEqualTo(Status.CANCELED);

@@ -19,7 +19,6 @@ import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Collection;
-import java.util.Optional;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.toolbox.JSON;
@@ -97,8 +96,8 @@ public class Metadata {
      */
     @Nullable
     public Duration getAutoRenewalMinLifetime() {
-        Optional<JSON> ar = meta.get("auto-renewal").optional().map(Value::asObject);
-        if (!ar.isPresent()) {
+        var ar = meta.get("auto-renewal").optional().map(Value::asObject);
+        if (ar.isEmpty()) {
             return null;
         }
         return ar.get().get("min-lifetime").map(Value::asDuration).orElse(null);
@@ -112,8 +111,8 @@ public class Metadata {
      */
     @Nullable
     public Duration getAutoRenewalMaxDuration() {
-        Optional<JSON> ar = meta.get("auto-renewal").optional().map(Value::asObject);
-        if (!ar.isPresent()) {
+        var ar = meta.get("auto-renewal").optional().map(Value::asObject);
+        if (ar.isEmpty()) {
             return null;
         }
         return ar.get().get("max-duration").map(Value::asDuration).orElse(null);
@@ -125,8 +124,8 @@ public class Metadata {
      * @since 2.6
      */
     public boolean isAutoRenewalGetAllowed() {
-        Optional<JSON> ar = meta.get("auto-renewal").optional().map(Value::asObject);
-        if (!ar.isPresent()) {
+        var ar = meta.get("auto-renewal").optional().map(Value::asObject);
+        if (ar.isEmpty()) {
             return false;
         }
         return ar.get().get("allow-certificate-get").map(Value::asBoolean).orElse(false);

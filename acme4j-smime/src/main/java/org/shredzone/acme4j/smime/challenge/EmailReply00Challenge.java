@@ -113,7 +113,7 @@ public class EmailReply00Challenge extends TokenChallenge {
      *         challenge email.
      */
     public String getAuthorization(String part1) {
-        String keyAuth = keyAuthorizationFor(getToken(part1));
+        var keyAuth = keyAuthorizationFor(getToken(part1));
         return base64UrlEncode(sha256hash(keyAuth));
     }
 

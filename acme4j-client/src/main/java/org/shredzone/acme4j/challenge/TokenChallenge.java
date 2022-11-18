@@ -15,8 +15,6 @@ package org.shredzone.acme4j.challenge;
 
 import static org.shredzone.acme4j.toolbox.AcmeUtils.base64UrlEncode;
 
-import java.security.PublicKey;
-
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
@@ -48,7 +46,7 @@ public class TokenChallenge extends Challenge {
      * Gets the token.
      */
     protected String getToken() {
-        String token = getJSON().get(KEY_TOKEN).asString();
+        var token = getJSON().get(KEY_TOKEN).asString();
         if (!AcmeUtils.isValidBase64Url(token)) {
             throw new AcmeProtocolException("Invalid token: " + token);
         }
@@ -67,7 +65,7 @@ public class TokenChallenge extends Challenge {
      * @since 2.12
      */
     protected String keyAuthorizationFor(String token) {
-        PublicKey pk = getLogin().getKeyPair().getPublic();
+        var pk = getLogin().getKeyPair().getPublic();
         return token + '.' + base64UrlEncode(JoseUtils.thumbprint(pk));
     }
 

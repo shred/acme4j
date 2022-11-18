@@ -20,7 +20,6 @@ import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import java.net.URL;
 
 import org.junit.jupiter.api.Test;
-import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.TestUtils;
 
@@ -37,9 +36,9 @@ public class AcmeJsonResourceTest {
      */
     @Test
     public void testLoginConstructor() {
-        Login login = TestUtils.login();
+        var login = TestUtils.login();
 
-        AcmeJsonResource resource = new DummyJsonResource(login, LOCATION_URL);
+        var resource = new DummyJsonResource(login, LOCATION_URL);
         assertThat(resource.getLogin()).isEqualTo(login);
         assertThat(resource.getSession()).isEqualTo(login.getSession());
         assertThat(resource.getLocation()).isEqualTo(LOCATION_URL);
@@ -56,11 +55,11 @@ public class AcmeJsonResourceTest {
      */
     @Test
     public void testSetJson() {
-        Login login = TestUtils.login();
+        var login = TestUtils.login();
 
-        JSON jsonData2 = getJSON("requestOrderResponse");
+        var jsonData2 = getJSON("requestOrderResponse");
 
-        AcmeJsonResource resource = new DummyJsonResource(login, LOCATION_URL);
+        var resource = new DummyJsonResource(login, LOCATION_URL);
         assertThat(resource.isValid()).isFalse();
         assertUpdateInvoked(resource, 0);
 
@@ -80,9 +79,9 @@ public class AcmeJsonResourceTest {
      */
     @Test
     public void testInvalidate() {
-        Login login = TestUtils.login();
+        var login = TestUtils.login();
 
-        AcmeJsonResource resource = new DummyJsonResource(login, LOCATION_URL);
+        var resource = new DummyJsonResource(login, LOCATION_URL);
         assertThat(resource.isValid()).isFalse();
         assertUpdateInvoked(resource, 0);
 
@@ -109,7 +108,7 @@ public class AcmeJsonResourceTest {
      *            Expected number of times
      */
     private static void assertUpdateInvoked(AcmeJsonResource resource, int count) {
-        DummyJsonResource dummy = (DummyJsonResource) resource;
+        var dummy = (DummyJsonResource) resource;
         assertThat(dummy.updateCount).as("update counter").isEqualTo(count);
     }
 
@@ -131,7 +130,7 @@ public class AcmeJsonResourceTest {
         }
 
         @Override
-        public void update() throws AcmeException {
+        public void update() {
             // update() is tested individually in all AcmeJsonResource subclasses.
             // Here we just simulate the update, by setting a JSON.
             updateCount++;

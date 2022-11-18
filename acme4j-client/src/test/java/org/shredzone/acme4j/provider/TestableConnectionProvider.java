@@ -104,7 +104,7 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
      * Creates a {@link Login} that uses this {@link AcmeProvider}.
      */
     public Login createLogin() throws IOException {
-        Session session = createSession();
+        var session = createSession();
         return session.login(new URL(TestUtils.ACCOUNT_URL), TestUtils.createKeyPair());
     }
 
@@ -139,7 +139,7 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
 
         Challenge created;
 
-        String type = data.get("type").asString();
+        var type = data.get("type").asString();
         if (creatorMap.containsKey(type)) {
             created = creatorMap.get(type).apply(login, data);
         } else {

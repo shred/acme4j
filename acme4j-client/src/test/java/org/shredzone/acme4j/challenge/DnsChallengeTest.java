@@ -38,14 +38,14 @@ public class DnsChallengeTest {
      */
     @Test
     public void testDnsChallenge() {
-        Dns01Challenge challenge = new Dns01Challenge(login, getJSON("dnsChallenge"));
+        var challenge = new Dns01Challenge(login, getJSON("dnsChallenge"));
 
         assertThat(challenge.getType()).isEqualTo(Dns01Challenge.TYPE);
         assertThat(challenge.getStatus()).isEqualTo(Status.PENDING);
         assertThat(challenge.getDigest()).isEqualTo("rzMmotrIgsithyBYc0vgiLUEEKYx0WetQRgEF2JIozA");
         assertThat(challenge.getAuthorization()).isEqualTo("pNvmJivs0WCko2suV7fhe-59oFqyYx_yB7tx6kIMAyE.HnWjTDnyqlCrm6tZ-6wX-TrEXgRdeNu9G71gqxSO6o0");
 
-        JSONBuilder response = new JSONBuilder();
+        var response = new JSONBuilder();
         challenge.prepareResponse(response);
 
         assertThatJson(response.toString()).isEqualTo("{}");

@@ -36,9 +36,9 @@ public class LetsEncryptAcmeProviderTest {
      */
     @Test
     public void testAccepts() throws URISyntaxException {
-        LetsEncryptAcmeProvider provider = new LetsEncryptAcmeProvider();
+        var provider = new LetsEncryptAcmeProvider();
 
-        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+        try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(provider.accepts(new URI("acme://letsencrypt.org"))).isTrue();
             softly.assertThat(provider.accepts(new URI("acme://letsencrypt.org/"))).isTrue();
             softly.assertThat(provider.accepts(new URI("acme://letsencrypt.org/staging"))).isTrue();
@@ -54,16 +54,14 @@ public class LetsEncryptAcmeProviderTest {
      */
     @Test
     public void testResolve() throws URISyntaxException {
-        LetsEncryptAcmeProvider provider = new LetsEncryptAcmeProvider();
+        var provider = new LetsEncryptAcmeProvider();
 
         assertThat(provider.resolve(new URI("acme://letsencrypt.org"))).isEqualTo(url(V02_DIRECTORY_URL));
         assertThat(provider.resolve(new URI("acme://letsencrypt.org/"))).isEqualTo(url(V02_DIRECTORY_URL));
         assertThat(provider.resolve(new URI("acme://letsencrypt.org/v02"))).isEqualTo(url(V02_DIRECTORY_URL));
         assertThat(provider.resolve(new URI("acme://letsencrypt.org/staging"))).isEqualTo(url(STAGING_DIRECTORY_URL));
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            provider.resolve(new URI("acme://letsencrypt.org/v99"));
-        });
+        assertThrows(IllegalArgumentException.class, () -> provider.resolve(new URI("acme://letsencrypt.org/v99")));
     }
 
 }

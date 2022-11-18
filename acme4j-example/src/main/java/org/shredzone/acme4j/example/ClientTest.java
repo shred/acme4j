@@ -400,7 +400,7 @@ public class ClientTest {
      * @param message
      *         Instructions to be shown in the dialog
      */
-    public void completeChallenge(String message) throws AcmeException {
+    public void completeChallenge(String message) {
         JOptionPane.showMessageDialog(null,
                 message,
                 "Complete Challenge",

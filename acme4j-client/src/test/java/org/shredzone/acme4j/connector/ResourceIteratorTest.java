@@ -50,12 +50,12 @@ public class ResourceIteratorTest {
     @BeforeEach
     public void setup() {
         resourceURLs.clear();
-        for (int ix = 0; ix < RESOURCES_PER_PAGE * PAGES; ix++) {
+        for (var ix = 0; ix < RESOURCES_PER_PAGE * PAGES; ix++) {
             resourceURLs.add(url("https://example.com/acme/auth/" + ix));
         }
 
         pageURLs.clear();
-        for (int ix = 0; ix < PAGES; ix++) {
+        for (var ix = 0; ix < PAGES; ix++) {
             pageURLs.add(url("https://example.com/acme/batch/" + ix));
         }
     }
@@ -64,9 +64,9 @@ public class ResourceIteratorTest {
      * Test if the {@link ResourceIterator} handles a {@code null} start URL.
      */
     @Test
-    public void nullTest() throws IOException {
+    public void nullTest() {
         assertThrows(NoSuchElementException.class, () -> {
-            Iterator<Authorization> it = createIterator(null);
+            var it = createIterator(null);
 
             assertThat(it).isNotNull();
             assertThat(it.hasNext()).isFalse();
@@ -79,9 +79,9 @@ public class ResourceIteratorTest {
      */
     @Test
     public void iteratorTest() throws IOException {
-        List<URL> result = new ArrayList<>();
+        var result = new ArrayList<URL>();
 
-        Iterator<Authorization> it = createIterator(pageURLs.get(0));
+        var it = createIterator(pageURLs.get(0));
         while (it.hasNext()) {
             result.add(it.next().getLocation());
         }
@@ -94,9 +94,9 @@ public class ResourceIteratorTest {
      */
     @Test
     public void nextHasNextTest() throws IOException {
-        List<URL> result = new ArrayList<>();
+        var result = new ArrayList<URL>();
 
-        Iterator<Authorization> it = createIterator(pageURLs.get(0));
+        var it = createIterator(pageURLs.get(0));
         assertThat(it.hasNext()).isTrue();
         assertThat(it.hasNext()).isTrue();
 
@@ -117,9 +117,9 @@ public class ResourceIteratorTest {
      * Test that {@link Iterator#remove()} fails.
      */
     @Test
-    public void removeTest() throws IOException {
+    public void removeTest() {
         assertThrows(UnsupportedOperationException.class, () -> {
-            Iterator<Authorization> it = createIterator(pageURLs.get(0));
+            var it = createIterator(pageURLs.get(0));
             it.next();
             it.remove(); // throws UnsupportedOperationException
         });
@@ -133,7 +133,7 @@ public class ResourceIteratorTest {
      * @return Created {@link Iterator}
      */
     private Iterator<Authorization> createIterator(URL first) throws IOException {
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             private int ix;
 
             @Override
@@ -145,10 +145,10 @@ public class ResourceIteratorTest {
 
             @Override
             public JSON readJsonResponse() {
-                int start = ix * RESOURCES_PER_PAGE;
-                int end = (ix + 1) * RESOURCES_PER_PAGE;
+                var start = ix * RESOURCES_PER_PAGE;
+                var end = (ix + 1) * RESOURCES_PER_PAGE;
 
-                JSONBuilder cb = new JSONBuilder();
+                var cb = new JSONBuilder();
                 cb.array(TYPE, resourceURLs.subList(start, end));
 
                 return JSON.parse(cb.toString());
@@ -163,7 +163,7 @@ public class ResourceIteratorTest {
             }
         };
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
         provider.close();
 

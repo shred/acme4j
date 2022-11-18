@@ -31,10 +31,10 @@ public class AcmeRetryAfterExceptionTest {
      */
     @Test
     public void testAcmeRetryAfterException() {
-        String detail = "Too early";
-        Instant retryAfter = Instant.now().plus(Duration.ofMinutes(1));
+        var detail = "Too early";
+        var retryAfter = Instant.now().plus(Duration.ofMinutes(1));
 
-        AcmeRetryAfterException ex = new AcmeRetryAfterException(detail, retryAfter);
+        var ex = new AcmeRetryAfterException(detail, retryAfter);
 
         assertThat(ex.getMessage()).isEqualTo(detail);
         assertThat(ex.getRetryAfter()).isEqualTo(retryAfter);

@@ -13,16 +13,14 @@
  */
 package org.shredzone.acme4j;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.net.URL;
 import java.time.Instant;
-import java.util.Collections;
 import java.util.List;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.challenge.Challenge;
-import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
@@ -91,14 +89,14 @@ public class Authorization extends AcmeJsonResource {
      * Gets a list of all challenges offered by the server, in no specific order.
      */
     public List<Challenge> getChallenges() {
-        Login login = getLogin();
+        var login = getLogin();
 
-        return Collections.unmodifiableList(getJSON().get("challenges")
-                    .asArray()
-                    .stream()
-                    .map(Value::asObject)
-                    .map(login::createChallenge)
-                    .collect(toList()));
+        return getJSON().get("challenges")
+                .asArray()
+                .stream()
+                .map(Value::asObject)
+                .map(login::createChallenge)
+                .collect(toUnmodifiableList());
     }
 
     /**
@@ -147,8 +145,8 @@ public class Authorization extends AcmeJsonResource {
      */
     public void deactivate() throws AcmeException {
         LOG.debug("deactivate");
-        try (Connection conn = getSession().connect()) {
-            JSONBuilder claims = new JSONBuilder();
+        try (var conn = getSession().connect()) {
+            var claims = new JSONBuilder();
             claims.put("status", "deactivated");
 
             conn.sendSignedRequest(getLocation(), claims, getLogin());

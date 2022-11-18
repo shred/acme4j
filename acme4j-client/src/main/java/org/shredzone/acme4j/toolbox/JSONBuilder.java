@@ -136,7 +136,7 @@ public class JSONBuilder {
      * @return Newly created {@link JSONBuilder} for the object.
      */
     public JSONBuilder object(String key) {
-        JSONBuilder subBuilder = new JSONBuilder();
+        var subBuilder = new JSONBuilder();
         data.put(key, subBuilder.data);
         return subBuilder;
     }

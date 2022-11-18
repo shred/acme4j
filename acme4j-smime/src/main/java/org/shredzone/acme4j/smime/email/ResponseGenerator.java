@@ -24,7 +24,6 @@ import jakarta.mail.Address;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
-import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
 /**
@@ -134,13 +133,13 @@ public class ResponseGenerator {
      * @return Generated {@link Message}.
      */
     public Message generateResponse(Session session) throws MessagingException {
-        Message response = new MimeMessage(requireNonNull(session, "session"));
+        var response = new MimeMessage(requireNonNull(session, "session"));
 
         response.setSubject("Re: ACME: " + processor.getToken1());
         response.setFrom(processor.getRecipient());
 
         if (!processor.getReplyTo().isEmpty()) {
-            for (InternetAddress rto : processor.getReplyTo()) {
+            for (var rto : processor.getReplyTo()) {
                 response.addRecipient(TO, rto);
             }
         } else {
@@ -151,9 +150,9 @@ public class ResponseGenerator {
             response.setHeader("In-Reply-To", processor.getMessageId().get());
         }
 
-        String wrappedAuth = processor.getAuthorization()
+        var wrappedAuth = processor.getAuthorization()
                 .replaceAll("(.{" + LINE_LENGTH + "})", "$1" + CRLF);
-        StringBuilder responseBody = new StringBuilder();
+        var responseBody = new StringBuilder();
         responseBody.append("-----BEGIN ACME RESPONSE-----").append(CRLF);
         responseBody.append(wrappedAuth);
         if (!wrappedAuth.endsWith(CRLF)) {
@@ -176,7 +175,7 @@ public class ResponseGenerator {
      */
     private void defaultBodyGenerator(Message response, String responseBody)
             throws MessagingException {
-        StringBuilder body = new StringBuilder();
+        var body = new StringBuilder();
         if (header != null) {
             body.append(header);
         }

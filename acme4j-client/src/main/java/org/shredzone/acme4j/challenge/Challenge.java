@@ -20,7 +20,6 @@ import org.shredzone.acme4j.AcmeJsonResource;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Status;
-import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
@@ -121,13 +120,13 @@ public class Challenge extends AcmeJsonResource {
 
     @Override
     protected void setJSON(JSON json) {
-        String type = json.get(KEY_TYPE).asString();
+        var type = json.get(KEY_TYPE).asString();
 
         if (!acceptable(type)) {
             throw new AcmeProtocolException("incompatible type " + type + " for this challenge");
         }
 
-        String loc = json.get(KEY_URL).asString();
+        var loc = json.get(KEY_URL).asString();
         if (!loc.equals(getLocation().toString())) {
             throw new AcmeProtocolException("challenge has changed its location");
         }
@@ -145,8 +144,8 @@ public class Challenge extends AcmeJsonResource {
      */
     public void trigger() throws AcmeException {
         LOG.debug("trigger");
-        try (Connection conn = getSession().connect()) {
-            JSONBuilder claims = new JSONBuilder();
+        try (var conn = getSession().connect()) {
+            var claims = new JSONBuilder();
             prepareResponse(claims);
 
             conn.sendSignedRequest(getLocation(), claims, getLogin());

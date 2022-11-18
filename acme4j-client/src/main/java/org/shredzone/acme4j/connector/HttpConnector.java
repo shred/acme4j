@@ -14,7 +14,6 @@
 package org.shredzone.acme4j.connector;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Properties;
@@ -33,10 +32,10 @@ public class HttpConnector {
     private static final String USER_AGENT;
 
     static {
-        StringBuilder agent = new StringBuilder("acme4j");
+        var agent = new StringBuilder("acme4j");
 
-        try (InputStream in = HttpConnector.class.getResourceAsStream("/org/shredzone/acme4j/version.properties")) {
-            Properties prop = new Properties();
+        try (var in = HttpConnector.class.getResourceAsStream("/org/shredzone/acme4j/version.properties")) {
+            var prop = new Properties();
             prop.load(in);
             agent.append('/').append(prop.getProperty("version"));
         } catch (Exception ex) {
@@ -67,7 +66,7 @@ public class HttpConnector {
      * @return {@link HttpURLConnection} connected to the {@link URL}
      */
     public HttpURLConnection openConnection(URL url, NetworkSettings settings) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection(settings.getProxy());
+        var conn = (HttpURLConnection) url.openConnection(settings.getProxy());
         configure(conn, settings);
         return conn;
     }
@@ -85,7 +84,7 @@ public class HttpConnector {
      *         {@link NetworkSettings} with settings to be used
      */
     protected void configure(HttpURLConnection conn, NetworkSettings settings) {
-        int timeout = (int) settings.getTimeout().toMillis();
+        var timeout = (int) settings.getTimeout().toMillis();
         conn.setConnectTimeout(timeout);
         conn.setReadTimeout(timeout);
         conn.setUseCaches(false);

@@ -27,7 +27,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Base64;
 import java.util.Objects;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -99,7 +98,7 @@ public final class AcmeUtils {
      */
     public static byte[] sha256hash(String z) {
         try {
-            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            var md = MessageDigest.getInstance("SHA-256");
             md.update(z.getBytes(UTF_8));
             return md.digest();
         } catch (NoSuchAlgorithmException ex) {
@@ -115,9 +114,9 @@ public final class AcmeUtils {
      * @return Hex encoded string of the data (with lower case characters)
      */
     public static String hexEncode(byte[] data) {
-        char[] result = new char[data.length * 2];
-        for (int ix = 0; ix < data.length; ix++) {
-            int val = data[ix] & 0xFF;
+        var result = new char[data.length * 2];
+        for (var ix = 0; ix < data.length; ix++) {
+            var val = data[ix] & 0xFF;
             result[ix * 2] = HEX[val >>> 4];
             result[ix * 2 + 1] = HEX[val & 0x0F];
         }
@@ -189,28 +188,28 @@ public final class AcmeUtils {
      * @see <a href="https://www.ietf.org/rfc/rfc3339.txt">RFC 3339</a>
      */
     public static Instant parseTimestamp(String str) {
-        Matcher m = DATE_PATTERN.matcher(str);
+        var m = DATE_PATTERN.matcher(str);
         if (!m.matches()) {
             throw new IllegalArgumentException("Illegal date: " + str);
         }
 
-        int year = Integer.parseInt(m.group(1));
-        int month = Integer.parseInt(m.group(2));
-        int dom = Integer.parseInt(m.group(3));
-        int hour = Integer.parseInt(m.group(4));
-        int minute = Integer.parseInt(m.group(5));
-        int second = Integer.parseInt(m.group(6));
+        var year = Integer.parseInt(m.group(1));
+        var month = Integer.parseInt(m.group(2));
+        var dom = Integer.parseInt(m.group(3));
+        var hour = Integer.parseInt(m.group(4));
+        var minute = Integer.parseInt(m.group(5));
+        var second = Integer.parseInt(m.group(6));
 
-        StringBuilder msStr = new StringBuilder();
+        var msStr = new StringBuilder();
         if (m.group(7) != null) {
             msStr.append(m.group(7));
         }
         while (msStr.length() < 3) {
             msStr.append('0');
         }
-        int ms = Integer.parseInt(msStr.toString());
+        var ms = Integer.parseInt(msStr.toString());
 
-        String tz = m.group(8);
+        var tz = m.group(8);
         if ("Z".equalsIgnoreCase(tz)) {
             tz = "GMT";
         } else {
@@ -270,9 +269,9 @@ public final class AcmeUtils {
     @Nullable
     public static String getContentType(@Nullable String header) {
         if (header != null) {
-            Matcher m = CONTENT_TYPE_PATTERN.matcher(header);
+            var m = CONTENT_TYPE_PATTERN.matcher(header);
             if (m.matches()) {
-                String charset = m.group(3);
+                var charset = m.group(3);
                 if (charset != null && !"utf-8".equalsIgnoreCase(charset)) {
                     throw new AcmeProtocolException("Unsupported charset " + charset);
                 }
@@ -292,7 +291,7 @@ public final class AcmeUtils {
      */
     public static void validateContact(URI contact) {
         if ("mailto".equalsIgnoreCase(contact.getScheme())) {
-            String address = contact.toString().substring(7);
+            var address = contact.toString().substring(7);
             if (MAIL_PATTERN.matcher(address).find()) {
                 throw new IllegalArgumentException(
                         "multiple recipients or hfields are not allowed: " + contact);

@@ -39,7 +39,7 @@ public class SessionProviderTest {
      * connecting to this URI will result in an {@link IllegalArgumentException}.
      */
     @Test
-    public void testNone() throws Exception {
+    public void testNone() {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> new Session(new URI("acme://example.org")).provider())
                 .withMessage("No ACME provider found for acme://example.org");
@@ -51,12 +51,12 @@ public class SessionProviderTest {
      */
     @Test
     public void testConnectURI() throws Exception {
-        Session session = new Session(new URI("acme://example.com"));
+        var session = new Session(new URI("acme://example.com"));
 
-        AcmeProvider provider = session.provider();
+        var provider = session.provider();
         assertThat(provider).isInstanceOf(Provider1.class);
 
-        AcmeProvider provider2 = session.provider();
+        var provider2 = session.provider();
         assertThat(provider2).isInstanceOf(Provider1.class);
         assertThat(provider2).isSameAs(provider);
     }
@@ -66,7 +66,7 @@ public class SessionProviderTest {
      * connecting to this URI will result in an {@link IllegalArgumentException}.
      */
     @Test
-    public void testDuplicate() throws Exception {
+    public void testDuplicate() {
         assertThatExceptionOfType(IllegalArgumentException.class)
                 .isThrownBy(() -> new Session(new URI("acme://example.net")).provider())
                 .withMessage("Both ACME providers Provider1 and Provider2 accept" +

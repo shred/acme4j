@@ -16,7 +16,6 @@ package org.shredzone.acme4j;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 
-import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -24,7 +23,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
-import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -82,7 +80,7 @@ public class OrderBuilder {
      * @return itself
      */
     public OrderBuilder domains(String... domains) {
-        for (String domain : requireNonNull(domains, "domains")) {
+        for (var domain : requireNonNull(domains, "domains")) {
             domain(domain);
         }
         return this;
@@ -274,15 +272,15 @@ public class OrderBuilder {
             throw new IllegalArgumentException("At least one identifer is required");
         }
 
-        Session session = login.getSession();
+        var session = login.getSession();
 
         if (autoRenewal && !session.getMetadata().isAutoRenewalEnabled()) {
             throw new AcmeException("CA does not support short-term automatic renewals");
         }
 
         LOG.debug("create");
-        try (Connection conn = session.connect()) {
-            JSONBuilder claims = new JSONBuilder();
+        try (var conn = session.connect()) {
+            var claims = new JSONBuilder();
             claims.array("identifiers", identifierSet.stream().map(Identifier::toMap).collect(toList()));
 
             if (notBefore != null) {
@@ -293,7 +291,7 @@ public class OrderBuilder {
             }
 
             if (autoRenewal) {
-                JSONBuilder arClaims = claims.object("auto-renewal");
+                var arClaims = claims.object("auto-renewal");
                 if (autoRenewalStart != null) {
                     arClaims.put("start-date", autoRenewalStart);
                 }
@@ -313,12 +311,12 @@ public class OrderBuilder {
 
             conn.sendSignedRequest(session.resourceUrl(Resource.NEW_ORDER), claims, login);
 
-            URL orderLocation = conn.getLocation();
+            var orderLocation = conn.getLocation();
             if (orderLocation == null) {
                 throw new AcmeProtocolException("Server did not provide an order location");
             }
 
-            Order order = new Order(login, orderLocation);
+            var order = new Order(login, orderLocation);
             order.setJSON(conn.readJsonResponse());
             return order;
         }

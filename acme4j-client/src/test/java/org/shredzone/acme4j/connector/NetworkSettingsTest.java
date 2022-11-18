@@ -32,10 +32,10 @@ public class NetworkSettingsTest {
      */
     @Test
     public void testGettersAndSetters() {
-        NetworkSettings settings = new NetworkSettings();
+        var settings = new NetworkSettings();
 
         assertThat(settings.getProxy()).isEqualTo(Proxy.NO_PROXY);
-        Proxy proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("10.0.0.1", 8080));
+        var proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("10.0.0.1", 8080));
         settings.setProxy(proxy);
         assertThat(settings.getProxy()).isEqualTo(proxy);
         settings.setProxy(null);
@@ -48,7 +48,7 @@ public class NetworkSettingsTest {
 
     @Test
     public void testInvalidTimeouts() {
-        NetworkSettings settings = new NetworkSettings();
+        var settings = new NetworkSettings();
 
         assertThrows(IllegalArgumentException.class,
                 () -> settings.setTimeout(null),

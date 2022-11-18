@@ -18,7 +18,6 @@ import static java.util.Objects.requireNonNull;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -45,7 +44,6 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.SignerInformation;
-import org.bouncycastle.cms.SignerInformationStore;
 import org.bouncycastle.mail.smime.SMIMESigned;
 import org.bouncycastle.mail.smime.validator.SignedMailValidator;
 import org.bouncycastle.mail.smime.validator.SignedMailValidatorException;
@@ -236,15 +234,15 @@ public class SignedMailBuilder {
     private SignerInformation validateSignature(MimeMessage message, PKIXParameters pkixParameters)
             throws AcmeInvalidMessageException {
         try {
-            SignedMailValidator smv = new SignedMailValidator(message, pkixParameters);
+            var smv = new SignedMailValidator(message, pkixParameters);
 
-            SignerInformationStore store = smv.getSignerInformationStore();
+            var store = smv.getSignerInformationStore();
             if (store.size() != 1) {
                 throw new AcmeInvalidMessageException("Expected exactly one signer, but found " + store.size());
             }
 
-            SignerInformation si = store.getSigners().iterator().next();
-            SignedMailValidator.ValidationResult vr = smv.getValidationResult(si);
+            var si = store.getSigners().iterator().next();
+            var vr = smv.getValidationResult(si);
             if (!vr.isValidSignature()) {
                 throw new AcmeInvalidMessageException("Invalid signature", vr.getErrors());
             }
@@ -275,14 +273,14 @@ public class SignedMailBuilder {
             throw new AcmeInvalidMessageException("Could not find certificate for signer ID "
                     + si.getSID().toString());
         }
-        X509CertificateHolder ch = certCollection.iterator().next();
+        var ch = certCollection.iterator().next();
 
-        GeneralNames gns = GeneralNames.fromExtensions(ch.getExtensions(), Extension.subjectAlternativeName);
+        var gns = GeneralNames.fromExtensions(ch.getExtensions(), Extension.subjectAlternativeName);
         if (gns == null) {
             throw new AcmeInvalidMessageException("Certificate does not have a subjectAltName extension");
         }
 
-        for (GeneralName name : gns.getNames()) {
+        for (var name : gns.getNames()) {
             if (name.getTagNo() == GeneralName.rfc822Name) {
                 try {
                     return new InternetAddress(name.getName().toString());
@@ -302,13 +300,13 @@ public class SignedMailBuilder {
      * @return CaCerts truststore
      */
     protected static KeyStore getCaCertsTrustStore() {
-        KeyStore caCerts = CACERTS_TRUSTSTORE.get();
+        var caCerts = CACERTS_TRUSTSTORE.get();
         if (caCerts == null) {
-            String javaHome = System.getProperty("java.home");
-            String caFileName = javaHome + File.separator + "lib" + File.separator
+            var javaHome = System.getProperty("java.home");
+            var caFileName = javaHome + File.separator + "lib" + File.separator
                     + "security" + File.separator + "cacerts";
 
-            try (InputStream in = new FileInputStream(caFileName)) {
+            try (var in = new FileInputStream(caFileName)) {
                 caCerts = KeyStore.getInstance("JKS");
                 caCerts.load(in, "changeit".toCharArray());
                 CACERTS_TRUSTSTORE.set(caCerts);

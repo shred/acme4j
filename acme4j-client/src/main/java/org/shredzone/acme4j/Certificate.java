@@ -14,6 +14,7 @@
 package org.shredzone.acme4j;
 
 import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.toList;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -24,10 +25,8 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
-import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
@@ -67,7 +66,7 @@ public class Certificate extends AcmeResource {
     public void download() throws AcmeException {
         if (certChain == null) {
             LOG.debug("download");
-            try (Connection conn = getSession().connect()) {
+            try (var conn = getSession().connect()) {
                 conn.sendCertificateRequest(getLocation(), getLogin());
                 alternates = new ArrayList<>(conn.getLinks("alternate"));
                 certChain = new ArrayList<>(conn.readCertificates());
@@ -118,10 +117,10 @@ public class Certificate extends AcmeResource {
      * @since 2.11
      */
     public List<Certificate> getAlternateCertificates() {
-        Login login = getLogin();
+        var login = getLogin();
         return getAlternates().stream()
                 .map(login::bindCertificate)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     /**
@@ -133,7 +132,7 @@ public class Certificate extends AcmeResource {
      */
     public void writeCertificate(Writer out) throws IOException {
         try {
-            for (X509Certificate cert : getCertificateChain()) {
+            for (var cert : getCertificateChain()) {
                 AcmeUtils.writeToPem(cert.getEncoded(), AcmeUtils.PemLabel.CERTIFICATE, out);
             }
         } catch (CertificateEncodingException ex) {
@@ -178,12 +177,12 @@ public class Certificate extends AcmeResource {
                 throws AcmeException {
         LOG.debug("revoke");
 
-        Session session = login.getSession();
+        var session = login.getSession();
 
-        URL resUrl = session.resourceUrl(Resource.REVOKE_CERT);
+        var resUrl = session.resourceUrl(Resource.REVOKE_CERT);
 
-        try (Connection conn = session.connect()) {
-            JSONBuilder claims = new JSONBuilder();
+        try (var conn = session.connect()) {
+            var claims = new JSONBuilder();
             claims.putBase64("certificate", cert.getEncoded());
             if (reason != null) {
                 claims.put("reason", reason.getReasonCode());
@@ -214,10 +213,10 @@ public class Certificate extends AcmeResource {
             @Nullable RevocationReason reason) throws AcmeException {
         LOG.debug("revoke using the domain key pair");
 
-        URL resUrl = session.resourceUrl(Resource.REVOKE_CERT);
+        var resUrl = session.resourceUrl(Resource.REVOKE_CERT);
 
-        try (Connection conn = session.connect()) {
-            JSONBuilder claims = new JSONBuilder();
+        try (var conn = session.connect()) {
+            var claims = new JSONBuilder();
             claims.putBase64("certificate", cert.getEncoded());
             if (reason != null) {
                 claims.put("reason", reason.getReasonCode());

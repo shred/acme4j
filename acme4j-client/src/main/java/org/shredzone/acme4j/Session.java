@@ -80,18 +80,16 @@ public class Session {
             return;
         }
 
-        final URI localServerUri = serverUri;
-
-        Iterable<AcmeProvider> providers = ServiceLoader.load(AcmeProvider.class);
+        var providers = ServiceLoader.load(AcmeProvider.class);
         provider = StreamSupport.stream(providers.spliterator(), false)
-            .filter(p -> p.accepts(localServerUri))
+            .filter(p -> p.accepts(serverUri))
             .reduce((a, b) -> {
                     throw new IllegalArgumentException("Both ACME providers "
                         + a.getClass().getSimpleName() + " and "
                         + b.getClass().getSimpleName() + " accept "
-                        + localServerUri + ". Please check your classpath.");
+                        + serverUri + ". Please check your classpath.");
                 })
-            .orElseThrow(() -> new IllegalArgumentException("No ACME provider found for " + localServerUri));
+            .orElseThrow(() -> new IllegalArgumentException("No ACME provider found for " + serverUri));
     }
 
     /**
@@ -225,7 +223,7 @@ public class Session {
      */
     public URL resourceUrl(Resource resource) throws AcmeException {
         readDirectory();
-        URL result = resourceMap.get().get(Objects.requireNonNull(resource, "resource"));
+        var result = resourceMap.get().get(Objects.requireNonNull(resource, "resource"));
         if (result == null) {
             throw new AcmeException("Server does not offer " + resource.path());
         }
@@ -311,7 +309,7 @@ public class Session {
      * changed on the remote side.
      */
     private void readDirectory() throws AcmeException {
-        JSON directoryJson = provider().directory(this, getServerUri());
+        var directoryJson = provider().directory(this, getServerUri());
         if (directoryJson == null) {
             if (!hasDirectory()) {
                 throw new AcmeException("AcmeProvider did not provide a directory");
@@ -319,15 +317,15 @@ public class Session {
             return;
         }
 
-        Value meta = directoryJson.get("meta");
+        var meta = directoryJson.get("meta");
         if (meta.isPresent()) {
             metadata.set(new Metadata(meta.asObject()));
         } else {
             metadata.set(new Metadata(JSON.empty()));
         }
 
-        Map<Resource, URL> map = new EnumMap<>(Resource.class);
-        for (Resource res : Resource.values()) {
+        var map = new EnumMap<Resource, URL>(Resource.class);
+        for (var res : Resource.values()) {
             directoryJson.get(res.path())
                     .map(Value::asURL)
                     .ifPresent(url -> map.put(res, url));

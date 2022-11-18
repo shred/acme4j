@@ -41,7 +41,6 @@ import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
-import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.shredzone.acme4j.toolbox.TestUtils;
 
@@ -58,9 +57,9 @@ public class AbstractAcmeProviderTest {
      */
     @Test
     public void testConnect() {
-        final AtomicBoolean invoked = new AtomicBoolean();
+        var invoked = new AtomicBoolean();
 
-        AbstractAcmeProvider provider = new TestAbstractAcmeProvider() {
+        var provider = new TestAbstractAcmeProvider() {
             @Override
             protected HttpConnector createHttpConnector() {
                 invoked.set(true);
@@ -68,7 +67,7 @@ public class AbstractAcmeProviderTest {
             }
         };
 
-        Connection connection = provider.connect(SERVER_URI);
+        var connection = provider.connect(SERVER_URI);
         assertThat(connection).isNotNull();
         assertThat(connection).isInstanceOf(DefaultConnection.class);
         assertThat(invoked).isTrue();
@@ -79,13 +78,13 @@ public class AbstractAcmeProviderTest {
      */
     @Test
     public void testResources() throws AcmeException {
-        final Connection connection = mock(Connection.class);
-        final Session session = mock(Session.class);
+        var connection = mock(Connection.class);
+        var session = mock(Session.class);
 
         when(connection.readJsonResponse()).thenReturn(getJSON("directory"));
 
-        AbstractAcmeProvider provider = new TestAbstractAcmeProvider(connection);
-        JSON map = provider.directory(session, SERVER_URI);
+        var provider = new TestAbstractAcmeProvider(connection);
+        var map = provider.directory(session, SERVER_URI);
 
         assertThatJson(map.toString()).isEqualTo(TestUtils.getJSON("directory").toString());
 
@@ -103,11 +102,11 @@ public class AbstractAcmeProviderTest {
      */
     @Test
     public void testResourcesCacheControl() throws AcmeException {
-        ZonedDateTime lastModified = ZonedDateTime.now().minus(13, ChronoUnit.DAYS);
-        ZonedDateTime expiryDate = ZonedDateTime.now().plus(60, ChronoUnit.DAYS);
+        var lastModified = ZonedDateTime.now().minus(13, ChronoUnit.DAYS);
+        var expiryDate = ZonedDateTime.now().plus(60, ChronoUnit.DAYS);
 
-        final Connection connection = mock(Connection.class);
-        final Session session = mock(Session.class);
+        var connection = mock(Connection.class);
+        var session = mock(Session.class);
 
         when(connection.readJsonResponse()).thenReturn(getJSON("directory"));
         when(connection.getLastModified()).thenReturn(Optional.of(lastModified));
@@ -115,8 +114,8 @@ public class AbstractAcmeProviderTest {
         when(session.getDirectoryExpires()).thenReturn(null);
         when(session.getDirectoryLastModified()).thenReturn(null);
 
-        AbstractAcmeProvider provider = new TestAbstractAcmeProvider(connection);
-        JSON map = provider.directory(session, SERVER_URI);
+        var provider = new TestAbstractAcmeProvider(connection);
+        var map = provider.directory(session, SERVER_URI);
 
         assertThatJson(map.toString()).isEqualTo(TestUtils.getJSON("directory").toString());
 
@@ -140,15 +139,15 @@ public class AbstractAcmeProviderTest {
      */
     @Test
     public void testResourcesNotExprired() throws AcmeException {
-        ZonedDateTime expiryDate = ZonedDateTime.now().plus(60, ChronoUnit.DAYS);
+        var expiryDate = ZonedDateTime.now().plus(60, ChronoUnit.DAYS);
 
-        final Connection connection = mock(Connection.class);
-        final Session session = mock(Session.class);
+        var connection = mock(Connection.class);
+        var session = mock(Session.class);
 
         when(session.getDirectoryExpires()).thenReturn(expiryDate);
 
-        AbstractAcmeProvider provider = new TestAbstractAcmeProvider();
-        JSON map = provider.directory(session, SERVER_URI);
+        var provider = new TestAbstractAcmeProvider();
+        var map = provider.directory(session, SERVER_URI);
 
         assertThat(map).isNull();
 
@@ -163,19 +162,19 @@ public class AbstractAcmeProviderTest {
      */
     @Test
     public void testResourcesExprired() throws AcmeException {
-        ZonedDateTime expiryDate = ZonedDateTime.now().plus(60, ChronoUnit.DAYS);
-        ZonedDateTime pastExpiryDate = ZonedDateTime.now().minus(10, ChronoUnit.MINUTES);
+        var expiryDate = ZonedDateTime.now().plus(60, ChronoUnit.DAYS);
+        var pastExpiryDate = ZonedDateTime.now().minus(10, ChronoUnit.MINUTES);
 
-        final Connection connection = mock(Connection.class);
-        final Session session = mock(Session.class);
+        var connection = mock(Connection.class);
+        var session = mock(Session.class);
 
         when(connection.readJsonResponse()).thenReturn(getJSON("directory"));
         when(connection.getExpiration()).thenReturn(Optional.of(expiryDate));
         when(connection.getLastModified()).thenReturn(Optional.empty());
         when(session.getDirectoryExpires()).thenReturn(pastExpiryDate);
 
-        AbstractAcmeProvider provider = new TestAbstractAcmeProvider(connection);
-        JSON map = provider.directory(session, SERVER_URI);
+        var provider = new TestAbstractAcmeProvider(connection);
+        var map = provider.directory(session, SERVER_URI);
 
         assertThatJson(map.toString()).isEqualTo(TestUtils.getJSON("directory").toString());
 
@@ -199,18 +198,18 @@ public class AbstractAcmeProviderTest {
      */
     @Test
     public void testResourcesIfModifiedSince() throws AcmeException {
-        ZonedDateTime modifiedSinceDate = ZonedDateTime.now().minus(60, ChronoUnit.DAYS);
+        var modifiedSinceDate = ZonedDateTime.now().minus(60, ChronoUnit.DAYS);
 
-        final Connection connection = mock(Connection.class);
-        final Session session = mock(Session.class);
+        var connection = mock(Connection.class);
+        var session = mock(Session.class);
 
         when(connection.sendRequest(eq(RESOLVED_URL), eq(session), eq(modifiedSinceDate)))
                 .thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
         when(connection.getLastModified()).thenReturn(Optional.of(modifiedSinceDate));
         when(session.getDirectoryLastModified()).thenReturn(modifiedSinceDate);
 
-        AbstractAcmeProvider provider = new TestAbstractAcmeProvider(connection);
-        JSON map = provider.directory(session, SERVER_URI);
+        var provider = new TestAbstractAcmeProvider(connection);
+        var map = provider.directory(session, SERVER_URI);
 
         assertThat(map).isNull();
 
@@ -227,17 +226,17 @@ public class AbstractAcmeProviderTest {
      * Verify that HTTP errors are handled correctly.
      */
     @Test
-    public void testResourcesHttpError() throws AcmeException, IOException {
-        final HttpURLConnection conn = mock(HttpURLConnection.class);
-        final HttpConnector connector = mock(HttpConnector.class);
-        final Connection connection = new DefaultConnection(connector);
+    public void testResourcesHttpError() throws IOException {
+        var conn = mock(HttpURLConnection.class);
+        var connector = mock(HttpConnector.class);
+        var connection = new DefaultConnection(connector);
 
         when(connector.openConnection(any(), any())).thenReturn(conn);
         when(conn.getResponseCode()).thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
         when(conn.getResponseMessage()).thenReturn("Internal error");
 
-        AbstractAcmeProvider provider = new TestAbstractAcmeProvider(connection);
-        Session session = TestUtils.session(provider);
+        var provider = new TestAbstractAcmeProvider(connection);
+        var session = TestUtils.session(provider);
 
         assertThrows(AcmeException.class, () -> provider.directory(session, SERVER_URI));
     }
@@ -247,52 +246,50 @@ public class AbstractAcmeProviderTest {
      */
     @Test
     public void testCreateChallenge() {
-        Login login = mock(Login.class);
+        var login = mock(Login.class);
 
-        AbstractAcmeProvider provider = new TestAbstractAcmeProvider();
+        var provider = new TestAbstractAcmeProvider();
 
-        Challenge c1 = provider.createChallenge(login, getJSON("httpChallenge"));
+        var c1 = provider.createChallenge(login, getJSON("httpChallenge"));
         assertThat(c1).isNotNull();
         assertThat(c1).isInstanceOf(Http01Challenge.class);
 
-        Challenge c2 = provider.createChallenge(login, getJSON("httpChallenge"));
+        var c2 = provider.createChallenge(login, getJSON("httpChallenge"));
         assertThat(c2).isNotSameAs(c1);
 
-        Challenge c3 = provider.createChallenge(login, getJSON("dnsChallenge"));
+        var c3 = provider.createChallenge(login, getJSON("dnsChallenge"));
         assertThat(c3).isNotNull();
         assertThat(c3).isInstanceOf(Dns01Challenge.class);
 
-        Challenge c4 = provider.createChallenge(login, getJSON("tlsAlpnChallenge"));
+        var c4 = provider.createChallenge(login, getJSON("tlsAlpnChallenge"));
         assertThat(c4).isNotNull();
         assertThat(c4).isInstanceOf(TlsAlpn01Challenge.class);
 
-        JSON json6 = new JSONBuilder()
+        var json6 = new JSONBuilder()
                     .put("type", "foobar-01")
                     .put("url", "https://example.com/some/challenge")
                     .toJSON();
-        Challenge c6 = provider.createChallenge(login, json6);
+        var c6 = provider.createChallenge(login, json6);
         assertThat(c6).isNotNull();
         assertThat(c6).isInstanceOf(Challenge.class);
 
-        JSON json7 = new JSONBuilder()
+        var json7 = new JSONBuilder()
                         .put("type", "foobar-01")
                         .put("token", "abc123")
                         .put("url", "https://example.com/some/challenge")
                         .toJSON();
-        Challenge c7 = provider.createChallenge(login, json7);
+        var c7 = provider.createChallenge(login, json7);
         assertThat(c7).isNotNull();
         assertThat(c7).isInstanceOf(TokenChallenge.class);
 
         assertThrows(AcmeProtocolException.class, () -> {
-            JSON json8 = new JSONBuilder()
+            var json8 = new JSONBuilder()
                     .put("url", "https://example.com/some/challenge")
                     .toJSON();
             provider.createChallenge(login, json8);
         });
 
-        assertThrows(NullPointerException.class, () -> {
-            provider.createChallenge(login, null);
-        });
+        assertThrows(NullPointerException.class, () -> provider.createChallenge(login, null));
     }
 
     private static class TestAbstractAcmeProvider extends AbstractAcmeProvider {

@@ -16,7 +16,6 @@ package org.shredzone.acme4j;
 import static java.util.Objects.requireNonNull;
 
 import java.net.URI;
-import java.net.URL;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +24,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
-import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -158,7 +156,7 @@ public class AccountBuilder {
      * @return itself
      */
     public AccountBuilder withKeyIdentifier(String kid, String encodedMacKey) {
-        byte[] encodedKey = AcmeUtils.base64UrlDecode(requireNonNull(encodedMacKey, "encodedMacKey"));
+        var encodedKey = AcmeUtils.base64UrlDecode(requireNonNull(encodedMacKey, "encodedMacKey"));
         return withKeyIdentifier(kid, new SecretKeySpec(encodedKey, "HMAC"));
     }
 
@@ -191,10 +189,10 @@ public class AccountBuilder {
 
         LOG.debug("create");
 
-        try (Connection conn = session.connect()) {
-            URL resourceUrl = session.resourceUrl(Resource.NEW_ACCOUNT);
+        try (var conn = session.connect()) {
+            var resourceUrl = session.resourceUrl(Resource.NEW_ACCOUNT);
 
-            JSONBuilder claims = new JSONBuilder();
+            var claims = new JSONBuilder();
             if (!contacts.isEmpty()) {
                 claims.put("contact", contacts);
             }
@@ -211,12 +209,12 @@ public class AccountBuilder {
 
             conn.sendSignedRequest(resourceUrl, claims, session, keyPair);
 
-            URL location = conn.getLocation();
+            var location = conn.getLocation();
             if (location == null) {
                 throw new AcmeProtocolException("Server did not provide an account location");
             }
 
-            Login login = new Login(location, keyPair, session);
+            var login = new Login(location, keyPair, session);
             login.getAccount().setJSON(conn.readJsonResponse());
             return login;
         }

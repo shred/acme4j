@@ -33,7 +33,6 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
@@ -72,11 +71,11 @@ public class CSRBuilderTest {
      */
     @Test
     public void testGenerate() throws IOException {
-        CSRBuilder builder = createBuilderWithValues();
+        var builder = createBuilderWithValues();
 
         builder.sign(testKey);
 
-        PKCS10CertificationRequest csr = builder.getCSR();
+        var csr = builder.getCSR();
         assertThat(csr).isNotNull();
         assertThat(csr.getEncoded()).isEqualTo(builder.getEncoded());
 
@@ -89,11 +88,11 @@ public class CSRBuilderTest {
      */
     @Test
     public void testECCGenerate() throws IOException {
-        CSRBuilder builder = createBuilderWithValues();
+        var builder = createBuilderWithValues();
 
         builder.sign(testEcKey);
 
-        PKCS10CertificationRequest csr = builder.getCSR();
+        var csr = builder.getCSR();
         assertThat(csr).isNotNull();
         assertThat(csr.getEncoded()).isEqualTo(builder.getEncoded());
 
@@ -105,9 +104,9 @@ public class CSRBuilderTest {
      * Make sure an exception is thrown when no domain is set.
      */
     @Test
-    public void testNoDomain() throws IOException {
-        IllegalStateException ise = assertThrows(IllegalStateException.class, () -> {
-            CSRBuilder builder = new CSRBuilder();
+    public void testNoDomain() {
+        var ise = assertThrows(IllegalStateException.class, () -> {
+            var builder = new CSRBuilder();
             builder.sign(testKey);
         });
         assertThat(ise.getMessage())
@@ -119,8 +118,8 @@ public class CSRBuilderTest {
      */
     @Test
     public void testUnknownType() {
-        IllegalArgumentException iae = assertThrows(IllegalArgumentException.class, () -> {
-            CSRBuilder builder = new CSRBuilder();
+        var iae = assertThrows(IllegalArgumentException.class, () -> {
+            var builder = new CSRBuilder();
             builder.addIdentifier(new Identifier("UnKnOwN", "123"));
         });
         assertThat(iae.getMessage())
@@ -131,8 +130,8 @@ public class CSRBuilderTest {
      * Make sure all getters will fail if the CSR is not signed.
      */
     @Test
-    public void testNoSign() throws IOException {
-        CSRBuilder builder = new CSRBuilder();
+    public void testNoSign() {
+        var builder = new CSRBuilder();
 
         assertThatExceptionOfType(IllegalStateException.class)
             .isThrownBy(builder::getCSR)
@@ -159,12 +158,10 @@ public class CSRBuilderTest {
      * attributes being added. If a common name is set, it should
      * be handled in the same way when it's added by using
      * <code>addDomain</code>
-     * @throws Exception Will be thrown if there was an error
-     * while performing the test
      */
     @Test
-    public void testAddAttrValues() throws Exception {
-        CSRBuilder builder = new CSRBuilder();
+    public void testAddAttrValues() {
+        var builder = new CSRBuilder();
         String invAttNameExMessage = assertThrows(IllegalArgumentException.class,
                 () -> X500Name.getDefaultStyle().attrNameToOID("UNKNOWNATT")).getMessage();
         
@@ -207,7 +204,7 @@ public class CSRBuilderTest {
     }
 
     private CSRBuilder createBuilderWithValues() throws UnknownHostException {
-        CSRBuilder builder = new CSRBuilder();
+        var builder = new CSRBuilder();
         builder.addDomain("abc.de");
         builder.addDomain("fg.hi");
         builder.addDomains("jklm.no", "pqr.st");
@@ -246,8 +243,8 @@ public class CSRBuilderTest {
      * Bouncy Castle encodes it properly.
      */
     private void csrTest(PKCS10CertificationRequest csr) {
-        X500Name name = csr.getSubject();
-        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+        var name = csr.getSubject();
+        try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(name.getRDNs(BCStyle.CN)).as("CN")
                     .extracting(rdn -> rdn.getFirst().getValue().toString())
                     .contains("abc.de");
@@ -268,13 +265,13 @@ public class CSRBuilderTest {
                     .contains("ABC");
         }
 
-        Attribute[] attr = csr.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+        var attr = csr.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
         assertThat(attr).hasSize(1);
 
-        ASN1Encodable[] extensions = attr[0].getAttrValues().toArray();
+        var extensions = attr[0].getAttrValues().toArray();
         assertThat(extensions).hasSize(1);
 
-        GeneralNames names = GeneralNames.fromExtensions((Extensions) extensions[0], Extension.subjectAlternativeName);
+        var names = GeneralNames.fromExtensions((Extensions) extensions[0], Extension.subjectAlternativeName);
         assertThat(names.getNames())
                 .filteredOn(gn -> gn.getTagNo() == GeneralName.dNSName)
                 .extracting(gn -> ASN1IA5String.getInstance(gn.getName()).getString())
@@ -296,7 +293,7 @@ public class CSRBuilderTest {
     private void writerTest(CSRBuilder builder) throws IOException {
         // Write CSR to PEM
         String pem;
-        try (StringWriter out = new StringWriter()) {
+        try (var out = new StringWriter()) {
             builder.write(out);
             pem = out.toString();
         }
@@ -309,7 +306,7 @@ public class CSRBuilderTest {
 
         // Read CSR from PEM
         PKCS10CertificationRequest readCsr;
-        try (PEMParser parser = new PEMParser(new StringReader(pem))) {
+        try (var parser = new PEMParser(new StringReader(pem))) {
             readCsr = (PKCS10CertificationRequest) parser.readObject();
         }
 
@@ -319,7 +316,7 @@ public class CSRBuilderTest {
 
         // OutputStream is identical?
         byte[] pemBytes;
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try (var baos = new ByteArrayOutputStream()) {
             builder.write(baos);
             pemBytes = baos.toByteArray();
         }

@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Objects;
 
-import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
@@ -55,7 +54,7 @@ public class BammBammClient {
      *            Challenge to respond with
      */
     public void httpAddToken(String token, String challenge) throws IOException {
-        JSONBuilder jb = new JSONBuilder();
+        var jb = new JSONBuilder();
         jb.put("token", token);
         jb.put("content", challenge);
         sendRequest("add-http01", jb.toString());
@@ -68,7 +67,7 @@ public class BammBammClient {
      *            Token to remove
      */
     public void httpRemoveToken(String token) throws IOException {
-        JSONBuilder jb = new JSONBuilder();
+        var jb = new JSONBuilder();
         jb.put("token", token);
         sendRequest("del-http01", jb.toString());
     }
@@ -84,7 +83,7 @@ public class BammBammClient {
      *            and the IP will be used.
      */
     public void dnsAddARecord(String domain, String ip) throws IOException {
-        JSONBuilder jb = new JSONBuilder();
+        var jb = new JSONBuilder();
         jb.put("host", domain);
         jb.array("addresses", Collections.singletonList(ip));
         sendRequest("add-a", jb.toString());
@@ -97,7 +96,7 @@ public class BammBammClient {
      *            Domain to remove the A Record from
      */
     public void dnsRemoveARecord(String domain) throws IOException {
-        JSONBuilder jb = new JSONBuilder();
+        var jb = new JSONBuilder();
         jb.put("host", domain);
         sendRequest("clear-a", jb.toString());
     }
@@ -112,7 +111,7 @@ public class BammBammClient {
      *            TXT record to add
      */
     public void dnsAddTxtRecord(String domain, String txt) throws IOException {
-        JSONBuilder jb = new JSONBuilder();
+        var jb = new JSONBuilder();
         jb.put("host", domain);
         jb.put("value", txt);
         sendRequest("set-txt", jb.toString());
@@ -125,7 +124,7 @@ public class BammBammClient {
      *            Domain to remove the TXT Record from
      */
     public void dnsRemoveTxtRecord(String domain) throws IOException {
-        JSONBuilder jb = new JSONBuilder();
+        var jb = new JSONBuilder();
         jb.put("host", domain + '.');
         sendRequest("clear-txt", jb.toString());
     }
@@ -141,7 +140,7 @@ public class BammBammClient {
      * @since 2.9
      */
     public void dnsAddCnameRecord(String domain, String cname) throws IOException {
-        JSONBuilder jb = new JSONBuilder();
+        var jb = new JSONBuilder();
         jb.put("host", domain);
         jb.put("target", cname);
         sendRequest("set-cname", jb.toString());
@@ -155,7 +154,7 @@ public class BammBammClient {
      * @since 2.9
      */
     public void dnsRemoveCnameRecord(String domain) throws IOException {
-        JSONBuilder jb = new JSONBuilder();
+        var jb = new JSONBuilder();
         jb.put("host", domain);
         sendRequest("clear-cname", jb.toString());
     }
@@ -168,7 +167,7 @@ public class BammBammClient {
      * @since 2.9
      */
     public void dnsAddServFailRecord(String domain) throws IOException {
-        JSONBuilder jb = new JSONBuilder();
+        var jb = new JSONBuilder();
         jb.put("host", domain);
         sendRequest("set-servfail", jb.toString());
     }
@@ -181,7 +180,7 @@ public class BammBammClient {
      * @since 2.9
      */
     public void dnsRemoveServFailRecord(String domain) throws IOException {
-        JSONBuilder jb = new JSONBuilder();
+        var jb = new JSONBuilder();
         jb.put("host", domain);
         sendRequest("clear-servfail", jb.toString());
     }
@@ -195,7 +194,7 @@ public class BammBammClient {
      *            Key authorization to be used for validation
      */
     public void tlsAlpnAddCertificate(String domain, String keyauth) throws IOException {
-        JSONBuilder jb = new JSONBuilder();
+        var jb = new JSONBuilder();
         jb.put("host", domain);
         jb.put("content", keyauth);
         sendRequest("add-tlsalpn01", jb.toString());
@@ -208,7 +207,7 @@ public class BammBammClient {
      *            Certificate domain to be removed
      */
     public void tlsAlpnRemoveCertificate(String domain) throws IOException {
-        JSONBuilder jb = new JSONBuilder();
+        var jb = new JSONBuilder();
         jb.put("host", domain);
         sendRequest("del-tlsalpn01", jb.toString());
     }
@@ -223,10 +222,10 @@ public class BammBammClient {
      */
     private void sendRequest(String call, String body) throws IOException {
         try {
-            HttpPost httppost = new HttpPost(baseUrl + call);
+            var httppost = new HttpPost(baseUrl + call);
             httppost.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
 
-            HttpResponse response = CLIENT.execute(httppost);
+            var response = CLIENT.execute(httppost);
 
             EntityUtils.consume(response.getEntity());
 

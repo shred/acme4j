@@ -20,11 +20,8 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.net.URL;
-import java.security.KeyPair;
-import java.security.PublicKey;
 import java.util.Base64;
 import java.util.HashMap;
-import java.util.Map;
 
 import javax.crypto.SecretKey;
 
@@ -47,22 +44,22 @@ public class JoseUtilsTest {
      */
     @Test
     public void testCreateJosePostRequest() throws Exception {
-        URL resourceUrl = url("http://example.com/acme/resource");
-        KeyPair accountKey = TestUtils.createKeyPair();
-        String nonce = URL_ENCODER.encodeToString("foo-nonce-1-foo".getBytes());
-        JSONBuilder payload = new JSONBuilder();
+        var resourceUrl = url("http://example.com/acme/resource");
+        var accountKey = TestUtils.createKeyPair();
+        var nonce = URL_ENCODER.encodeToString("foo-nonce-1-foo".getBytes());
+        var payload = new JSONBuilder();
         payload.put("foo", 123);
         payload.put("bar", "a-string");
 
-        Map<String, Object> jose = JoseUtils
+        var jose = JoseUtils
                 .createJoseRequest(resourceUrl, accountKey, payload, nonce, TestUtils.ACCOUNT_URL)
                 .toMap();
 
-        String encodedHeader = jose.get("protected").toString();
-        String encodedSignature = jose.get("signature").toString();
-        String encodedPayload = jose.get("payload").toString();
+        var encodedHeader = jose.get("protected").toString();
+        var encodedSignature = jose.get("signature").toString();
+        var encodedPayload = jose.get("payload").toString();
 
-        StringBuilder expectedHeader = new StringBuilder();
+        var expectedHeader = new StringBuilder();
         expectedHeader.append('{');
         expectedHeader.append("\"nonce\":\"").append(nonce).append("\",");
         expectedHeader.append("\"url\":\"").append(resourceUrl).append("\",");
@@ -76,7 +73,7 @@ public class JoseUtilsTest {
                 .isEqualTo("{\"foo\":123,\"bar\":\"a-string\"}");
         assertThat(encodedSignature).isNotEmpty();
 
-        JsonWebSignature jws = new JsonWebSignature();
+        var jws = new JsonWebSignature();
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
         jws.setKey(accountKey.getPublic());
         assertThat(jws.verifySignature()).isTrue();
@@ -87,19 +84,19 @@ public class JoseUtilsTest {
      */
     @Test
     public void testCreateJosePostAsGetRequest() throws Exception {
-        URL resourceUrl = url("http://example.com/acme/resource");
-        KeyPair accountKey = TestUtils.createKeyPair();
-        String nonce = URL_ENCODER.encodeToString("foo-nonce-1-foo".getBytes());
+        var resourceUrl = url("http://example.com/acme/resource");
+        var accountKey = TestUtils.createKeyPair();
+        var nonce = URL_ENCODER.encodeToString("foo-nonce-1-foo".getBytes());
 
-        Map<String, Object> jose = JoseUtils
+        var jose = JoseUtils
                 .createJoseRequest(resourceUrl, accountKey, null, nonce, TestUtils.ACCOUNT_URL)
                 .toMap();
 
-        String encodedHeader = jose.get("protected").toString();
-        String encodedSignature = jose.get("signature").toString();
-        String encodedPayload = jose.get("payload").toString();
+        var encodedHeader = jose.get("protected").toString();
+        var encodedSignature = jose.get("signature").toString();
+        var encodedPayload = jose.get("payload").toString();
 
-        StringBuilder expectedHeader = new StringBuilder();
+        var expectedHeader = new StringBuilder();
         expectedHeader.append('{');
         expectedHeader.append("\"nonce\":\"").append(nonce).append("\",");
         expectedHeader.append("\"url\":\"").append(resourceUrl).append("\",");
@@ -112,7 +109,7 @@ public class JoseUtilsTest {
         assertThat(new String(URL_DECODER.decode(encodedPayload), UTF_8)).isEmpty();
         assertThat(encodedSignature).isNotEmpty();
 
-        JsonWebSignature jws = new JsonWebSignature();
+        var jws = new JsonWebSignature();
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
         jws.setKey(accountKey.getPublic());
         assertThat(jws.verifySignature()).isTrue();
@@ -123,21 +120,21 @@ public class JoseUtilsTest {
      */
     @Test
     public void testCreateJoseKeyChangeRequest() throws Exception {
-        URL resourceUrl = url("http://example.com/acme/resource");
-        KeyPair accountKey = TestUtils.createKeyPair();
-        JSONBuilder payload = new JSONBuilder();
+        var resourceUrl = url("http://example.com/acme/resource");
+        var accountKey = TestUtils.createKeyPair();
+        var payload = new JSONBuilder();
         payload.put("foo", 123);
         payload.put("bar", "a-string");
 
-        Map<String, Object> jose = JoseUtils
+        var jose = JoseUtils
                 .createJoseRequest(resourceUrl, accountKey, payload, null, null)
                 .toMap();
 
-        String encodedHeader = jose.get("protected").toString();
-        String encodedSignature = jose.get("signature").toString();
-        String encodedPayload = jose.get("payload").toString();
+        var encodedHeader = jose.get("protected").toString();
+        var encodedSignature = jose.get("signature").toString();
+        var encodedPayload = jose.get("payload").toString();
 
-        StringBuilder expectedHeader = new StringBuilder();
+        var expectedHeader = new StringBuilder();
         expectedHeader.append('{');
         expectedHeader.append("\"url\":\"").append(resourceUrl).append("\",");
         expectedHeader.append("\"alg\":\"RS256\",");
@@ -153,7 +150,7 @@ public class JoseUtilsTest {
                 .isEqualTo("{\"foo\":123,\"bar\":\"a-string\"}");
         assertThat(encodedSignature).isNotEmpty();
 
-        JsonWebSignature jws = new JsonWebSignature();
+        var jws = new JsonWebSignature();
         jws.setCompactSerialization(CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature));
         jws.setKey(accountKey.getPublic());
         assertThat(jws.verifySignature()).isTrue();
@@ -164,18 +161,18 @@ public class JoseUtilsTest {
      */
     @Test
     public void testCreateExternalAccountBinding() throws Exception {
-        KeyPair accountKey = TestUtils.createKeyPair();
-        String keyIdentifier = "NCC-1701";
-        SecretKey macKey = TestUtils.createSecretKey("SHA-256");
-        URL resourceUrl = url("http://example.com/acme/resource");
+        var accountKey = TestUtils.createKeyPair();
+        var keyIdentifier = "NCC-1701";
+        var macKey = TestUtils.createSecretKey("SHA-256");
+        var resourceUrl = url("http://example.com/acme/resource");
 
-        Map<String, Object> binding = JoseUtils.createExternalAccountBinding(
+        var binding = JoseUtils.createExternalAccountBinding(
                 keyIdentifier, accountKey.getPublic(), macKey, resourceUrl);
 
-        String encodedHeader = binding.get("protected").toString();
-        String encodedSignature = binding.get("signature").toString();
-        String encodedPayload = binding.get("payload").toString();
-        String serialized = CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature);
+        var encodedHeader = binding.get("protected").toString();
+        var encodedSignature = binding.get("signature").toString();
+        var encodedPayload = binding.get("payload").toString();
+        var serialized = CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature);
 
         assertExternalAccountBinding(serialized, resourceUrl, keyIdentifier, macKey);
     }
@@ -185,7 +182,7 @@ public class JoseUtilsTest {
      */
     @Test
     public void testPublicKeyToJWK() throws Exception {
-        Map<String, Object> json = JoseUtils.publicKeyToJWK(TestUtils.createKeyPair().getPublic());
+        var json = JoseUtils.publicKeyToJWK(TestUtils.createKeyPair().getPublic());
         assertThat(json).hasSize(3);
         assertThat(json.get("kty")).isEqualTo(TestUtils.KTY);
         assertThat(json.get("n")).isEqualTo(TestUtils.N);
@@ -197,11 +194,11 @@ public class JoseUtilsTest {
      */
     @Test
     public void testJWKToPublicKey() throws Exception {
-        Map<String, Object> json = new HashMap<>();
+        var json = new HashMap<String, Object>();
         json.put("kty", TestUtils.KTY);
         json.put("n", TestUtils.N);
         json.put("e", TestUtils.E);
-        PublicKey key = JoseUtils.jwkToPublicKey(json);
+        var key = JoseUtils.jwkToPublicKey(json);
         assertThat(key.getEncoded()).isEqualTo(TestUtils.createKeyPair().getPublic().getEncoded());
     }
 
@@ -210,8 +207,8 @@ public class JoseUtilsTest {
      */
     @Test
     public void testThumbprint() throws Exception {
-        byte[] thumb = JoseUtils.thumbprint(TestUtils.createKeyPair().getPublic());
-        String encoded = Base64.getUrlEncoder().withoutPadding().encodeToString(thumb);
+        var thumb = JoseUtils.thumbprint(TestUtils.createKeyPair().getPublic());
+        var encoded = Base64.getUrlEncoder().withoutPadding().encodeToString(thumb);
         assertThat(encoded).isEqualTo(TestUtils.THUMBPRINT);
     }
 
@@ -220,10 +217,10 @@ public class JoseUtilsTest {
      */
     @Test
     public void testRsaKey() throws Exception {
-        KeyPair rsaKeyPair = TestUtils.createKeyPair();
-        final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(rsaKeyPair.getPublic());
+        var rsaKeyPair = TestUtils.createKeyPair();
+        var jwk = PublicJsonWebKey.Factory.newPublicJwk(rsaKeyPair.getPublic());
 
-        String type = JoseUtils.keyAlgorithm(jwk);
+        var type = JoseUtils.keyAlgorithm(jwk);
         assertThat(type).isEqualTo("RS256");
     }
 
@@ -232,10 +229,10 @@ public class JoseUtilsTest {
      */
     @Test
     public void testP256ECKey() throws Exception {
-        KeyPair ecKeyPair = TestUtils.createECKeyPair("secp256r1");
-        final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(ecKeyPair.getPublic());
+        var ecKeyPair = TestUtils.createECKeyPair("secp256r1");
+        var jwk = PublicJsonWebKey.Factory.newPublicJwk(ecKeyPair.getPublic());
 
-        String type = JoseUtils.keyAlgorithm(jwk);
+        var type = JoseUtils.keyAlgorithm(jwk);
         assertThat(type).isEqualTo("ES256");
     }
 
@@ -244,10 +241,10 @@ public class JoseUtilsTest {
      */
     @Test
     public void testP384ECKey() throws Exception {
-        KeyPair ecKeyPair = TestUtils.createECKeyPair("secp384r1");
-        final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(ecKeyPair.getPublic());
+        var ecKeyPair = TestUtils.createECKeyPair("secp384r1");
+        var jwk = PublicJsonWebKey.Factory.newPublicJwk(ecKeyPair.getPublic());
 
-        String type = JoseUtils.keyAlgorithm(jwk);
+        var type = JoseUtils.keyAlgorithm(jwk);
         assertThat(type).isEqualTo("ES384");
     }
 
@@ -256,10 +253,10 @@ public class JoseUtilsTest {
      */
     @Test
     public void testP521ECKey() throws Exception {
-        KeyPair ecKeyPair = TestUtils.createECKeyPair("secp521r1");
-        final PublicJsonWebKey jwk = PublicJsonWebKey.Factory.newPublicJwk(ecKeyPair.getPublic());
+        var ecKeyPair = TestUtils.createECKeyPair("secp521r1");
+        var jwk = PublicJsonWebKey.Factory.newPublicJwk(ecKeyPair.getPublic());
 
-        String type = JoseUtils.keyAlgorithm(jwk);
+        var type = JoseUtils.keyAlgorithm(jwk);
         assertThat(type).isEqualTo("ES512");
     }
 
@@ -289,7 +286,7 @@ public class JoseUtilsTest {
     public static void assertExternalAccountBinding(String serialized, URL resourceUrl,
                                                     String keyIdentifier, SecretKey macKey) {
         try {
-            JsonWebSignature jws = new JsonWebSignature();
+            var jws = new JsonWebSignature();
             jws.setCompactSerialization(serialized);
             jws.setKey(macKey);
             assertThat(jws.verifySignature()).isTrue();
@@ -298,8 +295,8 @@ public class JoseUtilsTest {
             assertThat(jws.getHeader("kid")).isEqualTo(keyIdentifier);
             assertThat(jws.getHeader("alg")).isEqualTo("HS256");
 
-            String decodedPayload = jws.getPayload();
-            StringBuilder expectedPayload = new StringBuilder();
+            var decodedPayload = jws.getPayload();
+            var expectedPayload = new StringBuilder();
             expectedPayload.append('{');
             expectedPayload.append("\"kty\":\"").append(TestUtils.KTY).append("\",");
             expectedPayload.append("\"e\":\"").append(TestUtils.E).append("\",");

@@ -30,7 +30,6 @@ import java.time.temporal.ChronoUnit;
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Login;
-import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -51,10 +50,10 @@ public class ChallengeTest {
      */
     @Test
     public void testUnmarshal() {
-        Challenge challenge = new Challenge(TestUtils.login(), getJSON("genericChallenge"));
+        var challenge = new Challenge(TestUtils.login(), getJSON("genericChallenge"));
 
         // Test unmarshalled values
-        try (AutoCloseableSoftAssertions softly = new AutoCloseableSoftAssertions()) {
+        try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(challenge.getType()).isEqualTo("generic-01");
             softly.assertThat(challenge.getStatus()).isEqualTo(Status.INVALID);
             softly.assertThat(challenge.getLocation()).isEqualTo(url("http://example.com/challenge/123"));
@@ -62,7 +61,7 @@ public class ChallengeTest {
             softly.assertThat(challenge.getJSON().get("type").asString()).isEqualTo("generic-01");
             softly.assertThat(challenge.getJSON().get("url").asURL()).isEqualTo(url("http://example.com/challenge/123"));
 
-            Problem error = challenge.getError();
+            var error = challenge.getError();
             softly.assertThat(error).isNotNull();
             softly.assertThat(error.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:incorrectResponse"));
             softly.assertThat(error.getDetail()).isEqualTo("bad token");
@@ -75,9 +74,9 @@ public class ChallengeTest {
      */
     @Test
     public void testRespond() {
-        Challenge challenge = new Challenge(TestUtils.login(), getJSON("genericChallenge"));
+        var challenge = new Challenge(TestUtils.login(), getJSON("genericChallenge"));
 
-        JSONBuilder response = new JSONBuilder();
+        var response = new JSONBuilder();
         challenge.prepareResponse(response);
 
         assertThatJson(response.toString()).isEqualTo("{}");
@@ -98,7 +97,7 @@ public class ChallengeTest {
      */
     @Test
     public void testTrigger() throws Exception {
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
                 assertThat(url).isEqualTo(locationUrl);
@@ -113,9 +112,9 @@ public class ChallengeTest {
             }
         };
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
-        Http01Challenge challenge = new Http01Challenge(login, getJSON("triggerHttpChallenge"));
+        var challenge = new Http01Challenge(login, getJSON("triggerHttpChallenge"));
 
         challenge.trigger();
 
@@ -130,7 +129,7 @@ public class ChallengeTest {
      */
     @Test
     public void testUpdate() throws Exception {
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
                 assertThat(url).isEqualTo(locationUrl);
@@ -148,9 +147,9 @@ public class ChallengeTest {
             }
         };
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
-        Challenge challenge = new Http01Challenge(login, getJSON("triggerHttpChallengeResponse"));
+        var challenge = new Http01Challenge(login, getJSON("triggerHttpChallengeResponse"));
 
         challenge.update();
 
@@ -165,9 +164,9 @@ public class ChallengeTest {
      */
     @Test
     public void testUpdateRetryAfter() throws Exception {
-        final Instant retryAfter = Instant.now().plus(Duration.ofSeconds(30));
+        var retryAfter = Instant.now().plus(Duration.ofSeconds(30));
 
-        TestableConnectionProvider provider = new TestableConnectionProvider() {
+        var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedPostAsGetRequest(URL url, Login login) {
                 assertThat(url).isEqualTo(locationUrl);
@@ -186,9 +185,9 @@ public class ChallengeTest {
             }
         };
 
-        Login login = provider.createLogin();
+        var login = provider.createLogin();
 
-        Challenge challenge = new Http01Challenge(login, getJSON("triggerHttpChallengeResponse"));
+        var challenge = new Http01Challenge(login, getJSON("triggerHttpChallengeResponse"));
         assertThrows(AcmeRetryAfterException.class, challenge::update);
 
         assertThat(challenge.getStatus()).isEqualTo(Status.VALID);

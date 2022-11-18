@@ -41,14 +41,14 @@ public class HttpChallengeTest {
      */
     @Test
     public void testHttpChallenge() {
-        Http01Challenge challenge = new Http01Challenge(login, getJSON("httpChallenge"));
+        var challenge = new Http01Challenge(login, getJSON("httpChallenge"));
 
         assertThat(challenge.getType()).isEqualTo(Http01Challenge.TYPE);
         assertThat(challenge.getStatus()).isEqualTo(Status.PENDING);
         assertThat(challenge.getToken()).isEqualTo(TOKEN);
         assertThat(challenge.getAuthorization()).isEqualTo(KEY_AUTHORIZATION);
 
-        JSONBuilder response = new JSONBuilder();
+        var response = new JSONBuilder();
         challenge.prepareResponse(response);
 
         assertThatJson(response.toString()).isEqualTo("{}");

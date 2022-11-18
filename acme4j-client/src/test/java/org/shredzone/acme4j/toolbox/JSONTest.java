@@ -22,23 +22,17 @@ import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.net.URL;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
-import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON.Value;
@@ -55,7 +49,7 @@ public class JSONTest {
      */
     @Test
     public void testEmpty() {
-        JSON empty = JSON.empty();
+        var empty = JSON.empty();
         assertThat(empty.toString()).isEqualTo("{}");
         assertThat(empty.toMap().keySet()).isEmpty();
     }
@@ -67,18 +61,18 @@ public class JSONTest {
     public void testParsers() throws IOException {
         String json = "{\"foo\":\"a-text\",\n\"bar\":123}";
 
-        JSON fromString = JSON.parse(json);
+        var fromString = JSON.parse(json);
         assertThatJson(fromString.toString()).isEqualTo(json);
-        Map<String, Object> map = fromString.toMap();
+        var map = fromString.toMap();
         assertThat(map).hasSize(2);
         assertThat(map.keySet()).containsExactlyInAnyOrder("foo", "bar");
         assertThat(map.get("foo")).isEqualTo("a-text");
         assertThat(map.get("bar")).isEqualTo(123L);
 
-        try (InputStream in = new ByteArrayInputStream(json.getBytes(UTF_8))) {
-            JSON fromStream = JSON.parse(in);
+        try (var in = new ByteArrayInputStream(json.getBytes(UTF_8))) {
+            var fromStream = JSON.parse(in);
             assertThatJson(fromStream.toString()).isEqualTo(json);
-            Map<String, Object> map2 = fromStream.toMap();
+            var map2 = fromStream.toMap();
             assertThat(map2).hasSize(2);
             assertThat(map2.keySet()).containsExactlyInAnyOrder("foo", "bar");
             assertThat(map2.get("foo")).isEqualTo("a-text");
@@ -101,7 +95,7 @@ public class JSONTest {
      */
     @Test
     public void testObject() {
-        JSON json = TestUtils.getJSON("datatypes");
+        var json = TestUtils.getJSON("datatypes");
 
         assertThat(json.keySet()).containsExactlyInAnyOrder(
                     "text", "number", "boolean", "uri", "url", "date", "array",
@@ -117,8 +111,8 @@ public class JSONTest {
      */
     @Test
     public void testArray() {
-        JSON json = TestUtils.getJSON("datatypes");
-        JSON.Array array = json.get("array").asArray();
+        var json = TestUtils.getJSON("datatypes");
+        var array = json.get("array").asArray();
 
         assertThat(array.isEmpty()).isFalse();
         assertThat(array).hasSize(4).doesNotContainNull();
@@ -129,8 +123,8 @@ public class JSONTest {
      */
     @Test
     public void testEmptyArray() {
-        JSON json = TestUtils.getJSON("datatypes");
-        JSON.Array array = json.get("missingArray").asArray();
+        var json = TestUtils.getJSON("datatypes");
+        var array = json.get("missingArray").asArray();
 
         assertThat(array.isEmpty()).isTrue();
         assertThat(array).hasSize(0);
@@ -142,10 +136,10 @@ public class JSONTest {
      */
     @Test
     public void testArrayIterator() {
-        JSON json = TestUtils.getJSON("datatypes");
-        JSON.Array array = json.get("array").asArray();
+        var json = TestUtils.getJSON("datatypes");
+        var array = json.get("array").asArray();
 
-        Iterator<JSON.Value> it = array.iterator();
+        var it = array.iterator();
         assertThat(it).isNotNull();
 
         assertThat(it.hasNext()).isTrue();
@@ -170,15 +164,14 @@ public class JSONTest {
      */
     @Test
     public void testArrayStream() {
-        JSON json = TestUtils.getJSON("datatypes");
-        JSON.Array array = json.get("array").asArray();
+        var json = TestUtils.getJSON("datatypes");
+        var array = json.get("array").asArray();
 
-        List<JSON.Value> streamValues = array.stream().collect(Collectors.toList());
+        var streamValues = array.stream().collect(Collectors.toList());
 
-        List<JSON.Value> iteratorValues = new ArrayList<>();
-        Iterator<JSON.Value> it = array.iterator();
-        while (it.hasNext()) {
-            iteratorValues.add(it.next());
+        var iteratorValues = new ArrayList<JSON.Value>();
+        for (var value : array) {
+            iteratorValues.add(value);
         }
 
         assertThat(streamValues).containsAll(iteratorValues);
@@ -189,9 +182,9 @@ public class JSONTest {
      */
     @Test
     public void testGetter() {
-        Instant date = LocalDate.of(2016, 1, 8).atStartOfDay(ZoneId.of("UTC")).toInstant();
+        var date = LocalDate.of(2016, 1, 8).atStartOfDay(ZoneId.of("UTC")).toInstant();
 
-        JSON json = TestUtils.getJSON("datatypes");
+        var json = TestUtils.getJSON("datatypes");
 
         assertThat(json.get("text").asString()).isEqualTo("lorem ipsum");
         assertThat(json.get("number").asInt()).isEqualTo(123);
@@ -207,22 +200,22 @@ public class JSONTest {
         assertThat(json.get("text").optional().isPresent()).isTrue();
         assertThat(json.get("text").map(Value::asString).isPresent()).isTrue();
 
-        JSON.Array array = json.get("array").asArray();
+        var array = json.get("array").asArray();
         assertThat(array.get(0).asString()).isEqualTo("foo");
         assertThat(array.get(1).asInt()).isEqualTo(987);
 
-        JSON.Array array2 = array.get(2).asArray();
+        var array2 = array.get(2).asArray();
         assertThat(array2.get(0).asInt()).isEqualTo(1);
         assertThat(array2.get(1).asInt()).isEqualTo(2);
         assertThat(array2.get(2).asInt()).isEqualTo(3);
 
-        JSON sub = array.get(3).asObject();
+        var sub = array.get(3).asObject();
         assertThat(sub.get("test").asString()).isEqualTo("ok");
 
-        JSON encodedSub = json.get("encoded").asEncodedObject();
+        var encodedSub = json.get("encoded").asEncodedObject();
         assertThatJson(encodedSub.toString()).isEqualTo("{\"key\":\"value\"}");
 
-        Problem problem = json.get("problem").asProblem(BASE_URL);
+        var problem = json.get("problem").asProblem(BASE_URL);
         assertThat(problem).isNotNull();
         assertThat(problem.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:rateLimited"));
         assertThat(problem.getDetail()).isEqualTo("too many requests");
@@ -234,7 +227,7 @@ public class JSONTest {
      */
     @Test
     public void testNullGetter() {
-        JSON json = TestUtils.getJSON("datatypes");
+        var json = TestUtils.getJSON("datatypes");
 
         assertThat(json.get("none")).isNotNull();
         assertThat(json.get("none").isPresent()).isFalse();
@@ -284,7 +277,7 @@ public class JSONTest {
      */
     @Test
     public void testWrongGetter() {
-        JSON json = TestUtils.getJSON("datatypes");
+        var json = TestUtils.getJSON("datatypes");
 
         assertThrows(AcmeProtocolException.class,
                 () -> json.get("text").asObject(),
@@ -320,12 +313,12 @@ public class JSONTest {
      */
     @Test
     public void testSerialization() throws IOException, ClassNotFoundException {
-        JSON originalJson = TestUtils.getJSON("newAuthorizationResponse");
+        var originalJson = TestUtils.getJSON("newAuthorizationResponse");
 
         // Serialize
         byte[] data;
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            try (ObjectOutputStream oos = new ObjectOutputStream(out)) {
+        try (var out = new ByteArrayOutputStream()) {
+            try (var oos = new ObjectOutputStream(out)) {
                 oos.writeObject(originalJson);
             }
             data = out.toByteArray();
@@ -333,8 +326,8 @@ public class JSONTest {
 
         // Deserialize
         JSON testJson;
-        try (ByteArrayInputStream in = new ByteArrayInputStream(data)) {
-            try (ObjectInputStream ois = new ObjectInputStream(in)) {
+        try (var in = new ByteArrayInputStream(data)) {
+            try (var ois = new ObjectInputStream(in)) {
                 testJson = (JSON) ois.readObject();
             }
         }

@@ -20,17 +20,13 @@ import static org.shredzone.acme4j.toolbox.AcmeUtils.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Modifier;
 import java.net.URI;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -58,7 +54,7 @@ public class AcmeUtilsTest {
      */
     @Test
     public void testPrivateConstructor() throws Exception {
-        Constructor<AcmeUtils> constructor = AcmeUtils.class.getDeclaredConstructor();
+        var constructor = AcmeUtils.class.getDeclaredConstructor();
         assertThat(Modifier.isPrivate(constructor.getModifiers())).isTrue();
         constructor.setAccessible(true);
         constructor.newInstance();
@@ -69,7 +65,7 @@ public class AcmeUtilsTest {
      */
     @Test
     public void testSha256HashHexEncode() {
-        String hexEncode = hexEncode(sha256hash("foobar"));
+        var hexEncode = hexEncode(sha256hash("foobar"));
         assertThat(hexEncode).isEqualTo("c3ab8ff13720e8ad9047dd39466b3c8974e592c2fa383d4a3960714caef0c4f2");
     }
 
@@ -78,7 +74,7 @@ public class AcmeUtilsTest {
      */
     @Test
     public void testBase64UrlEncode() {
-        String base64UrlEncode = base64UrlEncode(sha256hash("foobar"));
+        var base64UrlEncode = base64UrlEncode(sha256hash("foobar"));
         assertThat(base64UrlEncode).isEqualTo("w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI");
     }
 
@@ -87,7 +83,7 @@ public class AcmeUtilsTest {
      */
     @Test
     public void testBase64UrlDecode() {
-        byte[] base64UrlDecode = base64UrlDecode("w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI");
+        var base64UrlDecode = base64UrlDecode("w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI");
         assertThat(base64UrlDecode).isEqualTo(sha256hash("foobar"));
     }
 
@@ -221,18 +217,18 @@ public class AcmeUtilsTest {
      */
     @Test
     public void testWriteToPem() throws IOException, CertificateEncodingException {
-        List<X509Certificate> certChain = TestUtils.createCertificate();
+        var certChain = TestUtils.createCertificate();
 
-        ByteArrayOutputStream pemFile = new ByteArrayOutputStream();
-        try (Writer w = new OutputStreamWriter(pemFile)) {
-            for (X509Certificate cert : certChain) {
+        var pemFile = new ByteArrayOutputStream();
+        try (var w = new OutputStreamWriter(pemFile)) {
+            for (var cert : certChain) {
                 AcmeUtils.writeToPem(cert.getEncoded(), AcmeUtils.PemLabel.CERTIFICATE, w);
             }
         }
 
-        ByteArrayOutputStream originalFile = new ByteArrayOutputStream();
-        try (InputStream in = getClass().getResourceAsStream("/cert.pem")) {
-            byte[] buffer = new byte[2048];
+        var originalFile = new ByteArrayOutputStream();
+        try (var in = getClass().getResourceAsStream("/cert.pem")) {
+            var buffer = new byte[2048];
             int len;
             while ((len = in.read(buffer)) >= 0) {
                 originalFile.write(buffer, 0, len);
