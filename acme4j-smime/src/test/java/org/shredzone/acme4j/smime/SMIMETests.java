@@ -68,9 +68,9 @@ public abstract class SMIMETests {
      *
      * @param name
      *         Name of the mock message to be read from the test resources.
-     * @return Mock {@link Message} that was created
+     * @return Mock {@link MimeMessage} that was created
      */
-    protected Message mockMessage(String name) {
+    protected MimeMessage mockMessage(String name) {
         try (InputStream in = SMIMETests.class.getResourceAsStream("/email/" + name + ".eml")) {
             return new MimeMessage(mailSession, in);
         } catch (IOException ex) {

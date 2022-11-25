@@ -135,13 +135,16 @@ public final class EmailProcessor {
             boolean hasMatch = false;
             for (SignerInformation signer : signed.getSignerInfos().getSigners()) {
                 hasMatch |= signer.verify(verifier);
+                if (hasMatch) {
+                    break;
+                }
             }
             if (!hasMatch) {
                 throw new AcmeInvalidMessageException("The S/MIME signature is invalid");
             }
 
             MimeMessage content = signed.getContentAsMimeMessage(mailSession);
-            if (!content.getContentType().equalsIgnoreCase("message/rfc822; forwarded=no")) {
+            if (!"message/rfc822; forwarded=no".equalsIgnoreCase(content.getContentType())) {
                 throw new AcmeInvalidMessageException("Message does not contain protected headers");
             }
 
@@ -214,7 +217,7 @@ public final class EmailProcessor {
             if (from == null) {
                 throw new AcmeInvalidMessageException("Message has no 'From' header");
             }
-            if (from.length != 1) {
+            if (from.length != 1 || from[0] == null) {
                 throw new AcmeInvalidMessageException("Message must have exactly one sender, but has " + from.length);
             }
             if (validFromAddresses != null && !validFromAddresses.contains(from[0])) {
@@ -222,8 +225,7 @@ public final class EmailProcessor {
             }
             if (strict && signedMessage != null) {
                 Address[] outerFrom = message.getFrom();
-                if ((outerFrom.length > 1) || (outerFrom.length == 1 && outerFrom[0] != null
-                        && !outerFrom[0].equals(from[0]))) {
+                if (outerFrom == null || outerFrom.length != 1 || !from[0].equals(outerFrom[0])) {
                     throw new AcmeInvalidMessageException("Protected 'From' header does not match envelope header");
                 }
             }
@@ -233,13 +235,12 @@ public final class EmailProcessor {
             if (to == null) {
                 throw new AcmeInvalidMessageException("Message has no 'To' header");
             }
-            if (to.length != 1) {
+            if (to.length != 1 || to[0] == null) {
                 throw new AcmeProtocolException("Message must have exactly one recipient, but has " + to.length);
             }
             if (strict && signedMessage != null) {
                 Address[] outerTo = message.getRecipients(TO);
-                if ((outerTo.length > 1) || (outerTo.length == 1 && outerTo[0] != null
-                        && !outerTo[0].equals(to[0]))) {
+                if (outerTo == null || outerTo.length != 1 || !to[0].equals(outerTo[0])) {
                     throw new AcmeInvalidMessageException("Protected 'To' header does not match envelope header");
                 }
             }
@@ -249,9 +250,8 @@ public final class EmailProcessor {
             if (subject == null) {
                 throw new AcmeInvalidMessageException("Message has no 'Subject' header");
             }
-            if (strict && signedMessage != null
-                    && message.getSubject() != null
-                    && !message.getSubject().equals(signedMessage.getSubject())) {
+            if (strict && signedMessage != null &&
+                    (message.getSubject() == null || !message.getSubject().equals(signedMessage.getSubject()))) {
                 throw new AcmeInvalidMessageException("Protected 'Subject' header does not match envelope header");
             }
             Matcher m = SUBJECT_PATTERN.matcher(subject);
