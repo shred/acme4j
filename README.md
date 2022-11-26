@@ -38,7 +38,7 @@ It is an independent open source implementation that is not affiliated with or e
 
 Follow our Mastodon feed for release notes and other acme4j related news.
 
-* Mastodon: <a href="https://foojay.social/@acme4j" rel="me">@acme4j@foojay.social</a>
+* Mastodon: `@acme4j@foojay.social`
 * RSS: https://foojay.social/@acme4j.rss
 
 ## Contribute
