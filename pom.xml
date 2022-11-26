@@ -58,6 +58,7 @@
         <slf4j.version>2.0.6</slf4j.version>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
+        <branch>v2</branch>
     </properties>
 
     <modules>
