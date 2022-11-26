@@ -34,6 +34,13 @@ It is an independent open source implementation that is not affiliated with or e
 * See the [online documentation](https://shredzone.org/maven/acme4j/) about how to use _acme4j_.
 * For a quick start, have a look at [the source code of an example](https://shredzone.org/maven/acme4j/example.html).
 
+## Announcements
+
+Follow our Mastodon feed for release notes and other acme4j related news.
+
+* Mastodon: <a href="https://foojay.social/@acme4j" rel="me">@acme4j@foojay.social</a>
+* RSS: https://foojay.social/@acme4j.rss
+
 ## Contribute
 
 * Fork the [Source code at GitHub](https://github.com/shred/acme4j). Feel free to send pull requests (see [Contributing](CONTRIBUTING.md) for the rules).
@@ -49,4 +56,5 @@ _acme4j_ is open source software. The source code is distributed under the terms
 * Thanks to [Daniel McCarney](https://github.com/cpu) for his help with the ACME protocol, Pebble, and Boulder.
 * [Ulrich Krause](https://github.com/eknori) for his help to make _acme4j_ run on IBM Java VMs.
 * I also like to thank [everyone who contributed to _acme4j_](https://github.com/shred/acme4j/graphs/contributors).
+* The Mastodon account is hosted by [foojay.io](https://foojay.io).
 * [JetBrains](https://www.jetbrains.com/?from=acme4j) kindly provided a free open source license for IntelliJ IDEA.

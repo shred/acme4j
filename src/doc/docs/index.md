@@ -64,6 +64,13 @@ acme4j-it
 
     The Java module name is `org.shredzone.acme4j.it`.
 
+## Announcements
+
+Follow our Mastodon feed for release notes and other acme4j related news.
+
+* Mastodon: <a href="https://foojay.social/@acme4j" rel="me">@acme4j@foojay.social</a>
+* RSS: https://foojay.social/@acme4j.rss
+
 ## Contribute
 
 * Fork the [Source code at GitHub](https://github.com/shred/acme4j). Feel free to send pull requests.
