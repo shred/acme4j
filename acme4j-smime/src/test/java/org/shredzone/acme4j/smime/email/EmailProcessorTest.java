@@ -15,7 +15,6 @@ package org.shredzone.acme4j.smime.email;
 
 import static jakarta.mail.Message.RecipientType.TO;
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.security.Security;
@@ -83,7 +82,7 @@ public class EmailProcessorTest extends SMIMETests {
                     X509Certificate certificate = readCertificate("valid-signer");
                     EmailProcessor.smimeMessage(message, mailSession, certificate, true);
                 })
-                .withMessage("The S/MIME signature is invalid");
+                .withMessage("Message is not signed by the expected sender");
     }
 
     @Test
@@ -94,7 +93,7 @@ public class EmailProcessorTest extends SMIMETests {
                     X509Certificate certificate = readCertificate("valid-signer-nosan");
                     EmailProcessor.smimeMessage(message, mailSession, certificate, true);
                 })
-                .withMessage("Signing certificate does not provide a rfc822Name subjectAltName");
+                .withMessage("Certificate does not have a subjectAltName extension");
     }
 
     @Test
@@ -105,7 +104,7 @@ public class EmailProcessorTest extends SMIMETests {
                     X509Certificate certificate = readCertificate("valid-signer");
                     EmailProcessor.smimeMessage(message, mailSession, certificate, true);
                 })
-                .withMessage("Sender 'different-ca@example.com' was not found in signing certificate");
+                .withMessage("Secured header 'From' does not match envelope header");
     }
 
     @Test
@@ -116,7 +115,7 @@ public class EmailProcessorTest extends SMIMETests {
                     X509Certificate certificate = readCertificate("valid-signer");
                     EmailProcessor.smimeMessage(message, mailSession, certificate, true);
                 })
-                .withMessage("Protected 'From' header does not match envelope header");
+                .withMessage("Secured header 'From' does not match envelope header");
     }
 
     @Test
@@ -127,7 +126,7 @@ public class EmailProcessorTest extends SMIMETests {
                     X509Certificate certificate = readCertificate("valid-signer");
                     EmailProcessor.smimeMessage(message, mailSession, certificate, true);
                 })
-                .withMessage("Protected 'To' header does not match envelope header");
+                .withMessage("Secured header 'To' does not match envelope header");
     }
 
     @Test
@@ -138,7 +137,7 @@ public class EmailProcessorTest extends SMIMETests {
                     X509Certificate certificate = readCertificate("valid-signer");
                     EmailProcessor.smimeMessage(message, mailSession, certificate, true);
                 })
-                .withMessage("Protected 'Subject' header does not match envelope header");
+                .withMessage("Secured header 'Subject' does not match envelope header");
     }
 
     @Test

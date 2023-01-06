@@ -14,46 +14,31 @@
 package org.shredzone.acme4j.smime.email;
 
 import static java.util.Objects.requireNonNull;
-import static jakarta.mail.Message.RecipientType.TO;
 
-import java.io.IOException;
 import java.net.URL;
-import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
-import jakarta.mail.Address;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
-import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
-import jakarta.mail.internet.MimeMessage;
-import jakarta.mail.internet.MimeMultipart;
-import org.bouncycastle.cms.CMSException;
-import org.bouncycastle.cms.SignerInformation;
-import org.bouncycastle.cms.SignerInformationVerifier;
-import org.bouncycastle.cms.jcajce.JcaSimpleSignerInfoVerifierBuilder;
-import org.bouncycastle.mail.smime.SMIMESigned;
-import org.bouncycastle.operator.OperatorCreationException;
 import org.shredzone.acme4j.Identifier;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.smime.challenge.EmailReply00Challenge;
 import org.shredzone.acme4j.smime.exception.AcmeInvalidMessageException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.shredzone.acme4j.smime.wrapper.Mail;
+import org.shredzone.acme4j.smime.wrapper.SignedMail;
+import org.shredzone.acme4j.smime.wrapper.SignedMailBuilder;
+import org.shredzone.acme4j.smime.wrapper.SimpleMail;
 
 /**
  * A processor for incoming "Challenge" emails.
@@ -62,16 +47,13 @@ import org.slf4j.LoggerFactory;
  * @since 2.12
  */
 public final class EmailProcessor {
-
-    private static final Logger LOG = LoggerFactory.getLogger(EmailProcessor.class);
     private static final Pattern SUBJECT_PATTERN = Pattern.compile("ACME:\\s+([0-9A-Za-z_\\s-]+=?)\\s*");
-    private static final int RFC822NAME = 1;
 
-    private final String token1;
-    private final Optional<String> messageId;
     private final InternetAddress sender;
     private final InternetAddress recipient;
+    private final @Nullable String messageId;
     private final Collection<InternetAddress> replyTo;
+    private final String token1;
     private final AtomicReference<EmailReply00Challenge> challengeRef = new AtomicReference<>();
 
     /**
@@ -91,7 +73,7 @@ public final class EmailProcessor {
      */
     public static EmailProcessor plainMessage(Message message)
             throws AcmeInvalidMessageException {
-        return new EmailProcessor(message, null, false, null);
+        return new EmailProcessor(new SimpleMail(message));
     }
 
     /**
@@ -118,64 +100,12 @@ public final class EmailProcessor {
     public static EmailProcessor smimeMessage(Message message, Session mailSession,
                                               X509Certificate signCert, boolean strict)
             throws AcmeInvalidMessageException {
-        try {
-            if (!(message instanceof MimeMessage)) {
-                throw new AcmeInvalidMessageException("Not a S/MIME message");
-            }
-            MimeMessage mimeMessage = (MimeMessage) message;
-
-            if (!(mimeMessage.getContent() instanceof MimeMultipart)) {
-                throw new AcmeProtocolException("S/MIME signed email must contain MimeMultipart");
-            }
-            MimeMultipart mp = (MimeMultipart) message.getContent();
-
-            SMIMESigned signed = new SMIMESigned(mp);
-
-            SignerInformationVerifier verifier = new JcaSimpleSignerInfoVerifierBuilder().build(signCert);
-            boolean hasMatch = false;
-            for (SignerInformation signer : signed.getSignerInfos().getSigners()) {
-                hasMatch |= signer.verify(verifier);
-                if (hasMatch) {
-                    break;
-                }
-            }
-            if (!hasMatch) {
-                throw new AcmeInvalidMessageException("The S/MIME signature is invalid");
-            }
-
-            MimeMessage content = signed.getContentAsMimeMessage(mailSession);
-            if (!"message/rfc822; forwarded=no".equalsIgnoreCase(content.getContentType())) {
-                throw new AcmeInvalidMessageException("Message does not contain protected headers");
-            }
-
-            MimeMessage body = new MimeMessage(mailSession, content.getInputStream());
-
-            List<Address> validFromAddresses = Optional.ofNullable(signCert.getSubjectAlternativeNames())
-                    .orElseGet(Collections::emptyList)
-                    .stream()
-                    .filter(l -> ((Number) l.get(0)).intValue() == RFC822NAME)
-                    .map(l -> l.get(1).toString())
-                    .map(l -> {
-                        try {
-                            return new InternetAddress(l);
-                        } catch (AddressException ex) {
-                            // Ignore invalid email addresses
-                            LOG.debug("Certificate contains invalid e-mail address {}", l, ex);
-                            return null;
-                        }
-                    })
-                    .filter(Objects::nonNull)
-                    .collect(Collectors.toList());
-
-            if (validFromAddresses.isEmpty()) {
-                throw new AcmeInvalidMessageException("Signing certificate does not provide a rfc822Name subjectAltName");
-            }
-
-            return new EmailProcessor(message, body, strict, validFromAddresses);
-        } catch (IOException | MessagingException | CMSException | OperatorCreationException |
-                 CertificateParsingException ex) {
-            throw new AcmeInvalidMessageException("Invalid S/MIME mail", ex);
-        }
+        SignedMail mail = new SignedMailBuilder()
+                .withSignCert(signCert)
+                .relaxed(!strict)
+                .withMailSession(mailSession)
+                .build(message);
+        return new EmailProcessor(mail);
     }
 
     /**
@@ -185,101 +115,26 @@ public final class EmailProcessor {
      *
      * @param message
      *         "Challenge" message as it was sent by the CA.
-     * @param signedMessage
-     *         The signed part of the challenge message if present, or {@code null}. The
-     *         signature is assumed to be valid, and must be validated in a previous
-     *         step.
-     * @param strict
-     *         If {@code true}, the S/MIME protected headers "From", "To", and "Subject"
-     *         <em>must</em> match the headers of the received message. If {@code false},
-     *         only the S/MIME protected headers are used, and the headers of the received
-     *         message are ignored.
-     * @param validFromAddresses
-     *         A {@link List} of {@link Address} that were found in the certificate's
-     *         rfc822Name subjectAltName extension. The mail's From address <em>must</em>
-     *         be found in this list, otherwise the signed message will be rejected.
-     *         {@code null} to disable this validation step.
      * @throws AcmeInvalidMessageException
      *         if a validation failed, and the message <em>must</em> be rejected.
      */
-    private EmailProcessor(Message message, @Nullable MimeMessage signedMessage,
-                           boolean strict, @Nullable List<Address> validFromAddresses)
-            throws AcmeInvalidMessageException {
-        requireNonNull(message, "message");
-
-        // Validate challenge and extract token 1
-        try {
-            if (!isAutoGenerated(getOptional(m -> m.getHeader("Auto-Submitted"), message, signedMessage))) {
-                throw new AcmeInvalidMessageException("Message is not auto-generated");
-            }
-
-            Address[] from = getMandatory(Message::getFrom, message, signedMessage, "From");
-            if (from == null) {
-                throw new AcmeInvalidMessageException("Message has no 'From' header");
-            }
-            if (from.length != 1 || from[0] == null) {
-                throw new AcmeInvalidMessageException("Message must have exactly one sender, but has " + from.length);
-            }
-            if (validFromAddresses != null && !validFromAddresses.contains(from[0])) {
-                throw new AcmeInvalidMessageException("Sender '" + from[0] + "' was not found in signing certificate");
-            }
-            if (strict && signedMessage != null) {
-                Address[] outerFrom = message.getFrom();
-                if (outerFrom == null || outerFrom.length != 1 || !from[0].equals(outerFrom[0])) {
-                    throw new AcmeInvalidMessageException("Protected 'From' header does not match envelope header");
-                }
-            }
-            sender = new InternetAddress(from[0].toString());
-
-            Address[] to = getMandatory(m -> m.getRecipients(TO), message, signedMessage, "To");
-            if (to == null) {
-                throw new AcmeInvalidMessageException("Message has no 'To' header");
-            }
-            if (to.length != 1 || to[0] == null) {
-                throw new AcmeProtocolException("Message must have exactly one recipient, but has " + to.length);
-            }
-            if (strict && signedMessage != null) {
-                Address[] outerTo = message.getRecipients(TO);
-                if (outerTo == null || outerTo.length != 1 || !to[0].equals(outerTo[0])) {
-                    throw new AcmeInvalidMessageException("Protected 'To' header does not match envelope header");
-                }
-            }
-            recipient = new InternetAddress(to[0].toString());
-
-            String subject = getMandatory(Message::getSubject, message, signedMessage, "Subject");
-            if (subject == null) {
-                throw new AcmeInvalidMessageException("Message has no 'Subject' header");
-            }
-            if (strict && signedMessage != null &&
-                    (message.getSubject() == null || !message.getSubject().equals(signedMessage.getSubject()))) {
-                throw new AcmeInvalidMessageException("Protected 'Subject' header does not match envelope header");
-            }
-            Matcher m = SUBJECT_PATTERN.matcher(subject);
-            if (!m.matches()) {
-                throw new AcmeProtocolException("Invalid subject: " + subject);
-            }
-            // white spaces within the token part must be ignored
-            this.token1 = m.group(1).replaceAll("\\s+", "");
-
-            Address[] rto = getOptional(Message::getReplyTo, message, signedMessage);
-            if (rto != null) {
-                replyTo = Collections.unmodifiableList(Arrays.stream(rto)
-                        .filter(InternetAddress.class::isInstance)
-                        .map(InternetAddress.class::cast)
-                        .collect(Collectors.toList()));
-            } else {
-                replyTo = Collections.emptyList();
-            }
-
-            String[] mid = getOptional(n -> n.getHeader("Message-ID"), message, signedMessage);
-            if (mid != null && mid.length > 0) {
-                messageId = Optional.of(mid[0]);
-            } else {
-                messageId = Optional.empty();
-            }
-        } catch (MessagingException ex) {
-            throw new AcmeProtocolException("Invalid challenge email", ex);
+    private EmailProcessor(Mail message) throws AcmeInvalidMessageException {
+        if (!message.isAutoSubmitted()) {
+            throw new AcmeInvalidMessageException("Message is not auto-generated");
         }
+
+        String subject = message.getSubject();
+        Matcher m = SUBJECT_PATTERN.matcher(subject);
+        if (!m.matches()) {
+            throw new AcmeProtocolException("Invalid subject: " + subject);
+        }
+        // white spaces within the token part must be ignored
+        this.token1 = m.group(1).replaceAll("\\s+", "");
+
+        this.sender = message.getFrom();
+        this.recipient = message.getTo();
+        this.messageId = message.getMessageId().orElse(null);
+        this.replyTo = message.getReplyTo();
     }
 
     /**
@@ -379,7 +234,7 @@ public final class EmailProcessor {
      * Empty if the challenge email has no message-id.
      */
     public Optional<String> getMessageId() {
-        return messageId;
+        return Optional.ofNullable(messageId);
     }
 
     /**
