@@ -17,11 +17,14 @@ import static java.util.Objects.requireNonNull;
 import static jakarta.mail.Message.RecipientType.TO;
 import static org.shredzone.acme4j.smime.email.ResponseBodyGenerator.RESPONSE_BODY_TYPE;
 
+import java.util.Properties;
+
 import edu.umd.cs.findbugs.annotations.Nullable;
 import jakarta.mail.Address;
 import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
+import jakarta.mail.Transport;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 
@@ -106,6 +109,18 @@ public class ResponseGenerator {
     public ResponseGenerator withGenerator(@Nullable ResponseBodyGenerator generator) {
         this.generator = generator != null ? generator : this::defaultBodyGenerator;
         return this;
+    }
+
+    /**
+     * Generates the response email.
+     * <p>
+     * A simple default mail session is used for generation.
+     *
+     * @return Generated {@link Message}.
+     * @since 2.16
+     */
+    public Message generateResponse() throws MessagingException {
+        return generateResponse(Session.getDefaultInstance(new Properties()));
     }
 
     /**
