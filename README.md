@@ -57,4 +57,3 @@ _acme4j_ is open source software. The source code is distributed under the terms
 * [Ulrich Krause](https://github.com/eknori) for his help to make _acme4j_ run on IBM Java VMs.
 * I also like to thank [everyone who contributed to _acme4j_](https://github.com/shred/acme4j/graphs/contributors).
 * The Mastodon account is hosted by [foojay.io](https://foojay.io).
-* [JetBrains](https://www.jetbrains.com/?from=acme4j) kindly provided a free open source license for IntelliJ IDEA.
