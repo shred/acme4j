@@ -2,6 +2,11 @@
 
 This document will help you migrate your code to the latest _acme4j_ version.
 
+## Migration to Version 2.16
+
+- In `acme4j-smime`, the `EmailProcessor.smimeMessage()` method is now deprecated. Use either `EmailProcessor.signedMessage()`, or `EmailProcessor.builder()` if you need custom verification configuration (e.g. an own truststore).
+- In `acme4j-smime`, major parts of the S/MIME message verification have been rewritten. The verification is much stricter now, and also supports secured headers in the certificate. Verification might now fail while it was successful in v2.15. Also, exception messages might have changed.
+
 ## Migration to Version 2.15
 
 - `acme4j-smime` requires BouncyCastle now. The `BouncyCastleProvider` must also be added as security provider.

@@ -79,18 +79,15 @@ The `EmailProcessor` is able to validate challenge e-mails that were signed by t
 Message               challengeMessage = // incoming challenge message from the CA
 EmailReply00Challenge challenge        = // challenge that is requested by the CA
 EmailIdentifier       identifier       = // email address to get the S/MIME cert for
-javax.mail.Session    mailSession      = // javax.mail session
-X509Certificate       signCert         = // CA's signing certificate, for validation
-boolean               strict           = // strict checks?
 
-Message response = EmailProcessor.smimeMessage(challengeMessage, mailSession, signCert, strict)
+Message response = EmailProcessor.signedMessage(challengeMessage)
             .expectedIdentifier(identifier)
             .withChallenge(challenge)
             .respond()
-            .generateResponse(mailSession);
+            .generateResponse();
 
 Transport.send(response);   // send response to the CA
 challenge.trigger();        // trigger the challenge
 ```
 
-If `strict` is set to `true`, the S/MIME protected headers `From:`, `To:`, and `Subject:` inside the e-mail **must** match these headers of the wrapping `challengeMessage`. It is recommended to do strict checks. However, if the inbound MTA is changing the headers of the wrapping mail, this flag can be set to `false` instead. In this case, the wrapping headers are ignored, and only the protected headers are used for responding to the challenge.
+If you need more control of the signature verification process, you can use `EmailProcessor.builder()`. It is useful e.g. if you need to use a different truststore, or if your MTA has mangled the incoming message, so a relaxed verification is needed.
