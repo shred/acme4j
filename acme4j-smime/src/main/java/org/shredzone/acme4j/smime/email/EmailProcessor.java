@@ -16,6 +16,10 @@ package org.shredzone.acme4j.smime.email;
 import static java.util.Objects.requireNonNull;
 
 import java.net.URL;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.cert.PKIXParameters;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,7 +40,6 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.smime.challenge.EmailReply00Challenge;
 import org.shredzone.acme4j.smime.exception.AcmeInvalidMessageException;
 import org.shredzone.acme4j.smime.wrapper.Mail;
-import org.shredzone.acme4j.smime.wrapper.SignedMail;
 import org.shredzone.acme4j.smime.wrapper.SignedMailBuilder;
 import org.shredzone.acme4j.smime.wrapper.SimpleMail;
 
@@ -57,11 +60,11 @@ public final class EmailProcessor {
     private final AtomicReference<EmailReply00Challenge> challengeRef = new AtomicReference<>();
 
     /**
-     * Processes the given e-mail message.
+     * Processes the given plain e-mail message.
      * <p>
      * Note that according to RFC-8823, the challenge message must be signed using either
      * DKIM or S/MIME. This method does not do any DKIM or S/MIME validation, and assumes
-     * that this has already been done by the inbound MTA.
+     * that this has already been done in a previous stage.
      *
      * @param message
      *         E-mail that was received from the CA. The inbound MTA has already taken
@@ -73,7 +76,38 @@ public final class EmailProcessor {
      */
     public static EmailProcessor plainMessage(Message message)
             throws AcmeInvalidMessageException {
-        return new EmailProcessor(new SimpleMail(message));
+        return builder().skipVerification().build(message);
+    }
+
+    /**
+     * Processes the given signed e-mail message.
+     * <p>
+     * This method expects an S/MIME signed message. The signature must use a certificate
+     * that can be validated using Java's cacert truststore. Strict validation rules are
+     * applied.
+     * <p>
+     * Use the {@link #builder()} method if you need to configure the validation process.
+     *
+     * @param message
+     *         S/MIME signed e-mail that was received from the CA.
+     * @return EmailProcessor for this e-mail
+     * @throws AcmeInvalidMessageException
+     *         if a validation failed, and the message <em>must</em> be rejected.
+     * @since 2.16
+     */
+    public static EmailProcessor signedMessage(Message message)
+            throws AcmeInvalidMessageException {
+        return builder().build(message);
+    }
+
+    /**
+     * Creates a {@link Builder} for building an {@link EmailProcessor} with individual
+     * configuration.
+     *
+     * @since 2.16
+     */
+    public static Builder builder() {
+        return new Builder();
     }
 
     /**
@@ -96,16 +130,21 @@ public final class EmailProcessor {
      * @throws AcmeInvalidMessageException
      *         if a validation failed, and the message <em>must</em> be rejected.
      * @since 2.15
+     * @deprecated Use {@link #signedMessage(Message)} or {@link #builder()} instead.
      */
+    @Deprecated
     public static EmailProcessor smimeMessage(Message message, Session mailSession,
                                               X509Certificate signCert, boolean strict)
             throws AcmeInvalidMessageException {
-        SignedMail mail = new SignedMailBuilder()
-                .withSignCert(signCert)
-                .relaxed(!strict)
-                .withMailSession(mailSession)
-                .build(message);
-        return new EmailProcessor(mail);
+        Builder builder = builder()
+                .mailSession(mailSession)
+                .certificate(signCert);
+        if (strict) {
+            builder.strict();
+        } else {
+            builder.relaxed();
+        }
+        return builder.build(message);
     }
 
     /**
@@ -406,6 +445,126 @@ public final class EmailProcessor {
     private interface MessageFunction<M extends Message, R> {
         @CheckForNull
         R apply(M message) throws MessagingException;
+    }
+
+    /**
+     * A builder for {@link EmailProcessor}.
+     * <p>
+     * Use {@link EmailProcessor#builder()} to generate an instance.
+     *
+     * @since 2.16
+     */
+    public static class Builder {
+        private boolean unsigned = false;
+        private SignedMailBuilder builder = new SignedMailBuilder();
+
+        private Builder() {
+            // Private constructor
+        }
+
+        /**
+         * Skips signature and header verification. Use only if the message has already
+         * been verified in a previous stage (e.g. by the MTA) or for testing purposes.
+         */
+        public Builder skipVerification() {
+            this.unsigned = true;
+            return this;
+        }
+
+        /**
+         * Uses the standard cacerts truststore for signature verification. This is the
+         * default.
+         */
+        public Builder caCerts() {
+            builder.withCaCertsTrustStore();
+            return this;
+        }
+
+        /**
+         * Uses the given truststore for signature verification.
+         *
+         * @param trustStore
+         *         {@link KeyStore} of the truststore to be used.
+         */
+        public Builder trustStore(KeyStore trustStore) {
+            try {
+                builder.withTrustStore(trustStore);
+            } catch (KeyStoreException | InvalidAlgorithmParameterException ex) {
+                throw new IllegalArgumentException("Cannot use trustStore", ex);
+            }
+            return this;
+        }
+
+        /**
+         * Uses the given certificate for signature verification.
+         *
+         * @param certificate
+         *         {@link X509Certificate} of the CA
+         */
+        public Builder certificate(X509Certificate certificate) {
+            builder.withSignCert(certificate);
+            return this;
+        }
+
+        /**
+         * Uses the given {@link PKIXParameters}.
+         *
+         * @param param
+         *         {@link PKIXParameters} to be used for signature verification.
+         */
+        public Builder pkixParameters(PKIXParameters param) {
+            builder.withPKIXParameters(param);
+            return this;
+        }
+
+        /**
+         * Uses the given mail {@link Session} for accessing the signed message body. A
+         * simple default session is used otherwise, which is usually sufficient.
+         *
+         * @param session
+         *         {@link Session} to be used for accessing the message body.
+         */
+        public Builder mailSession(Session session) {
+            builder.withMailSession(session);
+            return this;
+        }
+
+        /**
+         * Performs strict checks. Secured headers must exactly match their unsecured
+         * counterparts. This is the default.
+         */
+        public Builder strict() {
+            builder.relaxed(false);
+            return this;
+        }
+
+        /**
+         * Performs relaxed checks. Secured headers might differ in whitespaces or case of
+         * the field names. Use this if your MTA has mangled the envelope header.
+         */
+        public Builder relaxed() {
+            builder.relaxed(true);
+            return this;
+        }
+
+        /**
+         * Builds an {@link EmailProcessor} for the given {@link Message} using the
+         * current configuration.
+         *
+         * @param message
+         *         {@link Message} to create an {@link EmailProcessor} for.
+         * @return The generated {@link EmailProcessor}
+         * @throws AcmeInvalidMessageException
+         *         if the message fails to be verified. If this exception is thrown, the
+         *         message MUST be rejected, and MUST NOT be used for certification.
+         */
+        public EmailProcessor build(Message message) throws AcmeInvalidMessageException {
+            if (unsigned) {
+                return new EmailProcessor(new SimpleMail(message));
+            } else {
+                return new EmailProcessor(builder.build(message));
+            }
+        }
     }
 
 }

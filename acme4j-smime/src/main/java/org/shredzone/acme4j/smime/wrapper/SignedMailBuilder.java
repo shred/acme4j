@@ -68,6 +68,14 @@ public class SignedMailBuilder {
     private PKIXParameters pkixParameters = null;
 
     /**
+     * Uses the standard cacerts truststore. This is the default.
+     */
+    public SignedMailBuilder withCaCertsTrustStore() {
+        pkixParameters = null;
+        return this;
+    }
+
+    /**
      * Uses the given truststore for certificate validation.
      *
      * @param trustStore {@link KeyStore} to use.
