@@ -17,6 +17,7 @@ import static jakarta.mail.Message.RecipientType.TO;
 import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
+import java.security.KeyStore;
 import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.util.Optional;
@@ -70,19 +71,25 @@ public class EmailProcessorTest extends SMIMETests {
         assertThatNoException().isThrownBy(() -> {
             MimeMessage message = mockMessage("valid-mail");
             X509Certificate certificate = readCertificate("valid-signer");
-            EmailProcessor.smimeMessage(message, mailSession, certificate, true);
+            EmailProcessor.builder().certificate(certificate).strict().build(message);
         });
     }
 
     @Test
     public void testInvalidSignature() {
-        assertThatExceptionOfType(AcmeInvalidMessageException.class)
-                .isThrownBy(() -> {
+        AcmeInvalidMessageException ex = catchThrowableOfType(() -> {
                     MimeMessage message = mockMessage("invalid-signed-mail");
                     X509Certificate certificate = readCertificate("valid-signer");
-                    EmailProcessor.smimeMessage(message, mailSession, certificate, true);
-                })
-                .withMessage("Message is not signed by the expected sender");
+                    EmailProcessor.builder().certificate(certificate).strict().build(message);
+                }, AcmeInvalidMessageException.class);
+
+        assertThat(ex).isNotNull();
+        assertThat(ex.getMessage()).isEqualTo("Invalid signature");
+        assertThat(ex.getErrors()).hasSize(2);
+        assertThat(ex.getErrors())
+                .first().hasFieldOrPropertyWithValue("id", "SignedMailValidator.emailFromCertMismatch");
+        assertThat(ex.getErrors())
+                .element(1).hasFieldOrPropertyWithValue("id", "SignedMailValidator.certPathInvalid");
     }
 
     @Test
@@ -91,31 +98,37 @@ public class EmailProcessorTest extends SMIMETests {
                 .isThrownBy(() -> {
                     MimeMessage message = mockMessage("invalid-nosan");
                     X509Certificate certificate = readCertificate("valid-signer-nosan");
-                    EmailProcessor.smimeMessage(message, mailSession, certificate, true);
+                    EmailProcessor.builder().certificate(certificate).strict().build(message);
                 })
                 .withMessage("Certificate does not have a subjectAltName extension");
     }
 
     @Test
     public void testSANDoesNotMatchFrom() {
-        assertThatExceptionOfType(AcmeInvalidMessageException.class)
-                .isThrownBy(() -> {
+        AcmeInvalidMessageException ex = catchThrowableOfType(() -> {
                     MimeMessage message = mockMessage("invalid-cert-mismatch");
                     X509Certificate certificate = readCertificate("valid-signer");
-                    EmailProcessor.smimeMessage(message, mailSession, certificate, true);
-                })
-                .withMessage("Secured header 'From' does not match envelope header");
+                    EmailProcessor.builder().certificate(certificate).strict().build(message);
+                }, AcmeInvalidMessageException.class);
+
+        assertThat(ex).isNotNull();
+        assertThat(ex.getMessage()).isEqualTo("Invalid signature");
+        assertThat(ex.getErrors())
+                .singleElement().hasFieldOrPropertyWithValue("id", "SignedMailValidator.emailFromCertMismatch");
     }
 
     @Test
     public void testInvalidProtectedFromHeader() {
-        assertThatExceptionOfType(AcmeInvalidMessageException.class)
-                .isThrownBy(() -> {
+        AcmeInvalidMessageException ex = catchThrowableOfType(() -> {
                     MimeMessage message = mockMessage("invalid-protected-mail-from");
                     X509Certificate certificate = readCertificate("valid-signer");
-                    EmailProcessor.smimeMessage(message, mailSession, certificate, true);
-                })
-                .withMessage("Secured header 'From' does not match envelope header");
+                    EmailProcessor.builder().certificate(certificate).strict().build(message);
+                }, AcmeInvalidMessageException.class);
+
+        assertThat(ex).isNotNull();
+        assertThat(ex.getMessage()).isEqualTo("Invalid signature");
+        assertThat(ex.getErrors())
+                .singleElement().hasFieldOrPropertyWithValue("id", "SignedMailValidator.emailFromCertMismatch");
     }
 
     @Test
@@ -124,7 +137,7 @@ public class EmailProcessorTest extends SMIMETests {
                 .isThrownBy(() -> {
                     MimeMessage message = mockMessage("invalid-protected-mail-to");
                     X509Certificate certificate = readCertificate("valid-signer");
-                    EmailProcessor.smimeMessage(message, mailSession, certificate, true);
+                    EmailProcessor.builder().certificate(certificate).strict().build(message);
                 })
                 .withMessage("Secured header 'To' does not match envelope header");
     }
@@ -135,7 +148,7 @@ public class EmailProcessorTest extends SMIMETests {
                 .isThrownBy(() -> {
                     MimeMessage message = mockMessage("invalid-protected-mail-subject");
                     X509Certificate certificate = readCertificate("valid-signer");
-                    EmailProcessor.smimeMessage(message, mailSession, certificate, true);
+                    EmailProcessor.builder().certificate(certificate).strict().build(message);
                 })
                 .withMessage("Secured header 'Subject' does not match envelope header");
     }
@@ -146,8 +159,32 @@ public class EmailProcessorTest extends SMIMETests {
                 .isThrownBy(() -> {
                     MimeMessage message = mockMessage("invalid-protected-mail-subject");
                     X509Certificate certificate = readCertificate("valid-signer");
-                    EmailProcessor.smimeMessage(message, mailSession, certificate, false);
+                    EmailProcessor.builder().certificate(certificate).relaxed().build(message);
                 });
+    }
+
+    @Test
+    public void testValidSignatureRfc7508() throws Exception {
+        MimeMessage message = mockMessage("valid-mail-7508");
+
+        KeyStore keyStore = KeyStore.getInstance("JKS");
+        keyStore.load(EmailProcessorTest.class.getResourceAsStream("/7508-valid-ca.jks"), "test123".toCharArray());
+
+        EmailProcessor processor = EmailProcessor.builder().trustStore(keyStore).build(message);
+        assertThat(processor.getSender()).isEqualTo(new InternetAddress("acme-challenge@dc-bsd.my.corp"));
+        assertThat(processor.getRecipient()).isEqualTo(new InternetAddress("gitlab@dc-bsd.my.corp"));
+        assertThat(processor.getToken1()).isEqualTo("ABxfL5s4bjvmyVRvl6y-Y_GhdzTdWpKqlmrKAIVe");
+    }
+
+    @Test
+    public void testInvalidSignatureRfc7508() throws Exception {
+        MimeMessage message = mockMessage("valid-mail-7508");
+
+        KeyStore keyStore = KeyStore.getInstance("JKS");
+        keyStore.load(EmailProcessorTest.class.getResourceAsStream("/7508-fake-ca.jks"), "test123".toCharArray());
+
+        assertThatExceptionOfType(AcmeInvalidMessageException.class)
+                .isThrownBy(() -> EmailProcessor.builder().trustStore(keyStore).build(message));
     }
 
     @Test

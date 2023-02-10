@@ -13,6 +13,15 @@
  */
 package org.shredzone.acme4j.smime.exception;
 
+import static java.util.Collections.unmodifiableList;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import org.bouncycastle.i18n.ErrorBundle;
+import org.bouncycastle.i18n.LocalizedException;
 import org.shredzone.acme4j.exception.AcmeException;
 
 /**
@@ -32,26 +41,60 @@ import org.shredzone.acme4j.exception.AcmeException;
 public class AcmeInvalidMessageException extends AcmeException {
     private static final long serialVersionUID = 5607857024718309330L;
 
+    private final List<ErrorBundle> errors;
+
     /**
      * Creates a new {@link AcmeInvalidMessageException}.
      *
      * @param msg
-     *            Reason of the exception
+     *         Reason of the exception
      */
     public AcmeInvalidMessageException(String msg) {
         super(msg);
+        this.errors = Collections.emptyList();
     }
 
     /**
      * Creates a new {@link AcmeInvalidMessageException}.
      *
      * @param msg
-     *            Reason of the exception
+     *         Reason of the exception
+     * @param errors
+     *         List of {@link ErrorBundle} with further details
+     * @since 2.16
+     */
+    public AcmeInvalidMessageException(String msg, List<ErrorBundle> errors) {
+        super(msg);
+        this.errors = unmodifiableList(errors);
+    }
+
+    /**
+     * Creates a new {@link AcmeInvalidMessageException}.
+     *
+     * @param msg
+     *         Reason of the exception
      * @param cause
-     *            Cause
+     *         Cause
      */
     public AcmeInvalidMessageException(String msg, Throwable cause) {
         super(msg, cause);
+        List<ErrorBundle> errors = new ArrayList<>(1);
+        Optional.ofNullable(cause)
+                .filter(LocalizedException.class::isInstance)
+                .map(LocalizedException.class::cast)
+                .map(LocalizedException::getErrorMessage)
+                .ifPresent(errors::add);
+        this.errors = unmodifiableList(errors);
+    }
+
+    /**
+     * Returns a list with further error details, if available. The list may be empty, but
+     * is never {@code null}.
+     *
+     * @since 2.16
+     */
+    public List<ErrorBundle> getErrors() {
+        return errors;
     }
 
 }

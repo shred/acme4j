@@ -482,6 +482,8 @@ public final class EmailProcessor {
 
         /**
          * Uses the given truststore for signature verification.
+         * <p>
+         * This is for self-signed certificates. No revocation checks will take place.
          *
          * @param trustStore
          *         {@link KeyStore} of the truststore to be used.
@@ -497,6 +499,8 @@ public final class EmailProcessor {
 
         /**
          * Uses the given certificate for signature verification.
+         * <p>
+         * This is for self-signed certificates. No revocation checks will take place.
          *
          * @param certificate
          *         {@link X509Certificate} of the CA

@@ -17,7 +17,6 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -290,7 +289,7 @@ public class SignedMail implements Mail {
      * @throws AcmeInvalidMessageException
      *         if a header with the same value was not found
      */
-    private void checkDuplicatedField(String header, String value, boolean relaxed) throws AcmeInvalidMessageException {
+    protected void checkDuplicatedField(String header, String value, boolean relaxed) throws AcmeInvalidMessageException {
         long count = headers.stream()
                 .filter(mh -> mh.nameEquals(header, relaxed) && mh.valueEquals(value, relaxed))
                 .peek(MailHeader::setTrusted)
@@ -315,7 +314,7 @@ public class SignedMail implements Mail {
      * @throws AcmeInvalidMessageException
      *         if a header with the same value was not found
      */
-    private void deleteField(String header, String value, boolean relaxed) throws AcmeInvalidMessageException {
+    protected void deleteField(String header, String value, boolean relaxed) throws AcmeInvalidMessageException {
         if (!headers.removeIf(mh -> mh.nameEquals(header, relaxed) && mh.valueEquals(value, relaxed))) {
             throw new AcmeInvalidMessageException("Secured header '" + header
                     + "' was not found in envelope header for deletion");
@@ -335,7 +334,7 @@ public class SignedMail implements Mail {
      * @throws AcmeInvalidMessageException
      *         if the header was not found
      */
-    private void modifyField(String header, String value, boolean relaxed) throws AcmeInvalidMessageException {
+    protected void modifyField(String header, String value, boolean relaxed) throws AcmeInvalidMessageException {
         if (!headers.removeIf(mh -> mh.nameEquals(header, relaxed))) {
             throw new AcmeInvalidMessageException("Secured header '" + header
                     + "' was not found in envelope header for modification");

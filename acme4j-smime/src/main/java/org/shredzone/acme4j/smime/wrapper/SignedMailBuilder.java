@@ -27,7 +27,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.PKIXParameters;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -76,19 +75,9 @@ public class SignedMailBuilder {
     }
 
     /**
-     * Uses the given truststore for certificate validation.
-     *
-     * @param trustStore {@link KeyStore} to use.
-     * @return itself
-     */
-    public SignedMailBuilder withTrustStore(KeyStore trustStore)
-            throws KeyStoreException, InvalidAlgorithmParameterException {
-        requireNonNull(trustStore, "trustStore");
-        return withPKIXParameters(new PKIXParameters(trustStore));
-    }
-
-    /**
      * Uses the given {@link X509Certificate} for certificate validation.
+     * <p>
+     * This is for self-signed certificates. No revocation checks will take place.
      *
      * @param signCert {@link X509Certificate} to use.
      * @return itself
@@ -104,6 +93,22 @@ public class SignedMailBuilder {
                  CertificateException | InvalidAlgorithmParameterException ex) {
             throw new IllegalArgumentException("Invalid certificate", ex);
         }
+    }
+
+    /**
+     * Uses the given truststore for certificate validation.
+     * <p>
+     * This is for self-signed certificates. No revocation checks will take place.
+     *
+     * @param trustStore {@link KeyStore} to use.
+     * @return itself
+     */
+    public SignedMailBuilder withTrustStore(KeyStore trustStore)
+            throws KeyStoreException, InvalidAlgorithmParameterException {
+        requireNonNull(trustStore, "trustStore");
+        PKIXParameters param = new PKIXParameters(trustStore);
+        param.setRevocationEnabled(false);
+        return withPKIXParameters(param);
     }
 
     /**
@@ -227,6 +232,7 @@ public class SignedMailBuilder {
      *         if the signature is invalid, or if the message was signed with more than
      *         one signature.
      */
+    @SuppressWarnings("unchecked")
     private SignerInformation validateSignature(MimeMessage message, PKIXParameters pkixParameters)
             throws AcmeInvalidMessageException {
         try {
@@ -236,9 +242,15 @@ public class SignedMailBuilder {
             if (store.size() != 1) {
                 throw new AcmeInvalidMessageException("Expected exactly one signer, but found " + store.size());
             }
-            return store.getSigners().iterator().next();
+
+            SignerInformation si = store.getSigners().iterator().next();
+            SignedMailValidator.ValidationResult vr = smv.getValidationResult(si);
+            if (!vr.isValidSignature()) {
+                throw new AcmeInvalidMessageException("Invalid signature", vr.getErrors());
+            }
+            return si;
         } catch (SignedMailValidatorException ex) {
-            throw new AcmeInvalidMessageException("Invalid signature", ex);
+            throw new AcmeInvalidMessageException("Cannot validate signature", ex);
         }
     }
 
@@ -289,7 +301,7 @@ public class SignedMailBuilder {
      *
      * @return CaCerts truststore
      */
-    private static KeyStore getCaCertsTrustStore() {
+    protected static KeyStore getCaCertsTrustStore() {
         KeyStore caCerts = CACERTS_TRUSTSTORE.get();
         if (caCerts == null) {
             String javaHome = System.getProperty("java.home");
