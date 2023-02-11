@@ -30,9 +30,9 @@ import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1IA5String;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.pkcs.Attribute;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -55,14 +55,12 @@ import org.shredzone.acme4j.util.KeyPairUtils;
 public class SMIMECSRBuilderTest {
 
     private static KeyPair testKey;
-    private static KeyPair testEcKey;
 
     @BeforeAll
     public static void setup() {
         Security.addProvider(new BouncyCastleProvider());
 
         testKey = KeyPairUtils.createKeyPair(512);
-        testEcKey = KeyPairUtils.createECKeyPair("secp256r1");
     }
 
     /**
@@ -160,21 +158,21 @@ public class SMIMECSRBuilderTest {
         assertThat(builder.toString()).isEqualTo(",TYPE=SIGNING_AND_ENCRYPTION");
 
         assertThatExceptionOfType(NullPointerException.class)
-                .isThrownBy(() -> new SMIMECSRBuilder().addValue((String) null, "value"))
-                .as("addValue(String, String)");
+                .as("addValue(String, String)")
+                .isThrownBy(() -> new SMIMECSRBuilder().addValue((String) null, "value"));
         assertThatExceptionOfType(NullPointerException.class)
-                .isThrownBy(() -> new SMIMECSRBuilder().addValue((ASN1ObjectIdentifier) null, "value"))
-                .as("addValue(ASN1ObjectIdentifier, String)");
+                .as("addValue(ASN1ObjectIdentifier, String)")
+                .isThrownBy(() -> new SMIMECSRBuilder().addValue((ASN1ObjectIdentifier) null, "value"));
         assertThatExceptionOfType(NullPointerException.class)
-                .isThrownBy(() -> new SMIMECSRBuilder().addValue("C", null))
-                .as("addValue(String, null)");
-        assertThatExceptionOfType(IllegalArgumentException.class)
-                .isThrownBy(() -> new SMIMECSRBuilder().addValue("UNKNOWNATT", "val"))
                 .as("addValue(String, null)")
+                .isThrownBy(() -> new SMIMECSRBuilder().addValue("C", null));
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .as("addValue(String, null)")
+                .isThrownBy(() -> new SMIMECSRBuilder().addValue("UNKNOWNATT", "val"))
                 .withMessage(invAttNameExMessage);
         assertThatExceptionOfType(AddressException.class)
-                .isThrownBy(() -> new SMIMECSRBuilder().addValue("CN", "invalid@example..com"))
-                .as("addValue(String, invalid String)");
+                .as("addValue(String, invalid String)")
+                .isThrownBy(() -> new SMIMECSRBuilder().addValue("CN", "invalid@example..com"));
 
         assertThat(builder.toString()).isEqualTo(",TYPE=SIGNING_AND_ENCRYPTION");
 
@@ -238,7 +236,7 @@ public class SMIMECSRBuilderTest {
         GeneralNames names = GeneralNames.fromExtensions((Extensions) extensions[0], Extension.subjectAlternativeName);
         assertThat(names.getNames())
                 .filteredOn(gn -> gn.getTagNo() == GeneralName.rfc822Name)
-                .extracting(gn -> DERIA5String.getInstance(gn.getName()).getString())
+                .extracting(gn -> ASN1IA5String.getInstance(gn.getName()).getString())
                 .containsExactlyInAnyOrder("mail@example.com", "info@example.com",
                         "sales@example.com", "shop@example.com", "support@example.com",
                         "help@example.com");
@@ -307,7 +305,7 @@ public class SMIMECSRBuilderTest {
      * Make sure an exception is thrown when nothing is set.
      */
     @Test
-    public void testNoEmail() throws IOException {
+    public void testNoEmail() {
         assertThrows(IllegalStateException.class, () -> {
             SMIMECSRBuilder builder = new SMIMECSRBuilder();
             builder.sign(testKey);
@@ -318,7 +316,7 @@ public class SMIMECSRBuilderTest {
      * Make sure all getters will fail if the CSR is not signed.
      */
     @Test
-    public void testNoSign() throws IOException {
+    public void testNoSign() {
         SMIMECSRBuilder builder = new SMIMECSRBuilder();
 
         assertThrows(IllegalStateException.class, builder::getCSR, "getCSR");

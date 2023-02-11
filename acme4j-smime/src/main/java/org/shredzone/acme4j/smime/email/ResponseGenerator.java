@@ -93,7 +93,7 @@ public class ResponseGenerator {
      * Sets a {@link ResponseBodyGenerator} that is used for generating a response body.
      * <p>
      * Use this generator to individually style the email body, for example to use a
-     * multipart body. However be aware that the response mail is evaluated by a machine,
+     * multipart body. However, be aware that the response mail is evaluated by a machine,
      * and usually not read by humans, so the body should be designed as simple as
      * possible.
      * <p>
