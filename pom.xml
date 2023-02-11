@@ -54,8 +54,8 @@
         <bouncycastle.version>1.72</bouncycastle.version>
         <httpclient.version>4.5.13</httpclient.version>
         <jakarta.mail.version>2.0.1</jakarta.mail.version>
-        <jose4j.version>0.9.2</jose4j.version>
-        <slf4j.version>2.0.4</slf4j.version>
+        <jose4j.version>0.9.3</jose4j.version>
+        <slf4j.version>2.0.6</slf4j.version>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
     </properties>
@@ -205,25 +205,25 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.9.1</version>
+            <version>5.9.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>5.9.1</version>
+            <version>5.9.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.23.1</version>
+            <version>3.24.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>net.javacrumbs.json-unit</groupId>
             <artifactId>json-unit-assertj</artifactId>
-            <version>2.36.0</version>
+            <version>2.36.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -236,7 +236,7 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>4.9.0</version>
+            <version>5.1.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
