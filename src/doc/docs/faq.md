@@ -1,5 +1,30 @@
 # FAQ and Troubleshooting
 
+## My `Challenge` is in status `PENDING`. What does it mean?
+
+**Symptom:** After the challenge was triggered, it changes to status `PENDING`.
+
+**Cause:** You have triggered the challenge, and are now waiting for the CA to verify it.
+
+**Solution:** Wait until the challenge changes to either `VALID` or `INVALID` state. Do not remove challenge related resources (e.g. HTML files or DNS records) before.
+
+
+## My `Challenge` returns status `INVALID`. What has gone wrong?
+
+**Symptom:** After the challenge was triggered, it eventually changes to status `INVALID`.
+
+**Cause:** There may be multiple causes for that, but usually it means that the CA could not verify your challenge.
+
+**Solution:** If the status is `INVALID`, invoke `Challenge.getError()` to get the cause of the failure. For example, you can log the output of `challenge.getError().toString()`. Make sure that your challenge is ready for verification _before_ you invoke `Challenge.trigger()`. Also make sure not to remove the challenge until the status is either `VALID` or `INVALID`.
+
+## My `Order` returns status `INVALID`. What has gone wrong?
+
+**Symptom:** Your challenge(s) passed as `VALID`. However when you execute the order, it changes to status `INVALID`. No certificate was issued.
+
+**Cause:** There may be multiple reasons for that. It seems that you are still missing steps that are required by the CA before completion.
+
+**Solution:** If the status is `INVALID`, invoke `Order.getError()` to get the cause of the failure. For example, you can log the output of `order.getError().toString()`.
+
 ## Browsers do not accept my certificate.
 
 **Symptom:** A certificate was successfully issued. However the browser does not accept the certificate, and shows an error that the cert authority is invalid.
@@ -10,9 +35,9 @@
 
 ## The http-01 challenge fails.
 
-**Symptom:** You set up your response token in the `/.well-known/acme-challenge/` path, and you can also successfully fetch it locally, but the challenge is failing. In the error details you find a strange HTML fragment.
+**Symptom:** You set up your response token in the `/.well-known/acme-challenge/` path, and you can also successfully fetch it locally, but the challenge is failing with `Invalid response: 404` (or another HTTP error code).
 
-**Cause:** The CA could not access your response token, but gets a 404 page (or some other kind of error page) instead. The HTML fragment in the error details is actually a part of that error page. Bear in mind that the response token is not evaluated locally by _acme4j_, but is fetched by the CA server.
+**Cause:** The CA could not access your response token, but gets a 404 page (or some other kind of error page) instead. Bear in mind that the response token is not evaluated locally by _acme4j_, but is fetched by the CA server.
 
 **Solution:** The CA server could not access your response token from the outside. One reason may be that a firewall or reverse proxy is blocking the access. Another reason may be that your local DNS resolves the domain differently. The CA uses public DNS servers to resolve the domain name. This error often happens when you try to validate a foreign domain (e.g. `example.com` or `example.org`).
 
