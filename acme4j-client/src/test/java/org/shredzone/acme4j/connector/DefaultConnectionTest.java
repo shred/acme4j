@@ -14,15 +14,14 @@
 package org.shredzone.acme4j.connector;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
-import static java.util.Collections.singletonList;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.shredzone.acme4j.toolbox.TestUtils.getResourceAsByteArray;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -34,21 +33,20 @@ import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
+import com.github.tomakehurst.wiremock.junit5.WireMockRuntimeInfo;
+import com.github.tomakehurst.wiremock.junit5.WireMockTest;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.CompactSerializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -58,7 +56,6 @@ import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.exception.AcmeUserActionRequiredException;
-import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -67,38 +64,43 @@ import org.shredzone.acme4j.toolbox.TestUtils;
 /**
  * Unit tests for {@link DefaultConnection}.
  */
+@WireMockTest
 public class DefaultConnectionTest {
 
     private static final Base64.Encoder URL_ENCODER = Base64.getUrlEncoder().withoutPadding();
     private static final Base64.Decoder URL_DECODER = Base64.getUrlDecoder();
+    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.RFC_1123_DATE_TIME.withZone(ZoneOffset.UTC);
+    public static final String DIRECTORY_PATH = "/dir";
+    public static final String NEW_NONCE_PATH = "/newNonce";
+    public static final String REQUEST_PATH = "/test/test";
 
-    private final URL requestUrl = TestUtils.url("http://example.com/acme/");
     private final URL accountUrl = TestUtils.url(TestUtils.ACCOUNT_URL);
-    private HttpURLConnection mockUrlConnection;
-    private HttpConnector mockHttpConnection;
     private Session session;
     private Login login;
     private KeyPair keyPair;
+    private String baseUrl;
+    private URL directoryUrl;
+    private URL newNonceUrl;
+    private URL requestUrl;
 
     @BeforeEach
-    public void setup() throws AcmeException, IOException {
-        mockUrlConnection = mock(HttpURLConnection.class);
+    public void setup(WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
+        baseUrl = wmRuntimeInfo.getHttpBaseUrl();
+        directoryUrl = new URL(baseUrl + DIRECTORY_PATH);
+        newNonceUrl = new URL(baseUrl + NEW_NONCE_PATH);
+        requestUrl = new URL(baseUrl + REQUEST_PATH);
 
-        mockHttpConnection = mock(HttpConnector.class);
-        when(mockHttpConnection.openConnection(same(requestUrl), any())).thenReturn(mockUrlConnection);
-
-        var mockProvider = mock(AcmeProvider.class);
-        when(mockProvider.directory(
-                        ArgumentMatchers.any(Session.class),
-                        ArgumentMatchers.eq(URI.create(TestUtils.ACME_SERVER_URI))))
-            .thenReturn(TestUtils.getJSON("directory"));
-
-        session = TestUtils.session(mockProvider);
+        session = new Session(directoryUrl.toURI());
         session.setLocale(Locale.JAPAN);
 
         keyPair = TestUtils.createKeyPair();
 
         login = session.login(accountUrl, keyPair);
+
+        var directory = new JSONBuilder();
+        directory.put("newNonce", newNonceUrl);
+
+        stubFor(get(DIRECTORY_PATH).willReturn(okJson(directory.toString())));
     }
 
     /**
@@ -106,17 +108,15 @@ public class DefaultConnectionTest {
      * {@code Replay-Nonce} header.
      */
     @Test
-    public void testNoNonceFromHeader() {
-        when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(null);
+    public void testNoNonceFromHeader() throws AcmeException {
+        stubFor(head(urlEqualTo(NEW_NONCE_PATH)).willReturn(ok()));
 
         assertThat(session.getNonce()).isNull();
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+
+        try (var conn = session.connect()) {
+            conn.sendRequest(directoryUrl, session, null);
             assertThat(conn.getNonce()).isNull();
         }
-
-        verify(mockUrlConnection).getHeaderField("Replay-Nonce");
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
@@ -124,17 +124,20 @@ public class DefaultConnectionTest {
      * header correctly.
      */
     @Test
-    public void testGetNonceFromHeader() {
-        when(mockUrlConnection.getHeaderField("Replay-Nonce"))
-                .thenReturn(TestUtils.DUMMY_NONCE);
+    public void testGetNonceFromHeader() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Replay-Nonce", TestUtils.DUMMY_NONCE)
+        ));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        assertThat(session.getNonce()).isNull();
+
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
             assertThat(conn.getNonce()).isEqualTo(TestUtils.DUMMY_NONCE);
+            assertThat(session.getNonce()).isEqualTo(TestUtils.DUMMY_NONCE);
         }
 
-        verify(mockUrlConnection).getHeaderField("Replay-Nonce");
-        verifyNoMoreInteractions(mockUrlConnection);
+        verify(getRequestedFor(urlEqualTo(REQUEST_PATH)));
     }
 
     /**
@@ -145,18 +148,19 @@ public class DefaultConnectionTest {
     public void testInvalidNonceFromHeader() {
         var badNonce = "#$%&/*+*#'";
 
-        when(mockUrlConnection.getHeaderField("Replay-Nonce")).thenReturn(badNonce);
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Replay-Nonce", badNonce)
+        ));
 
         var ex = assertThrows(AcmeProtocolException.class, () -> {
-            try (var conn = new DefaultConnection(mockHttpConnection)) {
-                conn.conn = mockUrlConnection;
+            try (var conn = session.connect()) {
+                conn.sendRequest(requestUrl, session, null);
                 conn.getNonce();
             }
         });
         assertThat(ex.getMessage()).startsWith("Invalid replay nonce");
 
-        verify(mockUrlConnection).getHeaderField("Replay-Nonce");
-        verifyNoMoreInteractions(mockUrlConnection);
+        verify(getRequestedFor(urlEqualTo(REQUEST_PATH)));
     }
 
     /**
@@ -164,38 +168,37 @@ public class DefaultConnectionTest {
      * new-nonce resource and a HEAD request.
      */
     @Test
-    public void testResetNonce() throws AcmeException, IOException {
-        when(mockHttpConnection.openConnection(eq(new URL("https://example.com/acme/new-nonce")), any()))
-                .thenReturn(mockUrlConnection);
-        when(mockUrlConnection.getResponseCode())
-                .thenReturn(HttpURLConnection.HTTP_NO_CONTENT);
+    public void testResetNonceSucceedsIfNoncePresent() throws AcmeException {
+        stubFor(head(urlEqualTo(NEW_NONCE_PATH)).willReturn(ok()
+                .withHeader("Replay-Nonce", TestUtils.DUMMY_NONCE)
+        ));
+
+        assertThat(session.getNonce()).isNull();
+
+        try (var conn = session.connect()) {
+            conn.resetNonce(session);
+        }
+
+        assertThat(session.getNonce()).isEqualTo(TestUtils.DUMMY_NONCE);
+    }
+
+    /**
+     * Test that {@link DefaultConnection#resetNonce(Session)} throws an exception if
+     * there is no nonce header.
+     */
+    @Test
+    public void testResetNonceThrowsException() {
+        stubFor(head(urlEqualTo(NEW_NONCE_PATH)).willReturn(ok()));
 
         assertThat(session.getNonce()).isNull();
 
         assertThrows(AcmeProtocolException.class, () -> {
-            try (var conn = new DefaultConnection(mockHttpConnection)) {
+            try (var conn = session.connect()) {
                 conn.resetNonce(session);
             }
         });
 
         assertThat(session.getNonce()).isNull();
-
-        when(mockUrlConnection.getHeaderField("Replay-Nonce"))
-                .thenReturn(TestUtils.DUMMY_NONCE);
-
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.resetNonce(session);
-        }
-
-        assertThat(session.getNonce()).isEqualTo(TestUtils.DUMMY_NONCE);
-
-        verify(mockUrlConnection, atLeastOnce()).setRequestMethod("HEAD");
-        verify(mockUrlConnection, atLeastOnce()).setRequestProperty("Accept-Language", "ja-JP");
-        verify(mockUrlConnection, atLeastOnce()).connect();
-        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
-        verify(mockUrlConnection, atLeastOnce()).getHeaderField("Replay-Nonce");
-        verify(mockUrlConnection, atLeastOnce()).getHeaderFields();
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
@@ -203,18 +206,15 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testGetAbsoluteLocation() throws Exception {
-        when(mockUrlConnection.getHeaderField("Location")).thenReturn("https://example.com/otherlocation");
-        when(mockUrlConnection.getURL()).thenReturn(new URL("https://example.org/acme"));
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Location", "https://example.com/otherlocation")
+        ));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
             var location = conn.getLocation();
             assertThat(location).isEqualTo(new URL("https://example.com/otherlocation"));
         }
-
-        verify(mockUrlConnection).getHeaderField("Location");
-        verify(mockUrlConnection).getURL();
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
@@ -222,18 +222,15 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testGetRelativeLocation() throws Exception {
-        when(mockUrlConnection.getHeaderField("Location")).thenReturn("/otherlocation");
-        when(mockUrlConnection.getURL()).thenReturn(new URL("https://example.org/acme"));
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Location", "/otherlocation")
+        ));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
             var location = conn.getLocation();
-            assertThat(location).isEqualTo(new URL("https://example.org/otherlocation"));
+            assertThat(location).isEqualTo(new URL(baseUrl + "/otherlocation"));
         }
-
-        verify(mockUrlConnection).getHeaderField("Location");
-        verify(mockUrlConnection).getURL();
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
@@ -241,22 +238,16 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testGetLink() throws Exception {
-        var headers = new HashMap<String, List<String>>();
-        headers.put("Content-Type", singletonList("application/json"));
-        headers.put("Location", singletonList("https://example.com/acme/acct/asdf"));
-        headers.put("Link", Arrays.asList(
-                        "<https://example.com/acme/new-authz>;rel=\"next\"",
-                        "</recover-acct>;rel=recover",
-                        "<https://example.com/acme/terms>; rel=\"terms-of-service\""
-                    ));
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Link", "<https://example.com/acme/new-authz>;rel=\"next\"")
+                .withHeader("Link", "</recover-acct>;rel=recover")
+                .withHeader("Link", "<https://example.com/acme/terms>; rel=\"terms-of-service\"")
+        ));
 
-        when(mockUrlConnection.getHeaderFields()).thenReturn(headers);
-        when(mockUrlConnection.getURL()).thenReturn(new URL("https://example.org/acme"));
-
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
             assertThat(conn.getLinks("next")).containsExactly(new URL("https://example.com/acme/new-authz"));
-            assertThat(conn.getLinks("recover")).containsExactly(new URL("https://example.org/recover-acct"));
+            assertThat(conn.getLinks("recover")).containsExactly(new URL(baseUrl + "/recover-acct"));
             assertThat(conn.getLinks("terms-of-service")).containsExactly(new URL("https://example.com/acme/terms"));
             assertThat(conn.getLinks("secret-stuff")).isEmpty();
         }
@@ -266,25 +257,19 @@ public class DefaultConnectionTest {
      * Test that multiple link headers are evaluated.
      */
     @Test
-    public void testGetMultiLink() {
-        var baseUrl = url("https://example.com/acme/request/1234");
+    public void testGetMultiLink() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Link", "<https://example.com/acme/terms1>; rel=\"terms-of-service\"")
+                .withHeader("Link", "<https://example.com/acme/terms2>; rel=\"terms-of-service\"")
+                .withHeader("Link", "<../terms3>; rel=\"terms-of-service\"")
+        ));
 
-        var headers = new HashMap<String, List<String>>();
-        headers.put("Link", Arrays.asList(
-                        "<https://example.com/acme/terms1>; rel=\"terms-of-service\"",
-                        "<https://example.com/acme/terms2>; rel=\"terms-of-service\"",
-                        "<../terms3>; rel=\"terms-of-service\""
-                    ));
-
-        when(mockUrlConnection.getHeaderFields()).thenReturn(headers);
-        when(mockUrlConnection.getURL()).thenReturn(baseUrl);
-
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
             assertThat(conn.getLinks("terms-of-service")).containsExactlyInAnyOrder(
-                        url("https://example.com/acme/terms1"),
-                        url("https://example.com/acme/terms2"),
-                        url("https://example.com/acme/terms3")
+                    url("https://example.com/acme/terms1"),
+                    url("https://example.com/acme/terms2"),
+                    url(baseUrl + "/terms3")
             );
         }
     }
@@ -293,12 +278,11 @@ public class DefaultConnectionTest {
      * Test that no link headers are properly handled.
      */
     @Test
-    public void testGetNoLink() {
-        var headers = Collections.<String, List<String>>emptyMap();
-        when(mockUrlConnection.getHeaderFields()).thenReturn(headers);
+    public void testGetNoLink() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
             assertThat(conn.getLinks("something")).isEmpty();
         }
     }
@@ -307,397 +291,309 @@ public class DefaultConnectionTest {
      * Test that no Location header returns {@code null}.
      */
     @Test
-    public void testNoLocation() {
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
-            var location = conn.getLocation();
-            assertThat(location).isNull();
+    public void testNoLocation() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()));
+
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
+            assertThat(conn.getLocation()).isNull();
         }
 
-        verify(mockUrlConnection).getHeaderField("Location");
-        verifyNoMoreInteractions(mockUrlConnection);
+        verify(getRequestedFor(urlEqualTo(REQUEST_PATH)));
     }
 
     /**
      * Test if Retry-After header with absolute date is correctly parsed.
      */
     @Test
-    public void testHandleRetryAfterHeaderDate() throws IOException {
-        var retryDate = Instant.now().plus(Duration.ofHours(10)).truncatedTo(ChronoUnit.MILLIS);
+    public void testHandleRetryAfterHeaderDate() {
+        var retryDate = Instant.now().plus(Duration.ofHours(10)).truncatedTo(SECONDS);
         var retryMsg = "absolute date";
 
-        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
-        when(mockUrlConnection.getHeaderField("Retry-After")).thenReturn(retryDate.toString());
-        when(mockUrlConnection.getHeaderFieldDate("Retry-After", 0L)).thenReturn(retryDate.toEpochMilli());
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Retry-After", DATE_FORMATTER.format(retryDate))
+        ));
 
         var ex = assertThrows(AcmeRetryAfterException.class, () -> {
-            try (var conn = new DefaultConnection(mockHttpConnection)) {
-                conn.conn = mockUrlConnection;
+            try (var conn = session.connect()) {
+                conn.sendRequest(requestUrl, session, null);
                 conn.handleRetryAfter(retryMsg);
             }
         });
+
         assertThat(ex.getRetryAfter()).isEqualTo(retryDate);
         assertThat(ex.getMessage()).isEqualTo(retryMsg);
-
-        verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
     }
 
     /**
      * Test if Retry-After header with relative timespan is correctly parsed.
      */
     @Test
-    public void testHandleRetryAfterHeaderDelta() throws AcmeException, IOException {
+    public void testHandleRetryAfterHeaderDelta() {
         var delta = 10 * 60 * 60;
-        var now = System.currentTimeMillis();
+        var now = Instant.now().truncatedTo(SECONDS);
         var retryMsg = "relative time";
 
-        when(mockUrlConnection.getResponseCode())
-                .thenReturn(HttpURLConnection.HTTP_OK);
-        when(mockUrlConnection.getHeaderField("Retry-After"))
-                .thenReturn(String.valueOf(delta));
-        when(mockUrlConnection.getHeaderFieldDate(
-                        ArgumentMatchers.eq("Date"),
-                        ArgumentMatchers.anyLong()))
-                .thenReturn(now);
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Retry-After", String.valueOf(delta))
+                .withHeader("Date", DATE_FORMATTER.format(now))
+        ));
 
         var ex = assertThrows(AcmeRetryAfterException.class, () -> {
-            try (var conn = new DefaultConnection(mockHttpConnection)) {
-                conn.conn = mockUrlConnection;
+            try (var conn = session.connect()) {
+                conn.sendRequest(requestUrl, session, null);
                 conn.handleRetryAfter(retryMsg);
             }
         });
-        assertThat(ex.getRetryAfter()).isEqualTo(Instant.ofEpochMilli(now).plusSeconds(delta));
-        assertThat(ex.getMessage()).isEqualTo(retryMsg);
 
-        verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
+        assertThat(ex.getRetryAfter()).isEqualTo(now.plusSeconds(delta));
+        assertThat(ex.getMessage()).isEqualTo(retryMsg);
     }
 
     /**
      * Test if no Retry-After header is correctly handled.
      */
     @Test
-    public void testHandleRetryAfterHeaderNull() throws AcmeException, IOException {
-        when(mockUrlConnection.getResponseCode())
-                .thenReturn(HttpURLConnection.HTTP_OK);
-        when(mockUrlConnection.getHeaderField("Retry-After"))
-                .thenReturn(null);
+    public void testHandleRetryAfterHeaderNull() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Date", DATE_FORMATTER.format(Instant.now()))
+        ));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
             conn.handleRetryAfter("no header");
         }
 
-        verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
+        verify(getRequestedFor(urlEqualTo(REQUEST_PATH)));
     }
 
     /**
-     * Test if missing retry-after header is correctly handled.
+     * Test if no exception is thrown on a standard request.
      */
     @Test
-    public void testHandleRetryAfterNotAccepted() throws AcmeException, IOException {
-        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
-
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
-            conn.handleRetryAfter("http ok");
-        }
-    }
-
-    /**
-     * Test if an {@link AcmeServerException} is thrown on an acme problem.
-     */
-    @Test
-    public void testAccept() throws Exception {
-        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
-        when(mockUrlConnection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
+    public void testAccept() throws AcmeException {
+        stubFor(post(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withBody("")
+        ));
 
         session.setNonce(TestUtils.DUMMY_NONCE);
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
+        try (var conn = session.connect()) {
             var rc = conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             assertThat(rc).isEqualTo(HttpURLConnection.HTTP_OK);
         }
 
-        verify(mockUrlConnection).getResponseCode();
+        verify(postRequestedFor(urlEqualTo(REQUEST_PATH)));
     }
 
     /**
      * Test if an {@link AcmeServerException} is thrown on an acme problem.
      */
     @Test
-    public void testAcceptThrowsException() throws Exception {
-        var jsonData = "{\"type\":\"urn:ietf:params:acme:error:unauthorized\",\"detail\":\"Invalid response: 404\"}";
+    public void testAcceptThrowsException() {
+        var problem = new JSONBuilder();
+        problem.put("type", "urn:ietf:params:acme:error:unauthorized");
+        problem.put("detail", "Invalid response: 404");
 
-        when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/problem+json");
-        when(mockUrlConnection.getContentLength()).thenReturn(jsonData.length());
-        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
-        when(mockUrlConnection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
-        when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes(UTF_8)));
-        when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
+        stubFor(post(urlEqualTo(REQUEST_PATH)).willReturn(aResponse()
+                .withStatus(HttpURLConnection.HTTP_FORBIDDEN)
+                .withHeader("Content-Type", "application/problem+json")
+                .withBody(problem.toString())
+        ));
 
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         var ex = assertThrows(AcmeException.class, () -> {
-            try (var conn = new DefaultConnection(mockHttpConnection)) {
+            try (var conn = session.connect()) {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
+
         assertThat(ex).isInstanceOf(AcmeUnauthorizedException.class);
         assertThat(((AcmeUnauthorizedException) ex).getType())
                 .isEqualTo(URI.create("urn:ietf:params:acme:error:unauthorized"));
         assertThat(ex.getMessage()).isEqualTo("Invalid response: 404");
-
-        verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");
-        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
-        verify(mockUrlConnection).getContentLength();
-        verify(mockUrlConnection).getErrorStream();
-        verify(mockUrlConnection).getURL();
     }
 
     /**
      * Test if an {@link AcmeUserActionRequiredException} is thrown on an acme problem.
      */
     @Test
-    public void testAcceptThrowsUserActionRequiredException() throws Exception {
-        var jsonData = "{\"type\":\"urn:ietf:params:acme:error:userActionRequired\",\"detail\":\"Accept the TOS\"}";
+    public void testAcceptThrowsUserActionRequiredException() {
+        var problem = new JSONBuilder();
+        problem.put("type", "urn:ietf:params:acme:error:userActionRequired");
+        problem.put("detail", "Accept the TOS");
 
-        var linkHeader = new HashMap<String, List<String>>();
-        linkHeader.put("Link", singletonList("<https://example.com/tos.pdf>; rel=\"terms-of-service\""));
-
-        when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/problem+json");
-        when(mockUrlConnection.getContentLength()).thenReturn(jsonData.length());
-        when(mockUrlConnection.getHeaderFields()).thenReturn(linkHeader);
-        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
-        when(mockUrlConnection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
-        when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes(UTF_8)));
-        when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
+        stubFor(post(urlEqualTo(REQUEST_PATH)).willReturn(aResponse()
+                .withStatus(HttpURLConnection.HTTP_FORBIDDEN)
+                .withHeader("Content-Type", "application/problem+json")
+                .withHeader("Link", "<https://example.com/tos.pdf>; rel=\"terms-of-service\"")
+                .withBody(problem.toString())
+        ));
 
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         var ex = assertThrows(AcmeException.class, () -> {
-            try (var conn = new DefaultConnection(mockHttpConnection)) {
+            try (var conn = session.connect()) {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
+
         assertThat(ex).isInstanceOf(AcmeUserActionRequiredException.class);
         assertThat(((AcmeUserActionRequiredException) ex).getType())
                 .isEqualTo(URI.create("urn:ietf:params:acme:error:userActionRequired"));
         assertThat(ex.getMessage()).isEqualTo("Accept the TOS");
         assertThat(((AcmeUserActionRequiredException) ex).getTermsOfServiceUri())
                 .isEqualTo(URI.create("https://example.com/tos.pdf"));
-
-        verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");
-        verify(mockUrlConnection, atLeastOnce()).getHeaderFields();
-        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
-        verify(mockUrlConnection).getErrorStream();
-        verify(mockUrlConnection).getContentLength();
-        verify(mockUrlConnection, atLeastOnce()).getURL();
     }
 
     /**
      * Test if an {@link AcmeRateLimitedException} is thrown on an acme problem.
      */
     @Test
-    public void testAcceptThrowsRateLimitedException() throws Exception {
-        var jsonData = "{\"type\":\"urn:ietf:params:acme:error:rateLimited\",\"detail\":\"Too many invocations\"}";
+    public void testAcceptThrowsRateLimitedException() {
+        var problem = new JSONBuilder();
+        problem.put("type", "urn:ietf:params:acme:error:rateLimited");
+        problem.put("detail", "Too many invocations");
 
-        var linkHeader = new HashMap<String, List<String>>();
-        linkHeader.put("Link", singletonList("<https://example.com/rates.pdf>; rel=\"help\""));
+        var retryAfter = Instant.now().plusSeconds(30L).truncatedTo(SECONDS);
 
-        var retryAfter = Instant.now().plusSeconds(30L).truncatedTo(ChronoUnit.MILLIS);
-
-        when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/problem+json");
-        when(mockUrlConnection.getContentLength()).thenReturn(jsonData.length());
-        when(mockUrlConnection.getHeaderField("Retry-After")).thenReturn(retryAfter.toString());
-        when(mockUrlConnection.getHeaderFieldDate("Retry-After", 0L)).thenReturn(retryAfter.toEpochMilli());
-        when(mockUrlConnection.getHeaderFields()).thenReturn(linkHeader);
-        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_FORBIDDEN);
-        when(mockUrlConnection.getOutputStream()).thenReturn(new ByteArrayOutputStream());
-        when(mockUrlConnection.getErrorStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes(UTF_8)));
-        when(mockUrlConnection.getURL()).thenReturn(url("https://example.com/acme/1"));
+        stubFor(post(urlEqualTo(REQUEST_PATH)).willReturn(aResponse()
+                .withStatus(HttpURLConnection.HTTP_FORBIDDEN)
+                .withHeader("Content-Type", "application/problem+json")
+                .withHeader("Link", "<https://example.com/rates.pdf>; rel=\"help\"")
+                .withHeader("Retry-After", DATE_FORMATTER.format(retryAfter))
+                .withBody(problem.toString())
+        ));
 
         session.setNonce(TestUtils.DUMMY_NONCE);
 
-        var ex = assertThrows(AcmeException.class, () -> {
-            try (var conn = new DefaultConnection(mockHttpConnection)) {
+        var ex = assertThrows(AcmeRateLimitedException.class, () -> {
+            try (var conn = session.connect()) {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
-        assertThat(ex).isInstanceOf(AcmeRateLimitedException.class);
-        var arlex = (AcmeRateLimitedException) ex;
-        assertThat(arlex.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:rateLimited"));
-        assertThat(ex.getMessage()).isEqualTo("Too many invocations");
-        assertThat(arlex.getRetryAfter()).isEqualTo(retryAfter);
-        assertThat(arlex.getDocuments()).isNotNull();
-        assertThat(arlex.getDocuments()).hasSize(1);
-        assertThat(arlex.getDocuments().iterator().next()).isEqualTo(url("https://example.com/rates.pdf"));
 
-        verify(mockUrlConnection, atLeastOnce()).getHeaderField("Content-Type");
-        verify(mockUrlConnection, atLeastOnce()).getHeaderField("Retry-After");
-        verify(mockUrlConnection).getHeaderFieldDate("Retry-After", 0L);
-        verify(mockUrlConnection, atLeastOnce()).getHeaderFields();
-        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
-        verify(mockUrlConnection).getContentLength();
-        verify(mockUrlConnection).getErrorStream();
-        verify(mockUrlConnection, atLeastOnce()).getURL();
+        assertThat(ex.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:rateLimited"));
+        assertThat(ex.getMessage()).isEqualTo("Too many invocations");
+        assertThat(ex.getRetryAfter()).isEqualTo(retryAfter);
+        assertThat(ex.getDocuments()).isNotNull();
+        assertThat(ex.getDocuments()).hasSize(1);
+        assertThat(ex.getDocuments().iterator().next()).isEqualTo(url("https://example.com/rates.pdf"));
     }
 
     /**
      * Test if an {@link AcmeServerException} is thrown on another problem.
      */
     @Test
-    public void testAcceptThrowsOtherException() throws IOException {
-        when(mockUrlConnection.getHeaderField("Content-Type"))
-                .thenReturn("application/problem+json");
-        when(mockUrlConnection.getResponseCode())
-                .thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
-        when(mockUrlConnection.getURL())
-                .thenReturn(url("https://example.com/acme/1"));
-        when(mockUrlConnection.getOutputStream())
-                .thenReturn(new ByteArrayOutputStream());
+    public void testAcceptThrowsOtherException() {
+        var problem = new JSONBuilder();
+        problem.put("type", "urn:zombie:error:apocalypse");
+        problem.put("detail", "Zombie apocalypse in progress");
+
+        stubFor(post(urlEqualTo(REQUEST_PATH)).willReturn(aResponse()
+                .withStatus(HttpURLConnection.HTTP_INTERNAL_ERROR)
+                .withHeader("Content-Type", "application/problem+json")
+                .withBody(problem.toString())
+        ));
 
         session.setNonce(TestUtils.DUMMY_NONCE);
 
-        var ex = assertThrows(AcmeException.class, () -> {
-            try (var conn = new DefaultConnection(mockHttpConnection) {
-                @Override
-                public JSON readJsonResponse() {
-                    var result = new JSONBuilder();
-                    result.put("type", "urn:zombie:error:apocalypse");
-                    result.put("detail", "Zombie apocalypse in progress");
-                    return result.toJSON();
-                }
-            }) {
+        var ex = assertThrows(AcmeServerException.class, () -> {
+            try (var conn = session.connect()) {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
-        assertThat(ex).isInstanceOf(AcmeServerException.class);
-        assertThat(((AcmeServerException) ex).getType())
-                .isEqualTo(URI.create("urn:zombie:error:apocalypse"));
-        assertThat(ex.getMessage()).isEqualTo("Zombie apocalypse in progress");
 
-        verify(mockUrlConnection).getHeaderField("Content-Type");
-        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
-        verify(mockUrlConnection).getURL();
+        assertThat(ex.getType()).isEqualTo(URI.create("urn:zombie:error:apocalypse"));
+        assertThat(ex.getMessage()).isEqualTo("Zombie apocalypse in progress");
     }
 
     /**
      * Test if an {@link AcmeException} is thrown if there is no error type.
      */
     @Test
-    public void testAcceptThrowsNoTypeException() throws IOException {
-        when(mockUrlConnection.getHeaderField("Content-Type"))
-                .thenReturn("application/problem+json");
-        when(mockUrlConnection.getResponseCode())
-                .thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
-        when(mockUrlConnection.getURL())
-                .thenReturn(url("https://example.com/acme/1"));
-        when(mockUrlConnection.getOutputStream())
-                .thenReturn(new ByteArrayOutputStream());
+    public void testAcceptThrowsNoTypeException() {
+        stubFor(post(urlEqualTo(REQUEST_PATH)).willReturn(aResponse()
+                .withStatus(HttpURLConnection.HTTP_INTERNAL_ERROR)
+                .withHeader("Content-Type", "application/problem+json")
+                .withBody("{}")
+        ));
 
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         var ex = assertThrows(AcmeProtocolException.class, () -> {
-            try (var conn = new DefaultConnection(mockHttpConnection) {
-                @Override
-                public JSON readJsonResponse() {
-                    return JSON.empty();
-                }
-            }) {
+            try (var conn = session.connect()) {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
         assertThat(ex.getMessage()).isNotEmpty();
-
-        verify(mockUrlConnection).getHeaderField("Content-Type");
-        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
-        verify(mockUrlConnection).getURL();
     }
 
     /**
      * Test if an {@link AcmeException} is thrown if there is a generic error.
      */
     @Test
-    public void testAcceptThrowsServerException() throws IOException {
-        when(mockUrlConnection.getHeaderField("Content-Type"))
-                .thenReturn("text/html");
-        when(mockUrlConnection.getResponseCode())
-                .thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
-        when(mockUrlConnection.getResponseMessage())
-                .thenReturn("Infernal Server Error");
-        when(mockUrlConnection.getOutputStream())
-                .thenReturn(new ByteArrayOutputStream());
+    public void testAcceptThrowsServerException() {
+        stubFor(post(urlEqualTo(REQUEST_PATH)).willReturn(aResponse()
+                .withStatus(HttpURLConnection.HTTP_INTERNAL_ERROR)
+                .withStatusMessage("Infernal Server Error")
+                .withHeader("Content-Type", "text/html")
+                .withBody("<html><head><title>Infernal Server Error</title></head></html>")
+        ));
 
         session.setNonce(TestUtils.DUMMY_NONCE);
 
         var ex = assertThrows(AcmeException.class, () -> {
-            try (var conn = new DefaultConnection(mockHttpConnection)) {
+            try (var conn = session.connect()) {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
         assertThat(ex.getMessage()).isEqualTo("HTTP 500: Infernal Server Error");
-
-        verify(mockUrlConnection).getHeaderField("Content-Type");
-        verify(mockUrlConnection, atLeastOnce()).getResponseCode();
-        verify(mockUrlConnection, atLeastOnce()).getResponseMessage();
     }
 
     /**
      * Test GET requests.
      */
     @Test
-    public void testSendRequest() throws Exception {
-        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+    public void testSendRequest() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()));
 
-        try (var conn = new DefaultConnection(mockHttpConnection) {
-            @Override
-            public String getNonce() {
-                return null;
-            }
-        }) {
+        try (var conn = session.connect()) {
             conn.sendRequest(requestUrl, session, null);
         }
 
-        verify(mockUrlConnection).setRequestMethod("GET");
-        verify(mockUrlConnection).setRequestProperty("Accept", "application/json");
-        verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
-        verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
-        verify(mockUrlConnection).setDoOutput(false);
-        verify(mockUrlConnection).connect();
-        verify(mockUrlConnection).getResponseCode();
-        verify(mockUrlConnection, atLeast(0)).getHeaderFields();
-        verifyNoMoreInteractions(mockUrlConnection);
+        verify(getRequestedFor(urlEqualTo(REQUEST_PATH))
+                .withHeader("Accept", equalTo("application/json"))
+                .withHeader("Accept-Charset", equalTo("utf-8"))
+                .withHeader("Accept-Language", equalTo("ja-JP"))
+                .withHeader("User-Agent", matching("^acme4j/.*$"))
+        );
     }
 
     /**
      * Test GET requests with If-Modified-Since.
      */
     @Test
-    public void testSendRequestIfModifiedSince() throws Exception {
-        var ifModifiedSince = ZonedDateTime.now(ZoneId.of("UTC"));
+    public void testSendRequestIfModifiedSince() throws AcmeException {
+        var ifModifiedSince = ZonedDateTime.now(ZoneId.of("UTC")).truncatedTo(SECONDS);
 
-        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(aResponse()
+                .withStatus(HttpURLConnection.HTTP_NOT_MODIFIED))
+        );
 
-        try (var conn = new DefaultConnection(mockHttpConnection) {
-            @Override
-            public String getNonce() {
-                return null;
-            }
-        }) {
+        try (var conn = session.connect()) {
             var rc = conn.sendRequest(requestUrl, session, ifModifiedSince);
             assertThat(rc).isEqualTo(HttpURLConnection.HTTP_NOT_MODIFIED);
         }
 
-        verify(mockUrlConnection).setRequestMethod("GET");
-        verify(mockUrlConnection).setRequestProperty("Accept", "application/json");
-        verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
-        verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
-        verify(mockUrlConnection).setRequestProperty("If-Modified-Since", ifModifiedSince.format(RFC_1123_DATE_TIME));
-        verify(mockUrlConnection).setDoOutput(false);
-        verify(mockUrlConnection).connect();
-        verify(mockUrlConnection).getResponseCode();
-        verify(mockUrlConnection, atLeast(0)).getHeaderFields();
-        verifyNoMoreInteractions(mockUrlConnection);
+        verify(getRequestedFor(urlEqualTo(REQUEST_PATH))
+                .withHeader("If-Modified-Since", equalToDateTime(ifModifiedSince))
+                .withHeader("Accept", equalTo("application/json"))
+                .withHeader("Accept-Charset", equalTo("utf-8"))
+                .withHeader("Accept-Language", equalTo("ja-JP"))
+                .withHeader("User-Agent", matching("^acme4j/.*$"))
+        );
     }
 
     /**
@@ -707,45 +603,33 @@ public class DefaultConnectionTest {
     public void testSendSignedRequest() throws Exception {
         var nonce1 = URL_ENCODER.encodeToString("foo-nonce-1-foo".getBytes());
         var nonce2 = URL_ENCODER.encodeToString("foo-nonce-2-foo".getBytes());
-        var outputStream = new ByteArrayOutputStream();
 
-        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
-        when(mockUrlConnection.getOutputStream()).thenReturn(outputStream);
+        stubFor(head(urlEqualTo(NEW_NONCE_PATH)).willReturn(ok()
+                .withHeader("Replay-Nonce", nonce1)));
 
-        try (var conn = new DefaultConnection(mockHttpConnection) {
-            @Override
-            public void resetNonce(Session session) {
-                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
-                assertThat(session.getNonce()).isNull();
-                session.setNonce(nonce1);
-            }
+        stubFor(post(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Replay-Nonce", nonce2)
+        ));
 
-            @Override
-            public String getNonce() {
-                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
-                assertThat(session.getNonce()).isEqualTo(nonce1);
-                return nonce2;
-            }
-        }) {
+        try (var conn = session.connect()) {
             var cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");
             conn.sendSignedRequest(requestUrl, cb, login);
         }
 
-        verify(mockUrlConnection).setRequestMethod("POST");
-        verify(mockUrlConnection).setRequestProperty("Accept", "application/json");
-        verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
-        verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
-        verify(mockUrlConnection).setRequestProperty("Content-Type", "application/jose+json");
-        verify(mockUrlConnection).connect();
-        verify(mockUrlConnection).setDoOutput(true);
-        verify(mockUrlConnection).setFixedLengthStreamingMode(outputStream.toByteArray().length);
-        verify(mockUrlConnection).getResponseCode();
-        verify(mockUrlConnection).getOutputStream();
-        verify(mockUrlConnection, atLeast(0)).getHeaderFields();
-        verifyNoMoreInteractions(mockUrlConnection);
+        assertThat(session.getNonce()).isEqualTo(nonce2);
 
-        var data = JSON.parse(outputStream.toString(UTF_8));
+        verify(postRequestedFor(urlEqualTo(REQUEST_PATH))
+                .withHeader("Accept", equalTo("application/json"))
+                .withHeader("Accept-Charset", equalTo("utf-8"))
+                .withHeader("Accept-Language", equalTo("ja-JP"))
+                .withHeader("User-Agent", matching("^acme4j/.*$"))
+        );
+
+        var requests = findAll(postRequestedFor(urlEqualTo(REQUEST_PATH)));
+        assertThat(requests).hasSize(1);
+
+        var data = JSON.parse(requests.get(0).getBodyAsString());
         var encodedHeader = data.get("protected").asString();
         var encodedSignature = data.get("signature").asString();
         var encodedPayload = data.get("payload").asString();
@@ -775,43 +659,31 @@ public class DefaultConnectionTest {
     public void testSendSignedPostAsGetRequest() throws Exception {
         var nonce1 = URL_ENCODER.encodeToString("foo-nonce-1-foo".getBytes());
         var nonce2 = URL_ENCODER.encodeToString("foo-nonce-2-foo".getBytes());
-        var outputStream = new ByteArrayOutputStream();
 
-        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
-        when(mockUrlConnection.getOutputStream()).thenReturn(outputStream);
+        stubFor(head(urlEqualTo(NEW_NONCE_PATH)).willReturn(ok()
+                .withHeader("Replay-Nonce", nonce1)));
 
-        try (var conn = new DefaultConnection(mockHttpConnection) {
-            @Override
-            public void resetNonce(Session session) {
-                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
-                assertThat(session.getNonce()).isNull();
-                session.setNonce(nonce1);
-            }
+        stubFor(post(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Replay-Nonce", nonce2)));
 
-            @Override
-            public String getNonce() {
-                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
-                assertThat(session.getNonce()).isEqualTo(nonce1);
-                return nonce2;
-            }
-        }) {
+        try (var conn = session.connect()) {
             conn.sendSignedPostAsGetRequest(requestUrl, login);
         }
 
-        verify(mockUrlConnection).setRequestMethod("POST");
-        verify(mockUrlConnection).setRequestProperty("Accept", "application/json");
-        verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
-        verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
-        verify(mockUrlConnection).setRequestProperty("Content-Type", "application/jose+json");
-        verify(mockUrlConnection).connect();
-        verify(mockUrlConnection).setDoOutput(true);
-        verify(mockUrlConnection).setFixedLengthStreamingMode(outputStream.toByteArray().length);
-        verify(mockUrlConnection).getResponseCode();
-        verify(mockUrlConnection).getOutputStream();
-        verify(mockUrlConnection, atLeast(0)).getHeaderFields();
-        verifyNoMoreInteractions(mockUrlConnection);
+        assertThat(session.getNonce()).isEqualTo(nonce2);
 
-        var data = JSON.parse(outputStream.toString(UTF_8));
+        verify(postRequestedFor(urlEqualTo(REQUEST_PATH))
+                .withHeader("Accept", equalTo("application/json"))
+                .withHeader("Accept-Charset", equalTo("utf-8"))
+                .withHeader("Accept-Language", equalTo("ja-JP"))
+                .withHeader("Content-Type", equalTo("application/jose+json"))
+                .withHeader("User-Agent", matching("^acme4j/.*$"))
+        );
+
+        var requests = findAll(postRequestedFor(urlEqualTo(REQUEST_PATH)));
+        assertThat(requests).hasSize(1);
+
+        var data = JSON.parse(requests.get(0).getBodyAsString());
         var encodedHeader = data.get("protected").asString();
         var encodedSignature = data.get("signature").asString();
         var encodedPayload = data.get("payload").asString();
@@ -838,44 +710,29 @@ public class DefaultConnectionTest {
      * Test certificate POST-as-GET requests.
      */
     @Test
-    public void testSendCertificateRequest() throws Exception {
+    public void testSendCertificateRequest() throws AcmeException {
         var nonce1 = URL_ENCODER.encodeToString("foo-nonce-1-foo".getBytes());
         var nonce2 = URL_ENCODER.encodeToString("foo-nonce-2-foo".getBytes());
-        var outputStream = new ByteArrayOutputStream();
 
-        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
-        when(mockUrlConnection.getOutputStream()).thenReturn(outputStream);
+        stubFor(head(urlEqualTo(NEW_NONCE_PATH)).willReturn(ok()
+                .withHeader("Replay-Nonce", nonce1)));
 
-        try (var conn = new DefaultConnection(mockHttpConnection) {
-            @Override
-            public void resetNonce(Session session) {
-                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
-                assertThat(session.getNonce()).isNull();
-                session.setNonce(nonce1);
-            }
+        stubFor(post(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Replay-Nonce", nonce2)));
 
-            @Override
-            public String getNonce() {
-                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
-                assertThat(session.getNonce()).isEqualTo(nonce1);
-                return nonce2;
-            }
-        }) {
+        try (var conn = session.connect()) {
             conn.sendCertificateRequest(requestUrl, login);
         }
 
-        verify(mockUrlConnection).setRequestMethod("POST");
-        verify(mockUrlConnection).setRequestProperty("Accept", "application/pem-certificate-chain");
-        verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
-        verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
-        verify(mockUrlConnection).setRequestProperty("Content-Type", "application/jose+json");
-        verify(mockUrlConnection).setDoOutput(true);
-        verify(mockUrlConnection).connect();
-        verify(mockUrlConnection).setFixedLengthStreamingMode(outputStream.toByteArray().length);
-        verify(mockUrlConnection).getResponseCode();
-        verify(mockUrlConnection).getOutputStream();
-        verify(mockUrlConnection, atLeast(0)).getHeaderFields();
-        verifyNoMoreInteractions(mockUrlConnection);
+        assertThat(session.getNonce()).isEqualTo(nonce2);
+
+        verify(postRequestedFor(urlEqualTo(REQUEST_PATH))
+                .withHeader("Accept", equalTo("application/pem-certificate-chain"))
+                .withHeader("Accept-Charset", equalTo("utf-8"))
+                .withHeader("Accept-Language", equalTo("ja-JP"))
+                .withHeader("Content-Type", equalTo("application/jose+json"))
+                .withHeader("User-Agent", matching("^acme4j/.*$"))
+        );
     }
 
     /**
@@ -885,45 +742,33 @@ public class DefaultConnectionTest {
     public void testSendSignedRequestNoKid() throws Exception {
         var nonce1 = URL_ENCODER.encodeToString("foo-nonce-1-foo".getBytes());
         var nonce2 = URL_ENCODER.encodeToString("foo-nonce-2-foo".getBytes());
-        var outputStream = new ByteArrayOutputStream();
 
-        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
-        when(mockUrlConnection.getOutputStream()).thenReturn(outputStream);
+        stubFor(head(urlEqualTo(NEW_NONCE_PATH)).willReturn(ok()
+                .withHeader("Replay-Nonce", nonce1)));
 
-        try (var conn = new DefaultConnection(mockHttpConnection) {
-            @Override
-            public void resetNonce(Session session) {
-                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
-                assertThat(session.getNonce()).isNull();
-                session.setNonce(nonce1);
-            }
+        stubFor(post(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Replay-Nonce", nonce2)));
 
-            @Override
-            public String getNonce() {
-                assertThat(session).isSameAs(DefaultConnectionTest.this.session);
-                assertThat(session.getNonce()).isEqualTo(nonce1);
-                return nonce2;
-            }
-        }) {
+        try (var conn = session.connect()) {
             var cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");
             conn.sendSignedRequest(requestUrl, cb, session, keyPair);
         }
 
-        verify(mockUrlConnection).setRequestMethod("POST");
-        verify(mockUrlConnection).setRequestProperty("Accept", "application/json");
-        verify(mockUrlConnection).setRequestProperty("Accept-Charset", "utf-8");
-        verify(mockUrlConnection).setRequestProperty("Accept-Language", "ja-JP");
-        verify(mockUrlConnection).setRequestProperty("Content-Type", "application/jose+json");
-        verify(mockUrlConnection).connect();
-        verify(mockUrlConnection).setDoOutput(true);
-        verify(mockUrlConnection).setFixedLengthStreamingMode(outputStream.toByteArray().length);
-        verify(mockUrlConnection).getResponseCode();
-        verify(mockUrlConnection).getOutputStream();
-        verify(mockUrlConnection, atLeast(0)).getHeaderFields();
-        verifyNoMoreInteractions(mockUrlConnection);
+        assertThat(session.getNonce()).isEqualTo(nonce2);
 
-        var data = JSON.parse(outputStream.toString(UTF_8));
+        verify(postRequestedFor(urlEqualTo(REQUEST_PATH))
+                .withHeader("Accept", equalTo("application/json"))
+                .withHeader("Accept-Charset", equalTo("utf-8"))
+                .withHeader("Accept-Language", equalTo("ja-JP"))
+                .withHeader("Content-Type", equalTo("application/jose+json"))
+                .withHeader("User-Agent", matching("^acme4j/.*$"))
+        );
+
+        var requests = findAll(postRequestedFor(urlEqualTo(REQUEST_PATH)));
+        assertThat(requests).hasSize(1);
+
+        var data = JSON.parse(requests.get(0).getBodyAsString());
         String encodedHeader = data.get("protected").asString();
         String encodedSignature = data.get("signature").asString();
         String encodedPayload = data.get("payload").asString();
@@ -955,16 +800,12 @@ public class DefaultConnectionTest {
      * Test signed POST requests if there is no nonce.
      */
     @Test
-    public void testSendSignedRequestNoNonce() throws Exception {
-        when(mockHttpConnection.openConnection(eq(new URL("https://example.com/acme/new-nonce")), any()))
-                .thenReturn(mockUrlConnection);
-        when(mockUrlConnection.getResponseCode())
-                .thenReturn(HttpURLConnection.HTTP_NOT_FOUND);
+    public void testSendSignedRequestNoNonce() {
+        stubFor(head(urlEqualTo(NEW_NONCE_PATH)).willReturn(notFound()));
 
         assertThrows(AcmeException.class, () -> {
-            try (var conn = new DefaultConnection(mockHttpConnection)) {
-                var cb = new JSONBuilder();
-                conn.sendSignedRequest(requestUrl, cb, DefaultConnectionTest.this.session, DefaultConnectionTest.this.keyPair);
+            try (var conn = session.connect()) {
+                conn.sendSignedRequest(requestUrl, new JSONBuilder(), session, keyPair);
             }
         });
     }
@@ -973,28 +814,25 @@ public class DefaultConnectionTest {
      * Test getting a JSON response.
      */
     @Test
-    public void testReadJsonResponse() throws Exception {
-        var jsonData = "{\n\"foo\":123,\n\"bar\":\"a-string\"\n}\n";
+    public void testReadJsonResponse() throws AcmeException {
+        var response = new JSONBuilder();
+        response.put("foo", 123);
+        response.put("bar", "a-string");
 
-        when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/json");
-        when(mockUrlConnection.getContentLength()).thenReturn(jsonData.length());
-        when(mockUrlConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
-        when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(jsonData.getBytes(UTF_8)));
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Content-Type", "application/json")
+                .withBody(response.toString())
+        ));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
+
             var result = conn.readJsonResponse();
             assertThat(result).isNotNull();
             assertThat(result.keySet()).hasSize(2);
             assertThat(result.get("foo").asInt()).isEqualTo(123);
             assertThat(result.get("bar").asString()).isEqualTo("a-string");
         }
-
-        verify(mockUrlConnection).getHeaderField("Content-Type");
-        verify(mockUrlConnection).getContentLength();
-        verify(mockUrlConnection).getResponseCode();
-        verify(mockUrlConnection).getInputStream();
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
@@ -1002,12 +840,14 @@ public class DefaultConnectionTest {
      */
     @Test
     public void testReadCertificate() throws Exception {
-        when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/pem-certificate-chain");
-        when(mockUrlConnection.getInputStream()).thenReturn(getClass().getResourceAsStream("/cert.pem"));
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Content-Type", "application/pem-certificate-chain")
+                .withBody(getResourceAsByteArray("/cert.pem"))
+        ));
 
         List<X509Certificate> downloaded;
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
             downloaded = conn.readCertificates();
         }
 
@@ -1019,10 +859,6 @@ public class DefaultConnectionTest {
         for (var ix = 0; ix < downloaded.size(); ix++) {
             assertThat(downloaded.get(ix).getEncoded()).isEqualTo(original.get(ix).getEncoded());
         }
-
-        verify(mockUrlConnection).getHeaderField("Content-Type");
-        verify(mockUrlConnection).getInputStream();
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
@@ -1042,12 +878,14 @@ public class DefaultConnectionTest {
             brokenPem = baos.toByteArray();
         }
 
-        when(mockUrlConnection.getHeaderField("Content-Type")).thenReturn("application/pem-certificate-chain");
-        when(mockUrlConnection.getInputStream()).thenReturn(new ByteArrayInputStream(brokenPem));
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Content-Type", "application/pem-certificate-chain")
+                .withBody(brokenPem)
+        ));
 
         assertThrows(AcmeProtocolException.class, () -> {
-            try (var conn = new DefaultConnection(mockHttpConnection)) {
-                conn.conn = mockUrlConnection;
+            try (var conn = session.connect()) {
+                conn.sendRequest(requestUrl, session, null);
                 conn.readCertificates();
             }
         });
@@ -1057,155 +895,134 @@ public class DefaultConnectionTest {
      * Test that {@link DefaultConnection#getLastModified()} returns valid dates.
      */
     @Test
-    public void testLastModifiedUnset() {
-        when(mockUrlConnection.getHeaderField("Last-Modified")).thenReturn(null);
+    public void testLastModifiedUnset() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
             assertThat(conn.getLastModified().isPresent()).isFalse();
         }
-
-        verify(mockUrlConnection).getHeaderField("Last-Modified");
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     @Test
-    public void testLastModifiedSet() {
-        when(mockUrlConnection.getHeaderField("Last-Modified")).thenReturn("Thu, 07 May 2020 19:42:46 GMT");
+    public void testLastModifiedSet() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Last-Modified", "Thu, 07 May 2020 19:42:46 GMT")
+        ));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
+
             var lm = conn.getLastModified();
             assertThat(lm.isPresent()).isTrue();
             assertThat(lm.get().format(DateTimeFormatter.ISO_DATE_TIME))
                     .isEqualTo("2020-05-07T19:42:46Z");
         }
-
-        verify(mockUrlConnection).getHeaderField("Last-Modified");
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     @Test
-    public void testLastModifiedInvalid() {
-        when(mockUrlConnection.getHeaderField("Last-Modified")).thenReturn("iNvAlId");
+    public void testLastModifiedInvalid() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Last-Modified", "iNvAlId")
+        ));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
             assertThat(conn.getLastModified().isPresent()).isFalse();
         }
-
-        verify(mockUrlConnection).getHeaderField("Last-Modified");
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     /**
      * Test that {@link DefaultConnection#getExpiration()} returns valid dates.
      */
     @Test
-    public void testExpirationUnset() {
-        when(mockUrlConnection.getHeaderField("Cache-Control")).thenReturn(null);
-        when(mockUrlConnection.getHeaderField("Expires")).thenReturn(null);
+    public void testExpirationUnset() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
             assertThat(conn.getExpiration().isPresent()).isFalse();
         }
-
-        verify(mockUrlConnection).getHeaderField("Cache-Control");
-        verify(mockUrlConnection).getHeaderField("Expires");
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     @Test
-    public void testExpirationNoCache() {
-        when(mockUrlConnection.getHeaderField("Cache-Control")).thenReturn("public, no-cache");
-        when(mockUrlConnection.getHeaderField("Expires")).thenReturn(null);
+    public void testExpirationNoCache() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Cache-Control", "public, no-cache")
+        ));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
             assertThat(conn.getExpiration().isPresent()).isFalse();
         }
-
-        verify(mockUrlConnection).getHeaderField("Cache-Control");
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     @Test
-    public void testExpirationMaxAgeZero() {
-        when(mockUrlConnection.getHeaderField("Cache-Control")).thenReturn("public, max-age=0, no-cache");
-        when(mockUrlConnection.getHeaderField("Expires")).thenReturn(null);
+    public void testExpirationMaxAgeZero() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Cache-Control", "public, max-age=0, no-cache")
+        ));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
             assertThat(conn.getExpiration().isPresent()).isFalse();
         }
-
-        verify(mockUrlConnection).getHeaderField("Cache-Control");
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     @Test
-    public void testExpirationMaxAgeButNoCache() {
-        when(mockUrlConnection.getHeaderField("Cache-Control")).thenReturn("public, max-age=3600, no-cache");
-        when(mockUrlConnection.getHeaderField("Expires")).thenReturn(null);
+    public void testExpirationMaxAgeButNoCache() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Cache-Control", "public, max-age=3600, no-cache")
+        ));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
             assertThat(conn.getExpiration().isPresent()).isFalse();
         }
-
-        verify(mockUrlConnection).getHeaderField("Cache-Control");
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     @Test
-    public void testExpirationMaxAge() {
-        when(mockUrlConnection.getHeaderField("Cache-Control")).thenReturn("max-age=3600");
-        when(mockUrlConnection.getHeaderField("Expires")).thenReturn(null);
+    public void testExpirationMaxAge() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Cache-Control", "max-age=3600")
+        ));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
+
             var exp = conn.getExpiration();
             assertThat(exp.isPresent()).isTrue();
             assertThat(exp.get().isAfter(ZonedDateTime.now().plusHours(1).minusMinutes(1))).isTrue();
             assertThat(exp.get().isBefore(ZonedDateTime.now().plusHours(1).plusMinutes(1))).isTrue();
         }
-
-        verify(mockUrlConnection).getHeaderField("Cache-Control");
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     @Test
-    public void testExpirationExpires() {
-        when(mockUrlConnection.getHeaderField("Cache-Control")).thenReturn(null);
-        when(mockUrlConnection.getHeaderField("Expires")).thenReturn("Thu, 18 Jun 2020 08:43:04 GMT");
+    public void testExpirationExpires() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Expires", "Thu, 18 Jun 2020 08:43:04 GMT")
+        ));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
+
             var exp = conn.getExpiration();
             assertThat(exp.isPresent()).isTrue();
             assertThat(exp.get().format(DateTimeFormatter.ISO_DATE_TIME))
                     .isEqualTo("2020-06-18T08:43:04Z");
         }
-
-        verify(mockUrlConnection).getHeaderField("Cache-Control");
-        verify(mockUrlConnection).getHeaderField("Expires");
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
     @Test
-    public void testExpirationInvalidExpires() {
-        when(mockUrlConnection.getHeaderField("Cache-Control")).thenReturn(null);
-        when(mockUrlConnection.getHeaderField("Expires")).thenReturn("iNvAlId");
+    public void testExpirationInvalidExpires() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Expires", "iNvAlId")
+        ));
 
-        try (var conn = new DefaultConnection(mockHttpConnection)) {
-            conn.conn = mockUrlConnection;
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
             assertThat(conn.getExpiration().isPresent()).isFalse();
         }
-
-        verify(mockUrlConnection).getHeaderField("Cache-Control");
-        verify(mockUrlConnection).getHeaderField("Expires");
-        verifyNoMoreInteractions(mockUrlConnection);
     }
 
 }
