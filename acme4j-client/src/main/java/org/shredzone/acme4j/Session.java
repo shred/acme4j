@@ -163,27 +163,6 @@ public class Session {
     }
 
     /**
-     * Gets the {@link Proxy} to be used for connections.
-     *
-     * @deprecated Use {@code networkSettings().getProxy()}
-     */
-    @Deprecated
-    public Proxy getProxy() {
-        return networkSettings.getProxy();
-    }
-
-    /**
-     * Sets a {@link Proxy} that is to be used for all connections. If {@code null},
-     * {@link Proxy#NO_PROXY} is used, which is also the default.
-     *
-     * @deprecated Use {@code networkSettings().setProxy(Proxy)}
-     */
-    @Deprecated
-    public void setProxy(@Nullable Proxy proxy) {
-        networkSettings.setProxy(proxy);
-    }
-
-    /**
      * Returns the current {@link NetworkSettings}.
      *
      * @return {@link NetworkSettings}

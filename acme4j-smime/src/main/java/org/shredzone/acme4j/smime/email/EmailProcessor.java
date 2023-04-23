@@ -108,43 +108,6 @@ public final class EmailProcessor {
     }
 
     /**
-     * Performs an S/MIME validation and processes the given e-mail message.
-     * <p>
-     * The owner of the given certificate must be the sender of that email.
-     *
-     * @param message
-     *         E-mail that was received from the CA.
-     * @param mailSession
-     *         A {@link Session} that can be used for processing inner e-mails.
-     * @param signCert
-     *         The signing certificate of the sender.
-     * @param strict
-     *         If {@code true}, the S/MIME protected headers "From", "To", and "Subject"
-     *         <em>must</em> match the headers of the received message. If {@code false},
-     *         only the S/MIME protected headers are used, and the headers of the received
-     *         message are ignored.
-     * @return EmailProcessor for this e-mail
-     * @throws AcmeInvalidMessageException
-     *         if a validation failed, and the message <em>must</em> be rejected.
-     * @since 2.15
-     * @deprecated Use {@link #signedMessage(Message)} or {@link #builder()} instead.
-     */
-    @Deprecated
-    public static EmailProcessor smimeMessage(Message message, Session mailSession,
-                                              X509Certificate signCert, boolean strict)
-            throws AcmeInvalidMessageException {
-        var builder = builder()
-                .mailSession(mailSession)
-                .certificate(signCert);
-        if (strict) {
-            builder.strict();
-        } else {
-            builder.relaxed();
-        }
-        return builder.build(message);
-    }
-
-    /**
      * Creates a new {@link EmailProcessor} for the incoming "Challenge" message.
      * <p>
      * The incoming message is validated against the requirements of RFC-8823.
