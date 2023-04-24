@@ -43,9 +43,8 @@ By default, the system's default locale is used.
 
 ## Network Settings
 
-_acme4j_ uses a standard `HttpURLConnection` for HTTP connections. You can use `Session.networkSettings()` to change some network parameters for the session.
+You can use `Session.networkSettings()` to change some network parameters for the session.
 
-* If a proxy must be used for internet connections, you can set a `Proxy` instance via `setProxy()`. An alternative is to use the system properties `https.proxyHost` and `https.proxyPort` to globally set a proxy for the Java process.
+* If a proxy must be used for internet connections, you can set a `ProxySelector` instance via `setProxySelector()`.
 * To change network timeouts, use `setTimeout()`. The default timeout is 10 seconds. You can either increase the timeout on poor network connections, or reduce it to fail early on network errors.
-
-If the proxy needs authentication, you need to set a default `Authenticator`. Be careful: Most code snippets I have found on the internet will send out the proxy credentials to anyone who is asking. See [this blog article](https://rolandtapken.de/blog/2012-04/java-process-httpproxyuser-and-httpproxypassword) for a good way to implement a proxy `Authenticator`.
+* If you need authentication (e.g. for the proxy), you can set an `Authenticator` via `setAuthenticator()`. Be careful here! Most code snippets I have found on the internet will send out the proxy credentials to anyone who is asking. You should check `Authenticator.getRequestorType()` and make sure it is `RequestorType.PROXY` before sending the proxy credentials.

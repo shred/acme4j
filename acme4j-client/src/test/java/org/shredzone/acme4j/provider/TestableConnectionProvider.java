@@ -25,6 +25,7 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DummyConnection;
+import org.shredzone.acme4j.connector.NetworkSettings;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -32,7 +33,7 @@ import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
  * Test implementation of {@link AcmeProvider}. It also implements a dummy implementation
- * of {@link Connection} that is always returned on {@link #connect(URI)}.
+ * of {@link Connection} that is always returned on {@link #connect(URI, NetworkSettings)}.
  */
 public class TestableConnectionProvider extends DummyConnection implements AcmeProvider {
     private final Map<String, BiFunction<Login, JSON, Challenge>> creatorMap = new HashMap<>();
@@ -119,7 +120,7 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
     }
 
     @Override
-    public Connection connect(URI serverUri) {
+    public Connection connect(URI serverUri, NetworkSettings networkSettings) {
         return this;
     }
 

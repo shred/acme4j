@@ -15,14 +15,12 @@ package org.shredzone.acme4j.connector;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
-import java.io.IOException;
-import java.net.HttpURLConnection;
+import java.net.Authenticator;
 import java.net.URL;
+import java.net.http.HttpClient;
 import java.time.Duration;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -31,41 +29,58 @@ import org.junit.jupiter.api.Test;
 public class HttpConnectorTest {
 
     /**
-     * Test if a HTTP connection can be opened.
-     * <p>
-     * This is just a mock to check that the parameters are properly set.
+     * Test if a {@link java.net.http.HttpClient.Builder} can be created and has proper
+     * default values.
      */
     @Test
-    public void testMockOpenConnection() {
+    public void testClientBuilderDefaultValues() {
         var settings = new NetworkSettings();
-        settings.setTimeout(Duration.ofSeconds(50));
 
-        var conn = mock(HttpURLConnection.class);
+        var connector = new HttpConnector(settings);
+        var client = connector.createClientBuilder().build();
 
-        var connector = new HttpConnector();
-        connector.configure(conn, settings);
-
-        verify(conn).setConnectTimeout(50000);
-        verify(conn).setReadTimeout(50000);
-        verify(conn).setUseCaches(false);
-        verify(conn).setRequestProperty("User-Agent", HttpConnector.defaultUserAgent());
+        assertThat(client.connectTimeout().orElseThrow()).isEqualTo(settings.getTimeout());
+        assertThat(client.followRedirects()).isEqualTo(HttpClient.Redirect.NORMAL);
+        assertThat(client.authenticator()).isEmpty();
     }
 
     /**
-     * Test if a HTTP connection can be opened.
-     * <p>
-     * This test requires a network connection. It should be excluded from automated
-     * builds.
+     * Test if a {@link java.net.http.HttpClient.Builder} can be created and if it is
+     * preconfigured properly.
      */
     @Test
-    @Tag("requires-network")
-    public void testOpenConnection() throws IOException {
+    public void testClientBuilder() {
+        var timeout = Duration.ofSeconds(50);
+        var authenticator = mock(Authenticator.class);
+
         var settings = new NetworkSettings();
-        var connector = new HttpConnector();
-        var conn = connector.openConnection(new URL("http://example.com"), settings);
-        assertThat(conn).isNotNull();
-        conn.connect();
-        assertThat(conn.getResponseCode()).isEqualTo(HttpURLConnection.HTTP_OK);
+        settings.setTimeout(timeout);
+        settings.setAuthenticator(authenticator);
+
+        var connector = new HttpConnector(settings);
+        var client = connector.createClientBuilder().build();
+
+        assertThat(client.connectTimeout().orElseThrow()).isEqualTo(timeout);
+        assertThat(client.followRedirects()).isEqualTo(HttpClient.Redirect.NORMAL);
+        assertThat(client.authenticator().orElseThrow()).isSameAs(authenticator);
+    }
+
+    /**
+     * Test if a {@link java.net.http.HttpRequest.Builder} can be created and has proper
+     * default values.
+     */
+    @Test
+    public void testRequestBuilderDefaultValues() throws Exception {
+        var url = new URL("http://example.org:123/foo");
+        var settings = new NetworkSettings();
+
+        var connector = new HttpConnector(settings);
+        var request = connector.createRequestBuilder(url).build();
+
+        assertThat(request.uri().toString()).isEqualTo(url.toExternalForm());
+        assertThat(request.timeout().orElseThrow()).isEqualTo(settings.getTimeout());
+        assertThat(request.headers().firstValue("User-Agent").orElseThrow())
+                .isEqualTo(HttpConnector.defaultUserAgent());
     }
 
     /**

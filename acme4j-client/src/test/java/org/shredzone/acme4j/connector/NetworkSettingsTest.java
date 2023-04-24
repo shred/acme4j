@@ -16,8 +16,12 @@ package org.shredzone.acme4j.connector;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.net.Authenticator;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.URI;
+import java.net.http.HttpClient;
 import java.time.Duration;
 
 import org.junit.jupiter.api.Test;
@@ -34,16 +38,23 @@ public class NetworkSettingsTest {
     public void testGettersAndSetters() {
         var settings = new NetworkSettings();
 
-        assertThat(settings.getProxy()).isEqualTo(Proxy.NO_PROXY);
-        var proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress("10.0.0.1", 8080));
-        settings.setProxy(proxy);
-        assertThat(settings.getProxy()).isEqualTo(proxy);
-        settings.setProxy(null);
-        assertThat(settings.getProxy()).isEqualTo(Proxy.NO_PROXY);
+        var proxyAddress = new InetSocketAddress("10.0.0.1", 8080);
+        var proxySelector = ProxySelector.of(proxyAddress);
+
+        assertThat(settings.getProxySelector()).isSameAs(HttpClient.Builder.NO_PROXY);
+        settings.setProxySelector(proxySelector);
+        assertThat(settings.getProxySelector()).isSameAs(proxySelector);
+        settings.setProxySelector(null);
+        assertThat(settings.getProxySelector()).isEqualTo(HttpClient.Builder.NO_PROXY);
 
         assertThat(settings.getTimeout()).isEqualTo(Duration.ofSeconds(10));
         settings.setTimeout(Duration.ofMillis(5120));
         assertThat(settings.getTimeout()).isEqualTo(Duration.ofMillis(5120));
+
+        var defaultAuthenticator = Authenticator.getDefault();
+        assertThat(settings.getAuthenticator()).isNull();
+        settings.setAuthenticator(defaultAuthenticator);
+        assertThat(settings.getAuthenticator()).isSameAs(defaultAuthenticator);
     }
 
     @Test
@@ -59,9 +70,6 @@ public class NetworkSettingsTest {
         assertThrows(IllegalArgumentException.class,
                 () -> settings.setTimeout(Duration.ofSeconds(20).negated()),
                 "timeout accepted negative duration");
-        assertThrows(IllegalArgumentException.class,
-                () -> settings.setTimeout(Duration.ofMillis(Integer.MAX_VALUE + 1L)),
-                "timeout accepted out of range value");
     }
 
 }

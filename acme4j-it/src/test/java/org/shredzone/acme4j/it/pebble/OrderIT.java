@@ -220,7 +220,7 @@ public class OrderIT extends PebbleITBase {
             Certificate cert2 = login2.bindCertificate(certificate.getLocation());
             cert2.download();
         }, "Could download revoked cert");
-        assertThat(ex.getMessage()).isEqualTo("HTTP 404: Not Found");
+        assertThat(ex.getMessage()).isEqualTo("HTTP 404");
 
         // Try to revoke again
         var ex2 = assertThrows(AcmeServerException.class,

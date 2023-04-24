@@ -14,6 +14,7 @@
 package org.shredzone.acme4j.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.shredzone.acme4j.toolbox.TestUtils.DEFAULT_NETWORK_SETTINGS;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -50,7 +51,7 @@ public class GenericAcmeProviderTest {
         var resolvedUrl = provider.resolve(serverUri);
         assertThat(resolvedUrl.toString()).isEqualTo(serverUri.toString());
 
-        var connection = provider.connect(serverUri);
+        var connection = provider.connect(serverUri, DEFAULT_NETWORK_SETTINGS);
         assertThat(connection).isInstanceOf(DefaultConnection.class);
     }
 

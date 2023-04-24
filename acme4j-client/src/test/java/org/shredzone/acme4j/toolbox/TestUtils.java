@@ -51,6 +51,7 @@ import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.connector.Connection;
+import org.shredzone.acme4j.connector.NetworkSettings;
 import org.shredzone.acme4j.provider.AcmeProvider;
 
 /**
@@ -72,6 +73,7 @@ public final class TestUtils {
 
     public static final String DUMMY_NONCE = Base64.getUrlEncoder().withoutPadding().encodeToString("foo-nonce-foo".getBytes());
 
+    public static final NetworkSettings DEFAULT_NETWORK_SETTINGS = new NetworkSettings();
 
     private TestUtils() {
         // utility class without constructor
@@ -161,7 +163,7 @@ public final class TestUtils {
 
             @Override
             public Connection connect() {
-                return provider.connect(getServerUri());
+                return provider.connect(getServerUri(), DEFAULT_NETWORK_SETTINGS);
             }
         };
     }

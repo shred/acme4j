@@ -1,7 +1,7 @@
 /*
  * acme4j - Java ACME client
  *
- * Copyright (C) 2015 Richard "Shred" Körber
+ * Copyright (C) 2023 Richard "Shred" Körber
  *   http://acme4j.shredzone.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +14,17 @@
 package org.shredzone.acme4j.connector;
 
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
-import static java.util.stream.Collectors.toList;
+import static java.util.function.Predicate.not;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.security.KeyPair;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
@@ -31,11 +33,13 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -63,6 +67,11 @@ import org.slf4j.LoggerFactory;
 public class DefaultConnection implements Connection {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultConnection.class);
 
+    private static final int HTTP_OK = 200;
+    private static final int HTTP_CREATED = 201;
+    private static final int HTTP_NO_CONTENT = 204;
+    private static final int HTTP_NOT_MODIFIED = 304;
+
     private static final String ACCEPT_HEADER = "Accept";
     private static final String ACCEPT_CHARSET_HEADER = "Accept-Charset";
     private static final String ACCEPT_LANGUAGE_HEADER = "Accept-Language";
@@ -86,18 +95,21 @@ public class DefaultConnection implements Connection {
 
     private static final Pattern NO_CACHE_PATTERN = Pattern.compile("(?:^|.*?,)\\s*no-(?:cache|store)\\s*(?:,.*|$)", Pattern.CASE_INSENSITIVE);
     private static final Pattern MAX_AGE_PATTERN = Pattern.compile("(?:^|.*?,)\\s*max-age=(\\d+)\\s*(?:,.*|$)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern DIGITS_ONLY_PATTERN = Pattern.compile("^\\d+$");
 
     protected final HttpConnector httpConnector;
-    protected @Nullable  HttpURLConnection conn;
+    protected final HttpClient httpClient;
+    protected @Nullable HttpResponse<InputStream> lastResponse;
 
     /**
      * Creates a new {@link DefaultConnection}.
      *
      * @param httpConnector
-     *            {@link HttpConnector} to be used for HTTP connections
+     *         {@link HttpConnector} to be used for HTTP connections
      */
     public DefaultConnection(HttpConnector httpConnector) {
         this.httpConnector = Objects.requireNonNull(httpConnector, "httpConnector");
+        this.httpClient = httpConnector.createClientBuilder().build();
     }
 
     @Override
@@ -111,15 +123,13 @@ public class DefaultConnection implements Connection {
 
             LOG.debug("HEAD {}", newNonceUrl);
 
-            conn = httpConnector.openConnection(newNonceUrl, session.networkSettings());
-            conn.setRequestMethod("HEAD");
-            conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
-            conn.connect();
+            sendRequest(session, newNonceUrl, b ->
+                    b.method("HEAD", HttpRequest.BodyPublishers.noBody()));
 
             logHeaders();
 
-            var rc = conn.getResponseCode();
-            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_NO_CONTENT) {
+            var rc = getResponse().statusCode();
+            if (rc != HTTP_OK && rc != HTTP_NO_CONTENT) {
                 throwAcmeException();
             }
 
@@ -131,14 +141,43 @@ public class DefaultConnection implements Connection {
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         } finally {
-            conn = null;
+            close();
         }
     }
 
     @Override
     public int sendRequest(URL url, Session session, @Nullable ZonedDateTime ifModifiedSince)
             throws AcmeException {
-        return sendRequest(url, session, MIME_JSON, ifModifiedSince);
+        Objects.requireNonNull(url, "url");
+        Objects.requireNonNull(session, "session");
+        assertConnectionIsClosed();
+
+        LOG.debug("GET {}", url);
+
+        try {
+            sendRequest(session, url, builder -> {
+                builder.GET();
+                builder.header(ACCEPT_HEADER, MIME_JSON);
+                if (ifModifiedSince != null) {
+                    builder.header(IF_MODIFIED_SINCE_HEADER, ifModifiedSince.format(RFC_1123_DATE_TIME));
+                }
+            });
+
+            logHeaders();
+
+            var nonce = getNonce();
+            if (nonce != null) {
+                session.setNonce(nonce);
+            }
+
+            var rc = getResponse().statusCode();
+            if (rc != HTTP_OK && rc != HTTP_CREATED && (rc != HTTP_NOT_MODIFIED || ifModifiedSince == null)) {
+                throwAcmeException();
+            }
+            return rc;
+        } catch (IOException ex) {
+            throw new AcmeNetworkException(ex);
+        }
     }
 
     @Override
@@ -161,25 +200,15 @@ public class DefaultConnection implements Connection {
 
     @Override
     public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair)
-                throws AcmeException {
+            throws AcmeException {
         return sendSignedRequest(url, claims, session, keypair, null, MIME_JSON);
     }
 
     @Override
     public JSON readJsonResponse() throws AcmeException {
-        assertConnectionIsOpen();
+        expectContentType(Set.of(MIME_JSON, MIME_JSON_PROBLEM));
 
-        if (conn.getContentLength() == 0) {
-            throw new AcmeProtocolException("Empty response");
-        }
-
-        var contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
-        if (!(MIME_JSON.equals(contentType) || MIME_JSON_PROBLEM.equals(contentType))) {
-            throw new AcmeProtocolException("Unexpected content type: " + contentType);
-        }
-
-        try {
-            var in = conn.getResponseCode() < 400 ? conn.getInputStream() : conn.getErrorStream();
+        try (var in = getResponse().body()) {
             if (in == null) {
                 throw new AcmeProtocolException("JSON response is empty");
             }
@@ -194,18 +223,19 @@ public class DefaultConnection implements Connection {
 
     @Override
     public List<X509Certificate> readCertificates() throws AcmeException {
-        assertConnectionIsOpen();
+        expectContentType(Set.of(MIME_CERTIFICATE_CHAIN));
 
-        var contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
-        if (!(MIME_CERTIFICATE_CHAIN.equals(contentType))) {
-            throw new AcmeProtocolException("Unexpected content type: " + contentType);
-        }
+        try (var in = getResponse().body()) {
+            if (in == null) {
+                throw new AcmeProtocolException("Certificate response is empty");
+            }
 
-        try (var in = new TrimmingInputStream(conn.getInputStream())) {
-            var cf = CertificateFactory.getInstance("X.509");
-            return cf.generateCertificates(in).stream()
-                    .map(c -> (X509Certificate) c)
-                    .collect(toList());
+            try (var ins = new TrimmingInputStream(in)) {
+                var cf = CertificateFactory.getInstance("X.509");
+                return cf.generateCertificates(ins).stream()
+                        .map(X509Certificate.class::cast)
+                        .collect(toUnmodifiableList());
+            }
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         } catch (CertificateException ex) {
@@ -215,8 +245,6 @@ public class DefaultConnection implements Connection {
 
     @Override
     public void handleRetryAfter(String message) throws AcmeException {
-        assertConnectionIsOpen();
-
         var retryAfter = getRetryAfterHeader();
         if (retryAfter.isPresent()) {
             throw new AcmeRetryAfterException(message, retryAfter.get());
@@ -226,13 +254,15 @@ public class DefaultConnection implements Connection {
     @Override
     @Nullable
     public String getNonce() {
-        assertConnectionIsOpen();
-
-        var nonceHeader = conn.getHeaderField(REPLAY_NONCE_HEADER);
-        if (nonceHeader == null || nonceHeader.trim().isEmpty()) {
+        var nonceHeaderOpt = getResponse().headers()
+                .firstValue(REPLAY_NONCE_HEADER)
+                .map(String::trim)
+                .filter(not(String::isEmpty));
+        if (nonceHeaderOpt.isEmpty()) {
             return null;
         }
 
+        var nonceHeader = nonceHeaderOpt.get();
         if (!AcmeUtils.isValidBase64Url(nonceHeader)) {
             throw new AcmeProtocolException("Invalid replay nonce: " + nonceHeader);
         }
@@ -245,128 +275,92 @@ public class DefaultConnection implements Connection {
     @Override
     @Nullable
     public URL getLocation() {
-        assertConnectionIsOpen();
-
-        var location = conn.getHeaderField(LOCATION_HEADER);
-        if (location == null) {
-            return null;
-        }
-
-        LOG.debug("Location: {}", location);
-        return resolveRelative(location);
+        return getResponse().headers()
+                .firstValue(LOCATION_HEADER)
+                .map(l -> {
+                    LOG.debug("Location: {}", l);
+                    return l;
+                })
+                .map(this::resolveRelative)
+                .orElse(null);
     }
 
     @Override
     public Optional<ZonedDateTime> getLastModified() {
-        assertConnectionIsOpen();
-
-        var header = conn.getHeaderField(LAST_MODIFIED_HEADER);
-        if (header != null) {
-            try {
-                return Optional.of(ZonedDateTime.parse(header, RFC_1123_DATE_TIME));
-            } catch (DateTimeParseException ex) {
-                LOG.debug("Ignored invalid Last-Modified date: {}", header, ex);
-            }
-        }
-        return Optional.empty();
+        return getResponse().headers()
+                .firstValue(LAST_MODIFIED_HEADER)
+                .map(lm -> {
+                    try {
+                        return ZonedDateTime.parse(lm, RFC_1123_DATE_TIME);
+                    } catch (DateTimeParseException ex) {
+                        LOG.debug("Ignored invalid Last-Modified date: {}", lm, ex);
+                        return null;
+                    }
+                });
     }
 
     @Override
     public Optional<ZonedDateTime> getExpiration() {
-        assertConnectionIsOpen();
+        var cacheControlHeader = getResponse().headers()
+                .firstValue(CACHE_CONTROL_HEADER)
+                .filter(not(h -> NO_CACHE_PATTERN.matcher(h).matches()))
+                .map(MAX_AGE_PATTERN::matcher)
+                .filter(Matcher::matches)
+                .map(m -> Integer.parseInt(m.group(1)))
+                .filter(maxAge -> maxAge != 0)
+                .map(maxAge -> ZonedDateTime.now(ZoneId.of("UTC")).plusSeconds(maxAge));
 
-        var cacheHeader = conn.getHeaderField(CACHE_CONTROL_HEADER);
-        if (cacheHeader != null) {
-            if (NO_CACHE_PATTERN.matcher(cacheHeader).matches()) {
-                return Optional.empty();
-            }
-
-            var m = MAX_AGE_PATTERN.matcher(cacheHeader);
-            if (m.matches()) {
-                var maxAge = Integer.parseInt(m.group(1));
-                if (maxAge == 0) {
-                    return Optional.empty();
-                }
-
-                return Optional.of(ZonedDateTime.now(ZoneId.of("UTC")).plusSeconds(maxAge));
-            }
+        if (cacheControlHeader.isPresent()) {
+            return cacheControlHeader;
         }
 
-        var expiresHeader = conn.getHeaderField(EXPIRES_HEADER);
-        if (expiresHeader != null) {
-            try {
-                return Optional.of(ZonedDateTime.parse(expiresHeader, RFC_1123_DATE_TIME));
-            } catch (DateTimeParseException ex) {
-                LOG.debug("Ignored invalid Expires date: {}", expiresHeader, ex);
-            }
-        }
-
-        return Optional.empty();
+        return getResponse().headers()
+                .firstValue(EXPIRES_HEADER)
+                .flatMap(header -> {
+                    try {
+                        return Optional.of(ZonedDateTime.parse(header, RFC_1123_DATE_TIME));
+                    } catch (DateTimeParseException ex) {
+                        LOG.debug("Ignored invalid Expires date: {}", header, ex);
+                        return Optional.empty();
+                    }
+                });
     }
 
     @Override
     public Collection<URL> getLinks(String relation) {
         return collectLinks(relation).stream()
                 .map(this::resolveRelative)
-                .collect(toList());
+                .collect(toUnmodifiableList());
     }
 
     @Override
     public void close() {
-        conn = null;
+        lastResponse = null;
     }
 
     /**
-     * Sends an unsigned GET request.
+     * Sends a HTTP request via http client. This is the central method to be used for
+     * sending. It will create a {@link HttpRequest} by using the request builder,
+     * configure commnon headers, and then send the request via {@link HttpClient}.
      *
-     * @param url
-     *            {@link URL} to send the request to.
      * @param session
-     *            {@link Session} instance to be used for signing and tracking
-     * @param accept
-     *            Accept header
-     * @param ifModifiedSince
-     *            Set an If-Modified-Since header with the given date. If set, an
-     *            NOT_MODIFIED response is accepted as valid.
-     * @return HTTP 200 class status that was returned
+     *         {@link Session} to be used for sending
+     * @param url
+     *         Target {@link URL}
+     * @param body
+     *         Callback that completes the {@link HttpRequest.Builder} with the request
+     *         body (e.g. HTTP method, request body, more headers).
      */
-    protected int sendRequest(URL url, Session session, String accept,
-              @Nullable ZonedDateTime ifModifiedSince) throws AcmeException {
-        Objects.requireNonNull(url, "url");
-        Objects.requireNonNull(session, "session");
-        Objects.requireNonNull(accept, "accept");
-        assertConnectionIsClosed();
-
-        LOG.debug("GET {}", url);
-
+    protected void sendRequest(Session session, URL url, Consumer<HttpRequest.Builder> body) throws IOException {
         try {
-            conn = httpConnector.openConnection(url, session.networkSettings());
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty(ACCEPT_HEADER, accept);
-            conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
-            conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
-            if (ifModifiedSince != null) {
-                conn.setRequestProperty(IF_MODIFIED_SINCE_HEADER, ifModifiedSince.format(RFC_1123_DATE_TIME));
-            }
-            conn.setDoOutput(false);
+            var builder = httpConnector.createRequestBuilder(url)
+                    .header(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET)
+                    .header(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
+            body.accept(builder);
 
-            conn.connect();
-
-            logHeaders();
-
-            var nonce = getNonce();
-            if (nonce != null) {
-                session.setNonce(nonce);
-            }
-
-            var rc = conn.getResponseCode();
-            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_CREATED
-                && (rc != HttpURLConnection.HTTP_NOT_MODIFIED || ifModifiedSince == null)) {
-                throwAcmeException();
-            }
-            return rc;
-        } catch (IOException ex) {
-            throw new AcmeNetworkException(ex);
+            lastResponse = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofInputStream());
+        } catch (InterruptedException ex) {
+            throw new IOException("Request was interrupted", ex);
         }
     }
 
@@ -374,23 +368,23 @@ public class DefaultConnection implements Connection {
      * Sends a signed POST request.
      *
      * @param url
-     *            {@link URL} to send the request to.
+     *         {@link URL} to send the request to.
      * @param claims
-     *            {@link JSONBuilder} containing claims. {@code null} for POST-as-GET
-     *            request.
+     *         {@link JSONBuilder} containing claims. {@code null} for POST-as-GET
+     *         request.
      * @param session
-     *            {@link Session} instance to be used for signing and tracking
+     *         {@link Session} instance to be used for signing and tracking
      * @param keypair
-     *            {@link KeyPair} to be used for signing
+     *         {@link KeyPair} to be used for signing
      * @param accountLocation
-     *            If set, the account location is set as "kid" header. If {@code null},
-     *            the public key is set as "jwk" header.
+     *         If set, the account location is set as "kid" header. If {@code null}, the
+     *         public key is set as "jwk" header.
      * @param accept
-     *            Accept header
+     *         Accept header
      * @return HTTP 200 class status that was returned
      */
     protected int sendSignedRequest(URL url, @Nullable JSONBuilder claims, Session session,
-                KeyPair keypair, @Nullable URL accountLocation, String accept) throws AcmeException {
+                                    KeyPair keypair, @Nullable URL accountLocation, String accept) throws AcmeException {
         Objects.requireNonNull(url, "url");
         Objects.requireNonNull(session, "session");
         Objects.requireNonNull(keypair, "keypair");
@@ -418,36 +412,28 @@ public class DefaultConnection implements Connection {
      * Performs the POST request.
      *
      * @param url
-     *            {@link URL} to send the request to.
+     *         {@link URL} to send the request to.
      * @param claims
-     *            {@link JSONBuilder} containing claims. {@code null} for POST-as-GET
-     *            request.
+     *         {@link JSONBuilder} containing claims. {@code null} for POST-as-GET
+     *         request.
      * @param session
-     *            {@link Session} instance to be used for signing and tracking
+     *         {@link Session} instance to be used for signing and tracking
      * @param keypair
-     *            {@link KeyPair} to be used for signing
+     *         {@link KeyPair} to be used for signing
      * @param accountLocation
-     *            If set, the account location is set as "kid" header. If {@code null},
-     *            the public key is set as "jwk" header.
+     *         If set, the account location is set as "kid" header. If {@code null}, the
+     *         public key is set as "jwk" header.
      * @param accept
-     *            Accept header
+     *         Accept header
      * @return HTTP 200 class status that was returned
      */
     private int performRequest(URL url, @Nullable JSONBuilder claims, Session session,
-                KeyPair keypair, @Nullable URL accountLocation, String accept)
-                throws AcmeException {
+                               KeyPair keypair, @Nullable URL accountLocation, String accept)
+            throws AcmeException {
         try {
             if (session.getNonce() == null) {
                 resetNonce(session);
             }
-
-            conn = httpConnector.openConnection(url, session.networkSettings());
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty(ACCEPT_HEADER, accept);
-            conn.setRequestProperty(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET);
-            conn.setRequestProperty(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
-            conn.setRequestProperty(CONTENT_TYPE_HEADER, "application/jose+json");
-            conn.setDoOutput(true);
 
             var jose = JoseUtils.createJoseRequest(
                     url,
@@ -457,21 +443,20 @@ public class DefaultConnection implements Connection {
                     accountLocation != null ? accountLocation.toString() : null
             );
 
-            var outputData = jose.toString().getBytes(StandardCharsets.UTF_8);
+            var outputData = jose.toString();
 
-            conn.setFixedLengthStreamingMode(outputData.length);
-            conn.connect();
-
-            try (var out = conn.getOutputStream()) {
-                out.write(outputData);
-            }
+            sendRequest(session, url, builder -> {
+                builder.POST(HttpRequest.BodyPublishers.ofString(outputData));
+                builder.header(ACCEPT_HEADER, accept);
+                builder.header(CONTENT_TYPE_HEADER, "application/jose+json");
+            });
 
             logHeaders();
 
             session.setNonce(getNonce());
 
-            var rc = conn.getResponseCode();
-            if (rc != HttpURLConnection.HTTP_OK && rc != HttpURLConnection.HTTP_CREATED) {
+            var rc = getResponse().statusCode();
+            if (rc != HTTP_OK && rc != HTTP_CREATED) {
                 throwAcmeException();
             }
             return rc;
@@ -484,28 +469,38 @@ public class DefaultConnection implements Connection {
      * Gets the instant sent with the Retry-After header.
      */
     private Optional<Instant> getRetryAfterHeader() {
+        return getResponse().headers()
+                .firstValue(RETRY_AFTER_HEADER)
+                .map(this::parseRetryAfterHeader);
+    }
+
+    /**
+     * Parses the content of a Retry-After header. The header can either contain a
+     * relative or an absolute time.
+     *
+     * @param header
+     *         Retry-After header
+     * @return Instant given in the header
+     * @throws AcmeProtocolException
+     *         if the header content is invalid
+     */
+    private Instant parseRetryAfterHeader(String header) {
         // See RFC 2616 section 14.37
-        var header = conn.getHeaderField(RETRY_AFTER_HEADER);
-        if (header != null) {
-            try {
-                // delta-seconds
-                if (header.matches("^\\d+$")) {
-                    var delta = Integer.parseInt(header);
-                    var date = conn.getHeaderFieldDate(DATE_HEADER, System.currentTimeMillis());
-                    return Optional.of(Instant.ofEpochMilli(date).plusSeconds(delta));
-                }
-
-                // HTTP-date
-                var date = conn.getHeaderFieldDate(RETRY_AFTER_HEADER, 0L);
-                if (date != 0) {
-                    return Optional.of(Instant.ofEpochMilli(date));
-                }
-            } catch (Exception ex) {
-                throw new AcmeProtocolException("Bad retry-after header value: " + header, ex);
+        try {
+            // delta-seconds
+            if (DIGITS_ONLY_PATTERN.matcher(header).matches()) {
+                var delta = Integer.parseInt(header);
+                var date = getResponse().headers().firstValue(DATE_HEADER)
+                        .map(d -> ZonedDateTime.parse(d, RFC_1123_DATE_TIME).toInstant())
+                        .orElseGet(Instant::now);
+                return date.plusSeconds(delta);
             }
-        }
 
-        return Optional.empty();
+            // HTTP-date
+            return ZonedDateTime.parse(header, RFC_1123_DATE_TIME).toInstant();
+        } catch (RuntimeException ex) {
+            throw new AcmeProtocolException("Bad retry-after header value: " + header, ex);
+        }
     }
 
     /**
@@ -514,12 +509,15 @@ public class DefaultConnection implements Connection {
      */
     private void throwAcmeException() throws AcmeException {
         try {
-            var contentType = AcmeUtils.getContentType(conn.getHeaderField(CONTENT_TYPE_HEADER));
-            if (!MIME_JSON_PROBLEM.equals(contentType)) {
-                throw new AcmeException("HTTP " + conn.getResponseCode() + ": " + conn.getResponseMessage());
+            if (getResponse().headers().firstValue(CONTENT_TYPE_HEADER)
+                    .map(AcmeUtils::getContentType)
+                    .filter(MIME_JSON_PROBLEM::equals)
+                    .isEmpty()) {
+                // Generic HTTP error
+                throw new AcmeException("HTTP " + getResponse().statusCode());
             }
 
-            var problem = new Problem(readJsonResponse(), conn.getURL());
+            var problem = new Problem(readJsonResponse(), getResponse().request().uri().toURL());
 
             var error = AcmeUtils.stripErrorPrefix(problem.getType().toString());
 
@@ -548,19 +546,42 @@ public class DefaultConnection implements Connection {
     }
 
     /**
-     * Asserts that the connection is currently open. Throws an exception if not.
+     * Checks if the returned content type is in the list of expected types.
+     *
+     * @param expectedTypes
+     *         content types that are accepted
+     * @throws AcmeProtocolException
+     *         if the returned content type is different
      */
-    private void assertConnectionIsOpen() {
-        if (conn == null) {
+    private void expectContentType(Set<String> expectedTypes) {
+        var contentType = getResponse().headers()
+                .firstValue(CONTENT_TYPE_HEADER)
+                .map(AcmeUtils::getContentType)
+                .orElseThrow(() -> new AcmeProtocolException("No content type header found"));
+        if (!expectedTypes.contains(contentType)) {
+            throw new AcmeProtocolException("Unexpected content type: " + contentType);
+        }
+    }
+
+    /**
+     * Returns the response of the last request. If there is no connection currently
+     * open, an exception is thrown instead.
+     * <p>
+     * Note that the response provides an {@link InputStream} that can be read only
+     * once.
+     */
+    private HttpResponse<InputStream> getResponse() {
+        if (lastResponse == null) {
             throw new IllegalStateException("Not connected.");
         }
+        return lastResponse;
     }
 
     /**
      * Asserts that the connection is currently closed. Throws an exception if not.
      */
     private void assertConnectionIsClosed() {
-        if (conn != null) {
+        if (lastResponse != null) {
             throw new IllegalStateException("Previous connection is not closed.");
         }
     }
@@ -573,10 +594,10 @@ public class DefaultConnection implements Connection {
             return;
         }
 
-        conn.getHeaderFields().forEach((key, headers) ->
-            headers.forEach(value ->
-                LOG.debug("HEADER {}: {}", key, value)
-            )
+        getResponse().headers().map().forEach((key, headers) ->
+                headers.forEach(value ->
+                        LOG.debug("HEADER {}: {}", key, value)
+                )
         );
     }
 
@@ -584,48 +605,31 @@ public class DefaultConnection implements Connection {
      * Collects links of the given relation.
      *
      * @param relation
-     *            Link relation
+     *         Link relation
      * @return Collection of links, unconverted
      */
     private Collection<String> collectLinks(String relation) {
-        assertConnectionIsOpen();
+        var p = Pattern.compile("<(.*?)>\\s*;\\s*rel=\"?" + Pattern.quote(relation) + "\"?");
 
-        var result = new ArrayList<String>();
-
-        var links = conn.getHeaderFields().get(LINK_HEADER);
-        if (links != null) {
-            var p = Pattern.compile("<(.*?)>\\s*;\\s*rel=\"?"+ Pattern.quote(relation) + "\"?");
-            for (var link : links) {
-                var m = p.matcher(link);
-                if (m.matches()) {
-                    var location = m.group(1);
-                    LOG.debug("Link: {} -> {}", relation, location);
-                    result.add(location);
-                }
-            }
-        }
-
-        return result;
+        return getResponse().headers().allValues(LINK_HEADER)
+                .stream()
+                .map(p::matcher)
+                .filter(Matcher::matches)
+                .map(m -> m.group(1))
+                .peek(location -> LOG.debug("Link: {} -> {}", relation, location))
+                .collect(toUnmodifiableList());
     }
 
     /**
      * Resolves a relative link against the connection's last URL.
      *
      * @param link
-     *            Link to resolve. Absolute links are just converted to an URL. May be
-     *            {@code null}.
-     * @return Absolute URL of the given link, or {@code null} if the link was
-     *         {@code null}.
+     *         Link to resolve. Absolute links are just converted to an URL.
+     * @return Absolute URL of the given link
      */
-    @Nullable
-    private URL resolveRelative(@Nullable String link) {
-        if (link == null) {
-            return null;
-        }
-
-        assertConnectionIsOpen();
+    private URL resolveRelative(String link) {
         try {
-            return new URL(conn.getURL(), link);
+            return resolveUri(link).toURL();
         } catch (MalformedURLException ex) {
             throw new AcmeProtocolException("Cannot resolve relative link: " + link, ex);
         }
@@ -635,21 +639,11 @@ public class DefaultConnection implements Connection {
      * Resolves a relative URI against the connection's last URL.
      *
      * @param uri
-     *            URI to resolve
-     * @return Absolute URI of the given link, or {@code null} if the URI was
-     *         {@code null}.
+     *         URI to resolve
+     * @return Absolute URI of the given link
      */
-    @Nullable
-    private URI resolveUri(@Nullable String uri) {
-        if (uri == null) {
-            return null;
-        }
-
-        try {
-            return conn.getURL().toURI().resolve(uri);
-        } catch (URISyntaxException ex) {
-            throw new AcmeProtocolException("Invalid URI", ex);
-        }
+    private URI resolveUri(String uri) {
+        return getResponse().request().uri().resolve(uri);
     }
 
 }

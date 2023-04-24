@@ -49,7 +49,6 @@ If there is no cached copy of the CA's directory, it is fetched now.
 
 ```log
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - GET https://localhost:14000/dir
-[main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER null: HTTP/1.1 200 OK
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Cache-Control: public, max-age=0, no-cache
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Content-Length: 406
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Date: Wed, 27 Apr 2022 17:42:43 GMT
@@ -63,7 +62,6 @@ If _acme4j_ has no current nonce, it will fetch a new one from the `newNonce` en
 
 ```log
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEAD https://localhost:14000/nonce-plz
-[main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER null: HTTP/1.1 200 OK
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Cache-Control: public, max-age=0, no-cache
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Replay-Nonce: Os_sBjfWzVZenwwjvLrwXA
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Date: Wed, 27 Apr 2022 17:42:43 GMT
@@ -84,7 +82,6 @@ Now _acme4j_ sends a `POST` request to the `newAccount` endpoint. As `Payload`, 
 This is a possible response of the server:
 
 ```log
-[main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER null: HTTP/1.1 201 Created
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Cache-Control: public, max-age=0, no-cache
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Replay-Nonce: mmnKF6lBuisPWhj9kkFMRA
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Content-Length: 491
@@ -114,7 +111,6 @@ Again, we see the `POST` request to the `newAccount` endpoint. It uses the nonce
 The server responds with a `400 Bad Request` and an `application/problem+json` document:
 
 ```log
-[main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER null: HTTP/1.1 400 Bad Request
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Cache-Control: public, max-age=0, no-cache
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Replay-Nonce: LDDZAGcBuKYpuNlFTCxPYw
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Content-Length: 147

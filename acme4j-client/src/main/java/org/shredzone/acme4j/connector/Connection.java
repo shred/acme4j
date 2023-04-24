@@ -13,7 +13,6 @@
  */
 package org.shredzone.acme4j.connector;
 
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -47,8 +46,8 @@ public interface Connection extends AutoCloseable {
     /**
      * Sends a simple GET request.
      * <p>
-     * If the response code was not {@link HttpURLConnection#HTTP_OK}, an
-     * {@link AcmeException} matching the error is raised.
+     * If the response code was not HTTP status 200, an {@link AcmeException} matching
+     * the error is raised.
      *
      * @param url
      *            {@link URL} to send the request to.

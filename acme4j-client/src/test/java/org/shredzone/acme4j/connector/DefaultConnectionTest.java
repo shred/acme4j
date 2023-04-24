@@ -23,7 +23,6 @@ import static org.shredzone.acme4j.toolbox.TestUtils.getResourceAsByteArray;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -70,9 +69,9 @@ public class DefaultConnectionTest {
     private static final Base64.Encoder URL_ENCODER = Base64.getUrlEncoder().withoutPadding();
     private static final Base64.Decoder URL_DECODER = Base64.getUrlDecoder();
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.RFC_1123_DATE_TIME.withZone(ZoneOffset.UTC);
-    public static final String DIRECTORY_PATH = "/dir";
-    public static final String NEW_NONCE_PATH = "/newNonce";
-    public static final String REQUEST_PATH = "/test/test";
+    private static final String DIRECTORY_PATH = "/dir";
+    private static final String NEW_NONCE_PATH = "/newNonce";
+    private static final String REQUEST_PATH = "/test/test";
 
     private final URL accountUrl = TestUtils.url(TestUtils.ACCOUNT_URL);
     private Session session;
@@ -549,7 +548,7 @@ public class DefaultConnectionTest {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
-        assertThat(ex.getMessage()).isEqualTo("HTTP 500: Infernal Server Error");
+        assertThat(ex.getMessage()).isEqualTo("HTTP 500");
     }
 
     /**

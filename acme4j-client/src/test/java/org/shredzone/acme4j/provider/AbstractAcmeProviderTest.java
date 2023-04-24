@@ -19,7 +19,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
@@ -39,6 +38,7 @@ import org.shredzone.acme4j.challenge.TokenChallenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
+import org.shredzone.acme4j.connector.NetworkSettings;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -51,6 +51,7 @@ public class AbstractAcmeProviderTest {
 
     private static final URI SERVER_URI = URI.create("http://example.com/acme");
     private static final URL RESOLVED_URL = TestUtils.url("http://example.com/acme/directory");
+    private static final NetworkSettings NETWORK_SETTINGS = new NetworkSettings();
 
     /**
      * Test that connect returns a connection.
@@ -61,13 +62,14 @@ public class AbstractAcmeProviderTest {
 
         var provider = new TestAbstractAcmeProvider() {
             @Override
-            protected HttpConnector createHttpConnector() {
+            protected HttpConnector createHttpConnector(NetworkSettings settings) {
+                assertThat(settings).isSameAs(NETWORK_SETTINGS);
                 invoked.set(true);
-                return super.createHttpConnector();
+                return super.createHttpConnector(settings);
             }
         };
 
-        var connection = provider.connect(SERVER_URI);
+        var connection = provider.connect(SERVER_URI, NETWORK_SETTINGS);
         assertThat(connection).isNotNull();
         assertThat(connection).isInstanceOf(DefaultConnection.class);
         assertThat(invoked).isTrue();
@@ -123,6 +125,7 @@ public class AbstractAcmeProviderTest {
         verify(session).setDirectoryExpires(eq(expiryDate));
         verify(session).getDirectoryExpires();
         verify(session).getDirectoryLastModified();
+        verify(session).networkSettings();
         verifyNoMoreInteractions(session);
 
         verify(connection).sendRequest(RESOLVED_URL, session, null);
@@ -182,6 +185,7 @@ public class AbstractAcmeProviderTest {
         verify(session).setDirectoryLastModified(eq(null));
         verify(session).getDirectoryExpires();
         verify(session).getDirectoryLastModified();
+        verify(session).networkSettings();
         verifyNoMoreInteractions(session);
 
         verify(connection).sendRequest(RESOLVED_URL, session, null);
@@ -215,30 +219,12 @@ public class AbstractAcmeProviderTest {
 
         verify(session).getDirectoryExpires();
         verify(session).getDirectoryLastModified();
+        verify(session).networkSettings();
         verifyNoMoreInteractions(session);
 
         verify(connection).sendRequest(RESOLVED_URL, session, modifiedSinceDate);
         verify(connection).close();
         verifyNoMoreInteractions(connection);
-    }
-
-    /**
-     * Verify that HTTP errors are handled correctly.
-     */
-    @Test
-    public void testResourcesHttpError() throws IOException {
-        var conn = mock(HttpURLConnection.class);
-        var connector = mock(HttpConnector.class);
-        var connection = new DefaultConnection(connector);
-
-        when(connector.openConnection(any(), any())).thenReturn(conn);
-        when(conn.getResponseCode()).thenReturn(HttpURLConnection.HTTP_INTERNAL_ERROR);
-        when(conn.getResponseMessage()).thenReturn("Internal error");
-
-        var provider = new TestAbstractAcmeProvider(connection);
-        var session = TestUtils.session(provider);
-
-        assertThrows(AcmeException.class, () -> provider.directory(session, SERVER_URI));
     }
 
     /**
@@ -316,9 +302,9 @@ public class AbstractAcmeProviderTest {
         }
 
         @Override
-        public Connection connect(URI serverUri) {
+        public Connection connect(URI serverUri, NetworkSettings networkSettings) {
             assertThat(serverUri).isEqualTo(SERVER_URI);
-            return connection != null ? connection : super.connect(serverUri);
+            return connection != null ? connection : super.connect(serverUri, networkSettings);
         }
     }
 

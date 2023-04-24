@@ -19,6 +19,7 @@ import java.net.URL;
 import java.util.regex.Pattern;
 
 import org.shredzone.acme4j.connector.HttpConnector;
+import org.shredzone.acme4j.connector.NetworkSettings;
 import org.shredzone.acme4j.provider.AbstractAcmeProvider;
 import org.shredzone.acme4j.provider.AcmeProvider;
 
@@ -81,8 +82,8 @@ public class PebbleAcmeProvider extends AbstractAcmeProvider {
     }
 
     @Override
-    protected HttpConnector createHttpConnector() {
-        return new PebbleHttpConnector();
+    protected HttpConnector createHttpConnector(NetworkSettings settings) {
+        return new PebbleHttpConnector(settings);
     }
 
 }

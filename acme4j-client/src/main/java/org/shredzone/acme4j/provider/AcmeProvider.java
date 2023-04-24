@@ -22,6 +22,7 @@ import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Connection;
+import org.shredzone.acme4j.connector.NetworkSettings;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.toolbox.JSON;
 
@@ -58,10 +59,12 @@ public interface AcmeProvider {
      * Creates a {@link Connection} for communication with the ACME server.
      *
      * @param serverUri
-     *            Server {@link URI}
+     *         Server {@link URI}
+     * @param networkSettings
+     *         {@link NetworkSettings} to be used for the connection
      * @return {@link Connection} that was generated
      */
-    Connection connect(URI serverUri);
+    Connection connect(URI serverUri, NetworkSettings networkSettings);
 
     /**
      * Returns the provider's directory. The structure must contain resource URLs, and may

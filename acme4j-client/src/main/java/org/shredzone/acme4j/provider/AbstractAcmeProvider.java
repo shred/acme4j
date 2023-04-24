@@ -13,7 +13,6 @@
  */
 package org.shredzone.acme4j.provider;
 
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -32,6 +31,7 @@ import org.shredzone.acme4j.challenge.TokenChallenge;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
+import org.shredzone.acme4j.connector.NetworkSettings;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.toolbox.JSON;
 
@@ -43,12 +43,13 @@ import org.shredzone.acme4j.toolbox.JSON;
  * and {@link AbstractAcmeProvider#resolve(URI)}.
  */
 public abstract class AbstractAcmeProvider implements AcmeProvider {
+    private static final int HTTP_NOT_MODIFIED = 304;
 
     private static final Map<String, ChallengeProvider> CHALLENGES = challengeMap();
 
     @Override
-    public Connection connect(URI serverUri) {
-        return new DefaultConnection(createHttpConnector());
+    public Connection connect(URI serverUri, NetworkSettings networkSettings) {
+        return new DefaultConnection(createHttpConnector(networkSettings));
     }
 
     @Override
@@ -59,10 +60,10 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
             return null;
         }
 
-        try (var conn = connect(serverUri)) {
+        try (var conn = connect(serverUri, session.networkSettings())) {
             var lastModified = session.getDirectoryLastModified();
             var rc = conn.sendRequest(resolve(serverUri), session, lastModified);
-            if (lastModified != null && rc == HttpURLConnection.HTTP_NOT_MODIFIED) {
+            if (lastModified != null && rc == HTTP_NOT_MODIFIED) {
                 // The server has not been modified since
                 return null;
             }
@@ -146,8 +147,8 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
      * <p>
      * Subclasses may override this method to configure the {@link HttpConnector}.
      */
-    protected HttpConnector createHttpConnector() {
-        return new HttpConnector();
+    protected HttpConnector createHttpConnector(NetworkSettings settings) {
+        return new HttpConnector(settings);
     }
 
 }

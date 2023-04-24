@@ -14,8 +14,7 @@
 package org.shredzone.acme4j.provider.pebble;
 
 import java.io.IOException;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.http.HttpClient;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -23,9 +22,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Objects;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -33,29 +30,29 @@ import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.connector.NetworkSettings;
 
 /**
- * {@link HttpConnector} to be used for Pebble. Pebble uses a static, self signed SSL
+ * {@link HttpConnector} to be used for Pebble. Pebble uses a static, self-signed SSL
  * certificate.
  */
 public class PebbleHttpConnector extends HttpConnector {
-    private static @Nullable SSLSocketFactory sslSocketFactory = null;
+    private static @Nullable SSLContext sslContext = null;
+
+    public PebbleHttpConnector(NetworkSettings settings) {
+        super(settings);
+    }
 
     @Override
-    public HttpURLConnection openConnection(URL url, NetworkSettings settings) throws IOException {
-        var conn = super.openConnection(url, settings);
-        if (conn instanceof HttpsURLConnection) {
-            var conns = (HttpsURLConnection) conn;
-            conns.setSSLSocketFactory(createSocketFactory());
-            conns.setHostnameVerifier((h, s) -> true);
-        }
-        return conn;
+    public HttpClient.Builder createClientBuilder() {
+        var builder = super.createClientBuilder();
+        builder.sslContext(createSSLContext());
+        return builder;
     }
 
     /**
-     * Lazily creates an {@link SSLSocketFactory} that exclusively accepts the Pebble
+     * Lazily creates an {@link SSLContext} that exclusively accepts the Pebble
      * certificate.
      */
-    protected synchronized SSLSocketFactory createSocketFactory() throws IOException {
-        if (sslSocketFactory == null) {
+    protected synchronized SSLContext createSSLContext() {
+        if (sslContext == null) {
             try (var in = getClass().getResourceAsStream("/org/shredzone/acme4j/provider/pebble/pebble.truststore")) {
                 var keystore = KeyStore.getInstance(KeyStore.getDefaultType());
                 keystore.load(in, "acme4j".toCharArray());
@@ -63,16 +60,14 @@ public class PebbleHttpConnector extends HttpConnector {
                 var tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
                 tmf.init(keystore);
 
-                var ctx = SSLContext.getInstance("TLS");
-                ctx.init(null, tmf.getTrustManagers(), null);
-
-                sslSocketFactory = ctx.getSocketFactory();
-            } catch (KeyStoreException | CertificateException | NoSuchAlgorithmException
-                            | KeyManagementException ex) {
-                throw new IOException("Could not create truststore", ex);
+                sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, tmf.getTrustManagers(), null);
+            } catch (IOException | KeyStoreException | CertificateException
+                     | NoSuchAlgorithmException | KeyManagementException ex) {
+                throw new RuntimeException("Could not create truststore", ex);
             }
         }
-        return Objects.requireNonNull(sslSocketFactory);
+        return Objects.requireNonNull(sslContext);
     }
 
 }

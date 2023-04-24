@@ -14,6 +14,7 @@
 
 module org.shredzone.acme4j {
     requires static com.github.spotbugs.annotations;
+    requires java.net.http;
     requires org.jose4j;
     requires org.slf4j;
 

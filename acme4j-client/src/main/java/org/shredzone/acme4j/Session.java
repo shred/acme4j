@@ -13,7 +13,6 @@
  */
 package org.shredzone.acme4j;
 
-import java.net.Proxy;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
@@ -187,7 +186,7 @@ public class Session {
      * @return {@link Connection}
      */
     public Connection connect() {
-        return provider.connect(getServerUri());
+        return provider.connect(getServerUri(), networkSettings);
     }
 
     /**
