@@ -30,6 +30,7 @@ public class NetworkSettings {
     private ProxySelector proxySelector = HttpClient.Builder.NO_PROXY;
     private Duration timeout = Duration.ofSeconds(10);
     private @Nullable Authenticator authenticator = null;
+    private boolean compression = true;
 
     /**
      * Gets the {@link ProxySelector} to be used for connections.
@@ -89,6 +90,25 @@ public class NetworkSettings {
         }
 
         this.timeout = timeout;
+    }
+
+    /**
+     * Checks if HTTP compression is enabled.
+     *
+     * @since 3.0.0
+     */
+    public boolean isCompressionEnabled() {
+        return compression;
+    }
+
+    /**
+     * Sets if HTTP compression is enabled. It is enabled by default, but can be
+     * disabled e.g. for debugging purposes.
+     *
+     * @since 3.0.0
+     */
+    public void setCompressionEnabled(boolean compression) {
+        this.compression = compression;
     }
 
 }

@@ -55,6 +55,10 @@ public class NetworkSettingsTest {
         assertThat(settings.getAuthenticator()).isNull();
         settings.setAuthenticator(defaultAuthenticator);
         assertThat(settings.getAuthenticator()).isSameAs(defaultAuthenticator);
+
+        assertThat(settings.isCompressionEnabled()).isTrue();
+        settings.setCompressionEnabled(false);
+        assertThat(settings.isCompressionEnabled()).isFalse();
     }
 
     @Test

@@ -41,6 +41,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPInputStream;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.Login;
@@ -75,6 +76,7 @@ public class DefaultConnection implements Connection {
     private static final String ACCEPT_HEADER = "Accept";
     private static final String ACCEPT_CHARSET_HEADER = "Accept-Charset";
     private static final String ACCEPT_LANGUAGE_HEADER = "Accept-Language";
+    private static final String ACCEPT_ENCODING_HEADER = "Accept-Encoding";
     private static final String CACHE_CONTROL_HEADER = "Cache-Control";
     private static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String DATE_HEADER = "Date";
@@ -208,11 +210,7 @@ public class DefaultConnection implements Connection {
     public JSON readJsonResponse() throws AcmeException {
         expectContentType(Set.of(MIME_JSON, MIME_JSON_PROBLEM));
 
-        try (var in = getResponse().body()) {
-            if (in == null) {
-                throw new AcmeProtocolException("JSON response is empty");
-            }
-
+        try (var in = getResponseBody()) {
             var result = JSON.parse(in);
             LOG.debug("Result JSON: {}", result);
             return result;
@@ -225,17 +223,11 @@ public class DefaultConnection implements Connection {
     public List<X509Certificate> readCertificates() throws AcmeException {
         expectContentType(Set.of(MIME_CERTIFICATE_CHAIN));
 
-        try (var in = getResponse().body()) {
-            if (in == null) {
-                throw new AcmeProtocolException("Certificate response is empty");
-            }
-
-            try (var ins = new TrimmingInputStream(in)) {
-                var cf = CertificateFactory.getInstance("X.509");
-                return cf.generateCertificates(ins).stream()
-                        .map(X509Certificate.class::cast)
-                        .collect(toUnmodifiableList());
-            }
+        try (var in = new TrimmingInputStream(getResponseBody())) {
+            var cf = CertificateFactory.getInstance("X.509");
+            return cf.generateCertificates(in).stream()
+                    .map(X509Certificate.class::cast)
+                    .collect(toUnmodifiableList());
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         } catch (CertificateException ex) {
@@ -356,6 +348,11 @@ public class DefaultConnection implements Connection {
             var builder = httpConnector.createRequestBuilder(url)
                     .header(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET)
                     .header(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
+
+            if (session.networkSettings().isCompressionEnabled()) {
+                builder.header(ACCEPT_ENCODING_HEADER, "gzip");
+            }
+
             body.accept(builder);
 
             lastResponse = httpClient.send(builder.build(), HttpResponse.BodyHandlers.ofInputStream());
@@ -501,6 +498,25 @@ public class DefaultConnection implements Connection {
         } catch (RuntimeException ex) {
             throw new AcmeProtocolException("Bad retry-after header value: " + header, ex);
         }
+    }
+
+    /**
+     * Provides an {@link InputStream} of the response body. If the stream is compressed,
+     * it will also take care for decompression.
+     */
+    private InputStream getResponseBody() throws IOException {
+        var stream = getResponse().body();
+        if (stream == null) {
+            throw new AcmeProtocolException("Unexpected empty response");
+        }
+
+        if (getResponse().headers().firstValue("Content-Encoding")
+                .filter("gzip"::equalsIgnoreCase)
+                .isPresent()) {
+            stream = new GZIPInputStream(stream);
+        }
+
+        return stream;
     }
 
     /**

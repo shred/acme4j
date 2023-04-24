@@ -48,3 +48,4 @@ You can use `Session.networkSettings()` to change some network parameters for th
 * If a proxy must be used for internet connections, you can set a `ProxySelector` instance via `setProxySelector()`.
 * To change network timeouts, use `setTimeout()`. The default timeout is 10 seconds. You can either increase the timeout on poor network connections, or reduce it to fail early on network errors.
 * If you need authentication (e.g. for the proxy), you can set an `Authenticator` via `setAuthenticator()`. Be careful here! Most code snippets I have found on the internet will send out the proxy credentials to anyone who is asking. You should check `Authenticator.getRequestorType()` and make sure it is `RequestorType.PROXY` before sending the proxy credentials.
+* _acme4j_ accepts HTTP `gzip` compression by default. If it should impede debugging, it can be disabled via `setCompressionEnabled(false)`.
