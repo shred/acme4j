@@ -27,6 +27,7 @@ import java.net.URI;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.time.temporal.ChronoUnit;
+import java.util.Locale;
 import java.util.stream.Stream;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -199,6 +200,25 @@ public class AcmeUtilsTest {
         assertThrows(IllegalArgumentException.class,
                 () -> parseTimestamp("2015-12-27T"),
                 "accepted string without time");
+    }
+
+    /**
+     * Test that locales are correctly converted to language headers.
+     */
+    @Test
+    public void testLocaleToLanguageHeader() {
+        assertThat(localeToLanguageHeader(Locale.ENGLISH))
+                .isEqualTo("en,*;q=0.1");
+        assertThat(localeToLanguageHeader(new Locale("en", "US")))
+                .isEqualTo("en-US,en;q=0.8,*;q=0.1");
+        assertThat(localeToLanguageHeader(Locale.GERMAN))
+                .isEqualTo("de,*;q=0.1");
+        assertThat(localeToLanguageHeader(Locale.GERMANY))
+                .isEqualTo("de-DE,de;q=0.8,*;q=0.1");
+        assertThat(localeToLanguageHeader(new Locale("")))
+                .isEqualTo("*");
+        assertThat(localeToLanguageHeader(null))
+                .isEqualTo("*");
     }
 
     /**

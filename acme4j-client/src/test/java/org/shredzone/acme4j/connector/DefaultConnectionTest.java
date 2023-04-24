@@ -72,6 +72,9 @@ public class DefaultConnectionTest {
     private static final String DIRECTORY_PATH = "/dir";
     private static final String NEW_NONCE_PATH = "/newNonce";
     private static final String REQUEST_PATH = "/test/test";
+    private static final String TEST_ACCEPT_LANGUAGE = "ja-JP,ja;q=0.8,*;q=0.1";
+    private static final String TEST_ACCEPT_CHARSET = "utf-8";
+    private static final String TEST_USER_AGENT_PATTERN = "^acme4j/.*$";
 
     private final URL accountUrl = TestUtils.url(TestUtils.ACCOUNT_URL);
     private Session session;
@@ -564,9 +567,9 @@ public class DefaultConnectionTest {
 
         verify(getRequestedFor(urlEqualTo(REQUEST_PATH))
                 .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Accept-Charset", equalTo("utf-8"))
-                .withHeader("Accept-Language", equalTo("ja-JP"))
-                .withHeader("User-Agent", matching("^acme4j/.*$"))
+                .withHeader("Accept-Charset", equalTo(TEST_ACCEPT_CHARSET))
+                .withHeader("Accept-Language", equalTo(TEST_ACCEPT_LANGUAGE))
+                .withHeader("User-Agent", matching(TEST_USER_AGENT_PATTERN))
         );
     }
 
@@ -589,9 +592,9 @@ public class DefaultConnectionTest {
         verify(getRequestedFor(urlEqualTo(REQUEST_PATH))
                 .withHeader("If-Modified-Since", equalToDateTime(ifModifiedSince))
                 .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Accept-Charset", equalTo("utf-8"))
-                .withHeader("Accept-Language", equalTo("ja-JP"))
-                .withHeader("User-Agent", matching("^acme4j/.*$"))
+                .withHeader("Accept-Charset", equalTo(TEST_ACCEPT_CHARSET))
+                .withHeader("Accept-Language", equalTo(TEST_ACCEPT_LANGUAGE))
+                .withHeader("User-Agent", matching(TEST_USER_AGENT_PATTERN))
         );
     }
 
@@ -620,9 +623,9 @@ public class DefaultConnectionTest {
 
         verify(postRequestedFor(urlEqualTo(REQUEST_PATH))
                 .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Accept-Charset", equalTo("utf-8"))
-                .withHeader("Accept-Language", equalTo("ja-JP"))
-                .withHeader("User-Agent", matching("^acme4j/.*$"))
+                .withHeader("Accept-Charset", equalTo(TEST_ACCEPT_CHARSET))
+                .withHeader("Accept-Language", equalTo(TEST_ACCEPT_LANGUAGE))
+                .withHeader("User-Agent", matching(TEST_USER_AGENT_PATTERN))
         );
 
         var requests = findAll(postRequestedFor(urlEqualTo(REQUEST_PATH)));
@@ -673,10 +676,10 @@ public class DefaultConnectionTest {
 
         verify(postRequestedFor(urlEqualTo(REQUEST_PATH))
                 .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Accept-Charset", equalTo("utf-8"))
-                .withHeader("Accept-Language", equalTo("ja-JP"))
+                .withHeader("Accept-Charset", equalTo(TEST_ACCEPT_CHARSET))
+                .withHeader("Accept-Language", equalTo(TEST_ACCEPT_LANGUAGE))
                 .withHeader("Content-Type", equalTo("application/jose+json"))
-                .withHeader("User-Agent", matching("^acme4j/.*$"))
+                .withHeader("User-Agent", matching(TEST_USER_AGENT_PATTERN))
         );
 
         var requests = findAll(postRequestedFor(urlEqualTo(REQUEST_PATH)));
@@ -727,10 +730,10 @@ public class DefaultConnectionTest {
 
         verify(postRequestedFor(urlEqualTo(REQUEST_PATH))
                 .withHeader("Accept", equalTo("application/pem-certificate-chain"))
-                .withHeader("Accept-Charset", equalTo("utf-8"))
-                .withHeader("Accept-Language", equalTo("ja-JP"))
+                .withHeader("Accept-Charset", equalTo(TEST_ACCEPT_CHARSET))
+                .withHeader("Accept-Language", equalTo(TEST_ACCEPT_LANGUAGE))
                 .withHeader("Content-Type", equalTo("application/jose+json"))
-                .withHeader("User-Agent", matching("^acme4j/.*$"))
+                .withHeader("User-Agent", matching(TEST_USER_AGENT_PATTERN))
         );
     }
 
@@ -758,10 +761,10 @@ public class DefaultConnectionTest {
 
         verify(postRequestedFor(urlEqualTo(REQUEST_PATH))
                 .withHeader("Accept", equalTo("application/json"))
-                .withHeader("Accept-Charset", equalTo("utf-8"))
-                .withHeader("Accept-Language", equalTo("ja-JP"))
+                .withHeader("Accept-Charset", equalTo(TEST_ACCEPT_CHARSET))
+                .withHeader("Accept-Language", equalTo(TEST_ACCEPT_LANGUAGE))
                 .withHeader("Content-Type", equalTo("application/jose+json"))
-                .withHeader("User-Agent", matching("^acme4j/.*$"))
+                .withHeader("User-Agent", matching(TEST_USER_AGENT_PATTERN))
         );
 
         var requests = findAll(postRequestedFor(urlEqualTo(REQUEST_PATH)));

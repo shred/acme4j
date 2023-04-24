@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Base64;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -219,6 +220,29 @@ public final class AcmeUtils {
         return ZonedDateTime.of(
                 year, month, dom, hour, minute, second, ms * 1_000_000,
                 ZoneId.of(tz)).toInstant();
+    }
+
+    /**
+     * Converts the given locale to an Accept-Language header value.
+     *
+     * @param locale
+     *         {@link Locale} to be used in the header
+     * @return Value that can be used in an Accept-Language header
+     */
+    public static String localeToLanguageHeader(@Nullable Locale locale) {
+        if (locale == null || "und".equals(locale.toLanguageTag())) {
+            return "*";
+        }
+
+        var langTag = locale.toLanguageTag();
+
+        var header = new StringBuilder(langTag);
+        if (langTag.indexOf('-') >= 0) {
+            header.append(',').append(locale.getLanguage()).append(";q=0.8");
+        }
+        header.append(",*;q=0.1");
+
+        return header.toString();
     }
 
     /**

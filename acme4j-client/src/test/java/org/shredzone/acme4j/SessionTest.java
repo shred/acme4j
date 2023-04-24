@@ -23,6 +23,7 @@ import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
 import java.time.ZonedDateTime;
+import java.util.Locale;
 
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.provider.GenericAcmeProvider;
+import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.TestUtils;
 
 /**
@@ -210,6 +212,30 @@ public class SessionTest {
             softly.assertThat(meta.getAutoRenewalMinLifetime()).isNull();
             softly.assertThat(meta.isAutoRenewalGetAllowed()).isFalse();
         }
+    }
+
+    /**
+     * Test that the locale is properly set.
+     */
+    @Test
+    public void testLocale() {
+        var session = new Session(URI.create(TestUtils.ACME_SERVER_URI));
+
+        // default configuration
+        assertThat(session.getLocale())
+                .isEqualTo(Locale.getDefault());
+        assertThat(session.getLanguageHeader())
+                .isEqualTo(AcmeUtils.localeToLanguageHeader(Locale.getDefault()));
+
+        // null
+        session.setLocale(null);
+        assertThat(session.getLocale()).isNull();
+        assertThat(session.getLanguageHeader()).isEqualTo("*");
+
+        // a locale
+        session.setLocale(Locale.CANADA_FRENCH);
+        assertThat(session.getLocale()).isEqualTo(Locale.CANADA_FRENCH);
+        assertThat(session.getLanguageHeader()).isEqualTo("fr-CA,fr;q=0.8,*;q=0.1");
     }
 
 }

@@ -32,6 +32,7 @@ import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.provider.GenericAcmeProvider;
+import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 
@@ -49,7 +50,8 @@ public class Session {
     private final AcmeProvider provider;
 
     private @Nullable String nonce;
-    private Locale locale = Locale.getDefault();
+    private @Nullable Locale locale = Locale.getDefault();
+    private String languageHeader = AcmeUtils.localeToLanguageHeader(Locale.getDefault());
     protected @Nullable ZonedDateTime directoryLastModified;
     protected @Nullable ZonedDateTime directoryExpires;
 
@@ -147,8 +149,10 @@ public class Session {
     }
 
     /**
-     * Gets the current locale of this session.
+     * Gets the current locale of this session, or {@code null} if no special language is
+     * selected.
      */
+    @Nullable
     public Locale getLocale() {
         return locale;
     }
@@ -156,9 +160,21 @@ public class Session {
     /**
      * Sets the locale used in this session. The locale is passed to the server as
      * Accept-Language header. The server <em>may</em> respond with localized messages.
+     * The default is the system's language. If set to {@code null}, no special language
+     * is selected.
      */
     public void setLocale(@Nullable Locale locale) {
-        this.locale = locale != null ? locale : Locale.getDefault();
+        this.locale = locale;
+        this.languageHeader = AcmeUtils.localeToLanguageHeader(locale);
+    }
+
+    /**
+     * Gets an Accept-Language header value that matches the current locale.
+     *
+     * @since 3.0.0
+     */
+    public String getLanguageHeader() {
+        return languageHeader;
     }
 
     /**

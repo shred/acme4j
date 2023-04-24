@@ -347,7 +347,7 @@ public class DefaultConnection implements Connection {
         try {
             var builder = httpConnector.createRequestBuilder(url)
                     .header(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET)
-                    .header(ACCEPT_LANGUAGE_HEADER, session.getLocale().toLanguageTag());
+                    .header(ACCEPT_LANGUAGE_HEADER, session.getLanguageHeader());
 
             if (session.networkSettings().isCompressionEnabled()) {
                 builder.header(ACCEPT_ENCODING_HEADER, "gzip");
