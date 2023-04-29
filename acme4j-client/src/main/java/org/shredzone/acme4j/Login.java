@@ -190,6 +190,16 @@ public class Login {
     }
 
     /**
+     * Creates a builder for a new {@link Order}.
+     *
+     * @return {@link OrderBuilder} object
+     * @since 3.0.0
+     */
+    public OrderBuilder newOrder() {
+        return new OrderBuilder(this);
+    }
+
+    /**
      * Sets a different {@link KeyPair}. The new key pair is only used locally in this
      * instance, but is not set on server side!
      */

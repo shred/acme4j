@@ -138,7 +138,7 @@ public class Account extends AcmeJsonResource {
      * @return {@link OrderBuilder} object
      */
     public OrderBuilder newOrder() {
-        return new OrderBuilder(getLogin());
+        return getLogin().newOrder();
     }
 
     /**

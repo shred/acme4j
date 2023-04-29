@@ -390,6 +390,20 @@ public class AccountTest {
     }
 
     /**
+     * Test that a new order can be created.
+     */
+    @Test
+    public void testNewOrder() throws AcmeException, IOException {
+        var provider = new TestableConnectionProvider();
+        var login = provider.createLogin();
+
+        var account = new Account(login);
+        assertThat(account.newOrder()).isNotNull();
+
+        provider.close();
+    }
+
+    /**
      * Test that an account can be modified.
      */
     @Test

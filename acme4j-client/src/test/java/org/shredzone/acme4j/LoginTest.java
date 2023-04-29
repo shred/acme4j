@@ -28,6 +28,7 @@ import org.mockito.ArgumentMatchers;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
+import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
@@ -180,6 +181,19 @@ public class LoginTest {
                 () -> login.bindChallenge(locationUrl, Dns01Challenge.class));
         assertThat(ex.getMessage()).isEqualTo("Challenge type http-01 does not match" +
                 " requested class class org.shredzone.acme4j.challenge.Dns01Challenge");
+    }
+
+    /**
+     * Test that a new order can be created.
+     */
+    @Test
+    public void testNewOrder() throws AcmeException, IOException {
+        var provider = new TestableConnectionProvider();
+        var login = provider.createLogin();
+
+        assertThat(login.newOrder()).isNotNull();
+
+        provider.close();
     }
 
 }

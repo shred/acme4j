@@ -33,7 +33,8 @@ import org.slf4j.LoggerFactory;
 /**
  * Start a new certificate {@link Order}.
  * <p>
- * Use {@link Account#newOrder()} to create a new {@link OrderBuilder} instance.
+ * Use {@link Login#newOrder()} or {@link Account#newOrder()} to create a new
+ * {@link OrderBuilder} instance. Both methods are identical.
  */
 public class OrderBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(OrderBuilder.class);
