@@ -14,7 +14,8 @@
 package org.shredzone.acme4j;
 
 import static java.util.Collections.unmodifiableList;
-import static java.util.stream.Collectors.toList;
+import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -22,8 +23,7 @@ import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
 import java.util.List;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -46,8 +46,8 @@ public class Certificate extends AcmeResource {
     private static final long serialVersionUID = 7381527770159084201L;
     private static final Logger LOG = LoggerFactory.getLogger(Certificate.class);
 
-    private @Nullable ArrayList<X509Certificate> certChain;
-    private @Nullable ArrayList<URL> alternates;
+    private @Nullable List<X509Certificate> certChain;
+    private @Nullable Collection<URL> alternates;
 
     protected Certificate(Login login, URL certUrl) {
         super(login, certUrl);
@@ -68,8 +68,8 @@ public class Certificate extends AcmeResource {
             LOG.debug("download");
             try (var conn = getSession().connect()) {
                 conn.sendCertificateRequest(getLocation(), getLogin());
-                alternates = new ArrayList<>(conn.getLinks("alternate"));
-                certChain = new ArrayList<>(conn.readCertificates());
+                alternates = conn.getLinks("alternate");
+                certChain = conn.readCertificates();
             }
         }
     }
@@ -81,7 +81,7 @@ public class Certificate extends AcmeResource {
      */
     public X509Certificate getCertificate() {
         lazyDownload();
-        return certChain.get(0);
+        return requireNonNull(certChain).get(0);
     }
 
     /**
@@ -93,7 +93,7 @@ public class Certificate extends AcmeResource {
      */
     public List<X509Certificate> getCertificateChain() {
         lazyDownload();
-        return unmodifiableList(certChain);
+        return unmodifiableList(requireNonNull(certChain));
     }
 
     /**
@@ -103,11 +103,7 @@ public class Certificate extends AcmeResource {
      */
     public List<URL> getAlternates() {
         lazyDownload();
-        if (alternates != null) {
-            return unmodifiableList(alternates);
-        } else {
-            return Collections.emptyList();
-        }
+        return requireNonNull(alternates).stream().collect(toUnmodifiableList());
     }
 
     /**
@@ -120,7 +116,7 @@ public class Certificate extends AcmeResource {
         var login = getLogin();
         return getAlternates().stream()
                 .map(login::bindCertificate)
-                .collect(toList());
+                .collect(toUnmodifiableList());
     }
 
     /**
