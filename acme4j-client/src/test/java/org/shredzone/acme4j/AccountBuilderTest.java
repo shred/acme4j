@@ -204,5 +204,9 @@ public class AccountBuilderTest {
         var builder = Mockito.spy(AccountBuilder.class);
         builder.addEmail("foo@example.com");
         Mockito.verify(builder).addContact(Mockito.eq("mailto:foo@example.com"));
+
+        // mailto is still accepted if present
+        builder.addEmail("mailto:bar@example.com");
+        Mockito.verify(builder).addContact(Mockito.eq("mailto:bar@example.com"));
     }
 }

@@ -105,7 +105,11 @@ public class AccountBuilder {
      *         if there is a syntax error in the URI string
      */
     public AccountBuilder addEmail(String email) {
-        addContact("mailto:" + email);
+        if (email.startsWith("mailto:")) {
+            addContact(email);
+        } else {
+            addContact("mailto:" + email);
+        }
         return this;
     }
 
