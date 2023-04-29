@@ -312,6 +312,18 @@ public class Session {
     }
 
     /**
+     * Purges the directory cache. Makes sure that a fresh copy of the directory will be
+     * read from the CA on the next time the directory is accessed.
+     *
+     * @since 3.0.0
+     */
+    public void purgeDirectoryCache() {
+        setDirectoryLastModified(null);
+        setDirectoryExpires(null);
+        resourceMap.set(null);
+    }
+
+    /**
      * Reads the provider's directory, then rebuild the resource map. The resource map
      * is unchanged if the {@link AcmeProvider} returns that the directory has not been
      * changed on the remote side.

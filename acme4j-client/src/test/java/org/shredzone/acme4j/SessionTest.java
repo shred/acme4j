@@ -97,6 +97,13 @@ public class SessionTest {
         assertThat(session.getDirectoryLastModified()).isEqualTo(now);
         session.setDirectoryLastModified(null);
         assertThat(session.getDirectoryLastModified()).isNull();
+
+        session.setDirectoryExpires(now);
+        session.setDirectoryLastModified(now);
+        session.purgeDirectoryCache();
+        assertThat(session.getDirectoryExpires()).isNull();
+        assertThat(session.getDirectoryLastModified()).isNull();
+        assertThat(session.hasDirectory()).isFalse();
     }
 
     /**
