@@ -26,12 +26,22 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
 
 /**
- * A {@link Login} is a {@link Session} that is connected to an {@link Account} at the
- * ACME server. It contains the account's {@link KeyPair} and the {@link URL} of the
- * account.
+ * A {@link Login} into an account.
  * <p>
- * Note that {@link Login} objects are not serializable, as they contain a keypair and
- * volatile data.
+ * A login is bound to a {@link Session}. However, a {@link Session} can handle multiple
+ * logins in parallel.
+ * <p>
+ * To create a login, you need to specify the location URI of the {@link Account}, and
+ * need to provide the {@link KeyPair} the account was created with. If the account's
+ * location URL is unknown, the account can be re-registered with the
+ * {@link AccountBuilder}, using {@link AccountBuilder#onlyExisting()} to make sure that
+ * no new account will be created. If the key pair was lost though, there is no automatic
+ * way to regain access to your account, and you have to contact your CA's support hotline
+ * for assistance.
+ * <p>
+ * Note that {@link Login} objects are intentionally not serializable, as they contain a
+ * keypair and volatile data. On distributed systems, you can create a {@link Login} to
+ * the same account for every service instance.
  */
 public class Login {
 
@@ -88,10 +98,11 @@ public class Login {
     }
 
     /**
-     * Creates a new instance of {@link Authorization} and binds it to this login.
+     * Creates a new instance of an existing {@link Authorization} and binds it to this
+     * login.
      *
      * @param location
-     *            Location of the Authorization
+     *         Location of the Authorization
      * @return {@link Authorization} bound to the login
      */
     public Authorization bindAuthorization(URL location) {
@@ -99,10 +110,11 @@ public class Login {
     }
 
     /**
-     * Creates a new instance of {@link Certificate} and binds it to this login.
+     * Creates a new instance of an existing {@link Certificate} and binds it to this
+     * login.
      *
      * @param location
-     *            Location of the Certificate
+     *         Location of the Certificate
      * @return {@link Certificate} bound to the login
      */
     public Certificate bindCertificate(URL location) {
@@ -110,10 +122,10 @@ public class Login {
     }
 
     /**
-     * Creates a new instance of {@link Order} and binds it to this login.
+     * Creates a new instance of an existing {@link Order} and binds it to this login.
      *
      * @param location
-     *            Location URL of the order
+     *         Location URL of the order
      * @return {@link Order} bound to the login
      */
     public Order bindOrder(URL location) {
@@ -121,12 +133,14 @@ public class Login {
     }
 
     /**
-     * Creates a new instance of {@link Challenge} and binds it to this login.
+     * Creates a new instance of an existing {@link Challenge} and binds it to this
+     * login. Use this method only if the resulting challenge type is unknown.
      *
      * @param location
-     *            Location URL of the challenge
+     *         Location URL of the challenge
      * @return {@link Challenge} bound to the login
      * @since 2.8
+     * @see #bindChallenge(URL, Class)
      */
     public Challenge bindChallenge(URL location) {
         try (var connect = session.connect()) {
@@ -138,7 +152,8 @@ public class Login {
     }
 
     /**
-     * Creates a new instance of a challenge and binds it to this login.
+     * Creates a new instance of an existing {@link Challenge} and binds it to this
+     * login. Use this method if the resulting challenge type is known.
      *
      * @param location
      *         Location URL of the challenge
@@ -175,7 +190,8 @@ public class Login {
     }
 
     /**
-     * Sets a different {@link KeyPair}.
+     * Sets a different {@link KeyPair}. The new key pair is only used locally in this
+     * instance, but is not set on server side!
      */
     protected void setKeyPair(KeyPair keyPair) {
         this.keyPair = Objects.requireNonNull(keyPair, "keyPair");

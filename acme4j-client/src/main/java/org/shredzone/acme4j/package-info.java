@@ -12,6 +12,11 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+/**
+ * acme4j is a Java client for the ACME protocol.
+ * <p>
+ * See the documentation and the example for how to use this client in your own projects.
+ */
 @ReturnValuesAreNonnullByDefault
 @DefaultAnnotationForParameters(NonNull.class)
 @DefaultAnnotationForFields(NonNull.class)

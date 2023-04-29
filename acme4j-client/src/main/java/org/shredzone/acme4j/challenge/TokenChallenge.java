@@ -22,8 +22,8 @@ import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JoseUtils;
 
 /**
- * An extension of {@link Challenge} that handles challenges with a {@code token} and
- * {@code keyAuthorization}.
+ * A generic extension of {@link Challenge} that handles challenges with a {@code token}
+ * and {@code keyAuthorization}.
  */
 public class TokenChallenge extends Challenge {
     private static final long serialVersionUID = 1634133407432681800L;

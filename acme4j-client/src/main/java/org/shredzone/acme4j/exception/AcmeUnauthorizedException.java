@@ -16,8 +16,8 @@ package org.shredzone.acme4j.exception;
 import org.shredzone.acme4j.Problem;
 
 /**
- * An exception that is thrown when the client is not authorized. The details will give
- * an explanation for the reasons (e.g. "client not on a whitelist").
+ * The client is not authorized to perform the operation. The {@link Problem} document
+ * will give further details (e.g. "client IP is blocked").
  */
 public class AcmeUnauthorizedException extends AcmeServerException {
     private static final long serialVersionUID = 9064697508262919366L;

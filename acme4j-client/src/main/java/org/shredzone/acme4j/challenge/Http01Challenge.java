@@ -17,7 +17,9 @@ import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.toolbox.JSON;
 
 /**
- * Implements the {@value TYPE} challenge.
+ * Implements the {@value TYPE} challenge. For domain validation, it requires a specific
+ * file that can be retrieved from the domain via HTTP. See the acme4j documentation for a
+ * detailed explanation.
  */
 public class Http01Challenge extends TokenChallenge {
     private static final long serialVersionUID = 3322211185872544605L;

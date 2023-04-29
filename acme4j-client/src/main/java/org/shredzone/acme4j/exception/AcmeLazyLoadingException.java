@@ -20,8 +20,10 @@ import java.net.URL;
 import org.shredzone.acme4j.AcmeResource;
 
 /**
- * This runtime exception is thrown when an {@link AcmeException} occured while trying to
- * lazy-load a resource from the ACME server.
+ * A runtime exception that is thrown when an {@link AcmeException} occured while trying
+ * to lazy-load a resource from the ACME server. It contains the original cause of the
+ * exception and a reference to the resource that could not be lazy-loaded. It is usually
+ * thrown by getter methods, so the API is not polluted with checked exceptions.
  */
 public class AcmeLazyLoadingException extends RuntimeException {
     private static final long serialVersionUID = 1000353433913721901L;
@@ -43,6 +45,8 @@ public class AcmeLazyLoadingException extends RuntimeException {
 
     /**
      * Creates a new {@link AcmeLazyLoadingException}.
+     * <p>
+     * This constructor is used if there is no actual instance of the resource.
      *
      * @param type
      *         {@link AcmeResource} type to be loaded

@@ -14,7 +14,7 @@
 package org.shredzone.acme4j.connector;
 
 /**
- * Enumeration of resources.
+ * Enumeration of standard resources, and their key name in the CA's directory.
  */
 public enum Resource {
 
@@ -32,9 +32,9 @@ public enum Resource {
     }
 
     /**
-     * Returns the resource path.
+     * Returns the key name in the directory.
      *
-     * @return resource path
+     * @return key name
      */
     public String path() {
         return path;

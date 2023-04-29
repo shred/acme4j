@@ -18,10 +18,10 @@ import java.util.Arrays;
 import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
- * Enumeration of revocation reasons.
+ * An enumeration of revocation reasons.
  *
  * @see <a href="https://tools.ietf.org/html/rfc5280#section-5.3.1">RFC 5280 Section
- *      5.3.1</a>
+ * 5.3.1</a>
  */
 public enum RevocationReason {
 

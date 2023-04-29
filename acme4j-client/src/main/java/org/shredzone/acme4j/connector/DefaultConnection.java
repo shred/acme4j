@@ -63,7 +63,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Default implementation of {@link Connection}.
+ * Default implementation of {@link Connection}. It communicates with the ACME server via
+ * HTTP, with a client that is provided by the given {@link HttpConnector}.
  */
 public class DefaultConnection implements Connection {
     private static final Logger LOG = LoggerFactory.getLogger(DefaultConnection.class);

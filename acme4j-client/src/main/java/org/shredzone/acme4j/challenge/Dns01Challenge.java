@@ -21,7 +21,8 @@ import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.toolbox.JSON;
 
 /**
- * Implements the {@value TYPE} challenge.
+ * Implements the {@value TYPE} challenge. It requires a specific DNS record for domain
+ * validation. See the acme4j documentation for a detailed explanation.
  */
 public class Dns01Challenge extends TokenChallenge {
     private static final long serialVersionUID = 6964687027713533075L;
@@ -68,9 +69,9 @@ public class Dns01Challenge extends TokenChallenge {
      * Creates a new generic {@link Dns01Challenge} object.
      *
      * @param login
-     *            {@link Login} the resource is bound with
+     *         {@link Login} the resource is bound with
      * @param data
-     *            {@link JSON} challenge data
+     *         {@link JSON} challenge data
      */
     public Dns01Challenge(Login login, JSON data) {
         super(login, data);

@@ -12,6 +12,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+/**
+ * This package contains an {@link org.shredzone.acme4j.provider.AcmeProvider} for the
+ * Pebble test server.
+ *
+ * @see <a href="https://github.com/letsencrypt/pebble">Pebble project page</a>
+ */
 @ReturnValuesAreNonnullByDefault
 @DefaultAnnotationForParameters(NonNull.class)
 @DefaultAnnotationForFields(NonNull.class)

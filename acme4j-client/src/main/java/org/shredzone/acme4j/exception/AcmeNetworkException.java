@@ -16,8 +16,8 @@ package org.shredzone.acme4j.exception;
 import java.io.IOException;
 
 /**
- * This exception is thrown when a network error occured while communicating with the
- * server.
+ * A general network error has occured while communicating with the server (e.g. network
+ * timeout).
  */
 public class AcmeNetworkException extends AcmeException {
     private static final long serialVersionUID = 2054398693543329179L;

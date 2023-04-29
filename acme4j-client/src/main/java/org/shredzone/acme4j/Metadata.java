@@ -25,7 +25,7 @@ import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 
 /**
- * Contains metadata related to the provider.
+ * A collection of metadata related to the CA provider.
  */
 public class Metadata {
 
@@ -42,7 +42,7 @@ public class Metadata {
     }
 
     /**
-     * Returns an {@link URI} to the current terms of service, or {@code null} if not
+     * Returns an {@link URI} of the current terms of service, or {@code null} if not
      * available.
      */
     @Nullable
@@ -51,7 +51,7 @@ public class Metadata {
     }
 
     /**
-     * Returns an {@link URL} to a website providing more information about the ACME
+     * Returns an {@link URL} of a website providing more information about the ACME
      * server. {@code null} if not available.
      */
     @Nullable
@@ -79,7 +79,7 @@ public class Metadata {
     }
 
     /**
-     * Returns whether the CA supports short-term auto renewal of certificates.
+     * Returns whether the CA supports short-term auto-renewal of certificates.
      *
      * @since 2.3
      */
@@ -89,8 +89,8 @@ public class Metadata {
 
     /**
      * Returns the minimum acceptable value for the maximum validity of a certificate
-     * before auto renewal. {@code null} if the CA does not support short-term auto
-     * renewal.
+     * before auto-renewal. {@code null} if the CA does not support short-term
+     * auto-renewal.
      *
      * @since 2.3
      */
@@ -105,7 +105,7 @@ public class Metadata {
 
     /**
      * Returns the maximum delta between auto-renewal end date and auto-renewal start
-     * date. {@code null} if the CA does not support short-term auto renewal.
+     * date. {@code null} if the CA does not support short-term auto-renewal.
      *
      * @since 2.3
      */

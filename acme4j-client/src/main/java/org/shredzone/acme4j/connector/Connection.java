@@ -32,6 +32,10 @@ import org.shredzone.acme4j.toolbox.JSONBuilder;
 
 /**
  * Connects to the ACME server and offers different methods for invoking the API.
+ * <p>
+ * The actual way of communicating with the ACME server is intentionally left open.
+ * Implementations could use other means than HTTP, or could mock the communication for
+ * unit testing.
  */
 public interface Connection extends AutoCloseable {
 
@@ -132,16 +136,14 @@ public interface Connection extends AutoCloseable {
                 throws AcmeException;
 
     /**
-     * Reads a server response as JSON data.
+     * Reads a server response as JSON object.
      *
      * @return The JSON response.
-     * @throws AcmeProtocolException
-     *         if the JSON response was empty.
      */
     JSON readJsonResponse() throws AcmeException;
 
     /**
-     * Reads a certificate and its issuers.
+     * Reads a certificate and its chain of issuers.
      *
      * @return List of X.509 certificate and chain that was read.
      */
@@ -193,12 +195,13 @@ public interface Connection extends AutoCloseable {
     Optional<ZonedDateTime> getExpiration();
 
     /**
-     * Gets one or more relation links from the header. The result is expected to be an URL.
+     * Gets one or more relation links from the header. The result is expected to be a
+     * URL.
      * <p>
      * Relative links are resolved against the last request's URL.
      *
      * @param relation
-     *            Link relation
+     *         Link relation
      * @return Collection of links. Empty if there was no such relation.
      */
     Collection<URL> getLinks(String relation);

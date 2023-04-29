@@ -33,6 +33,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Utility class that takes care of all the JOSE stuff.
+ * <p>
+ * Internal class, do not use in your project! The API may change anytime, in a breaking
+ * manner, and without prior notice.
  *
  * @since 2.7
  */

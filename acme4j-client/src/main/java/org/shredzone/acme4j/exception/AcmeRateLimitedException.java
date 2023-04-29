@@ -22,7 +22,9 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.Problem;
 
 /**
- * An exception that is thrown when a rate limit was exceeded.
+ * A rate limit was exceeded. If provided by the server, it also includes the earliest
+ * time at which a new attempt will be accepted, and a reference to a document that
+ * further explains the rate limit that was exceeded.
  */
 public class AcmeRateLimitedException extends AcmeServerException {
     private static final long serialVersionUID = 4150484059796413069L;
@@ -34,12 +36,13 @@ public class AcmeRateLimitedException extends AcmeServerException {
      * Creates a new {@link AcmeRateLimitedException}.
      *
      * @param problem
-     *            {@link Problem} that caused the exception
+     *         {@link Problem} that caused the exception
      * @param retryAfter
-     *            The moment the request is expected to succeed again, may be {@code null}
-     *            if not known
+     *         The instant of time that the request is expected to succeed again, may be
+     *         {@code null} if not known
      * @param documents
-     *            URLs pointing to documents about the rate limit that was hit
+     *         URLs pointing to documents about the rate limit that was hit, may be
+     *         {@code null} if not known
      */
     public AcmeRateLimitedException(Problem problem, @Nullable Instant retryAfter,
                 @Nullable Collection<URL> documents) {
@@ -50,8 +53,8 @@ public class AcmeRateLimitedException extends AcmeServerException {
     }
 
     /**
-     * Returns the moment the request is expected to succeed again. {@code null} if this
-     * moment is not known.
+     * Returns the instant of time the request is expected to succeed again. {@code null}
+     * if this moment is not known.
      */
     @Nullable
     public Instant getRetryAfter() {

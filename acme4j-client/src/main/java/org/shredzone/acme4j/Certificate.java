@@ -37,10 +37,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Represents a certificate and its certificate chain.
+ * Represents an issued certificate and its certificate chain.
  * <p>
- * Note that a certificate is immutable once it is issued. For renewal, a new certificate
- * must be ordered.
+ * A certificate is immutable once it is issued. For renewal, a new certificate must be
+ * ordered.
  */
 public class Certificate extends AcmeResource {
     private static final long serialVersionUID = 7381527770159084201L;
@@ -56,12 +56,12 @@ public class Certificate extends AcmeResource {
     /**
      * Downloads the certificate chain.
      * <p>
-     * The certificate is downloaded lazily by the other methods. So usually there is no
-     * need to invoke this method, unless the download is to be enforced. If the
-     * certificate has been downloaded already, nothing will happen.
+     * The certificate is downloaded lazily by the other methods. Usually there is no need
+     * to invoke this method, unless the download is to be enforced. If the certificate
+     * has been downloaded already, nothing will happen.
      *
      * @throws AcmeException
-     *             if the certificate could not be downloaded
+     *         if the certificate could not be downloaded
      */
     public void download() throws AcmeException {
         if (certChain == null) {
@@ -125,7 +125,7 @@ public class Certificate extends AcmeResource {
 
     /**
      * Writes the certificate to the given writer. It is written in PEM format, with the
-     * end-entity cert coming first, followed by the intermediate ceritificates.
+     * end-entity cert coming first, followed by the intermediate certificates.
      *
      * @param out
      *            {@link Writer} to write to. The writer is not closed after use.
@@ -154,23 +154,28 @@ public class Certificate extends AcmeResource {
      *            {@link RevocationReason} stating the reason of the revocation that is
      *            used when generating OCSP responses and CRLs. {@code null} to give no
      *            reason.
+     * @see #revoke(Login, X509Certificate, RevocationReason)
+     * @see #revoke(Session, KeyPair, X509Certificate, RevocationReason)
      */
     public void revoke(@Nullable RevocationReason reason) throws AcmeException {
         revoke(getLogin(), getCertificate(), reason);
     }
 
     /**
-     * Revoke a certificate. This call is meant to be used for revoking certificates if
-     * only the account's key pair and the certificate itself is available.
+     * Revoke a certificate.
+     * <p>
+     * Use this method if the certificate's location is unknown, so you cannot regenerate
+     * a {@link Certificate} instance. This method requires a {@link Login} to your
+     * account and the issued certificate.
      *
      * @param login
-     *            {@link Login} to the account
+     *         {@link Login} to the account
      * @param cert
-     *            The {@link X509Certificate} to be revoked
+     *         The {@link X509Certificate} to be revoked
      * @param reason
-     *            {@link RevocationReason} stating the reason of the revocation that is
-     *            used when generating OCSP responses and CRLs. {@code null} to give no
-     *            reason.
+     *         {@link RevocationReason} stating the reason of the revocation that is used
+     *         when generating OCSP responses and CRLs. {@code null} to give no reason.
+     * @see #revoke(Session, KeyPair, X509Certificate, RevocationReason)
      * @since 2.6
      */
     public static void revoke(Login login, X509Certificate cert, @Nullable RevocationReason reason)
@@ -195,19 +200,22 @@ public class Certificate extends AcmeResource {
     }
 
     /**
-     * Revoke a certificate. This call is meant to be used for revoking certificates if
-     * the account's key pair was lost.
+     * Revoke a certificate.
+     * <p>
+     * Use this method if the key pair of your account was lost (so you are unable to
+     * login into your account), but you still have the key pair of the affected domain
+     * and the issued certificate.
      *
      * @param session
-     *            {@link Session} connected to the ACME server
+     *         {@link Session} connected to the ACME server
      * @param domainKeyPair
-     *            Key pair the CSR was signed with
+     *         Key pair the CSR was signed with
      * @param cert
-     *            The {@link X509Certificate} to be revoked
+     *         The {@link X509Certificate} to be revoked
      * @param reason
-     *            {@link RevocationReason} stating the reason of the revocation that is
-     *            used when generating OCSP responses and CRLs. {@code null} to give no
-     *            reason.
+     *         {@link RevocationReason} stating the reason of the revocation that is used
+     *         when generating OCSP responses and CRLs. {@code null} to give no reason.
+     * @see #revoke(Login, X509Certificate, RevocationReason)
      */
     public static void revoke(Session session, KeyPair domainKeyPair, X509Certificate cert,
             @Nullable RevocationReason reason) throws AcmeException {

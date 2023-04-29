@@ -20,7 +20,8 @@ import org.shredzone.acme4j.provider.ChallengeType;
 import org.shredzone.acme4j.toolbox.JSON;
 
 /**
- * Generates {@link EmailReply00Challenge}.
+ * A provider that generates {@link EmailReply00Challenge}. It is registered as Java
+ * service.
  *
  * @since 2.12
  */

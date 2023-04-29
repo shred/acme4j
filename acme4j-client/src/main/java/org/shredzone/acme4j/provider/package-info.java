@@ -12,6 +12,18 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+/**
+ * Acme Providers are the link between acme4j and the ACME server. They know how to
+ * connect to their server, and how to set up HTTP connections.
+ * <p>
+ * {@link org.shredzone.acme4j.provider.AcmeProvider} is the root interface.
+ * {@link org.shredzone.acme4j.provider.AbstractAcmeProvider} is an abstract
+ * implementation of the most elementary methods. Most HTTP based providers will extend
+ * from {@link org.shredzone.acme4j.provider.GenericAcmeProvider} though.
+ * <p>
+ * Provider implementations must be registered with Java's
+ * {@link java.util.ServiceLoader}.
+ */
 @ReturnValuesAreNonnullByDefault
 @DefaultAnnotationForParameters(NonNull.class)
 @DefaultAnnotationForFields(NonNull.class)

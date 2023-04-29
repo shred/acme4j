@@ -37,7 +37,12 @@ import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 
 /**
- * A session stores the ACME server URI. It also tracks communication parameters.
+ * A {@link Session} tracks the entire communication with a CA.
+ * <p>
+ * To create a session instance, use its constructor. It requires the URI of the ACME
+ * server to connect to. This can be the location of the CA's directory (via {@code http}
+ * or {@code https} protocol), or a special URI (via {@code acme} protocol). See the
+ * documentation about valid URIs.
  */
 public class Session {
 
@@ -59,7 +64,11 @@ public class Session {
      * Creates a new {@link Session}.
      *
      * @param serverUri
-     *            URI string of the ACME server
+     *         URI string of the ACME server to connect to. This is either the location of
+     *         the CA's ACME directory (using {@code http} or {@code https} protocol), or
+     *         a special URI (using the {@code acme} protocol).
+     * @throws IllegalArgumentException
+     *         if no ACME provider was found for the server URI.
      */
     public Session(String serverUri) {
         this(URI.create(serverUri));
@@ -69,9 +78,11 @@ public class Session {
      * Creates a new {@link Session}.
      *
      * @param serverUri
-     *            {@link URI} of the ACME server
+     *         {@link URI} of the ACME server to connect to. This is either the location
+     *         of the CA's ACME directory (using {@code http} or {@code https} protocol),
+     *         or a special URI (using the {@code acme} protocol).
      * @throws IllegalArgumentException
-     *             if no ACME provider was found for the server URI.
+     *         if no ACME provider was found for the server URI.
      */
     public Session(URI serverUri) {
         this.serverUri = Objects.requireNonNull(serverUri, "serverUri");
@@ -96,7 +107,7 @@ public class Session {
     /**
      * Creates a new {@link Session} using the given {@link AcmeProvider}.
      * <p>
-     * This constructor should only be used for testing purposes.
+     * This constructor is only to be used for testing purposes.
      *
      * @param serverUri
      *         {@link URI} of the ACME server
@@ -134,7 +145,8 @@ public class Session {
     }
 
     /**
-     * Gets the last base64 encoded nonce, or {@code null} if the session is new.
+     * Gets the last base64 encoded nonce, or {@code null} if the session is new. This
+     * method is mainly for internal use.
      */
     @Nullable
     public String getNonce() {
@@ -142,7 +154,8 @@ public class Session {
     }
 
     /**
-     * Sets the base64 encoded nonce received by the server.
+     * Sets the base64 encoded nonce received by the server. This method is mainly for
+     * internal use.
      */
     public void setNonce(@Nullable String nonce) {
         this.nonce = nonce;
@@ -160,8 +173,8 @@ public class Session {
     /**
      * Sets the locale used in this session. The locale is passed to the server as
      * Accept-Language header. The server <em>may</em> respond with localized messages.
-     * The default is the system's language. If set to {@code null}, no special language
-     * is selected.
+     * The default is the system's language. If set to {@code null}, any language will be
+     * accepted.
      */
     public void setLocale(@Nullable Locale locale) {
         this.locale = locale;
@@ -169,7 +182,8 @@ public class Session {
     }
 
     /**
-     * Gets an Accept-Language header value that matches the current locale.
+     * Gets an Accept-Language header value that matches the current locale. This method
+     * is mainly for internal use.
      *
      * @since 3.0.0
      */
@@ -207,7 +221,7 @@ public class Session {
 
     /**
      * Gets the {@link URL} of the given {@link Resource}. This may involve connecting to
-     * the server and getting a directory. The result is cached.
+     * the server and fetching the directory. The result is cached.
      *
      * @param resource
      *            {@link Resource} to get the {@link URL} of
@@ -226,7 +240,7 @@ public class Session {
 
     /**
      * Gets the metadata of the provider's directory. This may involve connecting to the
-     * server and getting a directory. The result is cached.
+     * server and fetching the directory. The result is cached.
      *
      * @return {@link Metadata}. May contain no data, but is never {@code null}.
      */
@@ -287,8 +301,8 @@ public class Session {
     }
 
     /**
-     * Returns {@code true} if a directory is available. Should only be invoked by {@link
-     * AcmeProvider} implementations.
+     * Returns {@code true} if a copy of the directory is present in a local cache. It is
+     * not evaluated if the cached copy has expired though.
      *
      * @return {@code true} if a directory is available.
      * @since 2.10

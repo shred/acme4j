@@ -12,6 +12,16 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+/**
+ * This package contains all exceptions that can be thrown by acme4j.
+ * <p>
+ * {@link org.shredzone.acme4j.exception.AcmeException} is the root exception, and other
+ * exceptions are derived from it.
+ * <p>
+ * Some methods that do lazy-loading of remote resources may throw a runtime
+ * {@link org.shredzone.acme4j.exception.AcmeLazyLoadingException} instead, so the API is
+ * not polluted with checked exceptions on every getter.
+ */
 @ReturnValuesAreNonnullByDefault
 @DefaultAnnotationForParameters(NonNull.class)
 @DefaultAnnotationForFields(NonNull.class)

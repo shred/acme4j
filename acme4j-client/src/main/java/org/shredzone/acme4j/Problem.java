@@ -27,7 +27,8 @@ import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 
 /**
- * Represents a JSON Problem.
+ * A JSON problem. It contains further, machine- and human-readable details about the
+ * reason of an error or failure.
  *
  * @see <a href="https://tools.ietf.org/html/rfc7807">RFC 7807</a>
  */
@@ -89,7 +90,7 @@ public class Problem implements Serializable {
     }
 
     /**
-     * Returns an URI that identifies the specific occurence of the problem. It is always
+     * Returns a URI that identifies the specific occurence of the problem. It is always
      * an absolute URI.
      */
     @Nullable
@@ -131,7 +132,7 @@ public class Problem implements Serializable {
     }
 
     /**
-     * Returns the problem as {@link JSON} object, to access other fields.
+     * Returns the problem as {@link JSON} object, to access other, non-standard fields.
      *
      * @return Problem as {@link JSON} object
      */

@@ -19,7 +19,9 @@ import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.toolbox.JSON;
 
 /**
- * Implements the {@value TYPE} challenge.
+ * Implements the {@value TYPE} challenge. It requires a specific certificate that can be
+ * retrieved from the domain via HTTPS request. See the acme4j documentation for a
+ * detailed explanation.
  *
  * @since 2.1
  */

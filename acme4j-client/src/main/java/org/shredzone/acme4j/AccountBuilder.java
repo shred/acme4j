@@ -34,7 +34,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A builder for registering a new account.
+ * A builder for registering a new account with the CA.
+ * <p>
+ * You need to create a new key pair and set it via {@link #useKeyPair(KeyPair)}. Your
+ * account will be identified by the public part of that key pair, so make sure to store
+ * it safely! There is no automatic way to regain access to your account if the key pair
+ * is lost.
+ * <p>
+ * Depending on the CA you register with, you might need to give additional information.
+ * <ul>
+ *     <li>You might need to agree to the terms of service via
+ *     {@link #agreeToTermsOfService()}.</li>
+ *     <li>You might need to give at least one contact URI.</li>
+ *     <li>You might need to provide a key identifier (e.g. your customer number) and
+ *     a shared secret via {@link #withKeyIdentifier(String, SecretKey)}.</li>
+ * </ul>
  */
 public class AccountBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(AccountBuilder.class);
@@ -48,9 +62,12 @@ public class AccountBuilder {
 
     /**
      * Add a contact URI to the list of contacts.
+     * <p>
+     * A contact URI may be e.g. an email address or a phone number. It depends on the CA
+     * what kind of contact URIs are accepted, and how many must be provided as minimum.
      *
      * @param contact
-     *            Contact URI
+     *         Contact URI
      * @return itself
      */
     public AccountBuilder addContact(URI contact) {
@@ -65,10 +82,10 @@ public class AccountBuilder {
      * This is a convenience call for {@link #addContact(URI)}.
      *
      * @param contact
-     *            Contact URI as string
-     * @throws IllegalArgumentException
-     *             if there is a syntax error in the URI string
+     *         Contact URI as string
      * @return itself
+     * @throws IllegalArgumentException
+     *         if there is a syntax error in the URI string
      */
     public AccountBuilder addContact(String contact) {
         addContact(URI.create(contact));
@@ -76,16 +93,16 @@ public class AccountBuilder {
     }
 
     /**
-     * Add a email address to the list of contacts.
+     * Add an email address to the list of contacts.
      * <p>
-     * This is a convenience call for {@link #addContact(String)} that doesn't
-     * require from you attach "mailto" scheme before email address.
+     * This is a convenience call for {@link #addContact(String)} that doesn't require
+     * to prepend the "mailto" scheme to an email address.
      *
      * @param email
-     *             Contact email without "mailto" scheme (e.g. test@gmail.com)
-     * @throws IllegalArgumentException
-     *             if there is a syntax error in the URI string
+     *         Contact email without "mailto" scheme (e.g. test@gmail.com)
      * @return itself
+     * @throws IllegalArgumentException
+     *         if there is a syntax error in the URI string
      */
     public AccountBuilder addEmail(String email) {
         addContact("mailto:" + email);
@@ -93,7 +110,12 @@ public class AccountBuilder {
     }
 
     /**
-     * Signals that the user agrees to the terms of service.
+     * Documents that the user has agreed to the terms of service.
+     * <p>
+     * If the CA requires the user to agree to the terms of service, it is your
+     * responsibility to present them to the user, and actively ask for their agreement. A
+     * link to the terms of service is provided via
+     * {@code session.getMetadata().getTermsOfService()}.
      *
      * @return itself
      */
@@ -104,8 +126,13 @@ public class AccountBuilder {
 
     /**
      * Signals that only an existing account should be returned. The server will not
-     * create a new account if the key is not known. This is useful if you only have your
-     * account's key pair available, but not your account's location URL.
+     * create a new account if the key is not known.
+     * <p>
+     * If you have lost your account's location URL, but still have your account's key
+     * pair, you can register your account again with the same key, and use
+     * {@link #onlyExisting()} to make sure that your existing account is returned. If
+     * your key is unknown to the server, an error is thrown once the account is to be
+     * created.
      *
      * @return itself
      */
@@ -116,9 +143,15 @@ public class AccountBuilder {
 
     /**
      * Sets the {@link KeyPair} to be used for this account.
+     * <p>
+     * Only the public key of the pair is sent to the server for registration. acme4j will
+     * never send the private key part.
+     * <p>
+     * Make sure to store your key pair safely after registration! There is no automatic
+     * way to regain access to your account if the key pair is lost.
      *
      * @param keyPair
-     *            Account's {@link KeyPair}
+     *         Account's {@link KeyPair}
      * @return itself
      */
     public AccountBuilder useKeyPair(KeyPair keyPair) {
@@ -128,13 +161,16 @@ public class AccountBuilder {
 
     /**
      * Sets a Key Identifier and MAC key provided by the CA. Use this if your CA requires
-     * an individual account identification, e.g. your customer number.
+     * an individual account identification (e.g. your customer number) and a shared
+     * secret for registration. See the documentation of your CA about how to retrieve the
+     * key identifier and MAC key.
      *
      * @param kid
-     *            Key Identifier
+     *         Key Identifier
      * @param macKey
-     *            MAC key
+     *         MAC key
      * @return itself
+     * @see #withKeyIdentifier(String, String)
      */
     public AccountBuilder withKeyIdentifier(String kid, SecretKey macKey) {
         if (kid != null && kid.isEmpty()) {
@@ -147,13 +183,20 @@ public class AccountBuilder {
 
     /**
      * Sets a Key Identifier and MAC key provided by the CA. Use this if your CA requires
-     * an individual account identification, e.g. your customer number.
+     * an individual account identification (e.g. your customer number) and a shared
+     * secret for registration. See the documentation of your CA about how to retrieve the
+     * key identifier and MAC key.
+     * <p>
+     * This is a convenience call of {@link #withKeyIdentifier(String, SecretKey)} that
+     * accepts a base64url encoded MAC key, so both parameters can be passed in as
+     * strings.
      *
      * @param kid
-     *            Key Identifier
+     *         Key Identifier
      * @param encodedMacKey
-     *            Base64url encoded MAC key. It will be decoded for your convenience.
+     *         Base64url encoded MAC key.
      * @return itself
+     * @see #withKeyIdentifier(String, SecretKey)
      */
     public AccountBuilder withKeyIdentifier(String kid, String encodedMacKey) {
         var encodedKey = AcmeUtils.base64UrlDecode(requireNonNull(encodedMacKey, "encodedMacKey"));
@@ -162,10 +205,14 @@ public class AccountBuilder {
 
     /**
      * Creates a new account.
+     * <p>
+     * Use this method to finally create your account with the given parameters. Do not
+     * use the {@link AccountBuilder} after invoking this method.
      *
      * @param session
-     *            {@link Session} to be used for registration
+     *         {@link Session} to be used for registration
      * @return {@link Account} referring to the new account
+     * @see #createLogin(Session)
      */
     public Account create(Session session) throws AcmeException {
         return createLogin(session).getAccount();
@@ -174,10 +221,11 @@ public class AccountBuilder {
     /**
      * Creates a new account.
      * <p>
-     * This method returns a ready to use {@link Login} for the new {@link Account}.
+     * This method is identical to {@link #create(Session)}, but returns a {@link Login}
+     * that is ready to be used.
      *
      * @param session
-     *            {@link Session} to be used for registration
+     *         {@link Session} to be used for registration
      * @return {@link Login} referring to the new account
      */
     public Login createLogin(Session session) throws AcmeException {

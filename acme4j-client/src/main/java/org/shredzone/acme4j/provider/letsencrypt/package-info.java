@@ -12,6 +12,12 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+/**
+ * This package contains the Let's Encrypt
+ * {@link org.shredzone.acme4j.provider.AcmeProvider}.
+ *
+ * @see <a href="https://letsencrypt.org/">Let's Encrypt</a>
+ */
 @ReturnValuesAreNonnullByDefault
 @DefaultAnnotationForParameters(NonNull.class)
 @DefaultAnnotationForFields(NonNull.class)

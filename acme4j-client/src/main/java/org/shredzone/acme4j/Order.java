@@ -29,7 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Represents a certificate order.
+ * A representation of a certificate order at the CA.
  */
 public class Order extends AcmeJsonResource {
     private static final long serialVersionUID = 5435808648658292177L;
@@ -50,7 +50,7 @@ public class Order extends AcmeJsonResource {
     }
 
     /**
-     * Returns a {@link Problem} document if the order failed.
+     * Returns a {@link Problem} document with the reason if the order has failed.
      */
     @Nullable
     public Problem getError() {
@@ -58,7 +58,8 @@ public class Order extends AcmeJsonResource {
     }
 
     /**
-     * Gets the expiry date of the authorization, if set by the server.
+     * Gets the expiry date of the authorization, if set by the server, {@code null}
+     * otherwise.
      */
     @Nullable
     public Instant getExpires() {
@@ -66,7 +67,7 @@ public class Order extends AcmeJsonResource {
     }
 
     /**
-     * Gets the list of {@link Identifier} to be ordered.
+     * Gets a list of {@link Identifier} that are connected to this order.
      *
      * @since 2.3
      */
@@ -95,7 +96,8 @@ public class Order extends AcmeJsonResource {
     }
 
     /**
-     * Gets the {@link Authorization} required for this order, in no specific order.
+     * Gets the {@link Authorization} that are required to fulfil this order, in no
+     * specific order.
      */
     public List<Authorization> getAuthorizations() {
         var login = getLogin();
@@ -148,12 +150,12 @@ public class Order extends AcmeJsonResource {
      * {@link #getCertificate()}.
      * <p>
      * Even though the ACME protocol uses the term "finalize an order", this method is
-     * called {@link #execute(byte[])} to avoid confusion with the general
+     * called {@link #execute(byte[])} to avoid confusion with the problematic
      * {@link Object#finalize()} method.
      *
      * @param csr
-     *            CSR containing the parameters for the certificate being requested, in
-     *            DER format
+     *         CSR containing the parameters for the certificate being requested, in DER
+     *         format
      */
     public void execute(byte[] csr) throws AcmeException {
         LOG.debug("finalize");
@@ -231,7 +233,7 @@ public class Order extends AcmeJsonResource {
     }
 
     /**
-     * Returns the predate period of each certificate, or {@code null}.
+     * Returns the pre-date period of each certificate, or {@code null}.
      *
      * @since 2.7
      */

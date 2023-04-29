@@ -121,7 +121,7 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
      * generic {@link Challenge} or {@link TokenChallenge} instances are created.
      * <p>
      * Custom provider implementations may override this method to provide challenges that
-     * are unique to the provider.
+     * are proprietary to the provider.
      */
     @Override
     public Challenge createChallenge(Login login, JSON data) {

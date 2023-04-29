@@ -52,8 +52,9 @@ import org.shredzone.acme4j.Identifier;
 /**
  * Generator for a CSR (Certificate Signing Request) suitable for ACME servers.
  * <p>
- * Requires {@code Bouncy Castle}. The {@link org.bouncycastle.jce.provider.BouncyCastleProvider}
- * must also be added as security provider.
+ * Requires {@code Bouncy Castle}. The
+ * {@link org.bouncycastle.jce.provider.BouncyCastleProvider} must be added as security
+ * provider.
  */
 public class CSRBuilder {
     private static final String SIGNATURE_ALG = "SHA256withRSA";

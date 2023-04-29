@@ -25,7 +25,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An ACME resource that stores its state in a JSON structure.
+ * An extension of {@link AcmeResource} that also contains the current state of a resource
+ * as JSON document. If the current state is not present, this class takes care of
+ * fetching it from the server if necessary.
  */
 public abstract class AcmeJsonResource extends AcmeResource {
     private static final long serialVersionUID = -5060364275766082345L;
@@ -53,6 +55,9 @@ public abstract class AcmeJsonResource extends AcmeResource {
      * This method can be used to read proprietary data from the resources.
      *
      * @return Resource data, as {@link JSON}.
+     * @throws AcmeLazyLoadingException
+     *         if an {@link AcmeException} occured while fetching the current state from
+     *         the server.
      */
     public JSON getJSON() {
         if (data == null) {

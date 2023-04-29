@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Represents an account at the ACME server.
+ * A representation of an account at the ACME server.
  */
 public class Account extends AcmeJsonResource {
     private static final long serialVersionUID = 7042863483428051319L;
@@ -65,7 +65,9 @@ public class Account extends AcmeJsonResource {
     }
 
     /**
-     * List of contact addresses (emails, phone numbers etc).
+     * List of registered contact addresses (emails, phone numbers etc).
+     * <p>
+     * This list is unmodifiable. Use {@link #modify()} to change the contacts.
      */
     public List<URI> getContacts() {
         return getJSON().get(KEY_CONTACT)
@@ -110,20 +112,20 @@ public class Account extends AcmeJsonResource {
     }
 
     /**
-     * Returns an {@link Iterator} of all {@link Order} belonging to this {@link Account}.
+     * Returns an {@link Iterator} of all {@link Order} belonging to this
+     * {@link Account}.
      * <p>
      * Using the iterator will initiate one or more requests to the ACME server.
      *
      * @return {@link Iterator} instance that returns {@link Order} objects in no specific
-     *         order. {@link Iterator#hasNext()} and {@link Iterator#next()} may throw
-     *         {@link AcmeProtocolException} if a batch of authorization URIs could not be
-     *         fetched from the server. Each {@link Iterator} instance may provide the
-     *         {@link Order} objects in a different order.
+     * sorting order. {@link Iterator#hasNext()} and {@link Iterator#next()} may throw
+     * {@link AcmeProtocolException} if a batch of authorization URIs could not be fetched
+     * from the server.
      */
     public Iterator<Order> getOrders() {
         var ordersUrl = getJSON().get(KEY_ORDERS).optional().map(Value::asURL);
         if (ordersUrl.isEmpty()) {
-            // Let's Encrypt does not provide this field at the moment although it's required.
+            // Let's Encrypt does not provide this field at the moment, although it's required.
             // See https://github.com/letsencrypt/boulder/issues/3335
             throw new AcmeProtocolException("This ACME server does not support getOrders()");
         }
@@ -209,11 +211,11 @@ public class Account extends AcmeJsonResource {
     /**
      * Changes the {@link KeyPair} associated with the account.
      * <p>
-     * After a successful call, the new key pair is used in the bound {@link Session},
-     * and the old key pair can be disposed of.
+     * After a successful call, the new key pair is already set in the associated
+     * {@link Login}. The old key pair can be discarded.
      *
      * @param newKeyPair
-     *            new {@link KeyPair} to be used for identifying this account
+     *         new {@link KeyPair} to be used for identifying this account
      */
     public void changeKey(KeyPair newKeyPair) throws AcmeException {
         Objects.requireNonNull(newKeyPair, "newKeyPair");
@@ -267,7 +269,7 @@ public class Account extends AcmeJsonResource {
     }
 
     /**
-     * Editable {@link Account}.
+     * Provides editable properties of an {@link Account}.
      */
     public class EditableAccount {
         private final List<URI> editContacts = new ArrayList<>();
@@ -279,6 +281,10 @@ public class Account extends AcmeJsonResource {
         /**
          * Returns the list of all contact URIs for modification. Use the {@link List}
          * methods to modify the contact list.
+         * <p>
+         * The modified list is not validated. If you change entries, you have to make
+         * sure that they are valid according to the RFC. It is recommended to use
+         * the {@code addContact()} methods below to add new contacts to the list.
          */
         public List<URI> getContacts() {
             return editContacts;
@@ -314,8 +320,8 @@ public class Account extends AcmeJsonResource {
         /**
          * Adds a new Contact email to the account.
          * <p>
-         * This is a convenience call for {@link #addContact(String)} hat doesn't
-         * require from you attach "mailto" scheme before email address.
+         * This is a convenience call for {@link #addContact(String)} that doesn't
+         * require to prepend the email address with the "mailto" scheme.
          *
          * @param email
          *            Contact email without "mailto" scheme (e.g. test@gmail.com)

@@ -31,7 +31,7 @@ import org.shredzone.acme4j.toolbox.JSONBuilder;
  * The ACME protocol only defines the DNS identifier, which identifies a domain name.
  * acme4j also supports IP identifiers.
  * <p>
- * CAs may define further, proprietary identifier types.
+ * CAs, and other acme4j modules, may define further, proprietary identifier types.
  *
  * @since 2.3
  */

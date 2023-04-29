@@ -16,7 +16,7 @@ package org.shredzone.acme4j;
 import java.util.Arrays;
 
 /**
- * Status codes of challenges and authorizations.
+ * An enumeration of status codes of challenges and authorizations.
  */
 public enum Status {
 

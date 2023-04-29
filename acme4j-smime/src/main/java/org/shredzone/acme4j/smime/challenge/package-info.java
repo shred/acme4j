@@ -12,6 +12,15 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+/**
+ * This package contains the
+ * {@link org.shredzone.acme4j.smime.challenge.EmailReply00Challenge#TYPE} related acme4j
+ * {@link org.shredzone.acme4j.challenge.Challenge} implementation.
+ * <p>
+ * The {@link org.shredzone.acme4j.smime.challenge.EmailReply00ChallengeProvider} is
+ * registered as Java service, so acme4j is able to automatically generate
+ * {@link org.shredzone.acme4j.smime.challenge.EmailReply00Challenge} instances.
+ */
 @ReturnValuesAreNonnullByDefault
 @DefaultAnnotationForParameters(NonNull.class)
 @DefaultAnnotationForFields(NonNull.class)

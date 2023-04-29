@@ -12,6 +12,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+/**
+ * This module contains a collection of utility classes. All of them require Bouncy Castle
+ * to be added as security provider.
+ */
 module org.shredzone.acme4j.utils {
     requires org.shredzone.acme4j;
 

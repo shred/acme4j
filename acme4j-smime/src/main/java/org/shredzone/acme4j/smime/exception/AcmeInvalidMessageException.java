@@ -25,12 +25,12 @@ import org.bouncycastle.i18n.LocalizedException;
 import org.shredzone.acme4j.exception.AcmeException;
 
 /**
- * This exception is thrown when the challenge message is invalid.
+ * This exception is thrown when the challenge email message is invalid.
  * <p>
- * If this exception is thrown, the challenge message does not match the actual challenge,
- * and <em>must</em> be rejected.
+ * If this exception is thrown, the challenge message does not match the actual challenge
+ * or has other issues. It <em>must</em> be rejected.
  * <p>
- * Reasons may be:
+ * Reasons may be (for example):
  * <ul>
  *     <li>Unexpected sender address</li>
  *     <li>Bad S/MIME signature</li>

@@ -57,7 +57,7 @@ import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 /**
  * Utility class offering convenience methods for certificates.
  * <p>
- * Requires {@code Bouncy Castle}. This class is part of the {@code acme4j-utils} module.
+ * Requires {@code Bouncy Castle}.
  */
 public final class CertificateUtils {
 

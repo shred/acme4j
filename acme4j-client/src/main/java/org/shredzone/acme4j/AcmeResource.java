@@ -20,7 +20,12 @@ import java.util.Objects;
 import edu.umd.cs.findbugs.annotations.Nullable;
 
 /**
- * A generic ACME resource.
+ * This is the root class of all ACME resources (like accounts, orders, certificates).
+ * Every resource is identified by its location URL.
+ * <p>
+ * This class also takes care for proper serialization and de-serialization of the
+ * resource. After de-serialization, the resource must be bound to a {@link Login} again,
+ * using {@link #rebind(Login)}.
  */
 public abstract class AcmeResource implements Serializable {
     private static final long serialVersionUID = -7930580802257379731L;

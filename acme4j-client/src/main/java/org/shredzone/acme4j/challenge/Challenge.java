@@ -33,9 +33,9 @@ import org.slf4j.LoggerFactory;
  * implementations, but it is also used if the ACME server offers a proprietary challenge
  * that is unknown to acme4j.
  * <p>
- * Subclasses must override {@link Challenge#acceptable(String)} so it only accepts the
- * own type. {@link Challenge#prepareResponse(JSONBuilder)} should be overridden to put
- * all required data to the response.
+ * Subclasses must override {@link Challenge#acceptable(String)} so it only accepts its
+ * own type. {@link Challenge#prepareResponse(JSONBuilder)} can be overridden to put all
+ * required data to the challenge response.
  */
 public class Challenge extends AcmeJsonResource {
     private static final long serialVersionUID = 2338794776848388099L;
@@ -72,6 +72,9 @@ public class Challenge extends AcmeJsonResource {
      * <p>
      * Possible values are: {@link Status#PENDING}, {@link Status#PROCESSING},
      * {@link Status#VALID}, {@link Status#INVALID}.
+     * <p>
+     * A challenge is only completed when it reaches either status {@link Status#VALID} or
+     * {@link Status#INVALID}.
      */
     public Status getStatus() {
         return getJSON().get(KEY_STATUS).asStatus();
@@ -98,20 +101,25 @@ public class Challenge extends AcmeJsonResource {
     }
 
     /**
-     * Exports the response state, as preparation for triggering the challenge.
+     * Prepares the response message for triggering the challenge. Subclasses can add
+     * fields to the {@link JSONBuilder} as required by the challenge. Implementations of
+     * subclasses should make sure that {@link #prepareResponse(JSONBuilder)} of the
+     * superclass is invoked.
      *
      * @param response
-     *            {@link JSONBuilder} to write the response to
+     *         {@link JSONBuilder} to write the response to
      */
     protected void prepareResponse(JSONBuilder response) {
         // Do nothing here...
     }
 
     /**
-     * Checks if the type is acceptable to this challenge.
+     * Checks if the type is acceptable to this challenge. This generic class only checks
+     * if the type is not blank. Subclasses should instead check if the given type matches
+     * expected challenge type.
      *
      * @param type
-     *            Type to check
+     *         Type to check
      * @return {@code true} if acceptable, {@code false} if not
      */
     protected boolean acceptable(String type) {
@@ -137,6 +145,16 @@ public class Challenge extends AcmeJsonResource {
     /**
      * Triggers this {@link Challenge}. The ACME server is requested to validate the
      * response. Note that the validation is performed asynchronously by the ACME server.
+     * <p>
+     * After a challenge is triggered, it changes to {@link Status#PENDING}. As soon as
+     * validation takes place, it changes to {@link Status#PROCESSING}. After validation
+     * the status changes to {@link Status#VALID} or {@link Status#INVALID}, depending on
+     * the outcome of the validation.
+     * <p>
+     * If the challenge requires a resource to be set on your side (e.g. a DNS record or
+     * an HTTP file), it <em>must</em> be reachable from public before {@link #trigger()}
+     * is invoked, and <em>must not</em> be taken down until the challenge has reached
+     * {@link Status#VALID} or {@link Status#INVALID}.
      * <p>
      * If this method is invoked a second time, the ACME server is requested to retry the
      * validation. This can be useful if the client state has changed, for example after a

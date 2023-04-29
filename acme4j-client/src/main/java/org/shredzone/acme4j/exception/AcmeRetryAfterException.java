@@ -17,8 +17,8 @@ import java.time.Instant;
 import java.util.Objects;
 
 /**
- * This exception is thrown when a server side process has not been completed yet, and the
- * server returned an estimated retry date.
+ * A server side process has not been completed yet. The server also provides an estimate
+ * of when the process is expected to complete.
  */
 public class AcmeRetryAfterException extends AcmeException {
     private static final long serialVersionUID = 4461979121063649905L;
@@ -39,7 +39,8 @@ public class AcmeRetryAfterException extends AcmeException {
     }
 
     /**
-     * Returns the retry-after date returned by the server.
+     * Returns the retry-after instant returned by the server. This is only an estimate
+     * of when a retry attempt might succeed.
      */
     public Instant getRetryAfter() {
         return retryAfter;

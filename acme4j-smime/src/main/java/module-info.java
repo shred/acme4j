@@ -12,6 +12,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
 
+/**
+ * This module is an add-on that provides S/MIME certificate features.
+ */
 module org.shredzone.acme4j.smime {
     requires org.shredzone.acme4j;
     requires org.shredzone.acme4j.utils;

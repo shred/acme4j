@@ -31,7 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * A builder for a new {@link Order} object.
+ * Start a new certificate {@link Order}.
+ * <p>
+ * Use {@link Account#newOrder()} to create a new {@link OrderBuilder} instance.
  */
 public class OrderBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(OrderBuilder.class);
@@ -155,18 +157,17 @@ public class OrderBuilder {
     }
 
     /**
-     * Enables short-term automatic renewal of the certificate. Must be supported by the
-     * CA.
+     * Enables short-term automatic renewal of the certificate, if supported by the CA.
      * <p>
-     * Automatic renewals cannot be combined with {@link #notBefore(Instant)} or {@link
-     * #notAfter(Instant)}.
+     * Automatic renewals cannot be combined with {@link #notBefore(Instant)} or
+     * {@link #notAfter(Instant)}.
      *
      * @return itself
      * @since 2.3
      */
     public OrderBuilder autoRenewal() {
         if (notBefore != null || notAfter != null) {
-            throw new IllegalArgumentException("cannot combine notBefore/notAfter with autoRenewalOr");
+            throw new IllegalArgumentException("cannot combine notBefore/notAfter with autoRenewal");
         }
         this.autoRenewal = true;
         return this;
@@ -249,7 +250,8 @@ public class OrderBuilder {
      * order for this option to work.
      * <p>
      * This option is only needed if you plan to fetch the STAR certificate via other
-     * means than by using acme4j.
+     * means than by using acme4j. acme4j is fetching certificates via POST-as-GET
+     * request.
      * <p>
      * Implies {@link #autoRenewal()}.
      *

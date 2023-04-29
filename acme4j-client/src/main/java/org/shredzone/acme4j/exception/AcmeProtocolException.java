@@ -14,8 +14,9 @@
 package org.shredzone.acme4j.exception;
 
 /**
- * This runtime exception is thrown on ACME protocol errors that should not occur. For
- * example, this exception is thrown when a server response could not be parsed.
+ * A runtime exception that is thrown when the response of the server is violating the
+ * RFC, and could not be handled or parsed for that reason. It is an indicator that the CA
+ * does not fully comply with the RFC, and is usually not expected to be thrown.
  */
 public class AcmeProtocolException extends RuntimeException {
     private static final long serialVersionUID = 2031203835755725193L;

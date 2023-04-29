@@ -33,7 +33,7 @@ import org.bouncycastle.openssl.jcajce.JcaPEMWriter;
 /**
  * Utility class offering convenience methods for {@link KeyPair}.
  * <p>
- * Requires {@code Bouncy Castle}. This class is part of the {@code acme4j-utils} module.
+ * Requires {@code Bouncy Castle}.
  */
 public class KeyPairUtils {
 

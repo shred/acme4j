@@ -19,8 +19,11 @@ import java.util.Objects;
 import org.shredzone.acme4j.Problem;
 
 /**
- * An exception that is thrown when the ACME server returned an error. It contains
- * further details of the cause.
+ * The ACME server returned an error. The exception contains a {@link Problem} document
+ * containing the exact cause of the error.
+ * <p>
+ * For some special cases, subclasses of this exception are thrown, so they can be handled
+ * individually.
  */
 public class AcmeServerException extends AcmeException {
     private static final long serialVersionUID = 5971622508467042792L;

@@ -21,7 +21,7 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.Problem;
 
 /**
- * An exception that is thrown when the user is required to take action as indicated.
+ * The user is required to take manual action as indicated.
  * <p>
  * Usually this exception is thrown when the terms of service have changed, and the CA
  * requires an agreement to the new terms before proceeding.
@@ -35,9 +35,10 @@ public class AcmeUserActionRequiredException extends AcmeServerException {
      * Creates a new {@link AcmeUserActionRequiredException}.
      *
      * @param problem
-     *            {@link Problem} that caused the exception
+     *         {@link Problem} that caused the exception
      * @param tosUri
-     *            {@link URI} of the terms-of-service document to accept
+     *         {@link URI} of the terms-of-service document to accept, may be
+     *         {@code null}
      */
     public AcmeUserActionRequiredException(Problem problem, @Nullable URI tosUri) {
         super(problem);
@@ -54,8 +55,8 @@ public class AcmeUserActionRequiredException extends AcmeServerException {
     }
 
     /**
-     * Returns the {@link URL} of a document that gives instructions on the actions to
-     * be taken by a human.
+     * Returns the {@link URL} of a document that gives instructions on the actions to be
+     * taken by a human.
      */
     public URL getInstance() {
         var instance = getProblem().getInstance();
