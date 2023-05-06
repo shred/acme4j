@@ -50,6 +50,7 @@ import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Identifier;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Status;
+import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
@@ -157,6 +158,21 @@ public final class JSON implements Serializable {
         return new Value(
                 path.isEmpty() ? key : path + '.' + key,
                 data.get(key));
+    }
+
+    /**
+     * Returns the {@link Value} of the given key.
+     *
+     * @param key
+     *         Key to read
+     * @return {@link Value} of the key
+     * @throws AcmeNotSupportedException
+     *         if the key is not present. The key is used as feature name.
+     */
+    public Value getFeature(String key) {
+        return new Value(
+                path.isEmpty() ? key : path + '.' + key,
+                data.get(key)).onFeature(key);
     }
 
     /**
@@ -302,6 +318,22 @@ public final class JSON implements Serializable {
          */
         public Optional<Value> optional() {
             return val != null ? Optional.of(this) : Optional.empty();
+        }
+
+        /**
+         * Returns this value. If the value was {@code null}, an
+         * {@link AcmeNotSupportedException} is thrown. This method is used for mandatory
+         * fields that are only present if a certain feature is supported by the server.
+         *
+         * @param feature
+         *         Feature name
+         * @return itself
+         */
+        public Value onFeature(String feature) {
+            if (val == null) {
+                throw new AcmeNotSupportedException(feature);
+            }
+            return this;
         }
 
         /**

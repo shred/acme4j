@@ -30,6 +30,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.provider.GenericAcmeProvider;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
@@ -169,10 +170,8 @@ public class SessionTest {
                     .isEqualTo("https://www.example.com/");
             softly.assertThat(meta.getCaaIdentities()).containsExactlyInAnyOrder("example.com");
             softly.assertThat(meta.isAutoRenewalEnabled()).isTrue();
-            softly.assertThat(meta.getAutoRenewalMaxDuration().orElseThrow())
-                    .isEqualTo(Duration.ofDays(365));
-            softly.assertThat(meta.getAutoRenewalMinLifetime().orElseThrow())
-                    .isEqualTo(Duration.ofHours(24));
+            softly.assertThat(meta.getAutoRenewalMaxDuration()).isEqualTo(Duration.ofDays(365));
+            softly.assertThat(meta.getAutoRenewalMinLifetime()).isEqualTo(Duration.ofHours(24));
             softly.assertThat(meta.isAutoRenewalGetAllowed()).isTrue();
             softly.assertThat(meta.isExternalAccountRequired()).isTrue();
             softly.assertThat(meta.getJSON()).isNotNull();
@@ -218,9 +217,12 @@ public class SessionTest {
             softly.assertThat(meta.getWebsite()).isEmpty();
             softly.assertThat(meta.getCaaIdentities()).isEmpty();
             softly.assertThat(meta.isAutoRenewalEnabled()).isFalse();
-            softly.assertThat(meta.getAutoRenewalMaxDuration()).isEmpty();
-            softly.assertThat(meta.getAutoRenewalMinLifetime()).isEmpty();
-            softly.assertThat(meta.isAutoRenewalGetAllowed()).isFalse();
+            softly.assertThatExceptionOfType(AcmeNotSupportedException.class)
+                    .isThrownBy(meta::getAutoRenewalMaxDuration);
+            softly.assertThatExceptionOfType(AcmeNotSupportedException.class)
+                    .isThrownBy(meta::getAutoRenewalMinLifetime);
+            softly.assertThatExceptionOfType(AcmeNotSupportedException.class)
+                    .isThrownBy(meta::isAutoRenewalGetAllowed);
         }
     }
 

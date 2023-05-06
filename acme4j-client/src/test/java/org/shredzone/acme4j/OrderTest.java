@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
+import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -84,11 +85,16 @@ public class OrderTest {
             softly.assertThat(order.getFinalizeLocation()).isEqualTo(finalizeUrl);
 
             softly.assertThat(order.isAutoRenewing()).isFalse();
-            softly.assertThat(order.getAutoRenewalStartDate()).isEmpty();
-            softly.assertThat(order.getAutoRenewalEndDate()).isEmpty();
-            softly.assertThat(order.getAutoRenewalLifetime()).isEmpty();
-            softly.assertThat(order.getAutoRenewalLifetimeAdjust()).isEmpty();
-            softly.assertThat(order.isAutoRenewalGetEnabled()).isFalse();
+            softly.assertThatExceptionOfType(AcmeNotSupportedException.class)
+                    .isThrownBy(order::getAutoRenewalStartDate);
+            softly.assertThatExceptionOfType(AcmeNotSupportedException.class)
+                    .isThrownBy(order::getAutoRenewalEndDate);
+            softly.assertThatExceptionOfType(AcmeNotSupportedException.class)
+                    .isThrownBy(order::getAutoRenewalLifetime);
+            softly.assertThatExceptionOfType(AcmeNotSupportedException.class)
+                    .isThrownBy(order::getAutoRenewalLifetimeAdjust);
+            softly.assertThatExceptionOfType(AcmeNotSupportedException.class)
+                    .isThrownBy(order::isAutoRenewalGetEnabled);
 
             softly.assertThat(order.getError()).isNotEmpty();
             softly.assertThat(order.getError().orElseThrow().getType())
@@ -261,9 +267,9 @@ public class OrderTest {
             softly.assertThat(order.isAutoRenewing()).isTrue();
             softly.assertThat(order.getAutoRenewalStartDate().orElseThrow())
                     .isEqualTo("2016-01-01T00:00:00Z");
-            softly.assertThat(order.getAutoRenewalEndDate().orElseThrow())
+            softly.assertThat(order.getAutoRenewalEndDate())
                     .isEqualTo("2017-01-01T00:00:00Z");
-            softly.assertThat(order.getAutoRenewalLifetime().orElseThrow())
+            softly.assertThat(order.getAutoRenewalLifetime())
                     .isEqualTo(Duration.ofHours(168));
             softly.assertThat(order.getAutoRenewalLifetimeAdjust().orElseThrow())
                     .isEqualTo(Duration.ofDays(6));
@@ -302,15 +308,16 @@ public class OrderTest {
         var order = login.bindOrder(locationUrl);
 
         try (var softly = new AutoCloseableSoftAssertions()) {
-            softly.assertThat(order.getCertificate()).isEmpty();
+            softly.assertThatExceptionOfType(IllegalStateException.class)
+                    .isThrownBy(order::getCertificate);
             softly.assertThat(order.getAutoRenewalCertificate().orElseThrow().getLocation())
                     .isEqualTo(url("https://example.com/acme/cert/1234"));
             softly.assertThat(order.isAutoRenewing()).isTrue();
             softly.assertThat(order.getAutoRenewalStartDate().orElseThrow())
                     .isEqualTo("2018-01-01T00:00:00Z");
-            softly.assertThat(order.getAutoRenewalEndDate().orElseThrow())
+            softly.assertThat(order.getAutoRenewalEndDate())
                     .isEqualTo("2019-01-01T00:00:00Z");
-            softly.assertThat(order.getAutoRenewalLifetime().orElseThrow())
+            softly.assertThat(order.getAutoRenewalLifetime())
                     .isEqualTo(Duration.ofHours(168));
             softly.assertThat(order.getAutoRenewalLifetimeAdjust().orElseThrow())
                     .isEqualTo(Duration.ofDays(6));

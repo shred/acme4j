@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -178,10 +179,10 @@ public class Order extends AcmeJsonResource {
      * Returns the earliest date of validity of the first certificate issued.
      *
      * @since 2.3
+     * @throws AcmeNotSupportedException if auto-renewal is not supported
      */
     public Optional<Instant> getAutoRenewalStartDate() {
-        return getJSON().get("auto-renewal")
-                    .optional()
+        return getJSON().getFeature("auto-renewal")
                     .map(Value::asObject)
                     .orElseGet(JSON::empty)
                     .get("start-date")
@@ -193,39 +194,39 @@ public class Order extends AcmeJsonResource {
      * Returns the latest date of validity of the last certificate issued.
      *
      * @since 2.3
+     * @throws AcmeNotSupportedException if auto-renewal is not supported
      */
-    public Optional<Instant> getAutoRenewalEndDate() {
-        return getJSON().get("auto-renewal")
-                    .optional()
+    public Instant getAutoRenewalEndDate() {
+        return getJSON().getFeature("auto-renewal")
                     .map(Value::asObject)
                     .orElseGet(JSON::empty)
                     .get("end-date")
-                    .optional()
-                    .map(Value::asInstant);
+                    .asInstant();
     }
 
     /**
      * Returns the maximum lifetime of each certificate.
      *
      * @since 2.3
+     * @throws AcmeNotSupportedException if auto-renewal is not supported
      */
-    public Optional<Duration> getAutoRenewalLifetime() {
-        return getJSON().get("auto-renewal")
+    public Duration getAutoRenewalLifetime() {
+        return getJSON().getFeature("auto-renewal")
                     .optional()
                     .map(Value::asObject)
                     .orElseGet(JSON::empty)
                     .get("lifetime")
-                    .optional()
-                    .map(Value::asDuration);
+                    .asDuration();
     }
 
     /**
      * Returns the pre-date period of each certificate.
      *
      * @since 2.7
+     * @throws AcmeNotSupportedException if auto-renewal is not supported
      */
     public Optional<Duration> getAutoRenewalLifetimeAdjust() {
-        return getJSON().get("auto-renewal")
+        return getJSON().getFeature("auto-renewal")
                     .optional()
                     .map(Value::asObject)
                     .orElseGet(JSON::empty)
@@ -241,7 +242,7 @@ public class Order extends AcmeJsonResource {
      * @since 2.6
      */
     public boolean isAutoRenewalGetEnabled() {
-        return getJSON().get("auto-renewal")
+        return getJSON().getFeature("auto-renewal")
                     .optional()
                     .map(Value::asObject)
                     .orElseGet(JSON::empty)
@@ -258,7 +259,7 @@ public class Order extends AcmeJsonResource {
      */
     public void cancelAutoRenewal() throws AcmeException {
         if (!getSession().getMetadata().isAutoRenewalEnabled()) {
-            throw new AcmeException("CA does not support short-term automatic renewals");
+            throw new AcmeNotSupportedException("auto-renewal");
         }
 
         LOG.debug("cancel");

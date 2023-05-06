@@ -27,6 +27,7 @@ import java.util.Optional;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.ResourceIterator;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
@@ -125,7 +126,7 @@ public class Account extends AcmeJsonResource {
         if (ordersUrl.isEmpty()) {
             // Let's Encrypt does not provide this field at the moment, although it's required.
             // See https://github.com/letsencrypt/boulder/issues/3335
-            throw new AcmeProtocolException("This ACME server does not support getOrders()");
+            throw new AcmeNotSupportedException("getOrders()");
         }
         return new ResourceIterator<>(getLogin(), KEY_ORDERS, ordersUrl.get(), Login::bindOrder);
     }

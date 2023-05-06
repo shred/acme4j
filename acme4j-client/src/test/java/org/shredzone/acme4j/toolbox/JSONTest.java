@@ -16,6 +16,7 @@ package org.shredzone.acme4j.toolbox;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Status;
+import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 
@@ -234,6 +236,14 @@ public class JSONTest {
         assertThat(json.get("none").isPresent()).isFalse();
         assertThat(json.get("none").optional().isPresent()).isFalse();
         assertThat(json.get("none").map(Value::asString).isPresent()).isFalse();
+
+        assertThatExceptionOfType(AcmeNotSupportedException.class)
+                .isThrownBy(() -> json.getFeature("none"))
+                .withMessage("Server does not support none");
+
+        assertThatExceptionOfType(AcmeNotSupportedException.class)
+                .isThrownBy(() -> json.get("none").onFeature("my-feature"))
+                .withMessage("Server does not support my-feature");
 
         assertThrows(AcmeProtocolException.class,
                 () -> json.get("none").asString(),

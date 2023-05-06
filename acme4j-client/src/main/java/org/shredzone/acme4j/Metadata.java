@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.util.Collection;
 import java.util.Optional;
 
+import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 
@@ -86,14 +87,17 @@ public class Metadata {
 
     /**
      * Returns the minimum acceptable value for the maximum validity of a certificate
-     * before auto-renewal. Empty if the CA does not support short-term auto-renewal.
+     * before auto-renewal.
      *
      * @since 2.3
+     * @throws AcmeNotSupportedException if the server does not support auto-renewal.
      */
-    public Optional<Duration> getAutoRenewalMinLifetime() {
-        return meta.get("auto-renewal").optional().map(Value::asObject)
-                .map(j -> j.get("min-lifetime"))
-                .map(Value::asDuration);
+    public Duration getAutoRenewalMinLifetime() {
+        return meta.getFeature("auto-renewal")
+                .map(Value::asObject)
+                .orElseGet(JSON::empty)
+                .get("min-lifetime")
+                .asDuration();
     }
 
     /**
@@ -101,21 +105,28 @@ public class Metadata {
      * date.
      *
      * @since 2.3
+     * @throws AcmeNotSupportedException if the server does not support auto-renewal.
      */
-    public Optional<Duration> getAutoRenewalMaxDuration() {
-        return meta.get("auto-renewal").optional().map(Value::asObject)
-                .map(j -> j.get("max-duration"))
-                .map(Value::asDuration);
+    public Duration getAutoRenewalMaxDuration() {
+        return meta.getFeature("auto-renewal")
+                .map(Value::asObject)
+                .orElseGet(JSON::empty)
+                .get("max-duration")
+                .asDuration();
     }
 
     /**
      * Returns whether the CA also allows to fetch STAR certificates via GET request.
      *
      * @since 2.6
+     * @throws AcmeNotSupportedException if the server does not support auto-renewal.
      */
     public boolean isAutoRenewalGetAllowed() {
-        return meta.get("auto-renewal").optional().map(Value::asObject)
-                .map(j -> j.get("allow-certificate-get"))
+        return meta.getFeature("auto-renewal").optional()
+                .map(Value::asObject)
+                .orElseGet(JSON::empty)
+                .get("allow-certificate-get")
+                .optional()
                 .map(Value::asBoolean)
                 .orElse(false);
     }

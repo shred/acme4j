@@ -25,7 +25,7 @@ import java.util.Set;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeProtocolException;
+import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -278,7 +278,7 @@ public class OrderBuilder {
         var session = login.getSession();
 
         if (autoRenewal && !session.getMetadata().isAutoRenewalEnabled()) {
-            throw new AcmeException("CA does not support short-term automatic renewals");
+            throw new AcmeNotSupportedException("auto-renewal");
         }
 
         LOG.debug("create");
