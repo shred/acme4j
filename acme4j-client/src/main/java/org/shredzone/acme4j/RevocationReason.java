@@ -15,8 +15,6 @@ package org.shredzone.acme4j;
 
 import java.util.Arrays;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
-
 /**
  * An enumeration of revocation reasons.
  *
@@ -54,14 +52,14 @@ public enum RevocationReason {
      *
      * @param reasonCode
      *            Reason code as defined in RFC 5280
-     * @return Matching {@link RevocationReason}, or {@code null} if not known
+     * @return Matching {@link RevocationReason}
+     * @throws IllegalArgumentException if the reason code is unknown or invalid
      */
-    @Nullable
     public static RevocationReason code(int reasonCode) {
         return Arrays.stream(values())
                 .filter(rr -> rr.reasonCode == reasonCode)
                 .findFirst()
-                .orElse(null);
+                .orElseThrow(() -> new IllegalArgumentException("Unknown revocation reason code: " + reasonCode));
     }
 
 }

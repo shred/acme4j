@@ -19,8 +19,8 @@ import java.net.URI;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Collection;
+import java.util.Optional;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 
@@ -42,21 +42,18 @@ public class Metadata {
     }
 
     /**
-     * Returns an {@link URI} of the current terms of service, or {@code null} if not
-     * available.
+     * Returns an {@link URI} of the current terms of service, or empty if not available.
      */
-    @Nullable
-    public URI getTermsOfService() {
-        return meta.get("termsOfService").map(Value::asURI).orElse(null);
+    public Optional<URI> getTermsOfService() {
+        return meta.get("termsOfService").map(Value::asURI);
     }
 
     /**
      * Returns an {@link URL} of a website providing more information about the ACME
-     * server. {@code null} if not available.
+     * server. Empty if not available.
      */
-    @Nullable
-    public URL getWebsite() {
-        return meta.get("website").map(Value::asURL).orElse(null);
+    public Optional<URL> getWebsite() {
+        return meta.get("website").map(Value::asURL);
     }
 
     /**
@@ -89,33 +86,26 @@ public class Metadata {
 
     /**
      * Returns the minimum acceptable value for the maximum validity of a certificate
-     * before auto-renewal. {@code null} if the CA does not support short-term
-     * auto-renewal.
+     * before auto-renewal. Empty if the CA does not support short-term auto-renewal.
      *
      * @since 2.3
      */
-    @Nullable
-    public Duration getAutoRenewalMinLifetime() {
-        var ar = meta.get("auto-renewal").optional().map(Value::asObject);
-        if (ar.isEmpty()) {
-            return null;
-        }
-        return ar.get().get("min-lifetime").map(Value::asDuration).orElse(null);
+    public Optional<Duration> getAutoRenewalMinLifetime() {
+        return meta.get("auto-renewal").optional().map(Value::asObject)
+                .map(j -> j.get("min-lifetime"))
+                .map(Value::asDuration);
     }
 
     /**
      * Returns the maximum delta between auto-renewal end date and auto-renewal start
-     * date. {@code null} if the CA does not support short-term auto-renewal.
+     * date.
      *
      * @since 2.3
      */
-    @Nullable
-    public Duration getAutoRenewalMaxDuration() {
-        var ar = meta.get("auto-renewal").optional().map(Value::asObject);
-        if (ar.isEmpty()) {
-            return null;
-        }
-        return ar.get().get("max-duration").map(Value::asDuration).orElse(null);
+    public Optional<Duration> getAutoRenewalMaxDuration() {
+        return meta.get("auto-renewal").optional().map(Value::asObject)
+                .map(j -> j.get("max-duration"))
+                .map(Value::asDuration);
     }
 
     /**
@@ -124,11 +114,10 @@ public class Metadata {
      * @since 2.6
      */
     public boolean isAutoRenewalGetAllowed() {
-        var ar = meta.get("auto-renewal").optional().map(Value::asObject);
-        if (ar.isEmpty()) {
-            return false;
-        }
-        return ar.get().get("allow-certificate-get").map(Value::asBoolean).orElse(false);
+        return meta.get("auto-renewal").optional().map(Value::asObject)
+                .map(j -> j.get("allow-certificate-get"))
+                .map(Value::asBoolean)
+                .orElse(false);
     }
 
     /**

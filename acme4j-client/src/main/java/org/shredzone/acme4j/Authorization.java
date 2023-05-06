@@ -18,8 +18,8 @@ import static java.util.stream.Collectors.toUnmodifiableList;
 import java.net.URL;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -67,12 +67,10 @@ public class Authorization extends AcmeJsonResource {
     /**
      * Gets the expiry date of the authorization, if set by the server.
      */
-    @Nullable
-    public Instant getExpires() {
+    public Optional<Instant> getExpires() {
         return getJSON().get("expires")
                     .map(Value::asString)
-                    .map(AcmeUtils::parseTimestamp)
-                    .orElse(null);
+                    .map(AcmeUtils::parseTimestamp);
     }
 
     /**
@@ -108,17 +106,18 @@ public class Authorization extends AcmeJsonResource {
      *
      * @param type
      *            Challenge name (e.g. "http-01")
-     * @return {@link Challenge} matching that name, or {@code null} if there is no such
+     * @return {@link Challenge} matching that name, or empty if there is no such
      *         challenge, or if the challenge alone is not sufficient for authorization.
      * @throws ClassCastException
      *             if the type does not match the expected Challenge class type
      */
-    @Nullable
-    public <T extends Challenge> T findChallenge(final String type) {
-        return (T) getChallenges().stream()
+    @SuppressWarnings("unchecked")
+    public <T extends Challenge> Optional<T> findChallenge(final String type) {
+        return (Optional<T>) getChallenges().stream()
                 .filter(ch -> type.equals(ch.getType()))
-                .reduce((a, b) -> {throw new AcmeProtocolException("Found more than one challenge of type " + type);})
-                .orElse(null);
+                .reduce((a, b) -> {
+                    throw new AcmeProtocolException("Found more than one challenge of type " + type);
+                });
     }
 
     /**
@@ -127,17 +126,17 @@ public class Authorization extends AcmeJsonResource {
      *
      * @param type
      *         Challenge type (e.g. "Http01Challenge.class")
-     * @return {@link Challenge} of that type, or {@code null} if there is no such
+     * @return {@link Challenge} of that type, or empty if there is no such
      * challenge, or if the challenge alone is not sufficient for authorization.
      * @since 2.8
      */
-    @Nullable
-    public <T extends Challenge> T findChallenge(Class<T> type) {
+    public <T extends Challenge> Optional<T> findChallenge(Class<T> type) {
         return getChallenges().stream()
                 .filter(type::isInstance)
                 .map(type::cast)
-                .reduce((a, b) -> {throw new AcmeProtocolException("Found more than one challenge of type " + type.getName());})
-                .orElse(null);
+                .reduce((a, b) -> {
+                    throw new AcmeProtocolException("Found more than one challenge of type " + type.getName());
+                });
     }
 
     /**

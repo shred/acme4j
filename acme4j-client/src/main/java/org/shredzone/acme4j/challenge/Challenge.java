@@ -14,8 +14,8 @@
 package org.shredzone.acme4j.challenge;
 
 import java.time.Instant;
+import java.util.Optional;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.AcmeJsonResource;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
@@ -83,9 +83,8 @@ public class Challenge extends AcmeJsonResource {
     /**
      * Returns the validation date, if returned by the server.
      */
-    @Nullable
-    public Instant getValidated() {
-        return getJSON().get(KEY_VALIDATED).map(Value::asInstant).orElse(null);
+    public Optional<Instant> getValidated() {
+        return getJSON().get(KEY_VALIDATED).map(Value::asInstant);
     }
 
     /**
@@ -93,11 +92,8 @@ public class Challenge extends AcmeJsonResource {
      * server. If there are multiple errors, they can be found in
      * {@link Problem#getSubProblems()}.
      */
-    @Nullable
-    public Problem getError() {
-        return getJSON().get(KEY_ERROR)
-                    .map(it -> it.asProblem(getLocation()))
-                    .orElse(null);
+    public Optional<Problem> getError() {
+        return getJSON().get(KEY_ERROR).map(it -> it.asProblem(getLocation()));
     }
 
     /**

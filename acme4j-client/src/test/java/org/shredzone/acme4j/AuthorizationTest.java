@@ -58,22 +58,22 @@ public class AuthorizationTest {
 
         // A snail mail challenge is not available at all
         var c1 = authorization.findChallenge(SNAILMAIL_TYPE);
-        assertThat(c1).isNull();
+        assertThat(c1).isEmpty();
 
         // HttpChallenge is available
         var c2 = authorization.findChallenge(Http01Challenge.TYPE);
-        assertThat(c2).isNotNull();
-        assertThat(c2).isInstanceOf(Http01Challenge.class);
+        assertThat(c2).isNotEmpty();
+        assertThat(c2.get()).isInstanceOf(Http01Challenge.class);
 
         // Dns01Challenge is available
         var c3 = authorization.findChallenge(Dns01Challenge.TYPE);
-        assertThat(c3).isNotNull();
-        assertThat(c3).isInstanceOf(Dns01Challenge.class);
+        assertThat(c3).isNotEmpty();
+        assertThat(c3.get()).isInstanceOf(Dns01Challenge.class);
 
         // TlsAlpn01Challenge is available
         var c4 = authorization.findChallenge(TlsAlpn01Challenge.TYPE);
-        assertThat(c4).isNotNull();
-        assertThat(c4).isInstanceOf(TlsAlpn01Challenge.class);
+        assertThat(c4).isNotEmpty();
+        assertThat(c4.get()).isInstanceOf(TlsAlpn01Challenge.class);
     }
 
     /**
@@ -85,19 +85,19 @@ public class AuthorizationTest {
 
         // A snail mail challenge is not available at all
         var c1 = authorization.findChallenge(NonExistingChallenge.class);
-        assertThat(c1).isNull();
+        assertThat(c1).isEmpty();
 
         // HttpChallenge is available
         var c2 = authorization.findChallenge(Http01Challenge.class);
-        assertThat(c2).isNotNull();
+        assertThat(c2).isNotEmpty();
 
         // Dns01Challenge is available
         var c3 = authorization.findChallenge(Dns01Challenge.class);
-        assertThat(c3).isNotNull();
+        assertThat(c3).isNotEmpty();
 
         // TlsAlpn01Challenge is available
         var c4 = authorization.findChallenge(TlsAlpn01Challenge.class);
-        assertThat(c4).isNotNull();
+        assertThat(c4).isNotEmpty();
     }
 
     /**
@@ -147,7 +147,7 @@ public class AuthorizationTest {
         assertThat(auth.getIdentifier().getDomain()).isEqualTo("example.org");
         assertThat(auth.getStatus()).isEqualTo(Status.VALID);
         assertThat(auth.isWildcard()).isFalse();
-        assertThat(auth.getExpires()).isCloseTo("2016-01-02T17:12:40Z", within(1, ChronoUnit.SECONDS));
+        assertThat(auth.getExpires().orElseThrow()).isCloseTo("2016-01-02T17:12:40Z", within(1, ChronoUnit.SECONDS));
         assertThat(auth.getLocation()).isEqualTo(locationUrl);
 
         assertThat(auth.getChallenges()).containsExactlyInAnyOrder(
@@ -191,7 +191,7 @@ public class AuthorizationTest {
         assertThat(auth.getIdentifier().getDomain()).isEqualTo("example.org");
         assertThat(auth.getStatus()).isEqualTo(Status.VALID);
         assertThat(auth.isWildcard()).isTrue();
-        assertThat(auth.getExpires()).isCloseTo("2016-01-02T17:12:40Z", within(1, ChronoUnit.SECONDS));
+        assertThat(auth.getExpires().orElseThrow()).isCloseTo("2016-01-02T17:12:40Z", within(1, ChronoUnit.SECONDS));
         assertThat(auth.getLocation()).isEqualTo(locationUrl);
 
         assertThat(auth.getChallenges()).containsExactlyInAnyOrder(
@@ -244,7 +244,7 @@ public class AuthorizationTest {
         assertThat(auth.getIdentifier().getDomain()).isEqualTo("example.org");
         assertThat(auth.getStatus()).isEqualTo(Status.VALID);
         assertThat(auth.isWildcard()).isFalse();
-        assertThat(auth.getExpires()).isCloseTo("2016-01-02T17:12:40Z", within(1, ChronoUnit.SECONDS));
+        assertThat(auth.getExpires().orElseThrow()).isCloseTo("2016-01-02T17:12:40Z", within(1, ChronoUnit.SECONDS));
         assertThat(requestWasSent).isFalse();
 
         provider.close();
@@ -288,7 +288,7 @@ public class AuthorizationTest {
         assertThat(auth.getIdentifier().getDomain()).isEqualTo("example.org");
         assertThat(auth.getStatus()).isEqualTo(Status.VALID);
         assertThat(auth.isWildcard()).isFalse();
-        assertThat(auth.getExpires()).isCloseTo("2016-01-02T17:12:40Z", within(1, ChronoUnit.SECONDS));
+        assertThat(auth.getExpires().orElseThrow()).isCloseTo("2016-01-02T17:12:40Z", within(1, ChronoUnit.SECONDS));
         assertThat(auth.getLocation()).isEqualTo(locationUrl);
 
         assertThat(auth.getChallenges()).containsExactlyInAnyOrder(

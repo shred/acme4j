@@ -25,7 +25,6 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -161,20 +160,18 @@ public interface Connection extends AutoCloseable {
     /**
      * Gets the nonce from the nonce header.
      *
-     * @return Base64 encoded nonce, or {@code null} if no nonce header was set
+     * @return Base64 encoded nonce, or empty if no nonce header was set
      */
-    @Nullable
-    String getNonce();
+    Optional<String> getNonce();
 
     /**
      * Gets a location from the {@code Location} header.
      * <p>
      * Relative links are resolved against the last request's URL.
      *
-     * @return Location {@link URL}, or {@code null} if no Location header was set
+     * @return Location {@link URL}, or empty if no Location header was set
      */
-    @Nullable
-    URL getLocation();
+    Optional<URL> getLocation();
 
     /**
      * Returns the content of the last-modified header, if present.

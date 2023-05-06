@@ -25,6 +25,7 @@ import java.time.temporal.ChronoUnit;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.AccountBuilder;
+import org.shredzone.acme4j.Certificate;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
@@ -64,8 +65,8 @@ public class OrderWildcardIT extends PebbleITBase {
                     .notBefore(notBefore)
                     .notAfter(notAfter)
                     .create();
-        assertThat(order.getNotBefore()).isEqualTo(notBefore);
-        assertThat(order.getNotAfter()).isEqualTo(notAfter);
+        assertThat(order.getNotBefore().orElseThrow()).isEqualTo(notBefore);
+        assertThat(order.getNotAfter().orElseThrow()).isEqualTo(notAfter);
         assertThat(order.getStatus()).isEqualTo(Status.PENDING);
 
         for (var auth : order.getAuthorizations()) {
@@ -76,8 +77,7 @@ public class OrderWildcardIT extends PebbleITBase {
                 continue;
             }
 
-            var challenge = auth.findChallenge(Dns01Challenge.class);
-            assertThat(challenge).isNotNull();
+            var challenge = auth.findChallenge(Dns01Challenge.class).orElseThrow();
 
             var challengeDomainName = Dns01Challenge.toRRName(TEST_DOMAIN);
 
@@ -112,8 +112,9 @@ public class OrderWildcardIT extends PebbleITBase {
                     order.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
 
 
-        var certificate = order.getCertificate();
-        var cert = certificate.getCertificate();
+        var cert = order.getCertificate()
+                .map(Certificate::getCertificate)
+                .orElseThrow();
         assertThat(cert).isNotNull();
         assertThat(cert.getNotAfter()).isNotEqualTo(notBefore);
         assertThat(cert.getNotBefore()).isNotEqualTo(notAfter);

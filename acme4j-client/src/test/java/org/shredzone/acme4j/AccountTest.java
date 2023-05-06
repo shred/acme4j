@@ -27,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jose4j.jws.JsonWebSignature;
@@ -87,8 +88,8 @@ public class AccountTest {
             }
 
             @Override
-            public URL getLocation() {
-                return locationUrl;
+            public Optional<URL> getLocation() {
+                return Optional.of(locationUrl);
             }
 
             @Override
@@ -108,12 +109,12 @@ public class AccountTest {
 
         assertThat(login.getAccountLocation()).isEqualTo(locationUrl);
         assertThat(account.getLocation()).isEqualTo(locationUrl);
-        assertThat(account.getTermsOfServiceAgreed()).isTrue();
+        assertThat(account.getTermsOfServiceAgreed().orElseThrow()).isTrue();
         assertThat(account.getContacts()).hasSize(1);
         assertThat(account.getContacts().get(0)).isEqualTo(URI.create("mailto:foo2@example.com"));
         assertThat(account.getStatus()).isEqualTo(Status.VALID);
         assertThat(account.hasExternalAccountBinding()).isTrue();
-        assertThat(account.getKeyIdentifier()).isEqualTo("NCC-1701");
+        assertThat(account.getKeyIdentifier().orElseThrow()).isEqualTo("NCC-1701");
 
         var orderIt = account.getOrders();
         assertThat(orderIt).isNotNull();
@@ -144,8 +145,8 @@ public class AccountTest {
             }
 
             @Override
-            public URL getLocation() {
-                return locationUrl;
+            public Optional<URL> getLocation() {
+                return Optional.of(locationUrl);
             }
 
             @Override
@@ -166,12 +167,12 @@ public class AccountTest {
 
         // Lazy loading
         assertThat(requestWasSent.get()).isFalse();
-        assertThat(account.getTermsOfServiceAgreed()).isTrue();
+        assertThat(account.getTermsOfServiceAgreed().orElseThrow()).isTrue();
         assertThat(requestWasSent.get()).isTrue();
 
         // Subsequent queries do not trigger another load
         requestWasSent.set(false);
-        assertThat(account.getTermsOfServiceAgreed()).isTrue();
+        assertThat(account.getTermsOfServiceAgreed().orElseThrow()).isTrue();
         assertThat(account.getStatus()).isEqualTo(Status.VALID);
         assertThat(requestWasSent.get()).isFalse();
 
@@ -198,8 +199,8 @@ public class AccountTest {
             }
 
             @Override
-            public URL getLocation() {
-                return locationUrl;
+            public Optional<URL> getLocation() {
+                return Optional.of(locationUrl);
             }
         };
 
@@ -216,7 +217,7 @@ public class AccountTest {
 
         assertThat(auth.getIdentifier().getDomain()).isEqualTo(domainName);
         assertThat(auth.getStatus()).isEqualTo(Status.PENDING);
-        assertThat(auth.getExpires()).isNull();
+        assertThat(auth.getExpires()).isEmpty();
         assertThat(auth.getLocation()).isEqualTo(locationUrl);
 
         assertThat(auth.getChallenges()).containsExactlyInAnyOrder(
@@ -326,8 +327,8 @@ public class AccountTest {
             }
 
             @Override
-            public URL getLocation() {
-                return resourceUrl;
+            public Optional<URL> getLocation() {
+                return Optional.of(locationUrl);
             }
         };
 
@@ -423,8 +424,8 @@ public class AccountTest {
             }
 
             @Override
-            public URL getLocation() {
-                return locationUrl;
+            public Optional<URL> getLocation() {
+                return Optional.of(locationUrl);
             }
         };
 

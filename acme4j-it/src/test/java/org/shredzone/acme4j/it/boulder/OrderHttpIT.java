@@ -23,6 +23,7 @@ import java.security.KeyPair;
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Authorization;
+import org.shredzone.acme4j.Certificate;
 import org.shredzone.acme4j.Order;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
@@ -62,8 +63,7 @@ public class OrderHttpIT {
         var order = account.newOrder().domain(TEST_DOMAIN).create();
 
         for (var auth : order.getAuthorizations()) {
-            var challenge = auth.findChallenge(Http01Challenge.class);
-            assertThat(challenge).isNotNull();
+            var challenge = auth.findChallenge(Http01Challenge.class).orElseThrow();
 
             client.httpAddToken(challenge.getToken(), challenge.getAuthorization());
 
@@ -93,9 +93,9 @@ public class OrderHttpIT {
             .conditionEvaluationListener(cond -> updateOrder(order))
             .untilAsserted(() -> assertThat(order.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
 
-        var certificate = order.getCertificate();
-        var cert = certificate.getCertificate();
-        assertThat(cert).isNotNull();
+        var cert = order.getCertificate()
+                .map(Certificate::getCertificate)
+                .orElseThrow();
         assertThat(cert.getNotAfter()).isNotNull();
         assertThat(cert.getNotBefore()).isNotNull();
         assertThat(cert.getSubjectX500Principal().getName()).contains("CN=" + TEST_DOMAIN);

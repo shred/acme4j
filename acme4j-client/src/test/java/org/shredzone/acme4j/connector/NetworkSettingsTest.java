@@ -18,9 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.Authenticator;
 import java.net.InetSocketAddress;
-import java.net.Proxy;
 import java.net.ProxySelector;
-import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Duration;
 

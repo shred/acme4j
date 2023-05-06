@@ -24,6 +24,7 @@ import java.security.KeyPair;
 import java.security.Security;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Optional;
 
 import javax.swing.JOptionPane;
 
@@ -33,6 +34,7 @@ import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Certificate;
 import org.shredzone.acme4j.Order;
+import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -121,7 +123,10 @@ public class ClientTest {
             while (order.getStatus() != Status.VALID && attempts-- > 0) {
                 // Did the order fail?
                 if (order.getStatus() == Status.INVALID) {
-                    LOG.error("Order has failed, reason: {}", order.getError());
+                    LOG.error("Order has failed, reason: {}", order.getError()
+                            .map(Problem::toString)
+                            .orElse("unknown")
+                    );
                     throw new AcmeException("Order failed... Giving up.");
                 }
 
@@ -137,7 +142,7 @@ public class ClientTest {
         }
 
         // Get the certificate
-        Certificate certificate = order.getCertificate();
+        Certificate certificate = order.getCertificate().orElseThrow();
 
         LOG.info("Success! The certificate for domains {} has been generated!", domains);
         LOG.info("Certificate URL: {}", certificate.getLocation());
@@ -213,9 +218,9 @@ public class ClientTest {
      */
     private Account findOrRegisterAccount(Session session, KeyPair accountKey) throws AcmeException {
         // Ask the user to accept the TOS, if server provides us with a link.
-        URI tos = session.getMetadata().getTermsOfService();
-        if (tos != null) {
-            acceptAgreement(tos);
+        Optional<URI> tos = session.getMetadata().getTermsOfService();
+        if (tos.isPresent()) {
+            acceptAgreement(tos.get());
         }
 
         Account account = new AccountBuilder()
@@ -272,7 +277,9 @@ public class ClientTest {
             while (challenge.getStatus() != Status.VALID && attempts-- > 0) {
                 // Did the authorization fail?
                 if (challenge.getStatus() == Status.INVALID) {
-                    LOG.error("Challenge has failed, reason: {}", challenge.getError());
+                    LOG.error("Challenge has failed, reason: {}", challenge.getError()
+                            .map(Problem::toString)
+                            .orElse("unknown"));
                     throw new AcmeException("Challenge failed... Giving up.");
                 }
 
@@ -313,10 +320,9 @@ public class ClientTest {
      */
     public Challenge httpChallenge(Authorization auth) throws AcmeException {
         // Find a single http-01 challenge
-        Http01Challenge challenge = auth.findChallenge(Http01Challenge.class);
-        if (challenge == null) {
-            throw new AcmeException("Found no " + Http01Challenge.TYPE + " challenge, don't know what to do...");
-        }
+        Http01Challenge challenge = auth.findChallenge(Http01Challenge.class)
+                .orElseThrow(() -> new AcmeException("Found no " + Http01Challenge.TYPE
+                        + " challenge, don't know what to do..."));
 
         // Output the challenge, wait for acknowledge...
         LOG.info("Please create a file in your web server's base directory.");
@@ -355,10 +361,10 @@ public class ClientTest {
      */
     public Challenge dnsChallenge(Authorization auth) throws AcmeException {
         // Find a single dns-01 challenge
-        Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
-        if (challenge == null) {
-            throw new AcmeException("Found no " + Dns01Challenge.TYPE + " challenge, don't know what to do...");
-        }
+        Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE)
+                .map(Dns01Challenge.class::cast)
+                .orElseThrow(() -> new AcmeException("Found no " + Dns01Challenge.TYPE
+                        + " challenge, don't know what to do..."));
 
         // Output the challenge, wait for acknowledge...
         LOG.info("Please create a TXT record:");

@@ -4,6 +4,7 @@ This document will help you migrate your code to the latest _acme4j_ version.
 
 ## Migration to Version 3.0.0
 
+- All `@Nullable` return values have been reviewed. Collections may now be empty, but never `null`. Most of the other return values are now either `Optional`, or throwing an exception if more reasonable. If your code fails to compile because the return type has changed to `Optional`, you can simply add `.orElse(null)` to restore the old behavior. But often your code will reveal a better way to handle the former `null` pointer instead.
 - Starting with _acme4j_ v3, we will require the smallest Java SE LTS version that is still receiving premier support according to the [Oracle Java SE Support Roadmap](https://www.oracle.com/java/technologies/java-se-support-roadmap.html). At the moment of writing, these are Java 11 and Java 17, so _acme4j_ requires Java 11 starting from now. With the prospected release of Java 21 (LTS) in September 2023, we will start to require Java 17, and so on. If you still need Java 8, you can use _acme4j_ v2, which will receive bugfixes until September 2023.
 - Changed to `java.net.http` client. Due to limitations of the API, HTTP errors are only thrown with the error code, but not with the error message. If you checked the message in unit tests, be prepared that the error message might have changed.
 - acme4j now accepts HTTP gzip compression. It is enabled by default, but can be disabled in the `NetworkSettings` if it causes problems or impedes debugging.

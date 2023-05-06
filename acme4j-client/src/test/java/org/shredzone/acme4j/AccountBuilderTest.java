@@ -21,6 +21,7 @@ import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyPair;
+import java.util.Optional;
 
 import org.jose4j.jwx.CompactSerializer;
 import org.junit.jupiter.api.Test;
@@ -71,8 +72,8 @@ public class AccountBuilderTest {
             }
 
             @Override
-            public URL getLocation() {
-                return locationUrl;
+            public Optional<URL> getLocation() {
+                return Optional.of(locationUrl);
             }
 
             @Override
@@ -94,10 +95,10 @@ public class AccountBuilderTest {
         assertThat(login.getAccountLocation()).isEqualTo(locationUrl);
 
         var account = login.getAccount();
-        assertThat(account.getTermsOfServiceAgreed()).isTrue();
+        assertThat(account.getTermsOfServiceAgreed().orElseThrow()).isTrue();
         assertThat(account.getLocation()).isEqualTo(locationUrl);
         assertThat(account.hasExternalAccountBinding()).isFalse();
-        assertThat(account.getKeyIdentifier()).isNull();
+        assertThat(account.getKeyIdentifier()).isEmpty();
 
         provider.close();
     }
@@ -133,8 +134,8 @@ public class AccountBuilderTest {
             }
 
             @Override
-            public URL getLocation() {
-                return locationUrl;
+            public Optional<URL> getLocation() {
+                return Optional.of(locationUrl);
             }
 
             @Override
@@ -175,8 +176,8 @@ public class AccountBuilderTest {
             }
 
             @Override
-            public URL getLocation() {
-                return locationUrl;
+            public Optional<URL> getLocation() {
+                return Optional.of(locationUrl);
             }
 
             @Override

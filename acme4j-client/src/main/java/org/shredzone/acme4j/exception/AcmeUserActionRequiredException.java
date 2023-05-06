@@ -16,6 +16,7 @@ package org.shredzone.acme4j.exception;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Optional;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.Problem;
@@ -46,12 +47,11 @@ public class AcmeUserActionRequiredException extends AcmeServerException {
     }
 
     /**
-     * Returns the {@link URI} of the terms-of-service document to accept, or {@code null}
+     * Returns the {@link URI} of the terms-of-service document to accept. Empty
      * if the server did not provide a link to such a document.
      */
-    @Nullable
-    public URI getTermsOfServiceUri() {
-        return tosUri;
+    public Optional<URI> getTermsOfServiceUri() {
+        return Optional.ofNullable(tosUri);
     }
 
     /**
@@ -59,11 +59,8 @@ public class AcmeUserActionRequiredException extends AcmeServerException {
      * taken by a human.
      */
     public URL getInstance() {
-        var instance = getProblem().getInstance();
-
-        if (instance == null) {
-            throw new AcmeProtocolException("Instance URL required, but missing.");
-        }
+        var instance = getProblem().getInstance()
+                .orElseThrow(() -> new AcmeProtocolException("Instance URL required, but missing."));
 
         try {
             return instance.toURL();

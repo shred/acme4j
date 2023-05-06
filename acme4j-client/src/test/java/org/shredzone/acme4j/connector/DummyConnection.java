@@ -80,12 +80,12 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public String getNonce() {
+    public Optional<String> getNonce() {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public URL getLocation() {
+    public Optional<URL> getLocation() {
         throw new UnsupportedOperationException();
     }
 

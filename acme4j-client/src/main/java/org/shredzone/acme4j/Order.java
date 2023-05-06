@@ -19,8 +19,8 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
@@ -52,18 +52,15 @@ public class Order extends AcmeJsonResource {
     /**
      * Returns a {@link Problem} document with the reason if the order has failed.
      */
-    @Nullable
-    public Problem getError() {
-        return getJSON().get("error").map(v -> v.asProblem(getLocation())).orElse(null);
+    public Optional<Problem> getError() {
+        return getJSON().get("error").map(v -> v.asProblem(getLocation()));
     }
 
     /**
-     * Gets the expiry date of the authorization, if set by the server, {@code null}
-     * otherwise.
+     * Gets the expiry date of the authorization, if set by the server.
      */
-    @Nullable
-    public Instant getExpires() {
-        return getJSON().get("expires").map(Value::asInstant).orElse(null);
+    public Optional<Instant> getExpires() {
+        return getJSON().get("expires").map(Value::asInstant);
     }
 
     /**
@@ -80,19 +77,17 @@ public class Order extends AcmeJsonResource {
     }
 
     /**
-     * Gets the "not before" date that was used for the order, or {@code null}.
+     * Gets the "not before" date that was used for the order.
      */
-    @Nullable
-    public Instant getNotBefore() {
-        return getJSON().get("notBefore").map(Value::asInstant).orElse(null);
+    public Optional<Instant> getNotBefore() {
+        return getJSON().get("notBefore").map(Value::asInstant);
     }
 
     /**
-     * Gets the "not after" date that was used for the order, or {@code null}.
+     * Gets the "not after" date that was used for the order.
      */
-    @Nullable
-    public Instant getNotAfter() {
-        return getJSON().get("notAfter").map(Value::asInstant).orElse(null);
+    public Optional<Instant> getNotAfter() {
+        return getJSON().get("notAfter").map(Value::asInstant);
     }
 
     /**
@@ -119,28 +114,23 @@ public class Order extends AcmeJsonResource {
     }
 
     /**
-     * Gets the {@link Certificate} if it is available. {@code null} otherwise.
+     * Gets the {@link Certificate} if it is available.
      */
-    @Nullable
-    public Certificate getCertificate() {
+    public Optional<Certificate> getCertificate() {
         return getJSON().get("certificate")
                     .map(Value::asURL)
-                    .map(getLogin()::bindCertificate)
-                    .orElse(null);
+                    .map(getLogin()::bindCertificate);
     }
 
     /**
-     * Gets the STAR extension's {@link Certificate} if it is available. {@code null}
-     * otherwise.
+     * Gets the STAR extension's {@link Certificate} if it is available.
      *
      * @since 2.6
      */
-    @Nullable
-    public Certificate getAutoRenewalCertificate() {
+    public Optional<Certificate> getAutoRenewalCertificate() {
         return getJSON().get("star-certificate")
                     .map(Value::asURL)
-                    .map(getLogin()::bindCertificate)
-                    .orElse(null);
+                    .map(getLogin()::bindCertificate);
     }
 
     /**
@@ -180,73 +170,63 @@ public class Order extends AcmeJsonResource {
     }
 
     /**
-     * Returns the earliest date of validity of the first certificate issued, or
-     * {@code null}.
+     * Returns the earliest date of validity of the first certificate issued.
      *
      * @since 2.3
      */
-    @Nullable
-    public Instant getAutoRenewalStartDate() {
+    public Optional<Instant> getAutoRenewalStartDate() {
         return getJSON().get("auto-renewal")
                     .optional()
                     .map(Value::asObject)
                     .orElseGet(JSON::empty)
                     .get("start-date")
                     .optional()
-                    .map(Value::asInstant)
-                    .orElse(null);
+                    .map(Value::asInstant);
     }
 
     /**
-     * Returns the latest date of validity of the last certificate issued, or
-     * {@code null}.
+     * Returns the latest date of validity of the last certificate issued.
      *
      * @since 2.3
      */
-    @Nullable
-    public Instant getAutoRenewalEndDate() {
+    public Optional<Instant> getAutoRenewalEndDate() {
         return getJSON().get("auto-renewal")
                     .optional()
                     .map(Value::asObject)
                     .orElseGet(JSON::empty)
                     .get("end-date")
                     .optional()
-                    .map(Value::asInstant)
-                    .orElse(null);
+                    .map(Value::asInstant);
     }
 
     /**
-     * Returns the maximum lifetime of each certificate, or {@code null}.
+     * Returns the maximum lifetime of each certificate.
      *
      * @since 2.3
      */
-    @Nullable
-    public Duration getAutoRenewalLifetime() {
+    public Optional<Duration> getAutoRenewalLifetime() {
         return getJSON().get("auto-renewal")
                     .optional()
                     .map(Value::asObject)
                     .orElseGet(JSON::empty)
                     .get("lifetime")
                     .optional()
-                    .map(Value::asDuration)
-                    .orElse(null);
+                    .map(Value::asDuration);
     }
 
     /**
-     * Returns the pre-date period of each certificate, or {@code null}.
+     * Returns the pre-date period of each certificate.
      *
      * @since 2.7
      */
-    @Nullable
-    public Duration getAutoRenewalLifetimeAdjust() {
+    public Optional<Duration> getAutoRenewalLifetimeAdjust() {
         return getJSON().get("auto-renewal")
                     .optional()
                     .map(Value::asObject)
                     .orElseGet(JSON::empty)
                     .get("lifetime-adjust")
                     .optional()
-                    .map(Value::asDuration)
-                    .orElse(null);
+                    .map(Value::asDuration);
     }
 
     /**

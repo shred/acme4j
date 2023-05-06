@@ -43,7 +43,7 @@ public class AcmeUserActionRequiredExceptionTest {
 
         assertThat(ex.getType()).isEqualTo(type);
         assertThat(ex.getMessage()).isEqualTo(detail);
-        assertThat(ex.getTermsOfServiceUri()).isEqualTo(tosUri);
+        assertThat(ex.getTermsOfServiceUri().orElseThrow()).isEqualTo(tosUri);
         assertThat(ex.getInstance()).isEqualTo(instanceUrl);
     }
 
@@ -62,7 +62,7 @@ public class AcmeUserActionRequiredExceptionTest {
 
         assertThat(ex.getType()).isEqualTo(type);
         assertThat(ex.getMessage()).isEqualTo(detail);
-        assertThat(ex.getTermsOfServiceUri()).isNull();
+        assertThat(ex.getTermsOfServiceUri()).isEmpty();
         assertThat(ex.getInstance()).isEqualTo(instanceUrl);
     }
 

@@ -44,8 +44,9 @@ public class SessionIT extends PebbleITBase {
         var meta = session.getMetadata();
         assertThat(meta).isNotNull();
 
-        assertThat(meta.getTermsOfService()).isEqualTo(URI.create("data:text/plain,Do%20what%20thou%20wilt"));
-        assertThat(meta.getWebsite()).isNull();
+        assertThat(meta.getTermsOfService().orElseThrow())
+                .isEqualTo(URI.create("data:text/plain,Do%20what%20thou%20wilt"));
+        assertThat(meta.getWebsite()).isEmpty();
         assertThat(meta.getCaaIdentities()).isEmpty();
         assertThatJson(meta.getJSON().toString()).isEqualTo("{"
                         + "'termsOfService': 'data:text/plain,Do%20what%20thou%20wilt',"

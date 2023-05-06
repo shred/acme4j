@@ -56,8 +56,7 @@ public class OrderIT extends PebbleITBase {
         orderCertificate(TEST_DOMAIN, auth -> {
             var client = getBammBammClient();
 
-            var challenge = auth.findChallenge(Http01Challenge.class);
-            assertThat(challenge).isNotNull();
+            var challenge = auth.findChallenge(Http01Challenge.class).orElseThrow();
 
             client.httpAddToken(challenge.getToken(), challenge.getAuthorization());
 
@@ -75,8 +74,7 @@ public class OrderIT extends PebbleITBase {
         orderCertificate(TEST_DOMAIN, auth -> {
             var client = getBammBammClient();
 
-            var challenge = auth.findChallenge(Dns01Challenge.class);
-            assertThat(challenge).isNotNull();
+            var challenge = auth.findChallenge(Dns01Challenge.class).orElseThrow();
 
             var challengeDomainName = Dns01Challenge.toRRName(auth.getIdentifier());
 
@@ -96,8 +94,7 @@ public class OrderIT extends PebbleITBase {
         orderCertificate(TEST_DOMAIN, auth -> {
             var client = getBammBammClient();
 
-            var challenge = auth.findChallenge(TlsAlpn01Challenge.class);
-            assertThat(challenge).isNotNull();
+            var challenge = auth.findChallenge(TlsAlpn01Challenge.class).orElseThrow();
 
             client.tlsAlpnAddCertificate(
                         auth.getIdentifier().getDomain(),
@@ -117,8 +114,7 @@ public class OrderIT extends PebbleITBase {
         orderCertificate(TEST_DOMAIN, auth -> {
             var client = getBammBammClient();
 
-            var challenge = auth.findChallenge(Http01Challenge.class);
-            assertThat(challenge).isNotNull();
+            var challenge = auth.findChallenge(Http01Challenge.class).orElseThrow();
 
             client.httpAddToken(challenge.getToken(), challenge.getAuthorization());
 
@@ -159,8 +155,8 @@ public class OrderIT extends PebbleITBase {
                     .notBefore(notBefore)
                     .notAfter(notAfter)
                     .create();
-        assertThat(order.getNotBefore()).isEqualTo(notBefore);
-        assertThat(order.getNotAfter()).isEqualTo(notAfter);
+        assertThat(order.getNotBefore().orElseThrow()).isEqualTo(notBefore);
+        assertThat(order.getNotAfter().orElseThrow()).isEqualTo(notAfter);
         assertThat(order.getStatus()).isEqualTo(Status.PENDING);
 
         for (var auth : order.getAuthorizations()) {
@@ -199,7 +195,7 @@ public class OrderIT extends PebbleITBase {
 
         assertThat(order.getStatus()).isEqualTo(Status.VALID);
 
-        var certificate = order.getCertificate();
+        var certificate = order.getCertificate().orElseThrow();
         var cert = certificate.getCertificate();
         assertThat(cert).isNotNull();
         assertThat(cert.getNotBefore().toInstant()).isEqualTo(notBefore);

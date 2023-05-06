@@ -43,6 +43,7 @@ import java.util.TreeMap;
 
 import javax.crypto.SecretKey;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
@@ -282,7 +283,7 @@ public final class TestUtils {
      *            Instance, or {@code null}
      * @return Created {@link Problem} object
      */
-    public static Problem createProblem(URI type, String detail, URL instance) {
+    public static Problem createProblem(URI type, String detail, @Nullable URL instance) {
         var jb = new JSONBuilder();
         jb.put("type", type);
         jb.put("detail", detail);

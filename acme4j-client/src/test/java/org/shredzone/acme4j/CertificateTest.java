@@ -223,7 +223,8 @@ public class CertificateTest {
      */
     @Test
     public void testRevocationReason() {
-        assertThat(RevocationReason.code(1)).isEqualTo(RevocationReason.KEY_COMPROMISE);
+        assertThat(RevocationReason.code(1))
+                .isEqualTo(RevocationReason.KEY_COMPROMISE);
     }
 
     /**

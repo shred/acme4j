@@ -20,8 +20,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
+import java.util.Optional;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
@@ -69,13 +69,12 @@ public class Problem implements Serializable {
 
     /**
      * Returns a short, human-readable summary of the problem. The text may be localized
-     * if supported by the server. {@code null} if the server did not provide a title.
+     * if supported by the server. Empty if the server did not provide a title.
      *
      * @see #toString()
      */
-    @Nullable
-    public String getTitle() {
-        return problemJson.get("title").map(Value::asString).orElse(null);
+    public Optional<String> getTitle() {
+        return problemJson.get("title").map(Value::asString);
     }
 
     /**
@@ -84,17 +83,15 @@ public class Problem implements Serializable {
      *
      * @see #toString()
      */
-    @Nullable
-    public String getDetail() {
-        return problemJson.get("detail").map(Value::asString).orElse(null);
+    public Optional<String> getDetail() {
+        return problemJson.get("detail").map(Value::asString);
     }
 
     /**
      * Returns a URI that identifies the specific occurence of the problem. It is always
      * an absolute URI.
      */
-    @Nullable
-    public URI getInstance() {
+    public Optional<URI> getInstance() {
         return problemJson.get("instance")
                         .map(Value::asString)
                         .map(it ->  {
@@ -103,25 +100,22 @@ public class Problem implements Serializable {
                             } catch (URISyntaxException ex) {
                                 throw new IllegalArgumentException("Bad base URL", ex);
                             }
-                        })
-                        .orElse(null);
+                        });
     }
 
     /**
-     * Returns the {@link Identifier} this problem relates to. May be {@code null}.
+     * Returns the {@link Identifier} this problem relates to.
      *
      * @since 2.3
      */
-    @Nullable
-    public Identifier getIdentifier() {
+    public Optional<Identifier> getIdentifier() {
         return problemJson.get("identifier")
                         .optional()
-                        .map(Value::asIdentifier)
-                        .orElse(null);
+                        .map(Value::asIdentifier);
     }
 
     /**
-     * Returns a list of sub-problems. May be empty, but is never {@code null}.
+     * Returns a list of sub-problems.
      */
     public List<Problem> getSubProblems() {
         return problemJson.get("subproblems")
@@ -153,10 +147,10 @@ public class Problem implements Serializable {
     public String toString() {
         var sb = new StringBuilder();
 
-        if (getDetail() != null) {
-            sb.append(getDetail());
-        } else if (getTitle() != null) {
-            sb.append(getTitle());
+        if (getDetail().isPresent()) {
+            sb.append(getDetail().get());
+        } else if (getTitle().isPresent()) {
+            sb.append(getTitle().get());
         } else {
             sb.append(getType());
         }

@@ -25,6 +25,7 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.Optional;
 
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
@@ -66,8 +67,8 @@ public class OrderBuilderTest {
             }
 
             @Override
-            public URL getLocation() {
-                return locationUrl;
+            public Optional<URL> getLocation() {
+                return Optional.of(locationUrl);
             }
         };
 
@@ -98,15 +99,18 @@ public class OrderBuilderTest {
                         Identifier.dns("d.example.com"),
                         Identifier.dns("d2.example.com"),
                         Identifier.ip(InetAddress.getByName("192.168.1.2")));
-            softly.assertThat(order.getNotBefore()).isEqualTo("2016-01-01T00:10:00Z");
-            softly.assertThat(order.getNotAfter()).isEqualTo("2016-01-08T00:10:00Z");
-            softly.assertThat(order.getExpires()).isEqualTo("2016-01-10T00:00:00Z");
+            softly.assertThat(order.getNotBefore().orElseThrow())
+                    .isEqualTo("2016-01-01T00:10:00Z");
+            softly.assertThat(order.getNotAfter().orElseThrow())
+                    .isEqualTo("2016-01-08T00:10:00Z");
+            softly.assertThat(order.getExpires().orElseThrow())
+                    .isEqualTo("2016-01-10T00:00:00Z");
             softly.assertThat(order.getStatus()).isEqualTo(Status.PENDING);
             softly.assertThat(order.isAutoRenewing()).isFalse();
-            softly.assertThat(order.getAutoRenewalStartDate()).isNull();
-            softly.assertThat(order.getAutoRenewalEndDate()).isNull();
-            softly.assertThat(order.getAutoRenewalLifetime()).isNull();
-            softly.assertThat(order.getAutoRenewalLifetimeAdjust()).isNull();
+            softly.assertThat(order.getAutoRenewalStartDate()).isEmpty();
+            softly.assertThat(order.getAutoRenewalEndDate()).isEmpty();
+            softly.assertThat(order.getAutoRenewalLifetime()).isEmpty();
+            softly.assertThat(order.getAutoRenewalLifetimeAdjust()).isEmpty();
             softly.assertThat(order.isAutoRenewalGetEnabled()).isFalse();
             softly.assertThat(order.getLocation()).isEqualTo(locationUrl);
             softly.assertThat(order.getAuthorizations()).isNotNull();
@@ -141,8 +145,8 @@ public class OrderBuilderTest {
             }
 
             @Override
-            public URL getLocation() {
-                return locationUrl;
+            public Optional<URL> getLocation() {
+                return Optional.of(locationUrl);
             }
         };
 
@@ -164,13 +168,13 @@ public class OrderBuilderTest {
 
         try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(order.getIdentifiers()).containsExactlyInAnyOrder(Identifier.dns("example.org"));
-            softly.assertThat(order.getNotBefore()).isNull();
-            softly.assertThat(order.getNotAfter()).isNull();
+            softly.assertThat(order.getNotBefore()).isEmpty();
+            softly.assertThat(order.getNotAfter()).isEmpty();
             softly.assertThat(order.isAutoRenewing()).isTrue();
-            softly.assertThat(order.getAutoRenewalStartDate()).isEqualTo(autoRenewStart);
-            softly.assertThat(order.getAutoRenewalEndDate()).isEqualTo(autoRenewEnd);
-            softly.assertThat(order.getAutoRenewalLifetime()).isEqualTo(validity);
-            softly.assertThat(order.getAutoRenewalLifetimeAdjust()).isEqualTo(predate);
+            softly.assertThat(order.getAutoRenewalStartDate().orElseThrow()).isEqualTo(autoRenewStart);
+            softly.assertThat(order.getAutoRenewalEndDate().orElseThrow()).isEqualTo(autoRenewEnd);
+            softly.assertThat(order.getAutoRenewalLifetime().orElseThrow()).isEqualTo(validity);
+            softly.assertThat(order.getAutoRenewalLifetimeAdjust().orElseThrow()).isEqualTo(predate);
             softly.assertThat(order.isAutoRenewalGetEnabled()).isTrue();
             softly.assertThat(order.getLocation()).isEqualTo(locationUrl);
         }

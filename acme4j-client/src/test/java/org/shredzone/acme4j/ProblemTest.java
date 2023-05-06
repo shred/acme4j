@@ -40,10 +40,13 @@ public class ProblemTest {
 
         try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(problem.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:malformed"));
-            softly.assertThat(problem.getTitle()).isEqualTo("Some of the identifiers requested were rejected");
-            softly.assertThat(problem.getDetail()).isEqualTo("Identifier \"abc12_\" is malformed");
-            softly.assertThat(problem.getInstance()).isEqualTo(URI.create("https://example.com/documents/error.html"));
-            softly.assertThat(problem.getIdentifier()).isNull();
+            softly.assertThat(problem.getTitle().orElseThrow())
+                    .isEqualTo("Some of the identifiers requested were rejected");
+            softly.assertThat(problem.getDetail().orElseThrow())
+                    .isEqualTo("Identifier \"abc12_\" is malformed");
+            softly.assertThat(problem.getInstance().orElseThrow())
+                    .isEqualTo(URI.create("https://example.com/documents/error.html"));
+            softly.assertThat(problem.getIdentifier()).isEmpty();
             softly.assertThat(problem.toString()).isEqualTo(
                     "Identifier \"abc12_\" is malformed ("
                             + "Invalid underscore in DNS name \"_example.com\" ‒ "
@@ -54,16 +57,18 @@ public class ProblemTest {
 
             var p1 = subs.get(0);
             softly.assertThat(p1.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:malformed"));
-            softly.assertThat(p1.getTitle()).isNull();
-            softly.assertThat(p1.getDetail()).isEqualTo("Invalid underscore in DNS name \"_example.com\"");
-            softly.assertThat(p1.getIdentifier().getDomain()).isEqualTo("_example.com");
+            softly.assertThat(p1.getTitle()).isEmpty();
+            softly.assertThat(p1.getDetail().orElseThrow())
+                    .isEqualTo("Invalid underscore in DNS name \"_example.com\"");
+            softly.assertThat(p1.getIdentifier().orElseThrow().getDomain()).isEqualTo("_example.com");
             softly.assertThat(p1.toString()).isEqualTo("Invalid underscore in DNS name \"_example.com\"");
 
             var p2 = subs.get(1);
             softly.assertThat(p2.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:rejectedIdentifier"));
-            softly.assertThat(p2.getTitle()).isNull();
-            softly.assertThat(p2.getDetail()).isEqualTo("This CA will not issue for \"example.net\"");
-            softly.assertThat(p2.getIdentifier().getDomain()).isEqualTo("example.net");
+            softly.assertThat(p2.getTitle()).isEmpty();
+            softly.assertThat(p2.getDetail().orElseThrow())
+                    .isEqualTo("This CA will not issue for \"example.net\"");
+            softly.assertThat(p2.getIdentifier().orElseThrow().getDomain()).isEqualTo("example.net");
             softly.assertThat(p2.toString()).isEqualTo("This CA will not issue for \"example.net\"");
         }
     }

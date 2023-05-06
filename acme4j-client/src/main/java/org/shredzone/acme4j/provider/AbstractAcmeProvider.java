@@ -73,10 +73,7 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
             session.setDirectoryExpires(conn.getExpiration().orElse(null));
 
             // use nonce header if there is one, saves a HEAD request...
-            var nonce = conn.getNonce();
-            if (nonce != null) {
-                session.setNonce(nonce);
-            }
+            conn.getNonce().ifPresent(session::setNonce);
 
             return conn.readJsonResponse();
         }

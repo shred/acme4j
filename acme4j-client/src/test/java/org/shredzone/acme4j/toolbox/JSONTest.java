@@ -218,8 +218,9 @@ public class JSONTest {
         var problem = json.get("problem").asProblem(BASE_URL);
         assertThat(problem).isNotNull();
         assertThat(problem.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:rateLimited"));
-        assertThat(problem.getDetail()).isEqualTo("too many requests");
-        assertThat(problem.getInstance()).isEqualTo(URI.create("https://example.com/documents/errors.html"));
+        assertThat(problem.getDetail().orElseThrow()).isEqualTo("too many requests");
+        assertThat(problem.getInstance().orElseThrow())
+                .isEqualTo(URI.create("https://example.com/documents/errors.html"));
     }
 
     /**

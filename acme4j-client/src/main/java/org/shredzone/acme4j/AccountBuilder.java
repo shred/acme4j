@@ -261,10 +261,8 @@ public class AccountBuilder {
 
             conn.sendSignedRequest(resourceUrl, claims, session, keyPair);
 
-            var location = conn.getLocation();
-            if (location == null) {
-                throw new AcmeProtocolException("Server did not provide an account location");
-            }
+            var location = conn.getLocation()
+                    .orElseThrow(() -> new AcmeProtocolException("Server did not provide an account location"));
 
             var login = new Login(location, keyPair, session);
             login.getAccount().setJSON(conn.readJsonResponse());

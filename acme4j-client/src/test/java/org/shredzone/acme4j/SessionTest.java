@@ -163,13 +163,16 @@ public class SessionTest {
         var meta = session.getMetadata();
         try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(meta).isNotNull();
-            softly.assertThat(meta.getTermsOfService())
+            softly.assertThat(meta.getTermsOfService().orElseThrow())
                     .isEqualTo(URI.create("https://example.com/acme/terms"));
-            softly.assertThat(meta.getWebsite()).isEqualTo(url("https://www.example.com/"));
+            softly.assertThat(meta.getWebsite().orElseThrow().toExternalForm())
+                    .isEqualTo("https://www.example.com/");
             softly.assertThat(meta.getCaaIdentities()).containsExactlyInAnyOrder("example.com");
             softly.assertThat(meta.isAutoRenewalEnabled()).isTrue();
-            softly.assertThat(meta.getAutoRenewalMaxDuration()).isEqualTo(Duration.ofDays(365));
-            softly.assertThat(meta.getAutoRenewalMinLifetime()).isEqualTo(Duration.ofHours(24));
+            softly.assertThat(meta.getAutoRenewalMaxDuration().orElseThrow())
+                    .isEqualTo(Duration.ofDays(365));
+            softly.assertThat(meta.getAutoRenewalMinLifetime().orElseThrow())
+                    .isEqualTo(Duration.ofHours(24));
             softly.assertThat(meta.isAutoRenewalGetAllowed()).isTrue();
             softly.assertThat(meta.isExternalAccountRequired()).isTrue();
             softly.assertThat(meta.getJSON()).isNotNull();
@@ -211,12 +214,12 @@ public class SessionTest {
         var meta = session.getMetadata();
         try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(meta).isNotNull();
-            softly.assertThat(meta.getTermsOfService()).isNull();
-            softly.assertThat(meta.getWebsite()).isNull();
+            softly.assertThat(meta.getTermsOfService()).isEmpty();
+            softly.assertThat(meta.getWebsite()).isEmpty();
             softly.assertThat(meta.getCaaIdentities()).isEmpty();
             softly.assertThat(meta.isAutoRenewalEnabled()).isFalse();
-            softly.assertThat(meta.getAutoRenewalMaxDuration()).isNull();
-            softly.assertThat(meta.getAutoRenewalMinLifetime()).isNull();
+            softly.assertThat(meta.getAutoRenewalMaxDuration()).isEmpty();
+            softly.assertThat(meta.getAutoRenewalMinLifetime()).isEmpty();
             softly.assertThat(meta.isAutoRenewalGetAllowed()).isFalse();
         }
     }

@@ -57,15 +57,16 @@ public class ChallengeTest {
             softly.assertThat(challenge.getType()).isEqualTo("generic-01");
             softly.assertThat(challenge.getStatus()).isEqualTo(Status.INVALID);
             softly.assertThat(challenge.getLocation()).isEqualTo(url("http://example.com/challenge/123"));
-            softly.assertThat(challenge.getValidated()).isCloseTo("2015-12-12T17:19:36.336Z", within(1, ChronoUnit.MILLIS));
+            softly.assertThat(challenge.getValidated().orElseThrow())
+                    .isCloseTo("2015-12-12T17:19:36.336Z", within(1, ChronoUnit.MILLIS));
             softly.assertThat(challenge.getJSON().get("type").asString()).isEqualTo("generic-01");
             softly.assertThat(challenge.getJSON().get("url").asURL()).isEqualTo(url("http://example.com/challenge/123"));
 
-            var error = challenge.getError();
-            softly.assertThat(error).isNotNull();
+            var error = challenge.getError().orElseThrow();
             softly.assertThat(error.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:incorrectResponse"));
-            softly.assertThat(error.getDetail()).isEqualTo("bad token");
-            softly.assertThat(error.getInstance()).isEqualTo(URI.create("http://example.com/documents/faq.html"));
+            softly.assertThat(error.getDetail().orElseThrow()).isEqualTo("bad token");
+            softly.assertThat(error.getInstance().orElseThrow())
+                    .isEqualTo(URI.create("http://example.com/documents/faq.html"));
         }
     }
 

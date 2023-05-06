@@ -47,7 +47,7 @@ public class AcmeRateLimitedExceptionTest {
 
         assertThat(ex.getType()).isEqualTo(type);
         assertThat(ex.getMessage()).isEqualTo(detail);
-        assertThat(ex.getRetryAfter()).isEqualTo(retryAfter);
+        assertThat(ex.getRetryAfter().orElseThrow()).isEqualTo(retryAfter);
         assertThat(ex.getDocuments()).containsAll(documents);
     }
 
@@ -65,8 +65,8 @@ public class AcmeRateLimitedExceptionTest {
 
         assertThat(ex.getType()).isEqualTo(type);
         assertThat(ex.getMessage()).isEqualTo(detail);
-        assertThat(ex.getRetryAfter()).isNull();
-        assertThat(ex.getDocuments()).isNull();
+        assertThat(ex.getRetryAfter()).isEmpty();
+        assertThat(ex.getDocuments()).isEmpty();
     }
 
 }

@@ -69,29 +69,31 @@ public class OrderTest {
 
         try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(order.getStatus()).isEqualTo(Status.PENDING);
-            softly.assertThat(order.getExpires()).isEqualTo("2015-03-01T14:09:00Z");
+            softly.assertThat(order.getExpires().orElseThrow()).isEqualTo("2015-03-01T14:09:00Z");
             softly.assertThat(order.getLocation()).isEqualTo(locationUrl);
 
             softly.assertThat(order.getIdentifiers()).containsExactlyInAnyOrder(
                     Identifier.dns("example.com"),
                     Identifier.dns("www.example.com"));
-            softly.assertThat(order.getNotBefore()).isEqualTo("2016-01-01T00:00:00Z");
-            softly.assertThat(order.getNotAfter()).isEqualTo("2016-01-08T00:00:00Z");
-            softly.assertThat(order.getCertificate().getLocation())
+            softly.assertThat(order.getNotBefore().orElseThrow())
+                    .isEqualTo("2016-01-01T00:00:00Z");
+            softly.assertThat(order.getNotAfter().orElseThrow())
+                    .isEqualTo("2016-01-08T00:00:00Z");
+            softly.assertThat(order.getCertificate().orElseThrow().getLocation())
                     .isEqualTo(url("https://example.com/acme/cert/1234"));
             softly.assertThat(order.getFinalizeLocation()).isEqualTo(finalizeUrl);
 
             softly.assertThat(order.isAutoRenewing()).isFalse();
-            softly.assertThat(order.getAutoRenewalStartDate()).isNull();
-            softly.assertThat(order.getAutoRenewalEndDate()).isNull();
-            softly.assertThat(order.getAutoRenewalLifetime()).isNull();
-            softly.assertThat(order.getAutoRenewalLifetimeAdjust()).isNull();
+            softly.assertThat(order.getAutoRenewalStartDate()).isEmpty();
+            softly.assertThat(order.getAutoRenewalEndDate()).isEmpty();
+            softly.assertThat(order.getAutoRenewalLifetime()).isEmpty();
+            softly.assertThat(order.getAutoRenewalLifetimeAdjust()).isEmpty();
             softly.assertThat(order.isAutoRenewalGetEnabled()).isFalse();
 
-            softly.assertThat(order.getError()).isNotNull();
-            softly.assertThat(order.getError().getType())
+            softly.assertThat(order.getError()).isNotEmpty();
+            softly.assertThat(order.getError().orElseThrow().getType())
                     .isEqualTo(URI.create("urn:ietf:params:acme:error:connection"));
-            softly.assertThat(order.getError().getDetail())
+            softly.assertThat(order.getError().flatMap(Problem::getDetail).orElseThrow())
                     .isEqualTo("connection refused");
 
             var auths = order.getAuthorizations();
@@ -139,16 +141,16 @@ public class OrderTest {
         try (var softly = new AutoCloseableSoftAssertions()) {
             // Lazy loading
             softly.assertThat(requestWasSent).isFalse();
-            softly.assertThat(order.getCertificate().getLocation())
+            softly.assertThat(order.getCertificate().orElseThrow().getLocation())
                     .isEqualTo(url("https://example.com/acme/cert/1234"));
             softly.assertThat(requestWasSent).isTrue();
 
             // Subsequent queries do not trigger another load
             requestWasSent.set(false);
-            softly.assertThat(order.getCertificate().getLocation())
+            softly.assertThat(order.getCertificate().orElseThrow().getLocation())
                     .isEqualTo(url("https://example.com/acme/cert/1234"));
             softly.assertThat(order.getStatus()).isEqualTo(Status.PENDING);
-            softly.assertThat(order.getExpires()).isEqualTo("2015-03-01T14:09:00Z");
+            softly.assertThat(order.getExpires().orElseThrow()).isEqualTo("2015-03-01T14:09:00Z");
             softly.assertThat(requestWasSent).isFalse();
         }
 
@@ -198,17 +200,19 @@ public class OrderTest {
 
         try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(order.getStatus()).isEqualTo(Status.VALID);
-            softly.assertThat(order.getExpires()).isEqualTo("2015-03-01T14:09:00Z");
+            softly.assertThat(order.getExpires().orElseThrow()).isEqualTo("2015-03-01T14:09:00Z");
             softly.assertThat(order.getLocation()).isEqualTo(locationUrl);
 
             softly.assertThat(order.getIdentifiers()).containsExactlyInAnyOrder(
                     Identifier.dns("example.com"),
                     Identifier.dns("www.example.com"));
-            softly.assertThat(order.getNotBefore()).isEqualTo("2016-01-01T00:00:00Z");
-            softly.assertThat(order.getNotAfter()).isEqualTo("2016-01-08T00:00:00Z");
-            softly.assertThat(order.getCertificate().getLocation())
+            softly.assertThat(order.getNotBefore().orElseThrow())
+                    .isEqualTo("2016-01-01T00:00:00Z");
+            softly.assertThat(order.getNotAfter().orElseThrow())
+                    .isEqualTo("2016-01-08T00:00:00Z");
+            softly.assertThat(order.getCertificate().orElseThrow().getLocation())
                     .isEqualTo(url("https://example.com/acme/cert/1234"));
-            softly.assertThat(order.getAutoRenewalCertificate()).isNull();
+            softly.assertThat(order.getAutoRenewalCertificate()).isEmpty();
             softly.assertThat(order.getFinalizeLocation()).isEqualTo(finalizeUrl);
 
             var auths = order.getAuthorizations();
@@ -255,12 +259,16 @@ public class OrderTest {
 
         try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(order.isAutoRenewing()).isTrue();
-            softly.assertThat(order.getAutoRenewalStartDate()).isEqualTo("2016-01-01T00:00:00Z");
-            softly.assertThat(order.getAutoRenewalEndDate()).isEqualTo("2017-01-01T00:00:00Z");
-            softly.assertThat(order.getAutoRenewalLifetime()).isEqualTo(Duration.ofHours(168));
-            softly.assertThat(order.getAutoRenewalLifetimeAdjust()).isEqualTo(Duration.ofDays(6));
-            softly.assertThat(order.getNotBefore()).isNull();
-            softly.assertThat(order.getNotAfter()).isNull();
+            softly.assertThat(order.getAutoRenewalStartDate().orElseThrow())
+                    .isEqualTo("2016-01-01T00:00:00Z");
+            softly.assertThat(order.getAutoRenewalEndDate().orElseThrow())
+                    .isEqualTo("2017-01-01T00:00:00Z");
+            softly.assertThat(order.getAutoRenewalLifetime().orElseThrow())
+                    .isEqualTo(Duration.ofHours(168));
+            softly.assertThat(order.getAutoRenewalLifetimeAdjust().orElseThrow())
+                    .isEqualTo(Duration.ofDays(6));
+            softly.assertThat(order.getNotBefore()).isEmpty();
+            softly.assertThat(order.getNotAfter()).isEmpty();
             softly.assertThat(order.isAutoRenewalGetEnabled()).isTrue();
         }
 
@@ -294,16 +302,20 @@ public class OrderTest {
         var order = login.bindOrder(locationUrl);
 
         try (var softly = new AutoCloseableSoftAssertions()) {
-            softly.assertThat(order.getCertificate()).isNull();
-            softly.assertThat(order.getAutoRenewalCertificate().getLocation())
+            softly.assertThat(order.getCertificate()).isEmpty();
+            softly.assertThat(order.getAutoRenewalCertificate().orElseThrow().getLocation())
                     .isEqualTo(url("https://example.com/acme/cert/1234"));
             softly.assertThat(order.isAutoRenewing()).isTrue();
-            softly.assertThat(order.getAutoRenewalStartDate()).isEqualTo("2018-01-01T00:00:00Z");
-            softly.assertThat(order.getAutoRenewalEndDate()).isEqualTo("2019-01-01T00:00:00Z");
-            softly.assertThat(order.getAutoRenewalLifetime()).isEqualTo(Duration.ofHours(168));
-            softly.assertThat(order.getAutoRenewalLifetimeAdjust()).isEqualTo(Duration.ofDays(6));
-            softly.assertThat(order.getNotBefore()).isNull();
-            softly.assertThat(order.getNotAfter()).isNull();
+            softly.assertThat(order.getAutoRenewalStartDate().orElseThrow())
+                    .isEqualTo("2018-01-01T00:00:00Z");
+            softly.assertThat(order.getAutoRenewalEndDate().orElseThrow())
+                    .isEqualTo("2019-01-01T00:00:00Z");
+            softly.assertThat(order.getAutoRenewalLifetime().orElseThrow())
+                    .isEqualTo(Duration.ofHours(168));
+            softly.assertThat(order.getAutoRenewalLifetimeAdjust().orElseThrow())
+                    .isEqualTo(Duration.ofDays(6));
+            softly.assertThat(order.getNotBefore()).isEmpty();
+            softly.assertThat(order.getNotAfter()).isEmpty();
             softly.assertThat(order.isAutoRenewalGetEnabled()).isTrue();
         }
 

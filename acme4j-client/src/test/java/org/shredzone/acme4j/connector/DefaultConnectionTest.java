@@ -106,7 +106,7 @@ public class DefaultConnectionTest {
     }
 
     /**
-     * Test that {@link DefaultConnection#getNonce()} returns {@code null} if there is no
+     * Test that {@link DefaultConnection#getNonce()} is empty if there is no
      * {@code Replay-Nonce} header.
      */
     @Test
@@ -117,7 +117,7 @@ public class DefaultConnectionTest {
 
         try (var conn = session.connect()) {
             conn.sendRequest(directoryUrl, session, null);
-            assertThat(conn.getNonce()).isNull();
+            assertThat(conn.getNonce()).isEmpty();
         }
     }
 
@@ -135,7 +135,7 @@ public class DefaultConnectionTest {
 
         try (var conn = session.connect()) {
             conn.sendRequest(requestUrl, session, null);
-            assertThat(conn.getNonce()).isEqualTo(TestUtils.DUMMY_NONCE);
+            assertThat(conn.getNonce().orElseThrow()).isEqualTo(TestUtils.DUMMY_NONCE);
             assertThat(session.getNonce()).isEqualTo(TestUtils.DUMMY_NONCE);
         }
 
@@ -215,7 +215,8 @@ public class DefaultConnectionTest {
         try (var conn = session.connect()) {
             conn.sendRequest(requestUrl, session, null);
             var location = conn.getLocation();
-            assertThat(location).isEqualTo(new URL("https://example.com/otherlocation"));
+            assertThat(location.orElseThrow())
+                    .isEqualTo(new URL("https://example.com/otherlocation"));
         }
     }
 
@@ -231,7 +232,8 @@ public class DefaultConnectionTest {
         try (var conn = session.connect()) {
             conn.sendRequest(requestUrl, session, null);
             var location = conn.getLocation();
-            assertThat(location).isEqualTo(new URL(baseUrl + "/otherlocation"));
+            assertThat(location.orElseThrow())
+                    .isEqualTo(new URL(baseUrl + "/otherlocation"));
         }
     }
 
@@ -298,7 +300,7 @@ public class DefaultConnectionTest {
 
         try (var conn = session.connect()) {
             conn.sendRequest(requestUrl, session, null);
-            assertThat(conn.getLocation()).isNull();
+            assertThat(conn.getLocation()).isEmpty();
         }
 
         verify(getRequestedFor(urlEqualTo(REQUEST_PATH)));
@@ -445,7 +447,7 @@ public class DefaultConnectionTest {
         assertThat(((AcmeUserActionRequiredException) ex).getType())
                 .isEqualTo(URI.create("urn:ietf:params:acme:error:userActionRequired"));
         assertThat(ex.getMessage()).isEqualTo("Accept the TOS");
-        assertThat(((AcmeUserActionRequiredException) ex).getTermsOfServiceUri())
+        assertThat(((AcmeUserActionRequiredException) ex).getTermsOfServiceUri().orElseThrow())
                 .isEqualTo(URI.create("https://example.com/tos.pdf"));
     }
 
@@ -478,7 +480,7 @@ public class DefaultConnectionTest {
 
         assertThat(ex.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:rateLimited"));
         assertThat(ex.getMessage()).isEqualTo("Too many invocations");
-        assertThat(ex.getRetryAfter()).isEqualTo(retryAfter);
+        assertThat(ex.getRetryAfter().orElseThrow()).isEqualTo(retryAfter);
         assertThat(ex.getDocuments()).isNotNull();
         assertThat(ex.getDocuments()).hasSize(1);
         assertThat(ex.getDocuments().iterator().next()).isEqualTo(url("https://example.com/rates.pdf"));

@@ -22,8 +22,8 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.ResourceIterator;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -57,17 +57,17 @@ public class Account extends AcmeJsonResource {
      * Returns if the user agreed to the terms of service.
      *
      * @return {@code true} if the user agreed to the terms of service. May be
-     *         {@code null} if the server did not provide such an information.
+     *         empty if the server did not provide such an information.
      */
-    @Nullable
-    public Boolean getTermsOfServiceAgreed() {
-        return getJSON().get(KEY_TOS_AGREED).map(Value::asBoolean).orElse(null);
+    public Optional<Boolean> getTermsOfServiceAgreed() {
+        return getJSON().get(KEY_TOS_AGREED).map(Value::asBoolean);
     }
 
     /**
      * List of registered contact addresses (emails, phone numbers etc).
      * <p>
-     * This list is unmodifiable. Use {@link #modify()} to change the contacts.
+     * This list is unmodifiable. Use {@link #modify()} to change the contacts. May be
+     * empty, but is never {@code null}.
      */
     public List<URI> getContacts() {
         return getJSON().get(KEY_CONTACT)
@@ -98,17 +98,15 @@ public class Account extends AcmeJsonResource {
 
     /**
      * Returns the key identifier of the external non-ACME account. If this account is
-     * not bound to an external account, {@code null} is returned instead.
+     * not bound to an external account, the result is empty.
      *
      * @since 2.8
      */
-    @Nullable
-    public String getKeyIdentifier() {
+    public Optional<String> getKeyIdentifier() {
         return getJSON().get(KEY_EXTERNAL_ACCOUNT_BINDING)
                 .optional().map(Value::asObject)
                 .map(j -> j.get("protected")).map(Value::asEncodedObject)
-                .map(j -> j.get("kid")).map(Value::asString)
-                .orElse(null);
+                .map(j -> j.get("kid")).map(Value::asString);
     }
 
     /**
@@ -197,11 +195,8 @@ public class Account extends AcmeJsonResource {
 
             conn.sendSignedRequest(newAuthzUrl, claims, getLogin());
 
-            var authLocation = conn.getLocation();
-            if (authLocation == null) {
-                throw new AcmeProtocolException("Server did not provide an authorization location");
-            }
-
+            var authLocation = conn.getLocation()
+                    .orElseThrow(() -> new AcmeProtocolException("Server did not provide an authorization location"));
             var auth = getLogin().bindAuthorization(authLocation);
             auth.setJSON(conn.readJsonResponse());
             return auth;

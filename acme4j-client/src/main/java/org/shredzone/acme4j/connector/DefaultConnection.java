@@ -136,11 +136,9 @@ public class DefaultConnection implements Connection {
                 throwAcmeException();
             }
 
-            var nonce = getNonce();
-            if (nonce == null) {
-                throw new AcmeProtocolException("Server did not provide a nonce");
-            }
-            session.setNonce(nonce);
+            session.setNonce(getNonce()
+                    .orElseThrow(() -> new AcmeProtocolException("Server did not provide a nonce"))
+            );
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         } finally {
@@ -168,10 +166,7 @@ public class DefaultConnection implements Connection {
 
             logHeaders();
 
-            var nonce = getNonce();
-            if (nonce != null) {
-                session.setNonce(nonce);
-            }
+            getNonce().ifPresent(session::setNonce);
 
             var rc = getResponse().statusCode();
             if (rc != HTTP_OK && rc != HTTP_CREATED && (rc != HTTP_NOT_MODIFIED || ifModifiedSince == null)) {
@@ -245,37 +240,32 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    @Nullable
-    public String getNonce() {
+    public Optional<String> getNonce() {
         var nonceHeaderOpt = getResponse().headers()
                 .firstValue(REPLAY_NONCE_HEADER)
                 .map(String::trim)
                 .filter(not(String::isEmpty));
-        if (nonceHeaderOpt.isEmpty()) {
-            return null;
+        if (nonceHeaderOpt.isPresent()) {
+            var nonceHeader = nonceHeaderOpt.get();
+
+            if (!AcmeUtils.isValidBase64Url(nonceHeader)) {
+                throw new AcmeProtocolException("Invalid replay nonce: " + nonceHeader);
+            }
+
+            LOG.debug("Replay Nonce: {}", nonceHeader);
         }
-
-        var nonceHeader = nonceHeaderOpt.get();
-        if (!AcmeUtils.isValidBase64Url(nonceHeader)) {
-            throw new AcmeProtocolException("Invalid replay nonce: " + nonceHeader);
-        }
-
-        LOG.debug("Replay Nonce: {}", nonceHeader);
-
-        return nonceHeader;
+        return nonceHeaderOpt;
     }
 
     @Override
-    @Nullable
-    public URL getLocation() {
+    public Optional<URL> getLocation() {
         return getResponse().headers()
                 .firstValue(LOCATION_HEADER)
                 .map(l -> {
                     LOG.debug("Location: {}", l);
                     return l;
                 })
-                .map(this::resolveRelative)
-                .orElse(null);
+                .map(this::resolveRelative);
     }
 
     @Override
@@ -451,7 +441,7 @@ public class DefaultConnection implements Connection {
 
             logHeaders();
 
-            session.setNonce(getNonce());
+            session.setNonce(getNonce().orElse(null));
 
             var rc = getResponse().statusCode();
             if (rc != HTTP_OK && rc != HTTP_CREATED) {
