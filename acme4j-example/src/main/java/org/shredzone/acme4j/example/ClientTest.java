@@ -142,7 +142,7 @@ public class ClientTest {
         }
 
         // Get the certificate
-        Certificate certificate = order.getCertificate().orElseThrow();
+        Certificate certificate = order.getCertificate();
 
         LOG.info("Success! The certificate for domains {} has been generated!", domains);
         LOG.info("Certificate URL: {}", certificate.getLocation());

@@ -79,7 +79,7 @@ public class OrderTest {
                     .isEqualTo("2016-01-01T00:00:00Z");
             softly.assertThat(order.getNotAfter().orElseThrow())
                     .isEqualTo("2016-01-08T00:00:00Z");
-            softly.assertThat(order.getCertificate().orElseThrow().getLocation())
+            softly.assertThat(order.getCertificate().getLocation())
                     .isEqualTo(url("https://example.com/acme/cert/1234"));
             softly.assertThat(order.getFinalizeLocation()).isEqualTo(finalizeUrl);
 
@@ -141,13 +141,13 @@ public class OrderTest {
         try (var softly = new AutoCloseableSoftAssertions()) {
             // Lazy loading
             softly.assertThat(requestWasSent).isFalse();
-            softly.assertThat(order.getCertificate().orElseThrow().getLocation())
+            softly.assertThat(order.getCertificate().getLocation())
                     .isEqualTo(url("https://example.com/acme/cert/1234"));
             softly.assertThat(requestWasSent).isTrue();
 
             // Subsequent queries do not trigger another load
             requestWasSent.set(false);
-            softly.assertThat(order.getCertificate().orElseThrow().getLocation())
+            softly.assertThat(order.getCertificate().getLocation())
                     .isEqualTo(url("https://example.com/acme/cert/1234"));
             softly.assertThat(order.getStatus()).isEqualTo(Status.PENDING);
             softly.assertThat(order.getExpires().orElseThrow()).isEqualTo("2015-03-01T14:09:00Z");
@@ -210,7 +210,7 @@ public class OrderTest {
                     .isEqualTo("2016-01-01T00:00:00Z");
             softly.assertThat(order.getNotAfter().orElseThrow())
                     .isEqualTo("2016-01-08T00:00:00Z");
-            softly.assertThat(order.getCertificate().orElseThrow().getLocation())
+            softly.assertThat(order.getCertificate().getLocation())
                     .isEqualTo(url("https://example.com/acme/cert/1234"));
             softly.assertThat(order.getAutoRenewalCertificate()).isEmpty();
             softly.assertThat(order.getFinalizeLocation()).isEqualTo(finalizeUrl);

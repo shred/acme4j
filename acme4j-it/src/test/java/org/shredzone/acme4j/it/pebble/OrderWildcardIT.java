@@ -25,7 +25,6 @@ import java.time.temporal.ChronoUnit;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.AccountBuilder;
-import org.shredzone.acme4j.Certificate;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
@@ -112,9 +111,7 @@ public class OrderWildcardIT extends PebbleITBase {
                     order.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
 
 
-        var cert = order.getCertificate()
-                .map(Certificate::getCertificate)
-                .orElseThrow();
+        var cert = order.getCertificate().getCertificate();
         assertThat(cert).isNotNull();
         assertThat(cert.getNotAfter()).isNotEqualTo(notBefore);
         assertThat(cert.getNotBefore()).isNotEqualTo(notAfter);

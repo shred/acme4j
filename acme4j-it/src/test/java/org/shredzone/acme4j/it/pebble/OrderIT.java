@@ -195,7 +195,7 @@ public class OrderIT extends PebbleITBase {
 
         assertThat(order.getStatus()).isEqualTo(Status.VALID);
 
-        var certificate = order.getCertificate().orElseThrow();
+        var certificate = order.getCertificate();
         var cert = certificate.getCertificate();
         assertThat(cert).isNotNull();
         assertThat(cert.getNotBefore().toInstant()).isEqualTo(notBefore);

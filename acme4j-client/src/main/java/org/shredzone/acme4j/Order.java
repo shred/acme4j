@@ -114,12 +114,17 @@ public class Order extends AcmeJsonResource {
     }
 
     /**
-     * Gets the {@link Certificate} if it is available.
+     * Gets the {@link Certificate}.
+     *
+     * @throws IllegalStateException
+     *         if the order is not ready yet. You must finalize the order first, and wait
+     *         for the status to become {@link Status#VALID}.
      */
-    public Optional<Certificate> getCertificate() {
+    public Certificate getCertificate() {
         return getJSON().get("certificate")
-                    .map(Value::asURL)
-                    .map(getLogin()::bindCertificate);
+                .map(Value::asURL)
+                .map(getLogin()::bindCertificate)
+                .orElseThrow(() -> new IllegalStateException("Order is not completed"));
     }
 
     /**
