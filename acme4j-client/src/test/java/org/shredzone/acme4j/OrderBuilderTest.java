@@ -25,7 +25,6 @@ import java.net.InetAddress;
 import java.net.URL;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Optional;
 
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
@@ -67,8 +66,8 @@ public class OrderBuilderTest {
             }
 
             @Override
-            public Optional<URL> getLocation() {
-                return Optional.of(locationUrl);
+            public URL getLocation() {
+                return locationUrl;
             }
         };
 
@@ -150,8 +149,8 @@ public class OrderBuilderTest {
             }
 
             @Override
-            public Optional<URL> getLocation() {
-                return Optional.of(locationUrl);
+            public URL getLocation() {
+                return locationUrl;
             }
         };
 

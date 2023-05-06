@@ -26,7 +26,6 @@ import javax.crypto.spec.SecretKeySpec;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.shredzone.acme4j.toolbox.JoseUtils;
@@ -261,10 +260,7 @@ public class AccountBuilder {
 
             conn.sendSignedRequest(resourceUrl, claims, session, keyPair);
 
-            var location = conn.getLocation()
-                    .orElseThrow(() -> new AcmeProtocolException("Server did not provide an account location"));
-
-            var login = new Login(location, keyPair, session);
+            var login = new Login(conn.getLocation(), keyPair, session);
             login.getAccount().setJSON(conn.readJsonResponse());
             return login;
         }

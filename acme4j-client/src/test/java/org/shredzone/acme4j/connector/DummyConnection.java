@@ -85,7 +85,7 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public Optional<URL> getLocation() {
+    public URL getLocation() {
         throw new UnsupportedOperationException();
     }
 

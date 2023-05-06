@@ -314,10 +314,7 @@ public class OrderBuilder {
 
             conn.sendSignedRequest(session.resourceUrl(Resource.NEW_ORDER), claims, login);
 
-            var orderLocation = conn.getLocation()
-                    .orElseThrow(() -> new AcmeProtocolException("Server did not provide an order location"));
-
-            var order = new Order(login, orderLocation);
+            var order = new Order(login, conn.getLocation());
             order.setJSON(conn.readJsonResponse());
             return order;
         }

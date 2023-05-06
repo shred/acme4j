@@ -18,6 +18,7 @@ import static java.time.temporal.ChronoUnit.SECONDS;
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.TestUtils.getResourceAsByteArray;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
@@ -215,8 +216,7 @@ public class DefaultConnectionTest {
         try (var conn = session.connect()) {
             conn.sendRequest(requestUrl, session, null);
             var location = conn.getLocation();
-            assertThat(location.orElseThrow())
-                    .isEqualTo(new URL("https://example.com/otherlocation"));
+            assertThat(location).isEqualTo(new URL("https://example.com/otherlocation"));
         }
     }
 
@@ -232,8 +232,7 @@ public class DefaultConnectionTest {
         try (var conn = session.connect()) {
             conn.sendRequest(requestUrl, session, null);
             var location = conn.getLocation();
-            assertThat(location.orElseThrow())
-                    .isEqualTo(new URL(baseUrl + "/otherlocation"));
+            assertThat(location).isEqualTo(new URL(baseUrl + "/otherlocation"));
         }
     }
 
@@ -300,7 +299,8 @@ public class DefaultConnectionTest {
 
         try (var conn = session.connect()) {
             conn.sendRequest(requestUrl, session, null);
-            assertThat(conn.getLocation()).isEmpty();
+            assertThatExceptionOfType(AcmeProtocolException.class)
+                    .isThrownBy(conn::getLocation);
         }
 
         verify(getRequestedFor(urlEqualTo(REQUEST_PATH)));

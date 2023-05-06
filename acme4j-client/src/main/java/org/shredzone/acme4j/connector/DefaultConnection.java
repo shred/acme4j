@@ -258,14 +258,15 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public Optional<URL> getLocation() {
+    public URL getLocation() {
         return getResponse().headers()
                 .firstValue(LOCATION_HEADER)
                 .map(l -> {
                     LOG.debug("Location: {}", l);
                     return l;
                 })
-                .map(this::resolveRelative);
+                .map(this::resolveRelative)
+                .orElseThrow(() -> new AcmeProtocolException("location header is missing"));
     }
 
     @Override

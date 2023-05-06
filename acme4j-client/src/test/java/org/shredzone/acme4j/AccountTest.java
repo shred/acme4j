@@ -27,7 +27,6 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jose4j.jws.JsonWebSignature;
@@ -88,8 +87,8 @@ public class AccountTest {
             }
 
             @Override
-            public Optional<URL> getLocation() {
-                return Optional.of(locationUrl);
+            public URL getLocation() {
+                return locationUrl;
             }
 
             @Override
@@ -145,8 +144,8 @@ public class AccountTest {
             }
 
             @Override
-            public Optional<URL> getLocation() {
-                return Optional.of(locationUrl);
+            public URL getLocation() {
+                return locationUrl;
             }
 
             @Override
@@ -199,8 +198,8 @@ public class AccountTest {
             }
 
             @Override
-            public Optional<URL> getLocation() {
-                return Optional.of(locationUrl);
+            public URL getLocation() {
+                return locationUrl;
             }
         };
 
@@ -327,8 +326,8 @@ public class AccountTest {
             }
 
             @Override
-            public Optional<URL> getLocation() {
-                return Optional.of(locationUrl);
+            public URL getLocation() {
+                return locationUrl;
             }
         };
 
@@ -424,8 +423,8 @@ public class AccountTest {
             }
 
             @Override
-            public Optional<URL> getLocation() {
-                return Optional.of(locationUrl);
+            public URL getLocation() {
+                return locationUrl;
             }
         };
 

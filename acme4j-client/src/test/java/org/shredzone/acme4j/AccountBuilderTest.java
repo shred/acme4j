@@ -21,7 +21,6 @@ import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyPair;
-import java.util.Optional;
 
 import org.jose4j.jwx.CompactSerializer;
 import org.junit.jupiter.api.Test;
@@ -72,8 +71,8 @@ public class AccountBuilderTest {
             }
 
             @Override
-            public Optional<URL> getLocation() {
-                return Optional.of(locationUrl);
+            public URL getLocation() {
+                return locationUrl;
             }
 
             @Override
@@ -134,8 +133,8 @@ public class AccountBuilderTest {
             }
 
             @Override
-            public Optional<URL> getLocation() {
-                return Optional.of(locationUrl);
+            public URL getLocation() {
+                return locationUrl;
             }
 
             @Override
@@ -176,8 +175,8 @@ public class AccountBuilderTest {
             }
 
             @Override
-            public Optional<URL> getLocation() {
-                return Optional.of(locationUrl);
+            public URL getLocation() {
+                return locationUrl;
             }
 
             @Override

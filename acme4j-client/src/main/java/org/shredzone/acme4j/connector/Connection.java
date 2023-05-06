@@ -169,9 +169,11 @@ public interface Connection extends AutoCloseable {
      * <p>
      * Relative links are resolved against the last request's URL.
      *
-     * @return Location {@link URL}, or empty if no Location header was set
+     * @return Location {@link URL}
+     * @throws org.shredzone.acme4j.exception.AcmeProtocolException if the location
+     * header is missing
      */
-    Optional<URL> getLocation();
+    URL getLocation();
 
     /**
      * Returns the content of the last-modified header, if present.

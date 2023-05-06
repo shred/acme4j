@@ -196,9 +196,7 @@ public class Account extends AcmeJsonResource {
 
             conn.sendSignedRequest(newAuthzUrl, claims, getLogin());
 
-            var authLocation = conn.getLocation()
-                    .orElseThrow(() -> new AcmeProtocolException("Server did not provide an authorization location"));
-            var auth = getLogin().bindAuthorization(authLocation);
+            var auth = getLogin().bindAuthorization(conn.getLocation());
             auth.setJSON(conn.readJsonResponse());
             return auth;
         }
