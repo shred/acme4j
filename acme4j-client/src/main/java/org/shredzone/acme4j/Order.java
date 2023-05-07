@@ -21,6 +21,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.toolbox.JSON;
@@ -35,6 +36,10 @@ import org.slf4j.LoggerFactory;
 public class Order extends AcmeJsonResource {
     private static final long serialVersionUID = 5435808648658292177L;
     private static final Logger LOG = LoggerFactory.getLogger(Order.class);
+
+    private transient @Nullable Certificate certificate = null;
+    private transient @Nullable Certificate autoRenewalCertificate = null;
+    private transient @Nullable List<Authorization> authorizations = null;
 
     protected Order(Login login, URL location) {
         super(login, location);
@@ -97,13 +102,16 @@ public class Order extends AcmeJsonResource {
      * specific order.
      */
     public List<Authorization> getAuthorizations() {
-        var login = getLogin();
-        return getJSON().get("authorizations")
+        if (authorizations == null) {
+            var login = getLogin();
+            authorizations = getJSON().get("authorizations")
                     .asArray()
                     .stream()
                     .map(Value::asURL)
                     .map(login::bindAuthorization)
                     .collect(toUnmodifiableList());
+        }
+        return authorizations;
     }
 
     /**
@@ -123,10 +131,13 @@ public class Order extends AcmeJsonResource {
      *         for the status to become {@link Status#VALID}.
      */
     public Certificate getCertificate() {
-        return getJSON().get("certificate")
-                .map(Value::asURL)
-                .map(getLogin()::bindCertificate)
-                .orElseThrow(() -> new IllegalStateException("Order is not completed"));
+        if (certificate == null) {
+            certificate = getJSON().get("certificate")
+                    .map(Value::asURL)
+                    .map(getLogin()::bindCertificate)
+                    .orElseThrow(() -> new IllegalStateException("Order is not completed"));
+        }
+        return certificate;
     }
 
     /**
@@ -139,11 +150,14 @@ public class Order extends AcmeJsonResource {
      *         order has been {@link Status#CANCELED}.
      */
     public Certificate getAutoRenewalCertificate() {
-        return getJSON().get("star-certificate")
-                .optional()
-                .map(Value::asURL)
-                .map(getLogin()::bindCertificate)
-                .orElseThrow(() -> new IllegalStateException("Order is in an invalid state"));
+        if (autoRenewalCertificate == null) {
+            autoRenewalCertificate = getJSON().get("star-certificate")
+                    .optional()
+                    .map(Value::asURL)
+                    .map(getLogin()::bindCertificate)
+                    .orElseThrow(() -> new IllegalStateException("Order is in an invalid state"));
+        }
+        return autoRenewalCertificate;
     }
 
     /**
@@ -279,4 +293,11 @@ public class Order extends AcmeJsonResource {
         }
     }
 
+    @Override
+    protected void invalidate() {
+        super.invalidate();
+        certificate = null;
+        autoRenewalCertificate = null;
+        authorizations = null;
+    }
 }

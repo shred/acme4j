@@ -80,6 +80,7 @@ public abstract class AcmeJsonResource extends AcmeResource {
      *            New {@link JSON} data, must not be {@code null}.
      */
     protected void setJSON(JSON data) {
+        invalidate();
         this.data = Objects.requireNonNull(data, "data");
     }
 
@@ -97,6 +98,9 @@ public abstract class AcmeJsonResource extends AcmeResource {
     /**
      * Invalidates the state of this resource. Enforces an {@link #update()} when
      * {@link #getJSON()} is invoked.
+     * <p>
+     * Subclasses can override this method to purge internal caches that are based on the
+     * JSON structure. Remember to invoke {@code super.invalidate()}!
      */
     protected void invalidate() {
         data = null;
