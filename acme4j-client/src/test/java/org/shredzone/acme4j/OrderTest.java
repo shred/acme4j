@@ -218,7 +218,8 @@ public class OrderTest {
                     .isEqualTo("2016-01-08T00:00:00Z");
             softly.assertThat(order.getCertificate().getLocation())
                     .isEqualTo(url("https://example.com/acme/cert/1234"));
-            softly.assertThat(order.getAutoRenewalCertificate()).isEmpty();
+            softly.assertThatIllegalStateException()
+                    .isThrownBy(order::getAutoRenewalCertificate);
             softly.assertThat(order.getFinalizeLocation()).isEqualTo(finalizeUrl);
 
             var auths = order.getAuthorizations();
@@ -310,7 +311,7 @@ public class OrderTest {
         try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThatIllegalStateException()
                     .isThrownBy(order::getCertificate);
-            softly.assertThat(order.getAutoRenewalCertificate().orElseThrow().getLocation())
+            softly.assertThat(order.getAutoRenewalCertificate().getLocation())
                     .isEqualTo(url("https://example.com/acme/cert/1234"));
             softly.assertThat(order.isAutoRenewing()).isTrue();
             softly.assertThat(order.getAutoRenewalStartDate().orElseThrow())

@@ -45,6 +45,7 @@ public class Order extends AcmeJsonResource {
      * <p>
      * Possible values are: {@link Status#PENDING}, {@link Status#READY},
      * {@link Status#PROCESSING}, {@link Status#VALID}, {@link Status#INVALID}.
+     * If the server supports STAR, another possible value is {@link Status#CANCELED}.
      */
     public Status getStatus() {
         return getJSON().get("status").asStatus();
@@ -132,11 +133,17 @@ public class Order extends AcmeJsonResource {
      * Gets the STAR extension's {@link Certificate} if it is available.
      *
      * @since 2.6
+     * @throws IllegalStateException
+     *         if the order is not ready yet. You must finalize the order first, and wait
+     *         for the status to become {@link Status#VALID}. It is also thrown if the
+     *         order has been {@link Status#CANCELED}.
      */
-    public Optional<Certificate> getAutoRenewalCertificate() {
+    public Certificate getAutoRenewalCertificate() {
         return getJSON().get("star-certificate")
-                    .map(Value::asURL)
-                    .map(getLogin()::bindCertificate);
+                .optional()
+                .map(Value::asURL)
+                .map(getLogin()::bindCertificate)
+                .orElseThrow(() -> new IllegalStateException("Order is in an invalid state"));
     }
 
     /**
