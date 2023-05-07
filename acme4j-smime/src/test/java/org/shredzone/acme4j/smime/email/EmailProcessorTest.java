@@ -234,7 +234,7 @@ public class EmailProcessorTest extends SMIMETests {
 
     @Test
     public void textNoChallengeFails1() {
-        assertThatExceptionOfType(IllegalStateException.class)
+        assertThatIllegalStateException()
                 .isThrownBy(() -> {
                     var processor = EmailProcessor.plainMessage(message);
                     processor.getToken();
@@ -244,7 +244,7 @@ public class EmailProcessorTest extends SMIMETests {
 
     @Test
     public void textNoChallengeFails2() {
-        assertThatExceptionOfType(IllegalStateException.class)
+        assertThatIllegalStateException()
                 .isThrownBy(() -> {
                     var processor = EmailProcessor.plainMessage(message);
                     processor.getAuthorization();
@@ -254,7 +254,7 @@ public class EmailProcessorTest extends SMIMETests {
 
     @Test
     public void textNoChallengeFails3() {
-        assertThatExceptionOfType(IllegalStateException.class)
+        assertThatIllegalStateException()
                 .isThrownBy(() -> {
                     var processor = EmailProcessor.plainMessage(message);
                     processor.respond();

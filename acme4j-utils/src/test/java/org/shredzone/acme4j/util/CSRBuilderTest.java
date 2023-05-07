@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j.util;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
@@ -133,17 +132,17 @@ public class CSRBuilderTest {
     public void testNoSign() {
         var builder = new CSRBuilder();
 
-        assertThatExceptionOfType(IllegalStateException.class)
+        assertThatIllegalStateException()
             .isThrownBy(builder::getCSR)
             .as("getCSR()")
             .withMessage("sign CSR first");
-        
-        assertThatExceptionOfType(IllegalStateException.class)
+
+        assertThatIllegalStateException()
             .isThrownBy(builder::getEncoded)
             .as("getCSR()")
             .withMessage("sign CSR first");
 
-        assertThatExceptionOfType(IllegalStateException.class)
+        assertThatIllegalStateException()
             .isThrownBy(() -> {
                 try (StringWriter w = new StringWriter()) {
                     builder.write(w);
@@ -166,17 +165,17 @@ public class CSRBuilderTest {
                 () -> X500Name.getDefaultStyle().attrNameToOID("UNKNOWNATT")).getMessage();
         
         assertThat(builder.toString()).isEqualTo("");
-        
-        assertThatExceptionOfType(NullPointerException.class)
+
+        assertThatNullPointerException()
             .isThrownBy(() -> new CSRBuilder().addValue((String) null, "value"))
             .as("addValue(String, String)");
-        assertThatExceptionOfType(NullPointerException.class)
+        assertThatNullPointerException()
             .isThrownBy(() -> new CSRBuilder().addValue((ASN1ObjectIdentifier) null, "value"))
             .as("addValue(ASN1ObjectIdentifier, String)");
-        assertThatExceptionOfType(NullPointerException.class)
+        assertThatNullPointerException()
             .isThrownBy(() -> new CSRBuilder().addValue("C", null))
             .as("addValue(String, null)");
-        assertThatExceptionOfType(IllegalArgumentException.class)
+        assertThatIllegalArgumentException()
             .isThrownBy(() -> new CSRBuilder().addValue("UNKNOWNATT", "val"))
             .as("addValue(String, null)")
             .withMessage(invAttNameExMessage);

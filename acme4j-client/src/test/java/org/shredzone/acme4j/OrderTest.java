@@ -308,7 +308,7 @@ public class OrderTest {
         var order = login.bindOrder(locationUrl);
 
         try (var softly = new AutoCloseableSoftAssertions()) {
-            softly.assertThatExceptionOfType(IllegalStateException.class)
+            softly.assertThatIllegalStateException()
                     .isThrownBy(order::getCertificate);
             softly.assertThat(order.getAutoRenewalCertificate().orElseThrow().getLocation())
                     .isEqualTo(url("https://example.com/acme/cert/1234"));

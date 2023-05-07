@@ -14,7 +14,7 @@
 package org.shredzone.acme4j.connector;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 import java.net.URI;
 import java.net.URL;
@@ -40,7 +40,7 @@ public class SessionProviderTest {
      */
     @Test
     public void testNone() {
-        assertThatExceptionOfType(IllegalArgumentException.class)
+        assertThatIllegalArgumentException()
                 .isThrownBy(() -> new Session(new URI("acme://example.org")).provider())
                 .withMessage("No ACME provider found for acme://example.org");
     }
@@ -67,7 +67,7 @@ public class SessionProviderTest {
      */
     @Test
     public void testDuplicate() {
-        assertThatExceptionOfType(IllegalArgumentException.class)
+        assertThatIllegalArgumentException()
                 .isThrownBy(() -> new Session(new URI("acme://example.net")).provider())
                 .withMessage("Both ACME providers Provider1 and Provider2 accept" +
                         " acme://example.net. Please check your classpath.");

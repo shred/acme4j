@@ -14,8 +14,7 @@
 package org.shredzone.acme4j.smime.csr;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.ByteArrayOutputStream;
@@ -155,16 +154,16 @@ public class SMIMECSRBuilderTest {
 
         assertThat(builder.toString()).isEqualTo(",TYPE=SIGNING_AND_ENCRYPTION");
 
-        assertThatExceptionOfType(NullPointerException.class)
+        assertThatNullPointerException()
                 .as("addValue(String, String)")
                 .isThrownBy(() -> new SMIMECSRBuilder().addValue((String) null, "value"));
-        assertThatExceptionOfType(NullPointerException.class)
+        assertThatNullPointerException()
                 .as("addValue(ASN1ObjectIdentifier, String)")
                 .isThrownBy(() -> new SMIMECSRBuilder().addValue((ASN1ObjectIdentifier) null, "value"));
-        assertThatExceptionOfType(NullPointerException.class)
+        assertThatNullPointerException()
                 .as("addValue(String, null)")
                 .isThrownBy(() -> new SMIMECSRBuilder().addValue("C", null));
-        assertThatExceptionOfType(IllegalArgumentException.class)
+        assertThatIllegalArgumentException()
                 .as("addValue(String, null)")
                 .isThrownBy(() -> new SMIMECSRBuilder().addValue("UNKNOWNATT", "val"))
                 .withMessage(invAttNameExMessage);
