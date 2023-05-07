@@ -21,6 +21,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.PublicKey;
 import java.security.SecureRandom;
 
 import org.bouncycastle.jce.ECNamedCurveTable;
@@ -120,6 +121,22 @@ public class KeyPairUtils {
     public static void writeKeyPair(KeyPair keypair, Writer w) throws IOException {
         try (var jw = new JcaPEMWriter(w)) {
             jw.writeObject(keypair);
+        }
+    }
+
+    /**
+     * Writes a {@link PublicKey} as PEM file.
+     *
+     * @param key
+     *            {@link PublicKey}
+     * @param w
+     *            {@link Writer} to write the PEM file to. The {@link Writer} is closed
+     *            after use.
+     * @since 3.0.0
+     */
+    public static void writePublicKey(PublicKey key, Writer w) throws IOException {
+        try (var jw = new JcaPEMWriter(w)) {
+            jw.writeObject(key);
         }
     }
 

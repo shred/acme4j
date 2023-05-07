@@ -140,6 +140,19 @@ public class KeyPairUtilsTest {
         assertThat(pair).isNotSameAs(readPair);
         assertThat(pair.getPublic().getEncoded()).isEqualTo(readPair.getPublic().getEncoded());
         assertThat(pair.getPrivate().getEncoded()).isEqualTo(readPair.getPrivate().getEncoded());
+
+        // Write Public Key
+        String publicPem;
+        try (var out = new StringWriter()) {
+            KeyPairUtils.writePublicKey(pair.getPublic(), out);
+            publicPem = out.toString();
+        }
+
+        // Make sure PEM file is properly formatted
+        assertThat(publicPem).matches(
+                  "-----BEGIN PUBLIC KEY-----[\\r\\n]+"
+                + "([a-zA-Z0-9/+=]+[\\r\\n]+)+"
+                + "-----END PUBLIC KEY-----[\\r\\n]*");
     }
 
     /**
