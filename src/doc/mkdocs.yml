@@ -20,7 +20,6 @@ nav:
   - 'example.md'
   - JavaDocs:
     - 'acme4j-client': acme4j-client/apidocs/index.html
-    - 'acme4j-utils': acme4j-utils/apidocs/index.html
     - 'acme4j-smime': acme4j-smime/apidocs/index.html
     - 'acme4j-it': acme4j-it/apidocs/index.html
   - Usage:

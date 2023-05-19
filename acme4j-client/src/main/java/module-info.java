@@ -18,6 +18,8 @@
 module org.shredzone.acme4j {
     requires static com.github.spotbugs.annotations;
     requires java.net.http;
+    requires org.bouncycastle.pkix;
+    requires org.bouncycastle.provider;
     requires org.jose4j;
     requires org.slf4j;
 
@@ -27,6 +29,7 @@ module org.shredzone.acme4j {
     exports org.shredzone.acme4j.exception;
     exports org.shredzone.acme4j.provider;
     exports org.shredzone.acme4j.toolbox;
+    exports org.shredzone.acme4j.util;
 
     uses org.shredzone.acme4j.provider.AcmeProvider;
     uses org.shredzone.acme4j.provider.ChallengeProvider;

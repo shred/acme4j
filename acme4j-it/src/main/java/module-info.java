@@ -14,7 +14,6 @@
 
 module org.shredzone.acme4j.it {
     requires org.shredzone.acme4j;
-    requires org.shredzone.acme4j.utils;
 
     requires com.github.spotbugs.annotations;
     requires org.apache.httpcomponents.httpclient;

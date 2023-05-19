@@ -26,9 +26,9 @@ If you require Java 8 or Android compatibility, you can use [acme4j v2](https://
 
 ## Dependencies
 
+* [Bouncy Castle](https://www.bouncycastle.org/)
 * [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home)
 * [slf4j](http://www.slf4j.org/)
-* For `acme4j-utils`: [Bouncy Castle](https://www.bouncycastle.org/)
 * For `acme4j-smime`: [Jakarta Mail](https://eclipse-ee4j.github.io/mail/), [Bouncy Castle](https://www.bouncycastle.org/)
 
 ## Usage

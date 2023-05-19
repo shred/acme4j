@@ -50,7 +50,7 @@ public static void main(String... args) {
 ```
 
 !!! note
-    As the example makes use of the `acme4j-utils` module for generating key pairs and the CSR, the `BouncyCastleProvider` needs to be added as security provider.
+    The example requires the `BouncyCastleProvider` to be added as security provider.
 
 ## The Main Workflow
 

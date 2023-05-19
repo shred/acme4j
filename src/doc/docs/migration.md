@@ -4,7 +4,14 @@ This document will help you migrate your code to the latest _acme4j_ version.
 
 ## Migration to Version 3.0.0
 
+- The `acme4j-utils` module has been removed, and its classes moved into `acme4j-client` module. If you have used it before, just remove the dependency. If your project has a `module-info.java` file, remember to remove the `requires org.shredzone.acme4j.utils` line there as well. If you haven't used the module before: `acme4j-client` now depends on Bouncy Castle, so you might need to register it as security provider at the start of your code:
+  ```java
+  Security.addProvider(new BouncyCastleProvider());
+  ```
 - All `@Nullable` return values have been reviewed. Collections may now be empty, but never `null`. Most of the other return values are now either `Optional`, or throwing an exception if more reasonable. If your code fails to compile because the return type has changed to `Optional`, you can simply add `.orElse(null)` to restore the old behavior. But often your code will reveal a better way to handle the former `null` pointer instead.
+
+What you might also need to know:
+
 - A new `AcmeNotSupportedException` is thrown if a feature is not supported by the server. It is a subclass of the `AcmeProtocolException` runtime exception.
 - Starting with _acme4j_ v3, we will require the smallest Java SE LTS version that is still receiving premier support according to the [Oracle Java SE Support Roadmap](https://www.oracle.com/java/technologies/java-se-support-roadmap.html). At the moment of writing, these are Java 11 and Java 17, so _acme4j_ requires Java 11 starting from now. With the prospected release of Java 21 (LTS) in September 2023, we will start to require Java 17, and so on. If you still need Java 8, you can use _acme4j_ v2, which will receive bugfixes until September 2023.
 - Changed to `java.net.http` client. Due to limitations of the API, HTTP errors are only thrown with the error code, but not with the error message. If you checked the message in unit tests, be prepared that the error message might have changed.

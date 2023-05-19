@@ -15,7 +15,7 @@ You need to create a self-signed certificate with the domain to be validated set
 
 After that, configure your web server so it will use this certificate on an incoming TLS request having the SNI `identifier` and the ALPN protocol `acme-tls/1`.
 
-The `TlsAlpn01Challenge` class does not generate a self-signed certificate for you, as it would require _Bouncy Castle_. However, there is a utility method in the _acme4j-utils_ module for this use case:
+The `TlsAlpn01Challenge` class does not generate a self-signed certificate for you, as it would require _Bouncy Castle_. However, there is a utility method for this use case:
 
 ```java
 KeyPair certKeyPair = KeyPairUtils.createKeyPair(2048);

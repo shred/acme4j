@@ -62,7 +62,6 @@
 
     <modules>
         <module>acme4j-client</module>
-        <module>acme4j-utils</module>
         <module>acme4j-smime</module>
         <module>acme4j-example</module>
         <module>acme4j-it</module>

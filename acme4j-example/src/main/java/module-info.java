@@ -14,7 +14,6 @@
 
 module org.shredzone.acme4j.example {
     requires org.shredzone.acme4j;
-    requires org.shredzone.acme4j.utils;
 
     requires java.desktop;
 

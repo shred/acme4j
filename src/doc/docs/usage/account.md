@@ -13,7 +13,7 @@ After the CA has created your account, it returns an account URL. You will need 
 
 You can use external tools like `openssl` or standard Java methods to create a key pair.
 
-A more convenient way is to use the `KeyPairUtils` class in the `acme4j-utils` module. This call generates a RSA key pair with a 2048 bit key:
+A more convenient way is to use the `KeyPairUtils` class. This call generates a RSA key pair with a 2048 bit key:
 
 ```java
 KeyPair accountKeyPair = KeyPairUtils.createKeyPair(2048);
