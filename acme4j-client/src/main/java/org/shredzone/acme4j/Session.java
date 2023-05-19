@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j;
 
+import static java.util.Objects.requireNonNull;
+
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
@@ -20,7 +22,7 @@ import java.time.ZonedDateTime;
 import java.util.EnumMap;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.StreamSupport;
@@ -30,6 +32,7 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.NetworkSettings;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.provider.GenericAcmeProvider;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
@@ -85,7 +88,7 @@ public class Session {
      *         if no ACME provider was found for the server URI.
      */
     public Session(URI serverUri) {
-        this.serverUri = Objects.requireNonNull(serverUri, "serverUri");
+        this.serverUri = requireNonNull(serverUri, "serverUri");
 
         if (GENERIC_PROVIDER.accepts(serverUri)) {
             provider = GENERIC_PROVIDER;
@@ -116,8 +119,8 @@ public class Session {
      * @since 2.8
      */
     public Session(URI serverUri, AcmeProvider provider) {
-        this.serverUri = Objects.requireNonNull(serverUri, "serverUri");
-        this.provider = Objects.requireNonNull(provider, "provider");
+        this.serverUri = requireNonNull(serverUri, "serverUri");
+        this.provider = requireNonNull(provider, "provider");
 
         if (!provider.accepts(serverUri)) {
             throw new IllegalArgumentException("Provider does not accept " + serverUri);
@@ -230,12 +233,23 @@ public class Session {
      *             if the server does not offer the {@link Resource}
      */
     public URL resourceUrl(Resource resource) throws AcmeException {
+        return resourceUrlOptional(resource)
+                .orElseThrow(() -> new AcmeNotSupportedException(resource.path()));
+    }
+
+    /**
+     * Gets the {@link URL} of the given {@link Resource}. This may involve connecting to
+     * the server and fetching the directory. The result is cached.
+     *
+     * @param resource
+     *            {@link Resource} to get the {@link URL} of
+     * @return {@link URL} of the resource, or empty if the resource is not available.
+     * @since 3.0.0
+     */
+    public Optional<URL> resourceUrlOptional(Resource resource) throws AcmeException {
         readDirectory();
-        var result = resourceMap.get().get(Objects.requireNonNull(resource, "resource"));
-        if (result == null) {
-            throw new AcmeException("Server does not offer " + resource.path());
-        }
-        return result;
+        return Optional.ofNullable(resourceMap.get()
+                .get(requireNonNull(resource, "resource")));
     }
 
     /**

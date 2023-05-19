@@ -16,7 +16,7 @@ package org.shredzone.acme4j;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
@@ -37,6 +37,7 @@ import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
@@ -273,9 +274,13 @@ public class AccountTest {
         var login = provider.createLogin();
         var account = login.getAccount();
 
-        assertThrows(NullPointerException.class, () -> account.preAuthorizeDomain(null));
-        assertThrows(IllegalArgumentException.class, () -> account.preAuthorizeDomain(""));
-        assertThrows(AcmeException.class, () -> account.preAuthorizeDomain("example.com"));
+        assertThatNullPointerException()
+                .isThrownBy(() -> account.preAuthorizeDomain(null));
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> account.preAuthorizeDomain(""));
+        assertThatExceptionOfType(AcmeNotSupportedException.class)
+                .isThrownBy(() -> account.preAuthorizeDomain("example.com"))
+                .withMessage("Server does not support newAuthz");
 
         provider.close();
     }

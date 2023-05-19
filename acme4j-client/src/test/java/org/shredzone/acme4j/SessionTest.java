@@ -14,6 +14,7 @@
 package org.shredzone.acme4j;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.shredzone.acme4j.toolbox.TestUtils.*;
@@ -159,7 +160,16 @@ public class SessionTest {
         assertThat(session.resourceUrl(Resource.NEW_ORDER))
                 .isEqualTo(new URL("https://example.com/acme/new-order"));
 
-        assertThrows(AcmeException.class, () -> session.resourceUrl(Resource.REVOKE_CERT));
+        assertThatExceptionOfType(AcmeNotSupportedException.class)
+                .isThrownBy(() -> session.resourceUrl(Resource.REVOKE_CERT))
+                .withMessage("Server does not support revokeCert");
+
+        assertThat(session.resourceUrlOptional(Resource.NEW_AUTHZ))
+                .isNotEmpty()
+                .contains(new URL("https://example.com/acme/new-authz"));
+
+        assertThat(session.resourceUrlOptional(Resource.REVOKE_CERT))
+                .isEmpty();
 
         var meta = session.getMetadata();
         try (var softly = new AutoCloseableSoftAssertions()) {
