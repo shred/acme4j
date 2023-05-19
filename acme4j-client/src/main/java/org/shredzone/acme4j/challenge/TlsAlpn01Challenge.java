@@ -15,8 +15,14 @@ package org.shredzone.acme4j.challenge;
 
 import static org.shredzone.acme4j.toolbox.AcmeUtils.sha256hash;
 
+import java.io.IOException;
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
+
+import org.shredzone.acme4j.Identifier;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.toolbox.JSON;
+import org.shredzone.acme4j.util.CertificateUtils;
 
 /**
  * Implements the {@value TYPE} challenge. It requires a specific certificate that can be
@@ -61,6 +67,25 @@ public class TlsAlpn01Challenge extends TokenChallenge {
      */
     public byte[] getAcmeValidation() {
         return sha256hash(getAuthorization());
+    }
+
+    /**
+     * Creates a self-signed {@link X509Certificate} for this challenge. The certificate
+     * is valid for 7 days.
+     *
+     * @param keypair
+     *         A domain {@link KeyPair} to be used for the challenge
+     * @param id
+     *         The {@link Identifier} that is to be validated
+     * @return Created certificate
+     * @since 3.0.0
+     */
+    public X509Certificate createCertificate(KeyPair keypair, Identifier id) {
+        try {
+            return CertificateUtils.createTlsAlpn01Certificate(keypair, id, getAcmeValidation());
+        } catch (IOException ex) {
+            throw new IllegalArgumentException("Bad certificate parameters", ex);
+        }
     }
 
     @Override

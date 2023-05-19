@@ -15,14 +15,19 @@ package org.shredzone.acme4j.challenge;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatNoException;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 
+import java.security.cert.CertificateParsingException;
+
 import org.junit.jupiter.api.Test;
+import org.shredzone.acme4j.Identifier;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.shredzone.acme4j.toolbox.TestUtils;
+import org.shredzone.acme4j.util.KeyPairUtils;
 
 /**
  * Unit tests for {@link TlsAlpn01ChallengeTest}.
@@ -52,6 +57,27 @@ public class TlsAlpn01ChallengeTest {
         challenge.prepareResponse(response);
 
         assertThatJson(response.toString()).isEqualTo("{}");
+    }
+
+    /**
+     * Test that {@link TlsAlpn01Challenge} generates a correct test certificate
+     */
+    @Test
+    public void testTlsAlpn01Certificate() throws CertificateParsingException {
+        var challenge = new TlsAlpn01Challenge(login, getJSON("tlsAlpnChallenge"));
+        var keypair = KeyPairUtils.createKeyPair(2048);
+        var subject = Identifier.dns("example.com");
+
+        var certificate = challenge.createCertificate(keypair, subject);
+
+        // Only check the main requirements. Cert generation is fully tested in CertificateUtilsTest.
+        assertThat(certificate).isNotNull();
+        assertThat(certificate.getSubjectX500Principal().getName()).isEqualTo("CN=acme.invalid");
+        assertThat(certificate.getSubjectAlternativeNames().stream()
+                .map(l -> l.get(1))
+                .map(Object::toString)).contains(subject.getDomain());
+        assertThat(certificate.getCriticalExtensionOIDs()).contains(TlsAlpn01Challenge.ACME_VALIDATION_OID);
+        assertThatNoException().isThrownBy(() -> certificate.verify(keypair.getPublic()));
     }
 
 }
