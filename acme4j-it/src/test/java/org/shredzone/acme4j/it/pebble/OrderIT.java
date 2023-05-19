@@ -39,7 +39,6 @@ import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeServerException;
-import org.shredzone.acme4j.util.CSRBuilder;
 
 /**
  * Tests a complete certificate order with different challenges.
@@ -179,12 +178,7 @@ public class OrderIT extends PebbleITBase {
             assertThat(auth.getStatus()).isEqualTo(Status.VALID);
         }
 
-        var csr = new CSRBuilder();
-        csr.addDomain(domain);
-        csr.sign(domainKeyPair);
-        var encodedCsr = csr.getEncoded();
-
-        order.execute(encodedCsr);
+        order.execute(domainKeyPair);
 
         await()
             .pollInterval(1, SECONDS)

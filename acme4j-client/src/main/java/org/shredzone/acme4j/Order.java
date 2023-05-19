@@ -15,18 +15,23 @@ package org.shredzone.acme4j;
 
 import static java.util.stream.Collectors.toUnmodifiableList;
 
+import java.io.IOException;
 import java.net.URL;
+import java.security.KeyPair;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
+import org.shredzone.acme4j.util.CSRBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -161,18 +166,91 @@ public class Order extends AcmeJsonResource {
     }
 
     /**
-     * Finalizes the order, by providing a CSR.
+     * Finalizes the order.
      * <p>
-     * After a successful finalization, the certificate is available at
+     * If the finalization was successful, the certificate is provided via
      * {@link #getCertificate()}.
      * <p>
      * Even though the ACME protocol uses the term "finalize an order", this method is
-     * called {@link #execute(byte[])} to avoid confusion with the problematic
+     * called {@link #execute(KeyPair)} to avoid confusion with the problematic
      * {@link Object#finalize()} method.
      *
+     * @param domainKeyPair
+     *         The {@link KeyPair} that is going to be certified. This is <em>not</em>
+     *         your account's keypair!
+     * @see #execute(KeyPair, Consumer)
+     * @see #execute(PKCS10CertificationRequest)
+     * @see #execute(byte[])
+     * @since 3.0.0
+     */
+    public void execute(KeyPair domainKeyPair) throws AcmeException {
+        execute(domainKeyPair, csrBuilder -> {});
+    }
+
+    /**
+     * Finalizes the order (see {@link #execute(KeyPair)}).
+     * <p>
+     * This method also accepts a builderConsumer that can be used to add further details
+     * to the CSR (e.g. your organization). The identifiers (IPs, domain names, etc.) are
+     * automatically added to the CSR.
+     *
+     * @param domainKeyPair
+     *         The {@link KeyPair} that is going to be used together with the certificate.
+     *         This is not your account's keypair!
+     * @param builderConsumer
+     *         {@link Consumer} that adds further details to the provided
+     *         {@link CSRBuilder}.
+     * @see #execute(KeyPair)
+     * @see #execute(PKCS10CertificationRequest)
+     * @see #execute(byte[])
+     * @since 3.0.0
+     */
+    public void execute(KeyPair domainKeyPair, Consumer<CSRBuilder> builderConsumer) throws AcmeException {
+        try {
+            var csrBuilder = new CSRBuilder();
+            csrBuilder.addIdentifiers(getIdentifiers());
+            builderConsumer.accept(csrBuilder);
+            csrBuilder.sign(domainKeyPair);
+            execute(csrBuilder.getCSR());
+        } catch (IOException ex) {
+            throw new AcmeException("Failed to create CSR", ex);
+        }
+    }
+
+    /**
+     * Finalizes the order (see {@link #execute(KeyPair)}).
+     * <p>
+     * This method receives a {@link PKCS10CertificationRequest} instance of a CSR that
+     * was generated externally. Use this method to gain full control over the content of
+     * the CSR. The CSR is not checked by acme4j, but just transported to the CA. It is
+     * your responsibility that it matches to the order.
+     *
      * @param csr
-     *         CSR containing the parameters for the certificate being requested, in DER
-     *         format
+     *         {@link PKCS10CertificationRequest} to be used for this order.
+     * @see #execute(KeyPair)
+     * @see #execute(KeyPair, Consumer)
+     * @see #execute(byte[])
+     * @since 3.0.0
+     */
+    public void execute(PKCS10CertificationRequest csr) throws AcmeException {
+        try {
+            execute(csr.getEncoded());
+        } catch (IOException ex) {
+            throw new AcmeException("Invalid CSR", ex);
+        }
+    }
+
+    /**
+     * Finalizes the order (see {@link #execute(KeyPair)}).
+     * <p>
+     * This method receives a byte array containing an encoded CSR that was generated
+     * externally. Use this method to gain full control over the content of the CSR. The
+     * CSR is not checked by acme4j, but just transported to the CA. It is your
+     * responsibility that it matches to the order.
+     *
+     * @param csr
+     *         Binary representation of a CSR containing the parameters for the
+     *         certificate being requested, in DER format
      */
     public void execute(byte[] csr) throws AcmeException {
         LOG.debug("finalize");

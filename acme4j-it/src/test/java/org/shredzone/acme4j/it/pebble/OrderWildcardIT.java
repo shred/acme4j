@@ -28,7 +28,6 @@ import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
-import org.shredzone.acme4j.util.CSRBuilder;
 
 /**
  * Tests a complete wildcard certificate order. Wildcard certificates currently only
@@ -95,13 +94,7 @@ public class OrderWildcardIT extends PebbleITBase {
             assertThat(auth.getStatus()).isEqualTo(Status.VALID);
         }
 
-        var csr = new CSRBuilder();
-        csr.addDomain(TEST_DOMAIN);
-        csr.addDomain(TEST_WILDCARD_DOMAIN);
-        csr.sign(domainKeyPair);
-        var encodedCsr = csr.getEncoded();
-
-        order.execute(encodedCsr);
+        order.execute(domainKeyPair);
 
         await()
             .pollInterval(1, SECONDS)
@@ -115,7 +108,10 @@ public class OrderWildcardIT extends PebbleITBase {
         assertThat(cert).isNotNull();
         assertThat(cert.getNotAfter()).isNotEqualTo(notBefore);
         assertThat(cert.getNotBefore()).isNotEqualTo(notAfter);
-        assertThat(cert.getSubjectX500Principal().getName()).contains("CN=" + TEST_DOMAIN);
+        assertThat(cert.getSubjectX500Principal().getName()).satisfiesAnyOf(
+                name -> assertThat(name).contains("CN=" + TEST_DOMAIN),
+                name -> assertThat(name).contains("CN=" + TEST_WILDCARD_DOMAIN)
+        );
 
         var san = cert.getSubjectAlternativeNames().stream()
                 .filter(it -> ((Number) it.get(0)).intValue() == GeneralName.dNSName)

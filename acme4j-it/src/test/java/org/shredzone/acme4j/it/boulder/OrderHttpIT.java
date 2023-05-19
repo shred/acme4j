@@ -30,7 +30,6 @@ import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.it.BammBammClient;
-import org.shredzone.acme4j.util.CSRBuilder;
 import org.shredzone.acme4j.util.KeyPairUtils;
 
 /**
@@ -79,12 +78,7 @@ public class OrderHttpIT {
             client.httpRemoveToken(challenge.getToken());
         }
 
-        var csr = new CSRBuilder();
-        csr.addDomain(TEST_DOMAIN);
-        csr.sign(domainKeyPair);
-        var encodedCsr = csr.getEncoded();
-
-        order.execute(encodedCsr);
+        order.execute(domainKeyPair);
 
         await()
             .pollInterval(1, SECONDS)

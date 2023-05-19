@@ -75,12 +75,39 @@ The response you have set up before is not needed any more. You can (and should)
 
 ## Finalize the Order
 
-After successfully completing all authorizations, the order needs to be finalized by providing PKCS#10 CSR file. A single domain may be set as _Common Name_. Multiple domains must be provided as _Subject Alternative Name_. You must provide exactly the domains that you had passed to the `order()` method above, otherwise the finalization will fail. It depends on the CA if other CSR properties (_Organization_, _Organization Unit_ etc.) are accepted. Some may require these properties to be set, while others may ignore them when generating the certificate.
+After successfully completing all authorizations, the order needs to be finalized.
 
-CSR files can be generated with command line tools like `openssl`. Unfortunately the standard Java does not offer classes for that, so you'd have to resort to [Bouncy Castle](http://www.bouncycastle.org/java.html) if you want to create a CSR programmatically. There is a [`CSRBuilder`](../acme4j-client/apidocs/org.shredzone.acme4j.utils/org/shredzone/acme4j/util/CSRBuilder.html) for your convenience. You can also use [`KeyPairUtils`](../acme4j-client/apidocs/org.shredzone.acme4j.utils/org/shredzone/acme4j/util/KeyPairUtils.html) for generating a new key pair for your domain.
+First of all, you will need to generate a new key pair that is used for certification and encryption. You can use [`KeyPairUtils`](../acme4j-client/apidocs/org.shredzone.acme4j.utils/org/shredzone/acme4j/util/KeyPairUtils.html) for generating a new key pair for your domain.
 
 !!! tip
     Never use your account key pair as domain key pair, but always generate separate key pairs!
+
+After that, the order can be finalized:
+
+```java
+KeyPair domainKeyPair = ... // KeyPair to be used for HTTPS encryption
+
+order.execute(domainKeyPair);
+```
+
+_acme4j_ will automatically take care of creating a minimal CSR for this order. If you need to expand this CSR (e.g. with your company name), you can do so:
+
+```java
+order.execute(domainKeyPair, csr -> {
+    csr.setOrganization("ACME Corp.");
+});
+```
+
+It depends on the CA if other CSR properties (like _Organization_, _Organization Unit_) are accepted. Some may even require these properties to be set, while others may ignore them when generating the certificate.
+
+!!! note
+    The correct technical term is _finalization_ of an order, according to RFC-8555. However, Java has a method called `Object.finalize()` which is problematic and should not be used. To avoid confusion with that method, the finalization methods are intentionally called `execute`.
+
+## Using CSR Files
+
+If you need more control over the CSR file, you can also provide a PKCS#10 CSR file, either as `PKCS10CertificationRequest` instance or as DER formatted binary. A single domain may be set as _Common Name_. Multiple domains must be provided as _Subject Alternative Name_. You must provide exactly the domains that you had passed to the `order()` method above, otherwise the finalization will fail.
+
+You can use command like tools like `openssl` or Java frameworks like [Bouncy Castle](http://www.bouncycastle.org/java.html) for generating the CSR file. There is also a [`CSRBuilder`](../acme4j-client/apidocs/org.shredzone.acme4j.utils/org/shredzone/acme4j/util/CSRBuilder.html) for your convenience.
 
 ```java
 KeyPair domainKeyPair = ... // KeyPair to be used for HTTPS encryption
@@ -94,13 +121,13 @@ csrb.sign(domainKeyPair);
 byte[] csr = csrb.getEncoded();
 ```
 
-It is a good idea to store the generated CSR somewhere, as you will need it again for renewal:
+Optionally the CSR can be written as a file, so you can use it again (e.g. for renewal of the certificate).
 
 ```java
 csrb.write(new FileWriter("example.csr"));
 ```
 
-After that, finalize the order:
+After that, finalize the order by providing the CSR:
 
 ```java
 order.execute(csr);

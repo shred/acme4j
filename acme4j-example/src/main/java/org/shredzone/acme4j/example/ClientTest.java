@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.Writer;
 import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
@@ -41,7 +40,6 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.util.CSRBuilder;
 import org.shredzone.acme4j.util.KeyPairUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,18 +102,8 @@ public class ClientTest {
             authorize(auth);
         }
 
-        // Generate a CSR for all of the domains, and sign it with the domain key pair.
-        CSRBuilder csrb = new CSRBuilder();
-        csrb.addDomains(domains);
-        csrb.sign(domainKeyPair);
-
-        // Write the CSR to a file, for later use.
-        try (Writer out = new FileWriter(DOMAIN_CSR_FILE)) {
-            csrb.write(out);
-        }
-
         // Order the certificate
-        order.execute(csrb.getEncoded());
+        order.execute(domainKeyPair);
 
         // Wait for the order to complete
         try {
