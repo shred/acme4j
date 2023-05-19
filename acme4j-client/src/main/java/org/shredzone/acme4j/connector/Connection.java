@@ -16,6 +16,7 @@ package org.shredzone.acme4j.connector;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -147,6 +148,13 @@ public interface Connection extends AutoCloseable {
      * @return List of X.509 certificate and chain that was read.
      */
     List<X509Certificate> readCertificates() throws AcmeException;
+
+    /**
+     * Returns the Retry-After header if present.
+     *
+     * @since 3.0.0
+     */
+    Optional<Instant> getRetryAfter();
 
     /**
      * Throws an {@link AcmeRetryAfterException} if the last status was HTTP Accepted and

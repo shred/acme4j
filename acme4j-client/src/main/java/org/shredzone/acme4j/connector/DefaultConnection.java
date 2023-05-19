@@ -233,7 +233,7 @@ public class DefaultConnection implements Connection {
 
     @Override
     public void handleRetryAfter(String message) throws AcmeException {
-        var retryAfter = getRetryAfterHeader();
+        var retryAfter = getRetryAfter();
         if (retryAfter.isPresent()) {
             throw new AcmeRetryAfterException(message, retryAfter.get());
         }
@@ -454,10 +454,8 @@ public class DefaultConnection implements Connection {
         }
     }
 
-    /**
-     * Gets the instant sent with the Retry-After header.
-     */
-    private Optional<Instant> getRetryAfterHeader() {
+    @Override
+    public Optional<Instant> getRetryAfter() {
         return getResponse().headers()
                 .firstValue(RETRY_AFTER_HEADER)
                 .map(this::parseRetryAfterHeader);
@@ -542,7 +540,7 @@ public class DefaultConnection implements Connection {
             }
 
             if ("rateLimited".equals(error)) {
-                var retryAfter = getRetryAfterHeader();
+                var retryAfter = getRetryAfter();
                 var rateLimits = getLinks("help");
                 throw new AcmeRateLimitedException(problem, retryAfter.orElse(null), rateLimits);
             }

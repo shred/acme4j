@@ -16,6 +16,7 @@ package org.shredzone.acme4j.connector;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -71,6 +72,11 @@ public class DummyConnection implements Connection {
 
     @Override
     public List<X509Certificate> readCertificates() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Optional<Instant> getRetryAfter() {
         throw new UnsupportedOperationException();
     }
 
