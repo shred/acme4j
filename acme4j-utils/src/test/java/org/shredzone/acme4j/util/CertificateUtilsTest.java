@@ -90,7 +90,7 @@ public class CertificateUtilsTest {
      * with domain name creates a good certificate.
      */
     @Test
-    public void testCreateTlsAlpn01Certificate() throws IOException, CertificateParsingException {
+    public void testCreateTlsAlpn01Certificate() throws Exception {
         var keypair = KeyPairUtils.createKeyPair(2048);
         var subject = "example.com";
         var acmeValidationV1 = AcmeUtils.sha256hash("rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ");
@@ -123,6 +123,8 @@ public class CertificateUtilsTest {
 
             assertThat(derOctetString.getOctets()).isEqualTo(test);
         }
+
+        cert.verify(keypair.getPublic());
     }
 
     /**
