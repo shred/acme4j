@@ -35,10 +35,11 @@ public class ResourceTest {
             softly.assertThat(Resource.NEW_AUTHZ.path()).isEqualTo("newAuthz");
             softly.assertThat(Resource.REVOKE_CERT.path()).isEqualTo("revokeCert");
             softly.assertThat(Resource.KEY_CHANGE.path()).isEqualTo("keyChange");
+            softly.assertThat(Resource.RENEWAL_INFO.path()).isEqualTo("renewalInfo");
         });
 
         // fails if there are untested future Resource values
-        assertThat(Resource.values()).hasSize(6);
+        assertThat(Resource.values()).hasSize(7);
     }
 
 }

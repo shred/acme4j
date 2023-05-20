@@ -23,7 +23,8 @@ public enum Resource {
     NEW_ORDER("newOrder"),
     NEW_AUTHZ("newAuthz"),
     REVOKE_CERT("revokeCert"),
-    KEY_CHANGE("keyChange");
+    KEY_CHANGE("keyChange"),
+    RENEWAL_INFO("renewalInfo");
 
     private final String path;
 

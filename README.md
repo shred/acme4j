@@ -16,6 +16,7 @@ It is an independent open source implementation that is not affiliated with or e
 * Supports [RFC 8738](https://tools.ietf.org/html/rfc8738) IP identifier validation
 * Supports [RFC 8739](https://tools.ietf.org/html/rfc8739) short-term automatic certificate renewal (experimental)
 * Supports [RFC 8823](https://tools.ietf.org/html/rfc8823) for S/MIME certificates (experimental)
+* Supports [draft-ietf-acme-ari-01](https://www.ietf.org/id/draft-ietf-acme-ari-01.html) for renewal information
 * Easy to use Java API
 * Requires JRE 11 or higher
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)

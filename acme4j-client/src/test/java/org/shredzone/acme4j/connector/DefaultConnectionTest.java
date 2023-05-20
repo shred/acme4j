@@ -855,7 +855,7 @@ public class DefaultConnectionTest {
             downloaded = conn.readCertificates();
         }
 
-        var original = TestUtils.createCertificate();
+        var original = TestUtils.createCertificate("/cert.pem");
         assertThat(original).hasSize(2);
 
         assertThat(downloaded).isNotNull();
@@ -873,7 +873,7 @@ public class DefaultConnectionTest {
         // Build a broken certificate chain PEM file
         byte[] brokenPem;
         try (var baos = new ByteArrayOutputStream(); var w = new OutputStreamWriter(baos)) {
-            for (var cert : TestUtils.createCertificate()) {
+            for (var cert : TestUtils.createCertificate("/cert.pem")) {
                 var badCert = cert.getEncoded();
                 Arrays.sort(badCert); // break it
                 AcmeUtils.writeToPem(badCert, AcmeUtils.PemLabel.CERTIFICATE, w);

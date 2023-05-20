@@ -19,17 +19,27 @@ import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyPair;
+import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
+import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
+import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -48,6 +58,7 @@ public class Certificate extends AcmeResource {
 
     private @Nullable List<X509Certificate> certChain;
     private @Nullable Collection<URL> alternates;
+    private transient @Nullable RenewalInfo renewalInfo = null;
 
     protected Certificate(Login login, URL certUrl) {
         super(login, certUrl);
@@ -134,6 +145,85 @@ public class Certificate extends AcmeResource {
         } catch (CertificateEncodingException ex) {
             throw new IOException("Encoding error", ex);
         }
+    }
+
+    /**
+     * Returns this certificate's CertID according to RFC 6960.
+     * <p>
+     * This method requires the {@link org.bouncycastle.jce.provider.BouncyCastleProvider}
+     * security provider.
+     *
+     * @see <a href="https://www.rfc-editor.org/rfc/rfc6960.html">RFC 6960</a>
+     * @since 3.0.0
+     */
+    public String getCertID() {
+        var certChain = getCertificateChain();
+        if (certChain.size() < 2) {
+            throw new AcmeProtocolException("Certificate has no issuer");
+        }
+
+        try {
+            var builder = new JcaDigestCalculatorProviderBuilder();
+            if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
+                builder.setProvider(BouncyCastleProvider.PROVIDER_NAME);
+            }
+            var digestCalc = builder.build().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256));
+            var issuerHolder = new X509CertificateHolder(certChain.get(1).getEncoded());
+            var certId = new CertificateID(digestCalc, issuerHolder, certChain.get(0).getSerialNumber());
+            return AcmeUtils.base64UrlEncode(certId.toASN1Primitive().getEncoded());
+        } catch (Exception ex) {
+            throw new AcmeProtocolException("Could not compute Certificate ID", ex);
+        }
+    }
+
+    /**
+     * Returns the location of the certificate's RenewalInfo. Empty if the CA does not
+     * provide this information.
+     *
+     * @since 3.0.0
+     */
+    public Optional<URL> getRenewalInfoLocation() {
+        try {
+            return getSession().resourceUrlOptional(Resource.RENEWAL_INFO)
+                    .map(baseUrl -> {
+                        try {
+                            var url = baseUrl.toExternalForm();
+                            if (!url.endsWith("/")) {
+                                url += '/';
+                            }
+                            url += getCertID();
+                            return new URL(url);
+                        } catch (MalformedURLException ex) {
+                            throw new AcmeProtocolException("Invalid RenewalInfo URL", ex);
+                        }
+                    });
+        } catch (AcmeException ex) {
+            throw new AcmeLazyLoadingException(this, ex);
+        }
+    }
+
+    /**
+     * Returns {@code true} if the CA provides renewal information.
+     *
+     * @since 3.0.0
+     */
+    public boolean hasRenewalInfo() {
+        return getRenewalInfoLocation().isPresent();
+    }
+
+    /**
+     * Reads the RenewalInfo for this certificate.
+     *
+     * @return The {@link RenewalInfo} of this certificate.
+     * @since 3.0.0
+     */
+    public RenewalInfo getRenewalInfo() {
+        if (renewalInfo == null) {
+            renewalInfo = getRenewalInfoLocation()
+                    .map(getLogin()::bindRenewalInfo)
+                    .orElseThrow(() -> new AcmeNotSupportedException("renewal-info"));
+        }
+        return renewalInfo;
     }
 
     /**

@@ -259,10 +259,12 @@ public final class TestUtils {
      * Creates a standard certificate chain for testing. This certificate is read from a
      * test resource and is guaranteed not to change between test runs.
      *
+     * @param resource
+     *         Name of the resource
      * @return List of {@link X509Certificate} for testing
      */
-    public static List<X509Certificate> createCertificate() throws IOException {
-        try (var in = TestUtils.class.getResourceAsStream("/cert.pem")) {
+    public static List<X509Certificate> createCertificate(String resource) throws IOException {
+        try (var in = TestUtils.class.getResourceAsStream(resource)) {
             var cf = CertificateFactory.getInstance("X.509");
             return cf.generateCertificates(in).stream()
                        .map(c -> (X509Certificate) c)

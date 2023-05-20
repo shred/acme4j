@@ -25,15 +25,20 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
+import java.time.Instant;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
+import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 import org.shredzone.acme4j.toolbox.TestUtils;
 
@@ -50,7 +55,7 @@ public class CertificateTest {
      */
     @Test
     public void testDownload() throws Exception {
-        var originalCert = TestUtils.createCertificate();
+        var originalCert = TestUtils.createCertificate("/cert.pem");
 
         var provider = new TestableConnectionProvider() {
             @Override
@@ -127,7 +132,7 @@ public class CertificateTest {
      */
     @Test
     public void testRevokeCertificate() throws AcmeException, IOException {
-        var originalCert = TestUtils.createCertificate();
+        var originalCert = TestUtils.createCertificate("/cert.pem");
 
         var provider = new TestableConnectionProvider() {
             private boolean certRequested = false;
@@ -175,7 +180,7 @@ public class CertificateTest {
      */
     @Test
     public void testRevokeCertificateWithReason() throws AcmeException, IOException {
-        var originalCert = TestUtils.createCertificate();
+        var originalCert = TestUtils.createCertificate("/cert.pem");
 
         var provider = new TestableConnectionProvider() {
             private boolean certRequested = false;
@@ -232,7 +237,7 @@ public class CertificateTest {
      */
     @Test
     public void testRevokeCertificateByKeyPair() throws AcmeException, IOException {
-        var originalCert = TestUtils.createCertificate();
+        var originalCert = TestUtils.createCertificate("/cert.pem");
         var certKeyPair = TestUtils.createDomainKeyPair();
 
         var provider = new TestableConnectionProvider() {
@@ -251,6 +256,85 @@ public class CertificateTest {
         var session = provider.createSession();
 
         Certificate.revoke(session, certKeyPair, originalCert.get(0), RevocationReason.KEY_COMPROMISE);
+
+        provider.close();
+    }
+
+    /**
+     * Test that RenewalInfo is returned.
+     */
+    @Test
+    public void testRenewalInfo() throws AcmeException, IOException {
+        var certId = "MFswCwYJYIZIAWUDBAIBBCCeWLRusNLb--vmWOkxm34qDjTMWkc3utIhOMoMwKDqbgQg2iiKWySZrD-6c88HMZ6vhIHZPamChLlzGHeZ7pTS8jYCCD6jRWhlRB8c";
+        // certid-cert.pem and certId provided by draft-ietf-acme-ari-01 and known good
+        var certIdCert = TestUtils.createCertificate("/certid-cert.pem");
+        var certResourceUrl = new URL(resourceUrl.toExternalForm() + "/" + certId);
+        var retryAfterInstant = Instant.now().plus(10L, ChronoUnit.DAYS);
+
+        var provider = new TestableConnectionProvider() {
+            private boolean certRequested = false;
+            private boolean infoRequested = false;
+
+            @Override
+            public int sendCertificateRequest(URL url, Login login) {
+                assertThat(url).isEqualTo(locationUrl);
+                assertThat(login).isNotNull();
+                certRequested = true;
+                return HttpURLConnection.HTTP_OK;
+            }
+
+            @Override
+            public int sendRequest(URL url, Session session, ZonedDateTime ifModifiedSince) {
+                assertThat(url).isEqualTo(certResourceUrl);
+                assertThat(session).isNotNull();
+                assertThat(ifModifiedSince).isNull();
+                infoRequested = true;
+                return HttpURLConnection.HTTP_OK;
+            }
+
+            @Override
+            public JSON readJsonResponse() {
+                assertThat(infoRequested).isTrue();
+                return getJSON("renewalInfo");
+            }
+
+            @Override
+            public List<X509Certificate> readCertificates() {
+                assertThat(certRequested).isTrue();
+                return certIdCert;
+            }
+
+            @Override
+            public Collection<URL> getLinks(String relation) {
+                return Collections.emptyList();
+            }
+
+            @Override
+            public Optional<Instant> getRetryAfter() {
+                return Optional.of(retryAfterInstant);
+            }
+        };
+
+        provider.putTestResource(Resource.RENEWAL_INFO, resourceUrl);
+
+        var cert = new Certificate(provider.createLogin(), locationUrl);
+        assertThat(cert.getCertID()).isEqualTo(certId);
+        assertThat(cert.hasRenewalInfo()).isTrue();
+        assertThat(cert.getRenewalInfoLocation())
+                .isNotEmpty()
+                .contains(certResourceUrl);
+
+        var renewalInfo = cert.getRenewalInfo();
+        assertThat(renewalInfo.getRecheckAfter())
+                .isNotEmpty()
+                .contains(retryAfterInstant);
+        assertThat(renewalInfo.getSuggestedWindowStart())
+                .isEqualTo("2021-01-03T00:00:00Z");
+        assertThat(renewalInfo.getSuggestedWindowEnd())
+                .isEqualTo("2021-01-07T00:00:00Z");
+        assertThat(renewalInfo.getExplanation())
+                .isNotEmpty()
+                .contains(url("https://example.com/docs/example-mass-reissuance-event"));
 
         provider.close();
     }

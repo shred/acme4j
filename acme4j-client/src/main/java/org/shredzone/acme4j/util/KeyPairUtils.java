@@ -25,6 +25,7 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 
 import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMException;
 import org.bouncycastle.openssl.PEMKeyPair;
 import org.bouncycastle.openssl.PEMParser;
@@ -82,7 +83,7 @@ public class KeyPairUtils {
     public static KeyPair createECKeyPair(String name) {
         try {
             var ecSpec = ECNamedCurveTable.getParameterSpec(name);
-            var g = KeyPairGenerator.getInstance("ECDSA", "BC");
+            var g = KeyPairGenerator.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
             g.initialize(ecSpec, new SecureRandom());
             return g.generateKeyPair();
         } catch (NoSuchAlgorithmException | InvalidAlgorithmParameterException ex) {

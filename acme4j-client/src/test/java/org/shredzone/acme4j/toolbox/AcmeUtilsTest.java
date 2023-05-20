@@ -237,7 +237,7 @@ public class AcmeUtilsTest {
      */
     @Test
     public void testWriteToPem() throws IOException, CertificateEncodingException {
-        var certChain = TestUtils.createCertificate();
+        var certChain = TestUtils.createCertificate("/cert.pem");
 
         var pemFile = new ByteArrayOutputStream();
         try (var w = new OutputStreamWriter(pemFile)) {

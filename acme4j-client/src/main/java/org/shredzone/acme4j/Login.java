@@ -133,6 +133,19 @@ public class Login {
     }
 
     /**
+     * Creates a new instance of an existing {@link RenewalInfo} and binds it to this
+     * login.
+     *
+     * @param location
+     *         Location URL of the renewal info
+     * @return {@link RenewalInfo} bound to the login
+     * @since 3.0.0
+     */
+    public RenewalInfo bindRenewalInfo(URL location) {
+        return new RenewalInfo(this, requireNonNull(location, "location"));
+    }
+
+    /**
      * Creates a new instance of an existing {@link Challenge} and binds it to this
      * login. Use this method only if the resulting challenge type is unknown.
      *
