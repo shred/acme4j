@@ -74,6 +74,8 @@ public final class TestUtils {
 
     public static final String DUMMY_NONCE = Base64.getUrlEncoder().withoutPadding().encodeToString("foo-nonce-foo".getBytes());
 
+    public static final String CERT_ISSUER = "Pebble Intermediate CA 645fc5";
+
     public static final NetworkSettings DEFAULT_NETWORK_SETTINGS = new NetworkSettings();
 
     private TestUtils() {

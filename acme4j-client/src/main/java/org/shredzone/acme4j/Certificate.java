@@ -22,6 +22,7 @@ import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyPair;
+import java.security.Principal;
 import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -132,6 +133,43 @@ public class Certificate extends AcmeResource {
                     .collect(toUnmodifiableList());
         }
         return alternateCerts;
+    }
+
+    /**
+     * Checks if this certificate was issued by the given issuer name.
+     *
+     * @param issuer
+     *         Issuer name to check against, case-sensitive
+     * @return {@code true} if this issuer name was found in the certificate chain as
+     * issuer, {@code false} otherwise.
+     * @since 3.0.0
+     */
+    public boolean isIssuedBy(String issuer) {
+        var issuerCn = "CN=" + issuer;
+        return getCertificateChain().stream()
+                .map(X509Certificate::getIssuerX500Principal)
+                .map(Principal::getName)
+                .anyMatch(issuerCn::equals);
+    }
+
+    /**
+     * Finds a {@link Certificate} that was issued by the given issuer name.
+     *
+     * @param issuer
+     *         Issuer name to check against, case-sensitive
+     * @return Certificate that was issued by that issuer, or {@code empty} if there was
+     * none. The returned {@link Certificate} may be this instance, or one of the
+     * {@link #getAlternateCertificates()} instances. If multiple certificates are issued
+     * by that issuer, the first one that was found is returned.
+     * @since 3.0.0
+     */
+    public Optional<Certificate> findCertificate(String issuer) {
+        if (isIssuedBy(issuer)) {
+            return Optional.of(this);
+        }
+        return getAlternateCertificates().stream()
+                .filter(c -> c.isIssuedBy(issuer))
+                .findFirst();
     }
 
     /**

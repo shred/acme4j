@@ -15,8 +15,7 @@ package org.shredzone.acme4j;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
-import static org.shredzone.acme4j.toolbox.TestUtils.url;
+import static org.shredzone.acme4j.toolbox.TestUtils.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -49,6 +48,8 @@ public class CertificateTest {
 
     private final URL resourceUrl = url("http://example.com/acme/resource");
     private final URL locationUrl = url("http://example.com/acme/certificate");
+    private final URL alternate1Url = url("https://example.com/acme/alt-cert/1");
+    private final URL alternate2Url = url("https://example.com/acme/alt-cert/2");
 
     /**
      * Test that a certificate can be downloaded.
@@ -56,26 +57,32 @@ public class CertificateTest {
     @Test
     public void testDownload() throws Exception {
         var originalCert = TestUtils.createCertificate("/cert.pem");
+        var alternateCert = TestUtils.createCertificate("/certid-cert.pem");
 
         var provider = new TestableConnectionProvider() {
+            List<X509Certificate> sendCert;
+
             @Override
             public int sendCertificateRequest(URL url, Login login) {
-                assertThat(url).isEqualTo(locationUrl);
+                assertThat(url).isIn(locationUrl, alternate1Url, alternate2Url);
                 assertThat(login).isNotNull();
+                if (locationUrl.equals(url)) {
+                    sendCert = originalCert;
+                } else {
+                    sendCert = alternateCert;
+                }
                 return HttpURLConnection.HTTP_OK;
             }
 
             @Override
             public List<X509Certificate> readCertificates() {
-                return originalCert;
+                return sendCert;
             }
 
             @Override
             public Collection<URL> getLinks(String relation) {
                 assertThat(relation).isEqualTo("alternate");
-                return Arrays.asList(
-                        url("https://example.com/acme/alt-cert/1"),
-                        url("https://example.com/acme/alt-cert/2"));
+                return Arrays.asList(alternate1Url, alternate2Url);
             }
         };
 
@@ -108,21 +115,33 @@ public class CertificateTest {
         }
         assertThat(writtenPem).isEqualTo(originalPem);
 
+        assertThat(cert.isIssuedBy("The ACME CA X1")).isFalse();
+        assertThat(cert.isIssuedBy(CERT_ISSUER)).isTrue();
+
         assertThat(cert.getAlternates()).isNotNull();
         assertThat(cert.getAlternates()).hasSize(2);
-        assertThat(cert.getAlternates()).element(0).isEqualTo(url("https://example.com/acme/alt-cert/1"));
-        assertThat(cert.getAlternates()).element(1).isEqualTo(url("https://example.com/acme/alt-cert/2"));
+        assertThat(cert.getAlternates()).element(0).isEqualTo(alternate1Url);
+        assertThat(cert.getAlternates()).element(1).isEqualTo(alternate2Url);
 
         assertThat(cert.getAlternateCertificates()).isNotNull();
         assertThat(cert.getAlternateCertificates()).hasSize(2);
         assertThat(cert.getAlternateCertificates())
                 .element(0)
                 .extracting(Certificate::getLocation)
-                .isEqualTo(url("https://example.com/acme/alt-cert/1"));
+                .isEqualTo(alternate1Url);
         assertThat(cert.getAlternateCertificates())
                 .element(1)
                 .extracting(Certificate::getLocation)
-                .isEqualTo(url("https://example.com/acme/alt-cert/2"));
+                .isEqualTo(alternate2Url);
+
+        assertThat(cert.findCertificate("The ACME CA X1")).
+                isEmpty();
+        assertThat(cert.findCertificate(CERT_ISSUER).orElseThrow())
+                .isSameAs(cert);
+        assertThat(cert.findCertificate("minica root ca 3a1356").orElseThrow())
+                .isSameAs(cert.getAlternateCertificates().get(0));
+        assertThat(cert.getAlternateCertificates().get(0).isIssuedBy("minica root ca 3a1356"))
+                .isTrue();
 
         provider.close();
     }
