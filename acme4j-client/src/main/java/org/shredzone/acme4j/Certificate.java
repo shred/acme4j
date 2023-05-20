@@ -59,6 +59,7 @@ public class Certificate extends AcmeResource {
     private @Nullable List<X509Certificate> certChain;
     private @Nullable Collection<URL> alternates;
     private transient @Nullable RenewalInfo renewalInfo = null;
+    private transient @Nullable List<Certificate> alternateCerts = null;
 
     protected Certificate(Login login, URL certUrl) {
         super(login, certUrl);
@@ -124,10 +125,13 @@ public class Certificate extends AcmeResource {
      * @since 2.11
      */
     public List<Certificate> getAlternateCertificates() {
-        var login = getLogin();
-        return getAlternates().stream()
-                .map(login::bindCertificate)
-                .collect(toUnmodifiableList());
+        if (alternateCerts == null) {
+            var login = getLogin();
+            alternateCerts = getAlternates().stream()
+                    .map(login::bindCertificate)
+                    .collect(toUnmodifiableList());
+        }
+        return alternateCerts;
     }
 
     /**
