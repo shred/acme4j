@@ -98,6 +98,9 @@ account.modify()
 
 You can also get the list of contacts via` getContacts()`, and modify or remove contact `URI`s there. However, some CAs do not allow to remove all contacts.
 
+!!! note
+    `AccountBuilder` only accepts contact addresses when a _new account_ is created. To modify an existing account, use `Account.modify()` as described in this section.
+
 ## Account Key Roll-Over
 
 It is also possible to change the key pair that is associated with your account, for example if you suspect that your key has been compromised.

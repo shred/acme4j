@@ -48,6 +48,10 @@ import org.slf4j.LoggerFactory;
  *     <li>You might need to provide a key identifier (e.g. your customer number) and
  *     a shared secret via {@link #withKeyIdentifier(String, SecretKey)}.</li>
  * </ul>
+ * <p>
+ * It is not possible to modify an existing account with the {@link AccountBuilder}. To
+ * modify an existing account, use {@link Account#modify()} and
+ * {@link Account#changeKey(KeyPair)}.
  */
 public class AccountBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(AccountBuilder.class);

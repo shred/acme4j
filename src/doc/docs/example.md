@@ -14,6 +14,8 @@ This chapter contains a copy of the class file, along with explanations about wh
 
 - I recommend to read at least the chapters about [usage](usage/index.md) and [challenges](challenge/index.md), to learn more about how _acme4j_ and the ACME protocol works.
 
+- To make the example easier to understand, I will use the specific datatypes instead of the `var` keyword.
+
 ## Running the Example
 
 You can run the `ClientTest` class in your IDE, giving the domain names to be registered as parameters. When changing into the `acme4j-example` directory, the test client can also be invoked via maven in a command line:
@@ -82,19 +84,8 @@ public void fetchCertificate(Collection<String> domains)
         authorize(auth);
     }
 
-    // Generate a CSR for all of the domains,
-    // and sign it with the domain key pair.
-    CSRBuilder csrb = new CSRBuilder();
-    csrb.addDomains(domains);
-    csrb.sign(domainKeyPair);
-
-    // Write the CSR to a file, for later use.
-    try (Writer out = new FileWriter(DOMAIN_CSR_FILE)) {
-        csrb.write(out);
-    }
-
     // Order the certificate
-    order.execute(csrb.getEncoded());
+    order.execute(domainKeyPair);
 
     // Wait for the order to complete
     try {
@@ -102,7 +93,10 @@ public void fetchCertificate(Collection<String> domains)
         while (order.getStatus() != Status.VALID && attempts-- > 0) {
             // Did the order fail?
             if (order.getStatus() == Status.INVALID) {
-                LOG.error("Order has failed, reason: {}", order.getError());
+                LOG.error("Order has failed, reason: {}", order.getError()
+                        .map(Problem::toString)
+                        .orElse("unknown")
+                );
                 throw new AcmeException("Order failed... Giving up.");
             }
 
@@ -197,9 +191,9 @@ If your `KeyPair` has already been registered with the CA, no new account will b
 ```java
 private Account findOrRegisterAccount(Session session, KeyPair accountKey) throws AcmeException {
     // Ask the user to accept the TOS, if server provides us with a link.
-    URI tos = session.getMetadata().getTermsOfService();
-    if (tos != null) {
-        acceptAgreement(tos);
+    Optional<URI> tos = session.getMetadata().getTermsOfService();
+    if (tos.isPresent()) {
+        acceptAgreement(tos.get());
     }
 
     Account account = new AccountBuilder()
@@ -261,7 +255,10 @@ private void authorize(Authorization auth)
         while (challenge.getStatus() != Status.VALID && attempts-- > 0) {
             // Did the authorization fail?
             if (challenge.getStatus() == Status.INVALID) {
-                LOG.error("Challenge has failed, reason: {}", challenge.getError());
+                LOG.error("Challenge has failed, reason: {}", challenge.getError()
+                        .map(Problem::toString)
+                        .orElse("unknown")
+                );
                 throw new AcmeException("Challenge failed... Giving up.");
             }
 
@@ -299,10 +296,9 @@ When the authorization process is completed, the file is not used any more and c
 ```java
 public Challenge httpChallenge(Authorization auth) throws AcmeException {
     // Find a single http-01 challenge
-    Http01Challenge challenge = auth.findChallenge(Http01Challenge.class);
-    if (challenge == null) {
-        throw new AcmeException("Found no " + Http01Challenge.TYPE + " challenge, don't know what to do...");
-    }
+    Http01Challenge challenge = auth.findChallenge(Http01Challenge.class)
+            .orElseThrow(() -> new AcmeException("Found no " + Http01Challenge.TYPE
+                    + " challenge, don't know what to do..."));
 
     // Output the challenge, wait for acknowledge...
     LOG.info("Please create a file in your web server's base directory.");
@@ -341,10 +337,10 @@ When the authorization has been completed, the `TXT` record can be safely remove
 ```java
 public Challenge dnsChallenge(Authorization auth) throws AcmeException {
     // Find a single dns-01 challenge
-    Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE);
-    if (challenge == null) {
-        throw new AcmeException("Found no " + Dns01Challenge.TYPE + " challenge, don't know what to do...");
-    }
+    Dns01Challenge challenge = auth.findChallenge(Dns01Challenge.TYPE)
+                .map(Dns01Challenge.class::cast)
+                .orElseThrow(() -> new AcmeException("Found no " + Dns01Challenge.TYPE
+                        + " challenge, don't know what to do..."));
 
     // Output the challenge, wait for acknowledge...
     LOG.info("Please create a TXT record:");
@@ -384,7 +380,7 @@ public void acceptChallenge(String message) throws AcmeException {
     }
 }
 
-public void completeChallenge(String message) throws AcmeException {
+public void completeChallenge(String message) {
     JOptionPane.showMessageDialog(null,
             message,
             "Complete Challenge",
