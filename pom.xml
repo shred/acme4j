@@ -162,7 +162,7 @@
             <plugin>
                 <groupId>org.shredzone.maven</groupId>
                 <artifactId>mkdocs-maven-plugin</artifactId>
-                <version>1.0</version>
+                <version>1.1</version>
                 <configuration>
                     <outputDirectory>${project.build.directory}/site</outputDirectory>
                 </configuration>
