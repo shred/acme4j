@@ -7,6 +7,7 @@ This ACME provider can be used to connect to a local Pebble server instance, mai
 ## Connection URIs
 
 * `acme://pebble` - Connect to a Pebble server at `localhost` and standard port 14000.
+* `acme://pebble:12345` - Connect to a Pebble server at `localhost` and port 12345.
 * `acme://pebble/pebble.example.com` - Connect to a Pebble server at `pebble.example.com` and standard port 14000.
 * `acme://pebble/pebble.example.com:12345` - Connect to a Pebble server at `pebble.example.com` and port 12345.
 

@@ -38,6 +38,8 @@ public class PebbleAcmeProviderTest {
         try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(provider.accepts(new URI("acme://pebble"))).isTrue();
             softly.assertThat(provider.accepts(new URI("acme://pebble/"))).isTrue();
+            softly.assertThat(provider.accepts(new URI("acme://pebble:12345"))).isTrue();
+            softly.assertThat(provider.accepts(new URI("acme://pebble:12345/"))).isTrue();
             softly.assertThat(provider.accepts(new URI("acme://pebble/some-host.example.com"))).isTrue();
             softly.assertThat(provider.accepts(new URI("acme://pebble/some-host.example.com:12345"))).isTrue();
             softly.assertThat(provider.accepts(new URI("acme://example.com"))).isFalse();
@@ -57,6 +59,10 @@ public class PebbleAcmeProviderTest {
                 .isEqualTo(url("https://localhost:14000/dir"));
         assertThat(provider.resolve(new URI("acme://pebble/")))
                 .isEqualTo(url("https://localhost:14000/dir"));
+        assertThat(provider.resolve(new URI("acme://pebble:12345")))
+            .isEqualTo(url("https://localhost:12345/dir"));
+        assertThat(provider.resolve(new URI("acme://pebble:12345/")))
+            .isEqualTo(url("https://localhost:12345/dir"));
         assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com")))
                 .isEqualTo(url("https://pebble.example.com:14000/dir"));
         assertThat(provider.resolve(new URI("acme://pebble/pebble.example.com:12345")))

@@ -37,6 +37,7 @@ import org.shredzone.acme4j.provider.AcmeProvider;
 public class PebbleAcmeProvider extends AbstractAcmeProvider {
 
     private static final Pattern HOST_PATTERN = Pattern.compile("^/([^:/]+)(?:\\:(\\d+))?/?$");
+    private static final int PEBBLE_DEFAULT_PORT = 14000;
 
     @Override
     public boolean accepts(URI serverUri) {
@@ -47,8 +48,9 @@ public class PebbleAcmeProvider extends AbstractAcmeProvider {
     public URL resolve(URI serverUri) {
         try {
             var path = serverUri.getPath();
+            int port = serverUri.getPort() != -1 ? serverUri.getPort() : PEBBLE_DEFAULT_PORT;
 
-            var baseUrl = new URL("https://localhost:14000/dir");
+            var baseUrl = new URL("https://localhost:" + port + "/dir");
 
             if (path != null && !path.isEmpty() && !"/".equals(path)) {
                 baseUrl = parsePath(path);
@@ -71,7 +73,7 @@ public class PebbleAcmeProvider extends AbstractAcmeProvider {
         var m = HOST_PATTERN.matcher(path);
         if (m.matches()) {
             var host = m.group(1);
-            var port = 14000;
+            var port = PEBBLE_DEFAULT_PORT;
             if (m.group(2) != null) {
                 port = Integer.parseInt(m.group(2));
             }
