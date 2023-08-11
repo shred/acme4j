@@ -23,7 +23,7 @@ It is an independent open source implementation that is not affiliated with or e
 * Extensive unit and integration tests
 * Adheres to [Semantic Versioning](https://semver.org/)
 
-If you require Java 8 or Android compatibility, you can use [acme4j v2](https://shredzone.org/maven/acme4j-v2/index.html) instead. Version 2 is still receiving bugfixes and security updates until September 2023.
+If you require Java 8 or Android compatibility, you can use [acme4j v2](https://shredzone.org/maven/acme4j-v2/index.html) instead. However, v2 is not actively developed anymore and will only receive security fixes.
 
 ## Dependencies
 
