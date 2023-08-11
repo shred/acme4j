@@ -74,6 +74,10 @@ Follow our Mastodon feed for release notes and other acme4j related news.
 * Fork the [Source code at GitHub](https://github.com/shred/acme4j). Feel free to send pull requests.
 * Found a bug? [File a bug report!](https://github.com/shred/acme4j/issues)
 
+## Donate ♥️
+
+If you would like to support my work on _acme4j_, you can do so on at [GitHub Sponsors](https://github.com/sponsors/shred) or at [Ko-Fi](https://ko-fi.com/shredzone). Thank you!
+
 ## License
 
 _acme4j_ is open source software. The source code is distributed under the terms of [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
