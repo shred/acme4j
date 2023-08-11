@@ -18,7 +18,7 @@ What you might also need to know:
 - A new `AcmeNotSupportedException` is thrown if a feature is not supported by the server. It is a subclass of the `AcmeProtocolException` runtime exception.
 - Starting with _acme4j_ v3, we will require the smallest Java SE LTS version that is still receiving premier support according to the [Oracle Java SE Support Roadmap](https://www.oracle.com/java/technologies/java-se-support-roadmap.html). At the time of writing, these are Java 11 and Java 17, so _acme4j_ requires Java 11 starting from now. With the prospected release of Java 21 (LTS) in September 2023, we will start to require Java 17, and so on. If you still need Java 8, you can use _acme4j_ v2, which will still receive security bugfixes until end of 2023.
 - _acme4j_ now uses the new `java.net.http` client. Due to limitations of the API, HTTP errors are only thrown with the error code, but the respective error message is missing. If you checked the error message in your unit tests, be prepared that they might fail now.
-- acme4j now accepts HTTP gzip compression. It is enabled by default, but can be disabled in the `NetworkSettings` if it should cause problems or impedes debugging.
+- acme4j now accepts HTTP gzip compression. It is enabled by default, but if it causes problems or impedes debugging, it can be disabled in the `NetworkSettings` or by setting the `org.shredzone.acme4j.gzip_compression` system property to `false`.
 - All deprecated methods have been removed.
 
 ## Migration to Version 2.16

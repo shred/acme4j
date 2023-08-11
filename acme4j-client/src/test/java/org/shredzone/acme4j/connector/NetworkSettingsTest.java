@@ -74,4 +74,27 @@ public class NetworkSettingsTest {
                 "timeout accepted negative duration");
     }
 
+    @Test
+    public void testSystemProperty() {
+        assertThat(NetworkSettings.GZIP_PROPERTY_NAME)
+                .startsWith("org.shredzone.acme4j")
+                .contains("gzip");
+
+        System.clearProperty(NetworkSettings.GZIP_PROPERTY_NAME);
+        var settingsNone = new NetworkSettings();
+        assertThat(settingsNone.isCompressionEnabled()).isTrue();
+
+        System.setProperty(NetworkSettings.GZIP_PROPERTY_NAME, "true");
+        var settingsTrue = new NetworkSettings();
+        assertThat(settingsTrue.isCompressionEnabled()).isTrue();
+
+        System.setProperty(NetworkSettings.GZIP_PROPERTY_NAME, "false");
+        var settingsFalse = new NetworkSettings();
+        assertThat(settingsFalse.isCompressionEnabled()).isFalse();
+
+        System.setProperty(NetworkSettings.GZIP_PROPERTY_NAME, "1234");
+        var settingsNonBoolean = new NetworkSettings();
+        assertThat(settingsNonBoolean.isCompressionEnabled()).isFalse();
+    }
+
 }

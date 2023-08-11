@@ -17,8 +17,10 @@ import java.net.Authenticator;
 import java.net.ProxySelector;
 import java.net.http.HttpClient;
 import java.time.Duration;
+import java.util.Optional;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 
 /**
  * Contains network settings to be used for network connections.
@@ -27,10 +29,27 @@ import edu.umd.cs.findbugs.annotations.Nullable;
  */
 public class NetworkSettings {
 
+    /**
+     * Name of the system property to control GZIP compression. Expects a boolean value.
+     */
+    public static final String GZIP_PROPERTY_NAME = "org.shredzone.acme4j.gzip_compression";
+
     private ProxySelector proxySelector = HttpClient.Builder.NO_PROXY;
     private Duration timeout = Duration.ofSeconds(10);
     private @Nullable Authenticator authenticator = null;
     private boolean compression = true;
+
+    public NetworkSettings() {
+        try {
+            Optional.ofNullable(System.getProperty(GZIP_PROPERTY_NAME))
+                    .map(Boolean::parseBoolean)
+                    .ifPresent(val -> compression = val);
+        } catch (Exception ex) {
+            // Ignore a broken property name or a SecurityException
+            LoggerFactory.getLogger(NetworkSettings.class)
+                    .warn("Could not read system property: {}", GZIP_PROPERTY_NAME, ex);
+        }
+    }
 
     /**
      * Gets the {@link ProxySelector} to be used for connections.
@@ -104,6 +123,9 @@ public class NetworkSettings {
     /**
      * Sets if HTTP compression is enabled. It is enabled by default, but can be
      * disabled e.g. for debugging purposes.
+     * <p>
+     * acme4j gzip compression can also be controlled via the {@value #GZIP_PROPERTY_NAME}
+     * system property.
      *
      * @since 3.0.0
      */
