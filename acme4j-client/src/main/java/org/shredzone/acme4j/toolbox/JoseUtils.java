@@ -115,12 +115,14 @@ public final class JoseUtils {
      *         {@link PublicKey} of the account to register
      * @param macKey
      *         {@link SecretKey} to sign the key identifier with
+     * @param macAlgorithm
+     *         Algorithm of the MAC key
      * @param resource
      *         "newAccount" resource URL
      * @return Created JSON structure
      */
     public static Map<String, Object> createExternalAccountBinding(String kid,
-            PublicKey accountKey, SecretKey macKey, URL resource) {
+            PublicKey accountKey, SecretKey macKey, String macAlgorithm, URL resource) {
         try {
             var keyJwk = PublicJsonWebKey.Factory.newPublicJwk(accountKey);
 
@@ -128,7 +130,7 @@ public final class JoseUtils {
             innerJws.setPayload(keyJwk.toJson());
             innerJws.getHeaders().setObjectHeaderValue("url", resource);
             innerJws.getHeaders().setObjectHeaderValue("kid", kid);
-            innerJws.setAlgorithmHeaderValue(macKeyAlgorithm(macKey));
+            innerJws.setAlgorithmHeaderValue(macAlgorithm);
             innerJws.setKey(macKey);
             innerJws.setDoKeyValidation(false);
             innerJws.sign();

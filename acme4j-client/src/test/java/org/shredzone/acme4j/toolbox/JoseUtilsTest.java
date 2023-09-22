@@ -30,6 +30,8 @@ import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.CompactSerializer;
 import org.jose4j.lang.JoseException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 /**
  * Unit tests for {@link JoseUtils}.
@@ -159,22 +161,23 @@ public class JoseUtilsTest {
     /**
      * Test if an external account binding is correctly created.
      */
-    @Test
-    public void testCreateExternalAccountBinding() throws Exception {
+    @ParameterizedTest
+    @CsvSource({"SHA-256,HS256", "SHA-384,HS384", "SHA-512,HS512", "SHA-512,HS256"})
+    public void testCreateExternalAccountBinding(String keyAlg, String macAlg) throws Exception {
         var accountKey = TestUtils.createKeyPair();
         var keyIdentifier = "NCC-1701";
-        var macKey = TestUtils.createSecretKey("SHA-256");
+        var macKey = TestUtils.createSecretKey(keyAlg);
         var resourceUrl = url("http://example.com/acme/resource");
 
         var binding = JoseUtils.createExternalAccountBinding(
-                keyIdentifier, accountKey.getPublic(), macKey, resourceUrl);
+                keyIdentifier, accountKey.getPublic(), macKey, macAlg, resourceUrl);
 
         var encodedHeader = binding.get("protected").toString();
         var encodedSignature = binding.get("signature").toString();
         var encodedPayload = binding.get("payload").toString();
         var serialized = CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature);
 
-        assertExternalAccountBinding(serialized, resourceUrl, keyIdentifier, macKey);
+        assertExternalAccountBinding(serialized, resourceUrl, keyIdentifier, macKey, macAlg);
     }
 
     /**
@@ -282,9 +285,12 @@ public class JoseUtilsTest {
      *         Expected key identifier
      * @param macKey
      *         Expected {@link SecretKey}
+     * @param macAlg
+     *         Expected algorithm
      */
     public static void assertExternalAccountBinding(String serialized, URL resourceUrl,
-                                                    String keyIdentifier, SecretKey macKey) {
+                                                    String keyIdentifier, SecretKey macKey,
+                                                    String macAlg) {
         try {
             var jws = new JsonWebSignature();
             jws.setCompactSerialization(serialized);
@@ -293,7 +299,7 @@ public class JoseUtilsTest {
 
             assertThat(jws.getHeader("url")).isEqualTo(resourceUrl.toString());
             assertThat(jws.getHeader("kid")).isEqualTo(keyIdentifier);
-            assertThat(jws.getHeader("alg")).isEqualTo("HS256");
+            assertThat(jws.getHeader("alg")).isEqualTo(macAlg);
 
             var decodedPayload = jws.getPayload();
             var expectedPayload = new StringBuilder();

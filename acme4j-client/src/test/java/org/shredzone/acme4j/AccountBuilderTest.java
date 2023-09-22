@@ -15,6 +15,7 @@ package org.shredzone.acme4j;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatException;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
@@ -22,8 +23,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyPair;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.jose4j.jwx.CompactSerializer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
@@ -105,11 +111,16 @@ public class AccountBuilderTest {
     /**
      * Test if a new account with Key Identifier can be created.
      */
-    @Test
-    public void testRegistrationWithKid() throws Exception {
+    @ParameterizedTest
+    @CsvSource({
+            "SHA-256,HS256,",      "SHA-384,HS384,",      "SHA-512,HS512,",
+            "SHA-256,HS256,HS256", "SHA-384,HS384,HS384", "SHA-512,HS512,HS512",
+            "SHA-512,HS256,HS256"
+    })
+    public void testRegistrationWithKid(String keyAlg, String expectedMacAlg, @Nullable String macAlg) throws Exception {
         var accountKey = TestUtils.createKeyPair();
         var keyIdentifier = "NCC-1701";
-        var macKey = TestUtils.createSecretKey("SHA-256");
+        var macKey = TestUtils.createSecretKey(keyAlg);
 
         var provider = new TestableConnectionProvider() {
             @Override
@@ -127,7 +138,7 @@ public class AccountBuilderTest {
                 var encodedPayload = binding.get("payload").asString();
                 var serialized = CompactSerializer.serialize(encodedHeader, encodedPayload, encodedSignature);
 
-                JoseUtilsTest.assertExternalAccountBinding(serialized, resourceUrl, keyIdentifier, macKey);
+                JoseUtilsTest.assertExternalAccountBinding(serialized, resourceUrl, keyIdentifier, macKey, expectedMacAlg);
 
                 return HttpURLConnection.HTTP_CREATED;
             }
@@ -148,6 +159,9 @@ public class AccountBuilderTest {
         var builder = new AccountBuilder();
         builder.useKeyPair(accountKey);
         builder.withKeyIdentifier(keyIdentifier, AcmeUtils.base64UrlEncode(macKey.getEncoded()));
+        if (macAlg != null) {
+            builder.withMacAlgorithm(macAlg);
+        }
 
         var session = provider.createSession();
         var login = builder.createLogin(session);
@@ -155,6 +169,18 @@ public class AccountBuilderTest {
         assertThat(login.getAccountLocation()).isEqualTo(locationUrl);
 
         provider.close();
+    }
+
+    /**
+     * Test if invalid mac algorithms are rejected.
+     */
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {"foo", "null", "false", "none", "HS-256", "hs256", "HS128", "RS256"})
+    public void testRejectInvalidMacAlg(@Nullable String macAlg) {
+        assertThatException().isThrownBy(() -> {
+            new AccountBuilder().withMacAlgorithm(macAlg);
+        }).isInstanceOfAny(IllegalArgumentException.class, NullPointerException.class);
     }
 
     /**

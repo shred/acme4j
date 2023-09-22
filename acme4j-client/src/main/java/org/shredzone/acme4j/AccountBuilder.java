@@ -14,11 +14,14 @@
 package org.shredzone.acme4j;
 
 import static java.util.Objects.requireNonNull;
+import static org.jose4j.jws.AlgorithmIdentifiers.*;
+import static org.shredzone.acme4j.toolbox.JoseUtils.macKeyAlgorithm;
 
 import java.net.URI;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
@@ -55,6 +58,7 @@ import org.slf4j.LoggerFactory;
  */
 public class AccountBuilder {
     private static final Logger LOG = LoggerFactory.getLogger(AccountBuilder.class);
+    private static final Set<String> VALID_ALGORITHMS = Set.of(HMAC_SHA256, HMAC_SHA384, HMAC_SHA512);
 
     private final List<URI> contacts = new ArrayList<>();
     private @Nullable Boolean termsOfServiceAgreed;
@@ -62,6 +66,7 @@ public class AccountBuilder {
     private @Nullable String keyIdentifier;
     private @Nullable KeyPair keyPair;
     private @Nullable SecretKey macKey;
+    private @Nullable String macAlgorithm;
 
     /**
      * Add a contact URI to the list of contacts.
@@ -211,6 +216,25 @@ public class AccountBuilder {
     }
 
     /**
+     * Sets the MAC key algorithm that is provided by the CA. To be used in combination
+     * with key identifier. By default, the algorithm is deduced from the size of the
+     * MAC key. If a different size is needed, it can be set using this method.
+     *
+     * @param macAlgorithm
+     *         the algorithm to be set in the {@code alg} field, e.g. {@code "HS512"}.
+     * @return itself
+     * @since 3.1.0
+     */
+    public AccountBuilder withMacAlgorithm(String macAlgorithm) {
+        var algorithm = requireNonNull(macAlgorithm, "macAlgorithm");
+        if (!VALID_ALGORITHMS.contains(algorithm)) {
+            throw new IllegalArgumentException("Invalid MAC algorithm: " + macAlgorithm);
+        }
+        this.macAlgorithm = algorithm;
+        return this;
+    }
+
+    /**
      * Creates a new account.
      * <p>
      * Use this method to finally create your account with the given parameters. Do not
@@ -254,9 +278,10 @@ public class AccountBuilder {
             if (termsOfServiceAgreed != null) {
                 claims.put("termsOfServiceAgreed", termsOfServiceAgreed);
             }
-            if (keyIdentifier != null) {
+            if (keyIdentifier != null && macKey != null) {
+                var algorithm = macAlgorithm != null ? macAlgorithm : macKeyAlgorithm(macKey);
                 claims.put("externalAccountBinding", JoseUtils.createExternalAccountBinding(
-                        keyIdentifier, keyPair.getPublic(), macKey, resourceUrl));
+                        keyIdentifier, keyPair.getPublic(), macKey, algorithm, resourceUrl));
             }
             if (onlyExisting != null) {
                 claims.put("onlyReturnExisting", onlyExisting);

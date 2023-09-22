@@ -148,3 +148,5 @@ Account account = new AccountBuilder()
 ```
 
 For your convenience, you can also pass a base64 encoded MAC Key as `String`.
+
+The MAC algorithm is automatically set from the size of the MAC key. If a different algorithm is required, it can be set using `withMacAlgorithm()`.
