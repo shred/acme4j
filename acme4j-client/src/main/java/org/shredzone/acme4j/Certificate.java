@@ -269,6 +269,28 @@ public class Certificate extends AcmeResource {
     }
 
     /**
+     * Signals to the CA that this certificate has been successfully replaced by a newer
+     * one. A revocation of this certificate would not disrupt any ongoing services.
+     * <p>
+     * This method is only supported by CAs that are providing renewal information
+     * (see {@link #hasRenewalInfo()}. An {@link AcmeNotSupportedException} is thrown
+     * otherwise.
+     *
+     * @since 3.1.0
+     */
+    public void markAsReplaced() throws AcmeException {
+        LOG.debug("mark as replaced");
+        var session = getSession();
+        var renewalInfoUrl = session.resourceUrl(Resource.RENEWAL_INFO);
+        try (var conn = session.connect()) {
+            var claims = new JSONBuilder();
+            claims.put("certID", getCertID());
+            claims.put("replaced", true);
+            conn.sendSignedRequest(renewalInfoUrl, claims, getLogin());
+        }
+    }
+
+    /**
      * Revokes this certificate.
      */
     public void revoke() throws AcmeException {
