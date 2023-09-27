@@ -81,9 +81,6 @@
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
                 <version>4.2.3</version>
-                <configuration>
-                    <excludeFilterFile>src/config/spotbugs-exclude.xml</excludeFilterFile>
-                </configuration>
                 <executions>
                     <execution>
                         <goals>
