@@ -245,19 +245,16 @@ public final class JoseUtils {
         }
 
         var size = macKey.getEncoded().length * 8;
-        switch (size) {
-            case 256:
-                return AlgorithmIdentifiers.HMAC_SHA256;
-
-            case 384:
-                return AlgorithmIdentifiers.HMAC_SHA384;
-
-            case 512:
+        if (size >= 256) {
+            if (size >= 512) {
                 return AlgorithmIdentifiers.HMAC_SHA512;
-
-            default:
-                throw new IllegalArgumentException("Bad key size: " + size);
+            } else if (size >= 384) {
+                return AlgorithmIdentifiers.HMAC_SHA384;
+            } else {
+                return AlgorithmIdentifiers.HMAC_SHA256;
+            }
+        } else {
+            throw new IllegalArgumentException("Bad key size: " + size);
         }
     }
-
 }
