@@ -154,6 +154,13 @@
                     <doclint>syntax,reference</doclint>
                     <linksource>true</linksource>
                     <locale>en</locale>
+                    <tags>
+                        <tag>
+                            <name>draft</name>
+                            <placement>a</placement>
+                            <head>Draft:</head>
+                        </tag>
+                    </tags>
                 </configuration>
             </plugin>
             <plugin>
