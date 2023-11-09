@@ -78,11 +78,7 @@ public class CSRBuilder {
      *            Domain name to add
      */
     public void addDomain(String domain) {
-        var ace = toAce(requireNonNull(domain));
-        if (namelist.isEmpty()) {
-            namebuilder.addRDN(BCStyle.CN, ace);
-        }
-        namelist.add(ace);
+        namelist.add(toAce(requireNonNull(domain)));
     }
 
     /**
@@ -220,6 +216,15 @@ public class CSRBuilder {
             return;
         }
         namebuilder.addRDN(oid, requireNonNull(value, "attribute value must not be null"));
+    }
+
+    /**
+     * Sets the common name
+     * <p>
+     * Note that it is at the discretion of the ACME server to accept this parameter.
+     */
+    public void setCommonName(String cn) {
+        namebuilder.addRDN(BCStyle.CN, toAce(requireNonNull(cn)));
     }
 
     /**
