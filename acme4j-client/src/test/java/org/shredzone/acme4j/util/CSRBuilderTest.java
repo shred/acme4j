@@ -218,6 +218,7 @@ public class CSRBuilderTest {
         builder.addIdentifiers(Identifier.dns("ide2.nt"), Identifier.ip("192.168.5.6"));
         builder.addIdentifiers(Arrays.asList(Identifier.dns("ide3.nt"), Identifier.ip("192.168.5.7")));
 
+        builder.setCommonName("abc.de");
         builder.setCountry("XX");
         builder.setLocality("Testville");
         builder.setOrganization("Testing Co");
