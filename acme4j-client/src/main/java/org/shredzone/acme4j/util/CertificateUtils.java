@@ -270,7 +270,8 @@ public final class CertificateUtils {
                 var extensions = attr[0].getAttrValues().toArray();
                 if (extensions.length > 0 && extensions[0] instanceof Extensions) {
                     var san = GeneralNames.fromExtensions((Extensions) extensions[0], Extension.subjectAlternativeName);
-                    certBuilder.addExtension(Extension.subjectAlternativeName, false, san);
+                    var critical = csr.getSubject().getRDNs().length == 0;
+                    certBuilder.addExtension(Extension.subjectAlternativeName, critical, san);
                 }
             }
 
