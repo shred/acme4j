@@ -213,7 +213,6 @@ public class CSRBuilder {
     public void addValue(ASN1ObjectIdentifier oid, String value) {
         if (requireNonNull(oid, "OID must not be null").equals(BCStyle.CN)) {
             addDomain(value);
-            return;
         }
         namebuilder.addRDN(oid, requireNonNull(value, "attribute value must not be null"));
     }
@@ -224,7 +223,7 @@ public class CSRBuilder {
      * Note that it is at the discretion of the ACME server to accept this parameter.
      */
     public void setCommonName(String cn) {
-        namebuilder.addRDN(BCStyle.CN, toAce(requireNonNull(cn)));
+        addValue(BCStyle.CN, cn);
     }
 
     /**
