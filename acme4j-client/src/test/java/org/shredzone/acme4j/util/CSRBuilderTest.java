@@ -189,7 +189,7 @@ public class CSRBuilderTest {
         builder.addValue("CN", "firstcn.example.com");
         assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com");
         builder.addValue("CN", "scnd.example.com");
-        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com,DNS=scnd.example.com");
+        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,CN=firstcn.example.com,CN=scnd.example.com,DNS=firstcn.example.com,DNS=scnd.example.com");
         
         builder = new CSRBuilder();
         builder.addValue(BCStyle.C, "DE");
@@ -199,7 +199,7 @@ public class CSRBuilderTest {
         builder.addValue(BCStyle.CN, "firstcn.example.com");
         assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com");
         builder.addValue(BCStyle.CN, "scnd.example.com");
-        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,CN=firstcn.example.com,DNS=firstcn.example.com,DNS=scnd.example.com");
+        assertThat(builder.toString()).isEqualTo("C=DE,E=contact@example.com,CN=firstcn.example.com,CN=scnd.example.com,DNS=firstcn.example.com,DNS=scnd.example.com");
     }
 
     private CSRBuilder createBuilderWithValues() throws UnknownHostException {

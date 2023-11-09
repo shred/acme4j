@@ -228,7 +228,7 @@ public class CertificateUtilsTest {
                 notAfter, rootCert, rootKeypair.getPrivate());
 
         assertThat(cert.getIssuerX500Principal().getName()).isEqualTo(rootSubject);
-        assertThat(cert.getSubjectX500Principal().getName()).isEqualTo("CN=example.org");
+        assertThat(cert.getSubjectX500Principal().getName()).isEqualTo("");
         assertThat(getSANs(cert)).contains("example.org", "www.example.org");
         assertThat(getIpSANs(cert)).contains(InetAddress.getByName("192.168.0.1"));
         assertThat(cert.getNotBefore().toInstant()).isEqualTo(notBefore);
