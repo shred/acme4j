@@ -51,7 +51,7 @@
     </developers>
 
     <properties>
-        <bouncycastle.version>1.73</bouncycastle.version><!-- Waiting for release of 1.77, see #142 -->
+        <bouncycastle.version>1.77</bouncycastle.version>
         <httpclient.version>4.5.14</httpclient.version>
         <jakarta.mail.version>2.0.1</jakarta.mail.version>
         <jose4j.version>0.9.3</jose4j.version>
@@ -177,7 +177,7 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.7.3</version>
+            <version>4.8.1</version>
             <optional>true</optional>
             <exclusions>
                 <exclusion>
@@ -189,13 +189,13 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.10.0</version>
+            <version>5.10.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-params</artifactId>
-            <version>5.10.0</version>
+            <version>5.10.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -207,20 +207,20 @@
         <dependency>
             <groupId>net.javacrumbs.json-unit</groupId>
             <artifactId>json-unit-assertj</artifactId>
-            <version>2.38.0</version>
+            <version>3.2.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <!-- Required by json-unit-assertj -->
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20230618</version>
+            <version>20231013</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.6.0</version>
+            <version>5.7.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
