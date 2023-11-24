@@ -64,18 +64,17 @@ public class CSRBuilder {
     private final List<String> namelist = new ArrayList<>();
     private final List<InetAddress> iplist = new ArrayList<>();
     private @Nullable PKCS10CertificationRequest csr = null;
-    
+
     /**
-     * Adds a domain name to the CSR. The first domain name added will also be the
-     * <em>Common Name</em>. All domain names will be added as <em>Subject Alternative
-     * Name</em>.
+     * Adds a domain name to the CSR. All domain names will be added as <em>Subject
+     * Alternative Name</em>.
      * <p>
      * IDN domain names are ACE encoded automatically.
      * <p>
      * For wildcard certificates, the domain name must be prefixed with {@code "*."}.
      *
      * @param domain
-     *            Domain name to add
+     *         Domain name to add
      */
     public void addDomain(String domain) {
         namelist.add(toAce(requireNonNull(domain)));
@@ -218,12 +217,14 @@ public class CSRBuilder {
     }
 
     /**
-     * Sets the common name
+     * Sets the common name.
      * <p>
      * Note that it is at the discretion of the ACME server to accept this parameter.
+     *
+     * @since 3.2.0
      */
     public void setCommonName(String cn) {
-        addValue(BCStyle.CN, cn);
+        namebuilder.addRDN(BCStyle.CN, requireNonNull(cn));
     }
 
     /**
