@@ -1,5 +1,15 @@
 # FAQ and Troubleshooting
 
+## I have lost my account key pair. What can I do?
+
+There is no automatic way to recover the key pair or restore access to your account.
+
+If you just create a new account with a new key pair, subsequent domain authorization attempts are likely to fail because there is already such an authorization associated with your old account.
+
+All you can do is to contact the CA support hotline and ask for support.
+
+You can still revoke certificates without account key pair though, see [here](usage/revocation.md#without-account-key).
+
 ## My `Challenge` is in status `PENDING`. What does it mean?
 
 **Symptom:** After the challenge was triggered, it changes to status `PENDING`.
