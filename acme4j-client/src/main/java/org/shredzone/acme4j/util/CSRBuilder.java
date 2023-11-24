@@ -64,6 +64,7 @@ public class CSRBuilder {
     private final List<String> namelist = new ArrayList<>();
     private final List<InetAddress> iplist = new ArrayList<>();
     private @Nullable PKCS10CertificationRequest csr = null;
+    private boolean hasCnSet = false;
 
     /**
      * Adds a domain name to the CSR. All domain names will be added as <em>Subject
@@ -212,6 +213,10 @@ public class CSRBuilder {
     public void addValue(ASN1ObjectIdentifier oid, String value) {
         if (requireNonNull(oid, "OID must not be null").equals(BCStyle.CN)) {
             addDomain(value);
+            if (hasCnSet) {
+                return;
+            }
+            hasCnSet = true;
         }
         namebuilder.addRDN(oid, requireNonNull(value, "attribute value must not be null"));
     }
