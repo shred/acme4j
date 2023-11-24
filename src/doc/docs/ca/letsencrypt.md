@@ -9,4 +9,4 @@ Web site: [Let's Encrypt](https://letsencrypt.org)
 
 ## Note
 
-* Java 8u101 or higher is required for connecting to the _Let's Encrypt_ servers.
+* Let's Encrypt does not support `Account.getOrders()`. Invocation will throw an `AcmeNotSupportedException`.

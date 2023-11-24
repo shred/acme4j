@@ -24,12 +24,15 @@ nav:
     - 'acme4j-it': acme4j-it/apidocs/index.html
   - Usage:
     - 'usage/index.md'
-    - 'usage/session.md'
+    - 'usage/connecting.md'
     - 'usage/account.md'
-    - 'usage/login.md'
     - 'usage/order.md'
-    - 'usage/certificate.md'
-    - 'debugging.md'
+    - 'usage/renewal.md'
+    - 'usage/revocation.md'
+    - 'usage/persistence.md'
+    - 'usage/exceptions.md'
+    - 'usage/advanced.md'
+    - 'usage/debugging.md'
     - 'faq.md'
   - Challenges:
     - 'challenge/index.md'

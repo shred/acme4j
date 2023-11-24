@@ -1,19 +1,13 @@
-# Register a new Account
+# Account and Login
 
-The first step is to register an account with the CA.
+If it is the first time you interact with the CA, you will need to register an account first.
 
-Your account needs a key pair. The public key is used to identify your account, while the private key is used to sign the requests to the ACME server.
+Your account requires a key pair. The public key is used to identify your account, while the private key is used to sign the requests to the ACME server.
 
 !!! note
-    Your private key is never transmitted to the ACME server.
+    The private key is never transmitted to the ACME server.
 
-After the CA has created your account, it returns an account URL. You will need both the key pair and the account URL for logging into the account later.
-
-## Creating an Account Key Pair
-
-You can use external tools like `openssl` or standard Java methods to create a key pair.
-
-A more convenient way is to use the `KeyPairUtils` class. This call generates a RSA key pair with a 2048 bit key:
+You can use external tools like `openssl` or standard Java methods to create the key pair. A more convenient way is to use the `KeyPairUtils` class. This call generates a RSA key pair with a 2048 bit key:
 
 ```java
 KeyPair accountKeyPair = KeyPairUtils.createKeyPair(2048);
@@ -25,28 +19,14 @@ You can also create an elliptic curve key pair:
 KeyPair accountKeyPair = KeyPairUtils.createECKeyPair("secp256r1");
 ```
 
+The key pair can be saved to a PEM file using `KeyPairUtils.writeKeyPair()`, and read back later using `KeyPairUtils.readKeyPair()`.
+
 !!! danger
-    Your key pair is the only way to access your account. If you should lose it, you will be locked out from your account and certificates. The API does not offer a way to recover access after a key loss. The only way is to contact the CA and hope for assistance. For this reason, it is strongly recommended to keep the key pair in a safe place!
+    Your key pair is the only way to access your account. **If you should lose it, you will be locked out from your account and certificates.** The API does not offer a way to recover access after a key loss. The only way is to contact the CA's support and hope for assistance. For this reason, it is strongly recommended to keep a copy of the key pair in a safe place!
 
-To save a `KeyPair` (actually, the private key of the key pair) to a pem file, you can use this snippet:
+## Creating an Account
 
-```java
-try (FileWriter fw = new FileWriter("keypair.pem")) {
-  KeyPairUtils.writeKeyPair(accountKeyPair, fw);
-}
-```
-
-The following snippet reads the private key from a pem file, and returns a `KeyPair`.
-
-```java
-try (FileReader fr = New FileReader("keypair.pem")) {
-  return KeyPairUtils.readKeyPair(fr);
-}
-```
-
-## Register an Account
-
-Now create an `AccountBuilder`, optionally add some contact information, agree to the terms of service, set the key pair, then invoke `create()`:
+The `AccountBuilder` will take care for creating a new account. Instantiate a builder, optionally add some contact information, agree to the terms of service, set the key pair, then invoke `create()`:
 
 ```java
 Account account = new AccountBuilder()
@@ -58,83 +38,18 @@ Account account = new AccountBuilder()
 URL accountLocationUrl = account.getLocation();
 ```
 
-If the account was successfully created, you will get an `Account` object in return. Invoking its `getLocation()` method will return the location URL of your account. Unlike your key pair, the location is a public information that does not need security precautions.
-
-Now you have a key pair and the account's location URL. This is all you need for [logging in](login.md).
-
 !!! note
     Even if it is tempting to do so, you should not invoke `agreeToTermsOfService()` automatically, but let the user confirm the terms of service first. To get a link to the current terms of service, you can invoke `session.getMetadata().getTermsOfService()`.
 
-If the CA changes the terms of service and requires an explicit agreement to the new terms, an `AcmeUserActionRequiredException` is thrown. Its `getInstance()` method returns the URL of a document that gives instructions about how to agree to the new terms of service. There is no way to automatize this process.
+If the account was successfully created, you will get an `Account` object in return. Invoking its `getLocation()` method will return the location URL of your account.
 
-## Find out your Account's Location URL
+It is recommended to store the location URL along with your key pair. While this is not strictly necessary, it will make it much easier to log into the account later. Unlike your key pair, the location does not need security precautions. The location can [easily be recovered if lost](#login-without-account-url).
 
-If you only have your account's `KeyPair`, you can use the `AccountBuilder` to find out the location `URL` of your account.
+## External Account Binding
 
-```java
-Account account = new AccountBuilder()
-        .onlyExisting()         // Do not create a new account
-        .useKeyPair(keyPair)
-        .create(session);
+At some CAs, you need to create a customer account on their website first, and associate it with your ACME account and keypair later. The CA indicates that this process is required if `session.getMetadata().isExternalAccountRequired()` returns `true`.
 
-URL accountLocationUrl = account.getLocation();
-```
-
-If you do not have an account yet, an exception is raised instead, and no new account is created.
-
-You can recover your account URL that way, but remember that is is not possible to recover your account's key pair.
-
-## Update your Account
-
-At some point, you may want to update your account. For example your contact address might have changed. To do so, invoke `Account.modify()`, perform the changes, and invoke `commit()` to make them permanent.
-
-The following example adds another email address.
-
-```java
-account.modify()
-      .addContact("mailto:acme2@example.com")
-      .commit();
-```
-
-You can also get the list of contacts via` getContacts()`, and modify or remove contact `URI`s there. However, some CAs do not allow to remove all contacts.
-
-!!! note
-    `AccountBuilder` only accepts contact addresses when a _new account_ is created. To modify an existing account, use `Account.modify()` as described in this section.
-
-## Account Key Roll-Over
-
-It is also possible to change the key pair that is associated with your account, for example if you suspect that your key has been compromised.
-
-The following example changes the key pair:
-
-```java
-KeyPair newKeyPair = ... // new KeyPair to be used
-
-account.changeKey(newKeyPair);
-```
-
-After a successful change, all subsequent calls related to this account must use the new key pair. The key is automatically updated on the `Login` that is bound to this `Account` instance.
-
-The old key pair can be disposed of after that. However, I recommend to keep a backup of the old key pair until the key change was proven to be successful, by making a subsequent call with the new key pair. Otherwise you might lock yourself out from your account if the key change should have failed silently, for whatever reason.
-
-## Deactivate an Account
-
-You can deactivate your account if you don't need it any more:
-
-```java
-account.deactivate();
-```
-
-Depending on the CA, the related authorizations may be automatically deactivated as well. The certificates may still be valid until expiration or explicit revocation. If you want to make sure the certificates are invalidated as well, revoke them prior to deactivation of your account.
-
-!!! danger
-    There is no way to reactivate the account once it is deactivated!
-
-## Custom Key Identifier
-
-Some CAs may require you to send a custom Key Identifier, to associate your ACME account with an existing customer account at your CA. The CA indicates that a custom key identifier is required if `session.getMetadata().isExternalAccountRequired()` returns `true`.
-
-Your CA provides you with a _Key Identifier_ and a _MAC Key_ for this purpose. You can pass it to the builder using the `withKeyIdentifier()` method:
+In this case, your CA provides you a _Key Identifier_ (or _KID_) and a _MAC Key_ (or _HMAC Key_). You can pass these credentials to the builder using the `withKeyIdentifier()` method:
 
 ```java
 String kid = ... // Key Identifier
@@ -145,8 +60,112 @@ Account account = new AccountBuilder()
         .withKeyIdentifier(kid, macKey)
         .useKeyPair(keyPair)
         .create(session);
+
+URL accountLocationUrl = account.getLocation();
 ```
 
 For your convenience, you can also pass a base64 encoded MAC Key as `String`.
 
-The MAC algorithm is automatically set from the size of the MAC key. If a different algorithm is required, it can be set using `withMacAlgorithm()`.
+!!! note
+    The MAC algorithm is automatically derived from the size of the MAC key. If a different algorithm is required, it can be set using `withMacAlgorithm()`.
+
+## Login
+
+After creating an account, you need to login into it. You get a `Login` object by providing your account information to the session:
+
+```java
+KeyPair accountKeyPair = ... // account's key pair
+URL accountLocationUrl = ... // account's URL
+
+Login login = session.login(accountLocationUrl, accountKeyPair);
+```
+
+Creating a `Login` object is very cheap. You can always create and dispose them as needed. There is no need to cache or pool them.
+
+!!! tip
+    It is possible to have multiple parallel `Login`s into different accounts in a single session. This is useful if your software handles the certificates of more than one account.
+
+## Login on Creation
+
+If it is more convenient, you can also get a ready to use `Login` object from the `AccountBuilder` when creating a new account:
+
+```java
+Login login = new AccountBuilder()
+        .addContact("mailto:acme@example.com")
+        .agreeToTermsOfService()
+        .useKeyPair(keyPair)
+        .createLogin(session);
+
+URL accountLocationUrl = login.getAccountLocation();
+```
+
+## Login without Account URL
+
+As mentioned above, you will need your account key pair and the account URL for logging in. If you do not know the URL, you can log into your account by creating a new account with the same key pair. The CA will detect that an account with that key is already present, and return the existing one instead.
+
+To avoid that an actual new account is created by accident, you can use the `AccountBuilder.onlyExisting()` method:
+
+```java
+Login login = new AccountBuilder()
+        .onlyExisting()         // Do not create a new account
+        .agreeToTermsOfService()
+        .useKeyPair(keyPair)
+        .createLogin(session);
+
+URL accountLocationUrl = login.getAccountLocation();
+```
+
+It will return a `Login` object just from your keypair, or throw an error if the key was not known to the server.
+
+Remember that there is no way to log into your account without the key pair! 
+
+## Updating the Contacts
+
+At some point, you may want to update your account. For example your contact address might have changed. To do so, invoke `Account.modify()`, perform the changes, and invoke `commit()` to make them permanent.
+
+The following example adds another email address.
+
+```java
+Account account = login.getAccount();
+
+account.modify()
+      .addContact("mailto:acme2@example.com")
+      .commit();
+```
+
+You can also get the list of contacts via `getContacts()`, and modify or remove contact `URI`s there. However, some CAs do not allow to remove all contacts.
+
+!!! note
+    `AccountBuilder` only accepts contact addresses when a _new account_ is created. To modify an existing account, use `Account.modify()` as described in this section. It is not possible to modify the account using the `AccountBuilder` on an existing account.
+
+## Changing the Account Key
+
+It is recommended to change the account key from time to time, e.g if you suspect that your key has been compromised, or if a staff member with knowledge of the key has left the company.
+
+To change the key pair that is associated with your account, you can use the `Account.changeKey()` method:
+
+```java
+KeyPair newKeyPair = ... // new KeyPair to be used
+
+Account account = login.getAccount();
+account.changeKey(newKeyPair);
+```
+
+After a successful change, all subsequent calls related to this account must use the new key pair. The key is automatically updated on the `Login` that was bound to this `Account` instance, so it can be used further. Other existing `Login` instances to the account need to be recreated.
+
+The old key pair can be disposed of after that. However, better keep a backup of the old key pair until the key change was proven to be successful, by making a subsequent call with the new key pair. Otherwise you might lock yourself out from your account if the key change should have failed silently, for whatever reason.
+
+## Account Deactivation
+
+You can deactivate your account if you don't need it any more:
+
+```java
+account.deactivate();
+```
+
+Depending on the CA, the related authorizations may be automatically deactivated as well. If you want to be on the safe side, you can deactivate all authorizations manually, using `Authorization.deactivate()`.
+
+The issued certificates may still be valid until expiration or explicit revocation. If you want to make sure the certificates are invalidated as well, [revoke](revocation.md) them prior to deactivation of your account.
+
+!!! danger
+    There is no way to reactivate the account once it has been deactivated!

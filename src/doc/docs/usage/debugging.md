@@ -41,13 +41,13 @@ This is an example debug log output for creating a new account. This example con
 
 Usually _acme4j_ first logs the action that is taken:
 
-```log
+```text
 [main] DEBUG org.shredzone.acme4j.AccountBuilder - create
 ```
 
 If there is no cached copy of the CA's directory, it is fetched now.
 
-```log
+```text
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - GET https://localhost:14000/dir
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Cache-Control: public, max-age=0, no-cache
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Content-Length: 406
@@ -60,7 +60,7 @@ You can see that a `GET` request to the directory `https://localhost:14000/dir` 
 
 If _acme4j_ has no current nonce, it will fetch a new one from the `newNonce` endpoint found in the directory. A `HEAD` request is sufficient for that.
 
-```log
+```text
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEAD https://localhost:14000/nonce-plz
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Cache-Control: public, max-age=0, no-cache
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Replay-Nonce: Os_sBjfWzVZenwwjvLrwXA
@@ -73,7 +73,7 @@ In the bottom line, the `Replay Nonce` is repeated that was found in the respons
 
 Now _acme4j_ sends a `POST` request to the `newAccount` endpoint. As `Payload`, it will consent to the terms of service, and give optional account information (like the account e-mail address if given). You can also see the `JWS Header` that was sent with the request. It contains the target URL, the *public* JWK of your new account, the nonce from above, and the key algorithm.
 
-```log
+```text
 [main] DEBUG org.shredzone.acme4j.toolbox.JoseUtils - POST https://localhost:14000/sign-me-up
 [main] DEBUG org.shredzone.acme4j.toolbox.JoseUtils -   Payload: {"termsOfServiceAgreed":true}
 [main] DEBUG org.shredzone.acme4j.toolbox.JoseUtils -   JWS Header: {"url":"https://localhost:14000/sign-me-up","jwk":{"kty":"RSA","n":"jyTwiSJACtW_SW-aiihQS5Y5QR704zUwjhlevY0oK-y5wP7SlIc2hq2OPVRarCzjhOxZl2AQFzM5VCR7xRDcnIn9t_pl7Mgsnx9hKDS9yQ24YXzhQ4cMEVVuqwcHvXqPdWDSoCZ1ccMqiiPyBSNGQTXMPY5PBxMOR47XwOb4eNMOPqnzVio3MEtL2wphtEonP3MY6pxJJzzel04wSCRZ4n06reqwER3KwRFPnRpRxAgmSEot5IBLIT3jj-amT5sD7YoUDbPmLk23zgDBIhX88fkClilg1W-fUi1XxYZomEPGvV7OrE1yszt4YDPqKgjJT8t2JPy__1ri-8rZgSxn5Q","e":"AQAB"},"nonce":"Os_sBjfWzVZenwwjvLrwXA","alg":"RS256"}
@@ -81,7 +81,7 @@ Now _acme4j_ sends a `POST` request to the `newAccount` endpoint. As `Payload`, 
 
 This is a possible response of the server:
 
-```log
+```text
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Cache-Control: public, max-age=0, no-cache
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Replay-Nonce: mmnKF6lBuisPWhj9kkFMRA
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Content-Length: 491
@@ -102,7 +102,7 @@ Errors are usually sent as JSON problem structure. In the next example we have t
 
 Again, we see the `POST` request to the `newAccount` endpoint. It uses the nonce `I6rXikEqxJ0aRwu1RvspNw` in the `JWS Header`. That nonce might have already been used in a previous request and is invalid now.
 
-```log
+```text
 [main] DEBUG org.shredzone.acme4j.toolbox.JoseUtils - POST https://localhost:14000/sign-me-up
 [main] DEBUG org.shredzone.acme4j.toolbox.JoseUtils -   Payload: {"contact":["mailto:acme@example.com"],"termsOfServiceAgreed":true}
 [main] DEBUG org.shredzone.acme4j.toolbox.JoseUtils -   JWS Header: {"url":"https://localhost:14000/sign-me-up","jwk":{"kty":"RSA","n":"y5i_8yG9IlL8ra2UWSK12Zy-dS0BYFvu2lerAoJQmYBwtPreOXu4OoIU6ZySAsMxlu2gMLaib62DFAFckEwQP4Bu8yJ4MWdSsiPu6pEs0SAvC61e3lYyDPbSG7FMykhWg5pjbK_NJ4Ysk64DrSA4kc0vxo54YKgxZfzObr4CHBZDaJmkTVtRndI7a8mNFO9pDlfHyb3UyZZPsg3kAUbnI9n3pZatdlGrv6eonbNAREjLvplGEI0_8B08S5fDcm6MqNarxNQIXlEhGDNoYLMGi5tM6CzsfXosHz42Umcym0EXvT1VjfoZMacSDsXleSRwjgewz486LDMErZSc0aUPSQ","e":"AQAB"},"nonce":"I6rXikEqxJ0aRwu1RvspNw","alg":"RS256"}
@@ -110,7 +110,7 @@ Again, we see the `POST` request to the `newAccount` endpoint. It uses the nonce
 
 The server responds with a `400 Bad Request` and an `application/problem+json` document:
 
-```log
+```text
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Cache-Control: public, max-age=0, no-cache
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Replay-Nonce: LDDZAGcBuKYpuNlFTCxPYw
 [main] DEBUG org.shredzone.acme4j.connector.DefaultConnection - HEADER Content-Length: 147
@@ -125,6 +125,6 @@ In the `Result JSON`, you can see a JSON problem document. The `type` and `detai
 
 Fortunately, bad nonces are handled by _acme4j_ internally. It will just resend the request with a new nonce.
 
-```log
+```text
 [main] INFO org.shredzone.acme4j.connector.DefaultConnection - Bad Replay Nonce, trying again (attempt 1/10)
 ```
