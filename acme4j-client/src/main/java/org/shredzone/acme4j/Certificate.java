@@ -266,6 +266,7 @@ public class Certificate extends AcmeResource {
      * removed without notice to reflect future changes to the draft. SemVer rules
      * do not apply here.
      * @return The {@link RenewalInfo} of this certificate.
+     * @throws AcmeNotSupportedException if the CA does not support renewal information.
      * @since 3.0.0
      */
     public RenewalInfo getRenewalInfo() {
@@ -280,14 +281,11 @@ public class Certificate extends AcmeResource {
     /**
      * Signals to the CA that this certificate has been successfully replaced by a newer
      * one. A revocation of this certificate would not disrupt any ongoing services.
-     * <p>
-     * This method is only supported by CAs that are providing renewal information
-     * (see {@link #hasRenewalInfo()}. An {@link AcmeNotSupportedException} is thrown
-     * otherwise.
      *
      * @draft This method is currently based on an RFC draft. It may be changed or
      * removed without notice to reflect future changes to the draft. SemVer rules
      * do not apply here.
+     * @throws AcmeNotSupportedException if the CA does not support renewal information.
      * @since 3.1.0
      */
     public void markAsReplaced() throws AcmeException {
