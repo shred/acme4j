@@ -4,9 +4,7 @@ This is a Java client for the _Automatic Certificate Management Environment_ (AC
 
 ACME is a protocol that a certificate authority (CA) and an applicant can use to automate the process of verification and certificate issuance.
 
-This Java client helps connecting to an ACME server, and performing all necessary steps to manage certificates.
-
-It is an independent open source implementation that is not affiliated with or endorsed by _Let's Encrypt_.
+This Java client helps connecting to the SSL.com ACME server, and performing all necessary steps to manage certificates.
 
 ## Features
 
