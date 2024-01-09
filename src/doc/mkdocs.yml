@@ -44,6 +44,7 @@ nav:
     - 'ca/index.md'
     - 'ca/letsencrypt.md'
     - 'ca/pebble.md'
+    - 'ca/sslcom.md'
   - Development:
     - 'development/index.md'
     - 'development/provider.md'
