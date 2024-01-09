@@ -22,6 +22,10 @@ Such an URI is hard to remember and might even change in the future. For this re
 ```java
 Session session = new Session("acme://letsencrypt.org/staging");
 ```
+or
+```java
+Session session = new Session("acme://ssl.com/staging");
+```
 
 Instead of a generic provider, this call uses a specialized _Let's Encrypt_ provider.
 
@@ -31,6 +35,10 @@ To use the _Let's Encrypt_ production server, you only need to change the ACME U
 
 ```java
 Session session = new Session("acme://letsencrypt.org");
+```
+or to use the _SSL.com_ production server:
+```java
+Session session = new Session("acme://ssl.com");
 ```
 
 ## Metadata

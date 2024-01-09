@@ -37,5 +37,6 @@ module org.shredzone.acme4j {
     provides org.shredzone.acme4j.provider.AcmeProvider
             with org.shredzone.acme4j.provider.GenericAcmeProvider,
                  org.shredzone.acme4j.provider.letsencrypt.LetsEncryptAcmeProvider,
+                 org.shredzone.acme4j.provider.sslcom.SslComAcmeProvider,
                  org.shredzone.acme4j.provider.pebble.PebbleAcmeProvider;
 }
