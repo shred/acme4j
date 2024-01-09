@@ -6,10 +6,14 @@ Basically, it is possible to connect to any kind of ACME server just by connecti
 Session session = new Session("https://acme-v02.api.letsencrypt.org/directory");
 ```
 
-ACME providers are "plug-ins" to _acme4j_ that are specialized on a single CA. For example, the _Let's Encrypt_ provider offers URIs that are much easier to remember. The example above would look like this:
+ACME providers are "plug-ins" to _acme4j_ that are specialized on a single CA. For example, the _Let's Encrypt_ and _SSL.com_ providers offers URIs that are much easier to remember. The example above would look like this:
 
 ```java
 Session session = new Session("acme://letsencrypt.org");
+```
+or this:
+```java
+Session session = new Session("acme://ssl.com");
 ```
 
 ## Writing your own Provider

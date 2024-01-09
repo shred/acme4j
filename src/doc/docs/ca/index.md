@@ -8,6 +8,7 @@ The _acme4j_ package contains these providers:
 
 * [Let's Encrypt](letsencrypt.md)
 * [Pebble](pebble.md)
+* [SSL.com](sslcom.md)
 
 More CAs may be supported in future releases of _acme4j_.
 

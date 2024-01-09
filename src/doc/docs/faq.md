@@ -71,3 +71,4 @@ You can still revoke certificates without account key pair though, see [here](us
 
 * [Let's Encrypt Documentation](https://letsencrypt.org/docs/)
 * [Let's Encrypt Community](https://community.letsencrypt.org/) - If the question is _acme4j_ related, please mention it in your post.
+* [SSL.com Knowledgebase](https://www.ssl.com/info/)
