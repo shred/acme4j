@@ -21,7 +21,7 @@
 @ReturnValuesAreNonnullByDefault
 @DefaultAnnotationForParameters(NonNull.class)
 @DefaultAnnotationForFields(NonNull.class)
-package org.shredzone.acme4j.provider.letsencrypt;
+package org.shredzone.acme4j.provider.sslcom;
 
 import edu.umd.cs.findbugs.annotations.DefaultAnnotationForFields;
 import edu.umd.cs.findbugs.annotations.DefaultAnnotationForParameters;
