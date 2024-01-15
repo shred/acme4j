@@ -78,18 +78,25 @@ public class ClientTest {
      *
      * @param domains
      *         Domains to get a common certificate for
+     * @param eabKid
+     *         Value of --eab-kid
+     * @param eabHmacKey
+     *         Value of --eab-hmac-key
+     * @param emailAddress
+     *         Email address of account that owns the key information
      */
-    public void fetchCertificate(Collection<String> domains) throws IOException, AcmeException {
+    public void fetchCertificate(Collection<String> domains, String eabKid, String eabHmacKey, String emailAddress) throws IOException, AcmeException {
         // Load the user key file. If there is no key file, create a new one.
         KeyPair userKeyPair = loadOrCreateUserKeyPair();
 
         // Create a session for Let's Encrypt.
         // Use "acme://letsencrypt.org" for production server
-        Session session = new Session("acme://letsencrypt.org/staging");
+        Session session = new Session("acme://ssl.com/staging");
+        //Session session = new Session("acme://letsencrypt.org/staging");
 
         // Get the Account.
         // If there is no account yet, create a new one.
-        Account acct = findOrRegisterAccount(session, userKeyPair);
+        Account acct = findOrRegisterAccount(session, userKeyPair, eabKid, eabHmacKey, emailAddress);
 
         // Load or create a key pair for the domains. This should not be the userKeyPair!
         KeyPair domainKeyPair = loadOrCreateDomainKeyPair();
@@ -202,16 +209,27 @@ public class ClientTest {
      *
      * @param session
      *         {@link Session} to bind with
+     * @param eabKid
+     *         Value of --eab-kid
+     * @param eabHmacKey
+     *         Value of --eab-hmac-key
+     * @param emailAddress
+     *         Email address of account that owns the key information
      * @return {@link Account}
      */
-    private Account findOrRegisterAccount(Session session, KeyPair accountKey) throws AcmeException {
+    private Account findOrRegisterAccount(Session session, KeyPair accountKey, String eabKid, String eabHmacKey, String emailAddress) throws AcmeException {
         // Ask the user to accept the TOS, if server provides us with a link.
         Optional<URI> tos = session.getMetadata().getTermsOfService();
         if (tos.isPresent()) {
             acceptAgreement(tos.get());
         }
 
-        Account account = new AccountBuilder()
+        AccountBuilder accountBuilder = new AccountBuilder();
+        if (eabKid != null && eabHmacKey != null && emailAddress != null) {
+            accountBuilder = accountBuilder.withKeyIdentifier(eabKid, eabHmacKey)
+                    .addEmail(emailAddress);
+        }
+        Account account = accountBuilder
                 .agreeToTermsOfService()
                 .useKeyPair(accountKey)
                 .create(session);
@@ -426,7 +444,7 @@ public class ClientTest {
      */
     public static void main(String... args) {
         if (args.length == 0) {
-            System.err.println("Usage: ClientTest <domain>...");
+            System.err.println("Usage: ClientTest <domain,domain,...> <eab-kid>(optional) <eab-hmac-key>(optional) <account-email>(optional)");
             System.exit(1);
         }
 
@@ -434,10 +452,13 @@ public class ClientTest {
 
         Security.addProvider(new BouncyCastleProvider());
 
-        Collection<String> domains = Arrays.asList(args);
+        Collection<String> domains = Arrays.asList(args[0].split(","));
+        String eabKid = args.length > 1 ? args[1] : null;
+        String eabHmacKey = args.length > 2 ? args[2] : null;
+        String emailAddress = args.length > 3 ? args[3] : null;
         try {
             ClientTest ct = new ClientTest();
-            ct.fetchCertificate(domains);
+            ct.fetchCertificate(domains, eabKid, eabHmacKey, emailAddress);
         } catch (Exception ex) {
             LOG.error("Failed to get a certificate for domains " + domains, ex);
         }

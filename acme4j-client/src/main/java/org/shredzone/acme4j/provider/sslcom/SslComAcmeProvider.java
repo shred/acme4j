@@ -33,8 +33,8 @@ import org.shredzone.acme4j.provider.AcmeProvider;
  */
 public class SslComAcmeProvider extends AbstractAcmeProvider {
 
-    private static final String V02_DIRECTORY_URL = "https://acme.ssl.com/sslcom-dv-ecc";
-    private static final String STAGING_DIRECTORY_URL = "https://acme-try.ssl.com/sslcom-dv-ecc";
+    private static final String V02_DIRECTORY_URL = "https://acme.ssl.com/sslcom-dv-rsa";
+    private static final String STAGING_DIRECTORY_URL = "https://acme-try.ssl.com/sslcom-dv-rsa";
 
     @Override
     public boolean accepts(URI serverUri) {
