@@ -13,6 +13,17 @@
  */
 package org.shredzone.acme4j.example;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.shredzone.acme4j.*;
+import org.shredzone.acme4j.challenge.Challenge;
+import org.shredzone.acme4j.challenge.Dns01Challenge;
+import org.shredzone.acme4j.challenge.Http01Challenge;
+import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.util.KeyPairUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.swing.*;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -25,39 +36,17 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 
-import javax.swing.JOptionPane;
-
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.shredzone.acme4j.Account;
-import org.shredzone.acme4j.AccountBuilder;
-import org.shredzone.acme4j.Authorization;
-import org.shredzone.acme4j.Certificate;
-import org.shredzone.acme4j.Order;
-import org.shredzone.acme4j.Problem;
-import org.shredzone.acme4j.Session;
-import org.shredzone.acme4j.Status;
-import org.shredzone.acme4j.challenge.Challenge;
-import org.shredzone.acme4j.challenge.Dns01Challenge;
-import org.shredzone.acme4j.challenge.Http01Challenge;
-import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.util.KeyPairUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * A simple client test tool.
  * <p>
  * Pass the names of the domains as parameters.
  */
-public class ClientTest {
+public class SSLClientWithEabTest {
     // File name of the User Key Pair
     private static final File USER_KEY_FILE = new File("user.key");
 
     // File name of the Domain Key Pair
     private static final File DOMAIN_KEY_FILE = new File("domain.key");
-
-    // File name of the CSR
-    private static final File DOMAIN_CSR_FILE = new File("domain.csr");
 
     // File name of the signed certificate
     private static final File DOMAIN_CHAIN_FILE = new File("domain-chain.crt");
@@ -68,7 +57,7 @@ public class ClientTest {
     // RSA key size of generated key pairs
     private static final int KEY_SIZE = 2048;
 
-    private static final Logger LOG = LoggerFactory.getLogger(ClientTest.class);
+    private static final Logger LOG = LoggerFactory.getLogger(SSLClientWithEabTest.class);
 
     private enum ChallengeType {HTTP, DNS}
 
@@ -78,18 +67,25 @@ public class ClientTest {
      *
      * @param domains
      *         Domains to get a common certificate for
+     * @param eabKid
+     *         Value of --eab-kid
+     * @param eabHmacKey
+     *         Value of --eab-hmac-key
+     * @param emailAddress
+     *         Email address of account that owns the key information
      */
-    public void fetchCertificate(Collection<String> domains) throws IOException, AcmeException {
+    public void fetchCertificate(Collection<String> domains, String eabKid, String eabHmacKey, String emailAddress) throws IOException, AcmeException {
         // Load the user key file. If there is no key file, create a new one.
         KeyPair userKeyPair = loadOrCreateUserKeyPair();
 
         // Create a session for Let's Encrypt.
         // Use "acme://letsencrypt.org" for production server
-        Session session = new Session("acme://letsencrypt.org/staging");
+        Session session = new Session("acme://ssl.com/staging");
+        //Session session = new Session("acme://letsencrypt.org/staging");
 
         // Get the Account.
         // If there is no account yet, create a new one.
-        Account acct = findOrRegisterAccount(session, userKeyPair);
+        Account acct = findOrRegisterAccount(session, userKeyPair, eabKid, eabHmacKey, emailAddress);
 
         // Load or create a key pair for the domains. This should not be the userKeyPair!
         KeyPair domainKeyPair = loadOrCreateDomainKeyPair();
@@ -182,7 +178,7 @@ public class ClientTest {
                 return KeyPairUtils.readKeyPair(fr);
             }
         } else {
-            KeyPair domainKeyPair = KeyPairUtils.createKeyPair(KEY_SIZE);
+            KeyPair domainKeyPair = KeyPairUtils.createKeyPair();
             try (FileWriter fw = new FileWriter(DOMAIN_KEY_FILE)) {
                 KeyPairUtils.writeKeyPair(domainKeyPair, fw);
             }
@@ -202,16 +198,27 @@ public class ClientTest {
      *
      * @param session
      *         {@link Session} to bind with
+     * @param eabKid
+     *         Value of --eab-kid
+     * @param eabHmacKey
+     *         Value of --eab-hmac-key
+     * @param emailAddress
+     *         Email address of account that owns the key information
      * @return {@link Account}
      */
-    private Account findOrRegisterAccount(Session session, KeyPair accountKey) throws AcmeException {
+    private Account findOrRegisterAccount(Session session, KeyPair accountKey, String eabKid, String eabHmacKey, String emailAddress) throws AcmeException {
         // Ask the user to accept the TOS, if server provides us with a link.
         Optional<URI> tos = session.getMetadata().getTermsOfService();
         if (tos.isPresent()) {
             acceptAgreement(tos.get());
         }
 
-        Account account = new AccountBuilder()
+        AccountBuilder accountBuilder = new AccountBuilder();
+        if (eabKid != null && eabHmacKey != null && emailAddress != null) {
+            accountBuilder = accountBuilder.withKeyIdentifier(eabKid, eabHmacKey)
+                    .addEmail(emailAddress);
+        }
+        Account account = accountBuilder
                 .agreeToTermsOfService()
                 .useKeyPair(accountKey)
                 .create(session);
@@ -426,7 +433,7 @@ public class ClientTest {
      */
     public static void main(String... args) {
         if (args.length == 0) {
-            System.err.println("Usage: ClientTest <domain>...");
+            System.err.println("Usage: ClientTest <domain,domain,...> <eab-kid>(optional) <eab-hmac-key>(optional) <account-email>(optional)");
             System.exit(1);
         }
 
@@ -434,10 +441,13 @@ public class ClientTest {
 
         Security.addProvider(new BouncyCastleProvider());
 
-        Collection<String> domains = Arrays.asList(args);
+        Collection<String> domains = Arrays.asList(args[0].split(","));
+        String eabKid = args.length > 1 ? args[1] : null;
+        String eabHmacKey = args.length > 2 ? args[2] : null;
+        String emailAddress = args.length > 3 ? args[3] : null;
         try {
-            ClientTest ct = new ClientTest();
-            ct.fetchCertificate(domains);
+            SSLClientWithEabTest ct = new SSLClientWithEabTest();
+            ct.fetchCertificate(domains, eabKid, eabHmacKey, emailAddress);
         } catch (Exception ex) {
             LOG.error("Failed to get a certificate for domains " + domains, ex);
         }
