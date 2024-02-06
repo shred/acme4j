@@ -34,7 +34,7 @@ public class GenericAcmeProvider extends AbstractAcmeProvider {
     @Override
     public URL resolve(URI serverUri) {
         try {
-            return new URL(serverUri.getScheme(), serverUri.getHost(), serverUri.getPort(), serverUri.getPath());
+            return serverUri.toURL();
         } catch (MalformedURLException ex) {
             throw new IllegalArgumentException("Bad generic server URI", ex);
         }

@@ -44,7 +44,7 @@ public class GenericAcmeProviderTest {
      */
     @Test
     public void testResolve() throws URISyntaxException {
-        var serverUri = new URI("http://example.com/acme");
+        var serverUri = new URI("http://example.com/acme?foo=abc&bar=123");
 
         var provider = new GenericAcmeProvider();
 
