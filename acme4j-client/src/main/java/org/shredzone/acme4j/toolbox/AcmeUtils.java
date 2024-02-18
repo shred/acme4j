@@ -16,21 +16,29 @@ package org.shredzone.acme4j.toolbox;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.net.IDN;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
+import org.bouncycastle.asn1.x509.Certificate;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 
 /**
@@ -320,6 +328,59 @@ public final class AcmeUtils {
                 throw new IllegalArgumentException(
                         "multiple recipients or hfields are not allowed: " + contact);
             }
+        }
+    }
+
+    /**
+     * Returns the certificate's unique identifier for renewal according to
+     * draft-ietf-acme-ari-03.
+     *
+     * @param certificate
+     *         Certificate to get the unique identifier for.
+     * @return Unique identifier
+     * @throws AcmeProtocolException
+     *         if the certificate is invalid or does not provide the necessary
+     *         information.
+     */
+    public static String getRenewalUniqueIdentifier(X509Certificate certificate) {
+        try {
+            var cert = new X509CertificateHolder(certificate.getEncoded());
+
+            var aki = Optional.of(cert)
+                    .map(X509CertificateHolder::getExtensions)
+                    .map(AuthorityKeyIdentifier::fromExtensions)
+                    .map(AuthorityKeyIdentifier::getKeyIdentifier)
+                    .map(AcmeUtils::base64UrlEncode)
+                    .orElseThrow(() -> new AcmeProtocolException("Missing or invalid Authority Key Identifier"));
+
+            var sn = Optional.of(cert)
+                    .map(X509CertificateHolder::toASN1Structure)
+                    .map(Certificate::getSerialNumber)
+                    .map(AcmeUtils::getRawInteger)
+                    .map(AcmeUtils::base64UrlEncode)
+                    .orElseThrow(() -> new AcmeProtocolException("Missing or invalid serial number"));
+
+            return aki + '.' + sn;
+        } catch (Exception ex) {
+            throw new AcmeProtocolException("Invalid certificate", ex);
+        }
+    }
+
+    /**
+     * Gets the raw integer array from ASN1Integer. This is done by encoding it to a byte
+     * array, and then skipping the INTEGER identifier. Other methods of ASN1Integer only
+     * deliver a parsed integer value that might have been mangled.
+     *
+     * @param integer
+     *         ASN1Integer to convert to raw
+     * @return Byte array of the raw integer
+     */
+    private static byte[] getRawInteger(ASN1Integer integer) {
+        try {
+            var encoded = integer.getEncoded();
+            return Arrays.copyOfRange(encoded, 2, encoded.length);
+        } catch (IOException ex) {
+            throw new UncheckedIOException(ex);
         }
     }
 
