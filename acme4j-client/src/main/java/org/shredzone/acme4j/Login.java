@@ -14,12 +14,16 @@
 package org.shredzone.acme4j;
 
 import static java.util.Objects.requireNonNull;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.getRenewalUniqueIdentifier;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyPair;
+import java.security.cert.X509Certificate;
 import java.util.Objects;
 
 import org.shredzone.acme4j.challenge.Challenge;
+import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
@@ -143,6 +147,31 @@ public class Login {
      */
     public RenewalInfo bindRenewalInfo(URL location) {
         return new RenewalInfo(this, requireNonNull(location, "location"));
+    }
+
+    /**
+     * Creates a new instance of an existing {@link RenewalInfo} and binds it to this
+     * login.
+     *
+     * @param certificate
+     *         {@link X509Certificate} to get the {@link RenewalInfo} for
+     * @return {@link RenewalInfo} bound to the login
+     * @draft This method is currently based on an RFC draft. It may be changed or removed
+     * without notice to reflect future changes to the draft. SemVer rules do not apply
+     * here.
+     * @since 3.2.0
+     */
+    public RenewalInfo bindRenewalInfo(X509Certificate certificate) throws AcmeException {
+        try {
+            var url = getSession().resourceUrl(Resource.RENEWAL_INFO).toExternalForm();
+            if (!url.endsWith("/")) {
+                url += '/';
+            }
+            url += getRenewalUniqueIdentifier(certificate);
+            return bindRenewalInfo(new URL(url));
+        } catch (MalformedURLException ex) {
+            throw new AcmeProtocolException("Invalid RenewalInfo URL", ex);
+        }
     }
 
     /**

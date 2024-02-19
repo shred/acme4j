@@ -16,6 +16,8 @@ package org.shredzone.acme4j;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toUnmodifiableList;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.base64UrlEncode;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.getRenewalUniqueIdentifier;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -197,7 +199,10 @@ public class Certificate extends AcmeResource {
      *
      * @see <a href="https://www.rfc-editor.org/rfc/rfc6960.html">RFC 6960</a>
      * @since 3.0.0
+     * @deprecated Is not needed in the ACME context anymore and will thus be removed in
+     * a later version.
      */
+    @Deprecated
     public String getCertID() {
         var certChain = getCertificateChain();
         if (certChain.size() < 2) {
@@ -212,7 +217,7 @@ public class Certificate extends AcmeResource {
             var digestCalc = builder.build().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256));
             var issuerHolder = new X509CertificateHolder(certChain.get(1).getEncoded());
             var certId = new CertificateID(digestCalc, issuerHolder, certChain.get(0).getSerialNumber());
-            return AcmeUtils.base64UrlEncode(certId.toASN1Primitive().getEncoded());
+            return base64UrlEncode(certId.toASN1Primitive().getEncoded());
         } catch (Exception ex) {
             throw new AcmeProtocolException("Could not compute Certificate ID", ex);
         }
@@ -236,7 +241,7 @@ public class Certificate extends AcmeResource {
                             if (!url.endsWith("/")) {
                                 url += '/';
                             }
-                            url += getCertID();
+                            url += getRenewalUniqueIdentifier(getCertificate());
                             return new URL(url);
                         } catch (MalformedURLException ex) {
                             throw new AcmeProtocolException("Invalid RenewalInfo URL", ex);
@@ -276,28 +281,6 @@ public class Certificate extends AcmeResource {
                     .orElseThrow(() -> new AcmeNotSupportedException("renewal-info"));
         }
         return renewalInfo;
-    }
-
-    /**
-     * Signals to the CA that this certificate has been successfully replaced by a newer
-     * one. A revocation of this certificate would not disrupt any ongoing services.
-     *
-     * @draft This method is currently based on an RFC draft. It may be changed or
-     * removed without notice to reflect future changes to the draft. SemVer rules
-     * do not apply here.
-     * @throws AcmeNotSupportedException if the CA does not support renewal information.
-     * @since 3.1.0
-     */
-    public void markAsReplaced() throws AcmeException {
-        LOG.debug("mark as replaced");
-        var session = getSession();
-        var renewalInfoUrl = session.resourceUrl(Resource.RENEWAL_INFO);
-        try (var conn = session.connect()) {
-            var claims = new JSONBuilder();
-            claims.put("certID", getCertID());
-            claims.put("replaced", true);
-            conn.sendSignedRequest(renewalInfoUrl, claims, getLogin());
-        }
     }
 
     /**

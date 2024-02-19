@@ -15,7 +15,6 @@ package org.shredzone.acme4j;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.shredzone.acme4j.toolbox.TestUtils.*;
 
 import java.io.ByteArrayOutputStream;
@@ -37,7 +36,6 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -286,8 +284,8 @@ public class CertificateTest {
      */
     @Test
     public void testRenewalInfo() throws AcmeException, IOException {
-        var certId = "MFswCwYJYIZIAWUDBAIBBCCeWLRusNLb--vmWOkxm34qDjTMWkc3utIhOMoMwKDqbgQg2iiKWySZrD-6c88HMZ6vhIHZPamChLlzGHeZ7pTS8jYCCD6jRWhlRB8c";
-        // certid-cert.pem and certId provided by draft-ietf-acme-ari-01 and known good
+        // certid-cert.pem and certId provided by draft-ietf-acme-ari-03 and known good
+        var certId = "aYhba4dGQEHhs3uEe6CuLN4ByNQ.AIdlQyE";
         var certIdCert = TestUtils.createCertificate("/certid-cert.pem");
         var certResourceUrl = new URL(resourceUrl.toExternalForm() + "/" + certId);
         var retryAfterInstant = Instant.now().plus(10L, ChronoUnit.DAYS);
@@ -339,7 +337,7 @@ public class CertificateTest {
         provider.putTestResource(Resource.RENEWAL_INFO, resourceUrl);
 
         var cert = new Certificate(provider.createLogin(), locationUrl);
-        assertThat(cert.getCertID()).isEqualTo(certId);
+        assertThat(cert.getCertID()).isEqualTo("MFgwCwYJYIZIAWUDBAIBBCCeWLRusNLb--vmWOkxm34qDjTMWkc3utIhOMoMwKDqbgQg2iiKWySZrD-6c88HMZ6vhIHZPamChLlzGHeZ7pTS8jYCBQCHZUMh");
         assertThat(cert.hasRenewalInfo()).isTrue();
         assertThat(cert.getRenewalInfoLocation())
                 .isNotEmpty()
@@ -365,8 +363,8 @@ public class CertificateTest {
      */
     @Test
     public void testMarkedAsReplaced() throws AcmeException, IOException {
-        // certid-cert.pem and certId provided by draft-ietf-acme-ari-01 and known good
-        var certId = "MFswCwYJYIZIAWUDBAIBBCCeWLRusNLb--vmWOkxm34qDjTMWkc3utIhOMoMwKDqbgQg2iiKWySZrD-6c88HMZ6vhIHZPamChLlzGHeZ7pTS8jYCCD6jRWhlRB8c";
+        // certid-cert.pem and certId provided by draft-ietf-acme-ari-03 and known good
+        var certId = "aYhba4dGQEHhs3uEe6CuLN4ByNQ.AIdlQyE";
         var certIdCert = TestUtils.createCertificate("/certid-cert.pem");
         var certResourceUrl = new URL(resourceUrl.toExternalForm() + "/" + certId);
 
@@ -405,54 +403,10 @@ public class CertificateTest {
         provider.putTestResource(Resource.RENEWAL_INFO, resourceUrl);
 
         var cert = new Certificate(provider.createLogin(), locationUrl);
-        assertThat(cert.getCertID()).isEqualTo(certId);
         assertThat(cert.hasRenewalInfo()).isTrue();
         assertThat(cert.getRenewalInfoLocation())
                 .isNotEmpty()
                 .contains(certResourceUrl);
-
-        cert.markAsReplaced();
-
-        provider.close();
-    }
-
-    /**
-     * Test that markAsReplaced() throws an exception if not supported.
-     */
-    @Test
-    public void testMarkedAsReplacedThrowsIfNotSupported() throws AcmeException, IOException {
-        var certIdCert = TestUtils.createCertificate("/certid-cert.pem");
-
-        var provider = new TestableConnectionProvider() {
-            private boolean certRequested = false;
-
-            @Override
-            public int sendCertificateRequest(URL url, Login login) {
-                assertThat(url).isEqualTo(locationUrl);
-                assertThat(login).isNotNull();
-                certRequested = true;
-                return HttpURLConnection.HTTP_OK;
-            }
-
-            @Override
-            public List<X509Certificate> readCertificates() {
-                assertThat(certRequested).isTrue();
-                return certIdCert;
-            }
-
-            @Override
-            public Collection<URL> getLinks(String relation) {
-                return Collections.emptyList();
-            }
-        };
-
-        // We just need a dummy resource to create a directory
-        provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
-
-        assertThatExceptionOfType(AcmeNotSupportedException.class).isThrownBy(() -> {
-            var cert = new Certificate(provider.createLogin(), locationUrl);
-            cert.markAsReplaced();
-        });
 
         provider.close();
     }

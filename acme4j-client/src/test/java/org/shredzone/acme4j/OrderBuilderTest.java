@@ -168,6 +168,7 @@ public class OrderBuilderTest {
                         .autoRenewalLifetime(validity)
                         .autoRenewalLifetimeAdjust(predate)
                         .autoRenewalEnableGet()
+                        .replaces("aYhba4dGQEHhs3uEe6CuLN4ByNQ.AIdlQyE")
                         .create();
 
         try (var softly = new AutoCloseableSoftAssertions()) {

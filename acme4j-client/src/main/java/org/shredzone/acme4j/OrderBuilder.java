@@ -15,11 +15,14 @@ package org.shredzone.acme4j;
 
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
+import static org.shredzone.acme4j.toolbox.AcmeUtils.getRenewalUniqueIdentifier;
 
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -44,6 +47,7 @@ public class OrderBuilder {
     private final Set<Identifier> identifierSet = new LinkedHashSet<>();
     private @Nullable Instant notBefore;
     private @Nullable Instant notAfter;
+    private @Nullable String replaces;
     private boolean autoRenewal;
     private @Nullable Instant autoRenewalStart;
     private @Nullable Instant autoRenewalEnd;
@@ -172,6 +176,65 @@ public class OrderBuilder {
         }
         this.autoRenewal = true;
         return this;
+    }
+
+    /**
+     * Notifies the CA that the ordered certificate will replace a previously issued
+     * certificate. The certificate is identified by its ARI unique identifier.
+     * <p>
+     * Optional, only supported if the CA provides renewal information. However, in this
+     * case the client <em>should</em> include this field.
+     *
+     * @param uniqueId
+     *         Certificate's renewal unique identifier.
+     * @return itself
+     * @draft This method is currently based on an RFC draft. It may be changed or removed
+     * without notice to reflect future changes to the draft. SemVer rules do not apply
+     * here.
+     * @since 3.2.0
+     */
+    public OrderBuilder replaces(String uniqueId) {
+        autoRenewal();
+        this.replaces = Objects.requireNonNull(uniqueId);
+        return this;
+    }
+
+    /**
+     * Notifies the CA that the ordered certificate will replace a previously issued
+     * certificate.
+     * <p>
+     * Optional, only supported if the CA provides renewal information. However, in this
+     * case the client <em>should</em> include this field.
+     *
+     * @param certificate
+     *         Certificate to be replaced
+     * @return itself
+     * @draft This method is currently based on an RFC draft. It may be changed or removed
+     * without notice to reflect future changes to the draft. SemVer rules do not apply
+     * here.
+     * @since 3.2.0
+     */
+    public OrderBuilder replaces(X509Certificate certificate) {
+        return replaces(getRenewalUniqueIdentifier(certificate));
+    }
+
+    /**
+     * Notifies the CA that the ordered certificate will replace a previously issued
+     * certificate.
+     * <p>
+     * Optional, only supported if the CA provides renewal information. However, in this
+     * case the client <em>should</em> include this field.
+     *
+     * @param certificate
+     *         Certificate to be replaced
+     * @return itself
+     * @draft This method is currently based on an RFC draft. It may be changed or removed
+     * without notice to reflect future changes to the draft. SemVer rules do not apply
+     * here.
+     * @since 3.2.0
+     */
+    public OrderBuilder replaces(Certificate certificate) {
+        return replaces(certificate.getCertificate());
     }
 
     /**
@@ -310,6 +373,10 @@ public class OrderBuilder {
                 if (autoRenewalGet) {
                     arClaims.put("allow-certificate-get", autoRenewalGet);
                 }
+            }
+
+            if (replaces != null) {
+                claims.put("replaces", replaces);
             }
 
             conn.sendSignedRequest(session.resourceUrl(Resource.NEW_ORDER), claims, login);

@@ -13,14 +13,14 @@ There is no special path for renewing a certificate. To renew it, just [order](o
 
 ## Renewal Information
 
-_acme4j_ supports the [draft-ietf-acme-ari-01](https://www.ietf.org/archive/id/draft-ietf-acme-ari-01.html) draft.
+_acme4j_ supports the [draft-ietf-acme-ari-03](https://www.ietf.org/archive/id/draft-ietf-acme-ari-03.html) draft.
 
 You can check if the CA offers renewal information by invoking `Certificate.hasRenewalInfo()`. If it does, you can get a suggested time window for certificate nenewal by invoking `Certificate.getRenewalInfo()`.
 
-After you renewed the certificate and made sure the old certificate is not used anymore, you can invoke `Certificate.markAsReplaced()` on the _old_ certificate. It will show the CA that the renewal is completed, and that the old certificate can be revoked.
+When renewing a certificate, you can use `OrderBuilder.replaces()` to mark your current certificate as the one being replaced. This step is optional though.
 
 !!! note
-    The next version of the draft contains changes that are not backward compatible. _acme4j_ only supports version 01 of the draft at the moment. Also, because of the dynamic nature of the draft, all parts of the API that are related to this draft may be changed or removed without notice. SemVer rules do not apply here.
+    Starting with _acme4j_ v3.2.0, the now obsolete [draft-ietf-acme-ari-01](https://www.ietf.org/archive/id/draft-ietf-acme-ari-01.html) is not supported anymore! If your server requires the old draft, use _acme4j_ v3.1.1 until the CA upgraded its systems. Because of the dynamic nature of the draft, all parts of the API that are related to this draft may be changed or removed without notice. SemVer rules do not apply here.
 
 ## Short-Term Automatic Renewal
 
