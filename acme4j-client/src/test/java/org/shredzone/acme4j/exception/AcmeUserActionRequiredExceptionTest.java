@@ -45,6 +45,7 @@ public class AcmeUserActionRequiredExceptionTest {
         assertThat(ex.getMessage()).isEqualTo(detail);
         assertThat(ex.getTermsOfServiceUri().orElseThrow()).isEqualTo(tosUri);
         assertThat(ex.getInstance()).isEqualTo(instanceUrl);
+        assertThat(ex.toString()).isEqualTo("Please visit " + instanceUrl + " - details: " + detail);
     }
 
     /**
@@ -64,6 +65,7 @@ public class AcmeUserActionRequiredExceptionTest {
         assertThat(ex.getMessage()).isEqualTo(detail);
         assertThat(ex.getTermsOfServiceUri()).isEmpty();
         assertThat(ex.getInstance()).isEqualTo(instanceUrl);
+        assertThat(ex.toString()).isEqualTo("Please visit " + instanceUrl + " - details: " + detail);
     }
 
 }

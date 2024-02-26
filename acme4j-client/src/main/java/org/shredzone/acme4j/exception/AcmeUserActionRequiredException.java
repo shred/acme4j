@@ -69,4 +69,11 @@ public class AcmeUserActionRequiredException extends AcmeServerException {
         }
     }
 
+    @Override
+    public String toString() {
+        return getProblem().getInstance()
+                .map(uri -> "Please visit " + uri + " - details: " + getProblem())
+                .orElseGet(super::toString);
+    }
+
 }
