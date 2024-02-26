@@ -119,6 +119,21 @@ public final class JSON implements Serializable {
     }
 
     /**
+     * Creates a JSON object from a map.
+     * <p>
+     * The map's content is deeply copied. Changes to the map won't reflect in the created
+     * JSON structure.
+     *
+     * @param data
+     *         Map structure
+     * @return {@link JSON} of the map's content.
+     * @since 3.2.0
+     */
+    public static JSON fromMap(Map<String, Object> data) {
+        return JSON.parse(JsonUtil.toJson(data));
+    }
+
+    /**
      * Returns a {@link JSON} of an empty document.
      *
      * @return Empty {@link JSON}

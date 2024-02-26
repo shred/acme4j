@@ -13,7 +13,7 @@ Available since acme4j 3.2.0
 
 ## Note
 
-* This CA requires [External Account Binding (EAB)](../usage/account.md#external-account-binding) for account creation. However `Metadata.isExternalAccountRequired()` returns `false` due to an error in the CA's directory resource.
+* This CA requires [External Account Binding (EAB)](../usage/account.md#external-account-binding) for account creation. However, the CA's directory resource returns `externalAccountRequired` as `false`, which is incorrect. If you use one of the `acme:` URIs above, _acme4j_ will patch the metadata transparently. If you directly connect to SSL.com via `https:` URI though, `Metadata.isExternalAccountRequired()` could return a wrong value. (As of February 2024)
 
 ## Disclaimer
 

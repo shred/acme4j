@@ -16,10 +16,14 @@ package org.shredzone.acme4j.provider.sslcom;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Map;
 
+import org.shredzone.acme4j.Session;
+import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AbstractAcmeProvider;
 import org.shredzone.acme4j.provider.AcmeProvider;
+import org.shredzone.acme4j.toolbox.JSON;
 
 /**
  * An {@link AcmeProvider} for <em>SSL.com</em>.
@@ -66,6 +70,23 @@ public class SslComAcmeProvider extends AbstractAcmeProvider {
         } catch (MalformedURLException ex) {
             throw new AcmeProtocolException(directoryUrl, ex);
         }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public JSON directory(Session session, URI serverUri) throws AcmeException {
+        // This is a workaround for a bug at SSL.com. It requires account registration
+        // by EAB, but the "externalAccountRequired" flag in the directory is set to
+        // false. This patch reads the directory and forcefully sets the flag to true.
+        // The entire method can be removed once it is fixed on SSL.com side.
+        var directory = super.directory(session, serverUri).toMap();
+        var meta = directory.get("meta");
+        if (meta instanceof Map) {
+            var metaMap = ((Map<String, Object>) meta);
+            metaMap.remove("externalAccountRequired");
+            metaMap.put("externalAccountRequired", true);
+        }
+        return JSON.fromMap(directory);
     }
 
 }
