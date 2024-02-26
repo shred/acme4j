@@ -75,6 +75,16 @@ You can still revoke certificates without account key pair though, see [here](us
 
 **Solution:** It is a difficult situation that is caused by an ambiguous specification, but it is like it is now. Since _acme4j_ follows the intention of the RFC author, I take the position that the _acme4j_ implementation is correct. Please open a bug report at the CA, and refer to [this issue](https://github.com/shred/acme4j/issues/123). If the two tokens are split at a position so the first token won't have trailing base64 padding bits, the CA service can be implemented in a way that is compatible to both interpretations.
 
+## Suddenly acme4j starts throwing `AcmeUserActionRequiredException` everywhere! How can I fix that?
+
+**Sympton:** Many _acme4j_ methods suddenly throw a `AcmeUserActionRequiredException` after interacting with the server. It is impossible to order certificates.
+
+**Cause:** The CA has probably changed its terms of service and wants you to accept them before resuming.
+
+**Solution:** Invoke `AcmeUserActionRequiredException.getInstance()` to get an URL of a web page that describes all further steps to be taken. You might also be able to resolve the issue by logging into your CA's account, but that is up to the CA's discretion.
+
+Unfortunately, manual action is required in any case, there is no way to automate this process. This is an intentional protocol decision, and _acme4j_ is just the messenger.
+
 ## Where can I find more help?
 
 * [Let's Encrypt Documentation](https://letsencrypt.org/docs/)

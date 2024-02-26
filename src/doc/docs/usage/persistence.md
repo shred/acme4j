@@ -9,7 +9,7 @@ All CA related resources are derived from the `AcmeResource` class:
 * `Order`: A certificate order
 * `RenewalInfo`: Renewal information
 
-These classes reflect the state of the corresponding resource on the ACME server side. Except of `Certificate`, they also keep a copy of the current resource state that can be updated via `update()`.
+These classes reflect the state of the corresponding resource on the ACME server side. They also keep a copy of the current resource state that can be updated via `update()`. The only exception is the `Certificate` resource, which will never change its state and thus does not need to be updated.
 
 ## Resource Location
 

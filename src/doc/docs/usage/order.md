@@ -177,7 +177,7 @@ To get a list of all current orders of your account, invoke `Account.getOrders()
 Note that for reasons lying in the ACME protocol, the result is an `Iterator<Order>` and not a list. Also, any invocation of `Iterator.next()` can initiate a network call to the CA, and may throw an `AcmeProtocolException` if there was an error.
 
 !!! important
-    This method is a mandatory part of RFC-8555. Still, as of now, this functionality has not been implemented in all [Boulder](https://github.com/letsencrypt/boulder) based CAs (like Let's Encrypt) and will throw an `AcmeNotSupportedException`. Also see [this issue](https://github.com/letsencrypt/boulder/issues/3335). At the moment, the only workaround is to store `Order` location URLs (or other resource URLs) locally along with the certificates.
+    This method is a mandatory part of RFC-8555. Still, as of now, this functionality has not been implemented in all [Boulder](https://github.com/letsencrypt/boulder) based CAs (like Let's Encrypt) and will throw an `AcmeNotSupportedException`. Also see [this issue](https://github.com/letsencrypt/boulder/issues/3335). At the moment, the only workaround is to store `Order` location URLs (or other resource URLs) locally along with the certificates, see the [Resources and Persistence](./persistence.md) chapter.
 
 
 ## Wildcard Certificates
