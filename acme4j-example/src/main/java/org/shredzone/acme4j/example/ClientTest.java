@@ -53,26 +53,54 @@ import org.slf4j.LoggerFactory;
 /**
  * A simple client test tool.
  * <p>
- * Pass the names of the domains as parameters.
+ * First check the configuration constants at the top of the class. Then run the class,
+ * and pass in the names of the domains as parameters.
+ * <p>
+ * The tool won't run as-is. You MUST change the {@link #CA_URI} constant and set the
+ * connection URI of your target CA there.
+ * <p>
+ * If your CA requires External Account Binding (EAB), you MUST also fill the
+ * {@link #EAB_KID} and {@link #EAB_HMAC} constants with the values provided by your CA.
+ * <p>
+ * If your CA requires an email field to be set in your account, you also need to set
+ * {@link #ACCOUNT_EMAIL}.
+ * <p>
+ * All other fields are optional and should work with the default values, unless your CA
+ * has special requirements (e.g. to the key type).
+ *
+ * @see <a href="https://shredzone.org/maven/acme4j/example.html">This example, fully
+ * explained in the documentation.</a>
  */
 public class ClientTest {
+    // Set the Connection URI of your CA here. For testing purposes, use a staging
+    // server if possible. Example: "acme://letsencrypt.org/staging" for the Let's
+    // Encrypt staging server.
+    private static final String CA_URI = "acme://example.com/staging";
+
+    // E-Mail address to be associated with the account. Optional, null if not used.
+    private static final String ACCOUNT_EMAIL = null;
+
+    // If the CA requires External Account Binding (EAB), set the provided KID and HMAC here.
+    private static final String EAB_KID = null;
+    private static final String EAB_HMAC = null;
+
+    // A supplier for a new account KeyPair. The default creates a new EC key pair.
+    private static Supplier<KeyPair> ACCOUNT_KEY_SUPPLIER = () -> KeyPairUtils.createKeyPair();
+
+    // A supplier for a new domain KeyPair. The default creates a RSA key pair.
+    private static Supplier<KeyPair> DOMAIN_KEY_SUPPLIER = () -> KeyPairUtils.createKeyPair(4096);
+
     // File name of the User Key Pair
     private static final File USER_KEY_FILE = new File("user.key");
 
     // File name of the Domain Key Pair
     private static final File DOMAIN_KEY_FILE = new File("domain.key");
 
-    // File name of the CSR
-    private static final File DOMAIN_CSR_FILE = new File("domain.csr");
-
     // File name of the signed certificate
     private static final File DOMAIN_CHAIN_FILE = new File("domain-chain.crt");
 
     //Challenge type to be used
     private static final ChallengeType CHALLENGE_TYPE = ChallengeType.HTTP;
-
-    // RSA key size of generated key pairs
-    private static final int KEY_SIZE = 2048;
 
     // Maximum attempts of status polling until VALID/INVALID is expected
     private static final int MAX_ATTEMPTS = 50;
@@ -92,9 +120,8 @@ public class ClientTest {
         // Load the user key file. If there is no key file, create a new one.
         KeyPair userKeyPair = loadOrCreateUserKeyPair();
 
-        // Create a session for Let's Encrypt.
-        // Use "acme://letsencrypt.org" for production server
-        Session session = new Session("acme://letsencrypt.org/staging");
+        // Create a session.
+        Session session = new Session(CA_URI);
 
         // Get the Account.
         // If there is no account yet, create a new one.
@@ -157,7 +184,7 @@ public class ClientTest {
 
         } else {
             // If there is none, create a new key pair and save it
-            KeyPair userKeyPair = KeyPairUtils.createKeyPair(KEY_SIZE);
+            KeyPair userKeyPair = ACCOUNT_KEY_SUPPLIER.get();
             try (FileWriter fw = new FileWriter(USER_KEY_FILE)) {
                 KeyPairUtils.writeKeyPair(userKeyPair, fw);
             }
@@ -177,7 +204,7 @@ public class ClientTest {
                 return KeyPairUtils.readKeyPair(fr);
             }
         } else {
-            KeyPair domainKeyPair = KeyPairUtils.createKeyPair(KEY_SIZE);
+            KeyPair domainKeyPair = DOMAIN_KEY_SUPPLIER.get();
             try (FileWriter fw = new FileWriter(DOMAIN_KEY_FILE)) {
                 KeyPairUtils.writeKeyPair(domainKeyPair, fw);
             }
@@ -206,10 +233,21 @@ public class ClientTest {
             acceptAgreement(tos.get());
         }
 
-        Account account = new AccountBuilder()
+        AccountBuilder accountBuilder = new AccountBuilder()
                 .agreeToTermsOfService()
-                .useKeyPair(accountKey)
-                .create(session);
+                .useKeyPair(accountKey);
+
+        // Set your email (if available)
+        if (ACCOUNT_EMAIL != null) {
+            accountBuilder.addEmail(ACCOUNT_EMAIL);
+        }
+
+        // Use the KID and HMAC if the CA uses External Account Binding
+        if (EAB_KID != null && EAB_HMAC != null) {
+            accountBuilder.withKeyIdentifier(EAB_KID, EAB_HMAC);
+        }
+
+        Account account = accountBuilder.create(session);
         LOG.info("Registered a new user, URL: {}", account.getLocation());
 
         return account;

@@ -16,15 +16,36 @@ This chapter contains a copy of the class file, along with explanations about wh
 
 - To make the example easier to understand, I will use the specific datatypes instead of the `var` keyword.
 
+## Configuration
+
+**The example won't run as-is.** You first need to set some constants according to the CA you intend to connect to. All constants can be found at the top of the class.
+
+There is one constant that you **must** change in order to make the example work at all:
+
+* `CA_URI`: Set this constant to the connection URI of the CA you intend to use, see the [Connecting](usage/connecting.md) chapter. (The default value is just an example placeholder and won't work.)
+
+Depending on the requirements of your CA, you might also need to set these constants:
+
+* `ACCOUNT_EMAIL`: This is the email address that is connected to your account. The default is `null`, meaning that no email address is set. Some CAs accept that, but otherwise you can set your email address here.
+* `EAB_KID`, `EAB_HMAC`: If your CA requires External Account Binding (EAB), it will provide you with a KID and a HMAC pair that is connected to your account. In this case, you must provide both values in the corresponding constants (be careful not to mix them up). Otherwise both constants must be set to `null`, which is the default and disables EAB.
+
+The other constants should work with their default values, but can still be changed if necessary:
+
+* `ACCOUNT_KEY_SUPPLIER`: A function for generating a new account key pair. The default generates an EC key pair, but you can also use other `KeyPairUtils` methods (or entirely different means) to generate other kind of key pairs.
+* `DOMAIN_KEY_SUPPLIER`: A function for generating a new domain key pair. The default generates an RSA key pair, but you can also use other `KeyPairUtils` methods (or entirely different means) to generate other kind of key pairs.
+* `USER_KEY_FILE`: File name where the generated account key is stored. Default is `user.key`.
+* `DOMAIN_KEY_FILE`: File name where the generated domain key is stored. Default is `domain.key`.
+* `DOMAIN_CHAIN_FILE`: File name where the ordered domain certificate chain is stored. Default is `domain-chain.crt`.
+* `CHALLENGE_TYPE`: The challenge type you want to perform for domain validation. The default is `ChallengeType.HTTP` for [http-01](challenge/http-01.md) validation, but you can also use `ChallengeType.DNS` to perform a [dns-01](challenge/dns-01.md) validation. The example does not support other kind of challenges.
+* `MAX_ATTEMPTS`: Maximum number of poll attempts until a status poll is aborted.
+
 ## Running the Example
 
-You can run the `ClientTest` class in your IDE, giving the domain names to be registered as parameters. When changing into the `acme4j-example` directory, the test client can also be invoked via maven in a command line:
+After configuration, you can run the `ClientTest` class in your IDE, giving the domain names to be registered as parameters. When changing into the `acme4j-example` directory, the test client can also be invoked via maven in a command line:
 
 ```sh
 mvn exec:java -Dexec.args="example.com example.org"
 ```
-
-It is safe to run the example in the default configuration. The domains will be registered with the _Let's Encrypt staging server_ via HTTP challenges. The generated certificates are test certificates that are not suited for production use, as they will be rejected by all standard browsers.
 
 ## Invocation
 
@@ -64,9 +85,8 @@ public void fetchCertificate(Collection<String> domains)
     // Load the user key file. If there is no key file, create a new one.
     KeyPair userKeyPair = loadOrCreateUserKeyPair();
 
-    // Create a session for Let's Encrypt.
-    // Use "acme://letsencrypt.org" for production server
-    Session session = new Session("acme://letsencrypt.org/staging");
+    // Create a session.
+    Session session = new Session(CA_URI);
 
     // Get the Account.
     // If there is no account yet, create a new one.
@@ -118,8 +138,6 @@ When this method returned successfully, you will find the domain key pair in a f
 
 If no account was registered with the CA yet, there will also be a new file called `user.key`, which is your account key pair.
 
-The `domain.csr` file contains the CSR that was used for the cerficiate order. It is just written for example purposes, and will not be needed later again. When the certificate is going to be renewed, a new CSR will be generated.
-
 ## Creating Key Pairs
 
 There are two sets of key pairs. One is required for creating and accessing your account, the other is required for encrypting the traffic on your domain(s). Even though it is technically possible to use a common key pair for everything, you are strongly encouraged to use separate key pairs for your account and for each of your certificates.
@@ -127,7 +145,7 @@ There are two sets of key pairs. One is required for creating and accessing your
 A first helper method looks for a file that is called `user.key`. It will contain the key pair that is required for accessing your account. If there is no such key pair, a new one is generated.
 
 !!! important
-    Backup this key pair in a safe place, as you will be locked out from your account if you should ever lose it! There is no way to recover a lost key pair, or regain access to your account when the key is lost.
+    Backup this key pair in a safe place, as you will be locked out from your account if you should ever lose it! There may be no way to recover a lost key pair or regain access to your account if the key is lost.
 
 ```java
 private KeyPair loadOrCreateUserKeyPair() throws IOException {
@@ -139,7 +157,7 @@ private KeyPair loadOrCreateUserKeyPair() throws IOException {
 
     } else {
         // If there is none, create a new key pair and save it
-        KeyPair userKeyPair = KeyPairUtils.createKeyPair(KEY_SIZE);
+        KeyPair userKeyPair = ACCOUNT_KEY_SUPPLIER.get();
         try (FileWriter fw = new FileWriter(USER_KEY_FILE)) {
             KeyPairUtils.writeKeyPair(userKeyPair, fw);
         }
@@ -157,7 +175,7 @@ private KeyPair loadOrCreateDomainKeyPair() throws IOException {
             return KeyPairUtils.readKeyPair(fr);
         }
     } else {
-        KeyPair domainKeyPair = KeyPairUtils.createKeyPair(KEY_SIZE);
+        KeyPair domainKeyPair = DOMAIN_KEY_SUPPLIER.get();
         try (FileWriter fw = new FileWriter(DOMAIN_KEY_FILE)) {
             KeyPairUtils.writeKeyPair(domainKeyPair, fw);
         }
@@ -166,11 +184,11 @@ private KeyPair loadOrCreateDomainKeyPair() throws IOException {
 }
 ```
 
-Both the user and domain key pairs are of the same type and strength in this example. This is not required though. You can mix RSA and EC keys of different strengths.
-
 ## Registering an Account
 
-If you does not have an account set up already, you need to create one first. The following method will show a link to the terms of service and ask you to accept it. After that, the `AccountBuilder` will create an account using the given account `KeyPair`.
+If you does not have an account set up already, you need to create one first. The following method will show a link to the terms of service and ask you to accept it.
+
+After that, the `AccountBuilder` will create an account using the given account `KeyPair`. It will set an email address if provided. If the CA performs External Account Binding and a KID and HMAC is provided, it is forwarded to the CA.
 
 If your `KeyPair` has already been registered with the CA, no new account will be created, but your existing account will be used.
 
@@ -182,10 +200,21 @@ private Account findOrRegisterAccount(Session session, KeyPair accountKey) throw
         acceptAgreement(tos.get());
     }
 
-    Account account = new AccountBuilder()
+    AccountBuilder accountBuilder = new AccountBuilder()
             .agreeToTermsOfService()
-            .useKeyPair(accountKey)
-            .create(session);
+            .useKeyPair(accountKey);
+
+    // Set your email (if available)
+    if (ACCOUNT_EMAIL != null) {
+        accountBuilder.addEmail(ACCOUNT_EMAIL);
+    }
+
+    // Use the KID and HMAC if the CA uses External Account Binding
+    if (EAB_KID != null && EAB_HMAC != null) {
+        accountBuilder.withKeyIdentifier(EAB_KID, EAB_HMAC);
+    }
+
+    Account account = accountBuilder.create(session);
     LOG.info("Registered a new user, URL: {}", account.getLocation());
 
     return account;
@@ -242,13 +271,6 @@ private void authorize(Authorization auth)
                 .map(Problem::toString)
                 .orElse("unknown"));
         throw new AcmeException("Challenge failed... Giving up.");
-    }
-
-    // All reattempts are used up and there is
-    // still no valid authorization?
-    if (challenge.getStatus() != Status.VALID) {
-        throw new AcmeException("Failed to pass the challenge for domain "
-                + auth.getIdentifier().getDomain() + ", ... Giving up.");
     }
 
     LOG.info("Challenge has been completed. Remember to remove the validation resource.");
@@ -334,7 +356,7 @@ public Challenge dnsChallenge(Authorization auth) throws AcmeException {
     Make sure that the `TXT` record is actually available before confirming the dialog. The CA may verify the challenge immediately after it was triggered. The challenge will then fail if your DNS server was not ready yet. Depending on your hosting provider, a DNS update may take several minutes until completed.
 
 !!! note
-    For security reasons, the DNS challenge is mandatory for creating wildcard certificates.
+    For security reasons, the DNS challenge is mandatory for creating wildcard certificates. This is a restriction of the CA, and not imposed by _acme4j_.
 
 ## Checking the Status
 
@@ -396,6 +418,9 @@ private interface UpdateMethod {
 }
 ```
 
+!!! note
+    Some CAs might provide a `Retry-After` even if the resource has reached a terminal state. For this reason, always check the status _before_ waiting for the recommended time, and leave the loop if a terminal status has been reached.
+
 ## User Interaction
 
 In order to keep the example simple, Swing `JOptionPane` dialogs are used for user communication. If the user rejects a dialog, an exception is thrown and the example client is aborted.
@@ -427,31 +452,4 @@ public void acceptAgreement(URI agreement) throws AcmeException {
         throw new AcmeException("User did not accept Terms of Service");
     }
 }
-```
-
-## Constants
-
-These are the default values of the constants used in this example. Feel free to change them as necessary.
-
-```java
-// File name of the User Key Pair
-private static final File USER_KEY_FILE = new File("user.key");
-
-// File name of the Domain Key Pair
-private static final File DOMAIN_KEY_FILE = new File("domain.key");
-
-// File name of the CSR
-private static final File DOMAIN_CSR_FILE = new File("domain.csr");
-
-// File name of the signed certificate
-private static final File DOMAIN_CHAIN_FILE = new File("domain-chain.crt");
-
-//Challenge type to be used
-private static final ChallengeType CHALLENGE_TYPE = ChallengeType.HTTP;
-
-// RSA key size of generated key pairs
-private static final int KEY_SIZE = 2048;
-
-// Maximum attempts of status polling until VALID/INVALID is expected
-private static final int MAX_ATTEMPTS = 50;
 ```
