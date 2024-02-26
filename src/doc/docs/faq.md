@@ -35,6 +35,14 @@ You can still revoke certificates without account key pair though, see [here](us
 
 **Solution:** If the status is `INVALID`, invoke `Order.getError()` to get the cause of the failure. For example, you can log the output of `order.getError().toString()`.
 
+## My `Order` seems to be stuck in status `PROCESSING`. What can I do?
+
+**Symptom:** Your challenge(s) passed as `VALID`. However when you execute the order, it seems to be stuck in status `PROCESSING`.
+
+**Cause:** The CA may have retained your order to carry out background checks. These checks can take hours or even days. Please read the CA documentation for further details.
+
+**Solution:** There is nothing you can do on software side.
+
 ## Browsers do not accept my certificate.
 
 **Symptom:** A certificate was successfully issued. However the browser does not accept the certificate, and shows an error that the cert authority is invalid.

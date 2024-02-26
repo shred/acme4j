@@ -6,39 +6,38 @@ The first step is to create such a `Session` instance.
 
 ## Standard URIs
 
-The `Session` constructor expects the URI of the ACME server's _directory_, as it is documented by the CA. For example, this is how to connect to the _Let's Encrypt_ staging server.
+The `Session` constructor expects the URI of the ACME server's _directory_, as it is documented by the CA. This is how to connect to a fictional example staging server:
 
 ```java
 Session session
-    = new Session("https://acme-staging-v02.api.letsencrypt.org/directory");
+    = new Session("https://acme-staging-v02.api.example.org/directory");
 ```
 
 The Session now knows where to locate the service endpoints. However, no actual connection to the server is done yet. The connection to the CA is handled later by a generic provider.
 
 ## ACME URIs
 
-Such an URI is hard to remember and might even change in the future. For this reason, special ACME URIs should be preferred (if available):
+Such an URI is hard to remember and might even change in the future. For this reason, special ACME connection URIs should be preferred. These special ACME URIs look like this:
 
 ```java
-Session session = new Session("acme://letsencrypt.org/staging");
-```
-or
-```java
-Session session = new Session("acme://ssl.com/staging");
+Session session = new Session("acme://example.org/staging");
 ```
 
-Instead of a generic provider, this call uses a specialized _Let's Encrypt_ provider.
+Instead of a generic provider, this call uses a provider that is specialized to the CA.
 
-The _Let's Encrypt_ staging server is meant to be used for testing purposes only. The issued certificates are functional, but as the issuer certificate is not known to browsers, it will lead to an error if the certificate is validated.
+!!! note
+    <span style="font-size:120%">**→ [Find the ACME Connection URI of your CA here!](../ca/index.md) ←**</span>
 
-To use the _Let's Encrypt_ production server, you only need to change the ACME URI:
+    If your CA is not listed there, it might still provide a JAR file with a proprietary provider that you can add to the classpath.
+
+    **You can always use the standard URI (as mentioned above) to connect to any [RFC 8555](https://tools.ietf.org/html/rfc8555) compliant CA.**
+
+A staging server is meant to be used for testing purposes only. The issued certificates are functional, but as the issuer certificate is not known to browsers, it will lead to an error if the certificate is validated.
+
+To use the production server, you only need to change the ACME URI:
 
 ```java
-Session session = new Session("acme://letsencrypt.org");
-```
-or to use the _SSL.com_ production server:
-```java
-Session session = new Session("acme://ssl.com");
+Session session = new Session("acme://example.org");
 ```
 
 ## Metadata

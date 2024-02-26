@@ -1,7 +1,7 @@
 /*
  * acme4j - Java ACME client
  *
- * Copyright (C) 2015 Richard "Shred" Körber
+ * Copyright (C) 2024 Richard "Shred" Körber
  *   http://acme4j.shredzone.org
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -11,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  */
-package org.shredzone.acme4j.provider.letsencrypt;
+package org.shredzone.acme4j.provider.zerossl;
 
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -22,34 +22,29 @@ import org.shredzone.acme4j.provider.AbstractAcmeProvider;
 import org.shredzone.acme4j.provider.AcmeProvider;
 
 /**
- * An {@link AcmeProvider} for <em>Let's Encrypt</em>.
+ * An {@link AcmeProvider} for <em>ZeroSSL</em>.
  * <p>
- * The {@code serverUri} is {@code "acme://letsencrypt.org"} for the production server,
- * and {@code "acme://letsencrypt.org/staging"} for a testing server.
- * <p>
- * If you want to use <em>Let's Encrypt</em>, always prefer to use this provider.
+ * The {@code serverUri} is {@code "acme://zerossl.com"} for the production server.
  *
- * @see <a href="https://letsencrypt.org/">Let's Encrypt</a>
+ * @see <a href="https://zerossl.com/">ZeroSSL</a>
+ * @since 3.2.0
  */
-public class LetsEncryptAcmeProvider extends AbstractAcmeProvider {
+public class ZeroSSLAcmeProvider extends AbstractAcmeProvider {
 
-    private static final String V02_DIRECTORY_URL = "https://acme-v02.api.letsencrypt.org/directory";
-    private static final String STAGING_DIRECTORY_URL = "https://acme-staging-v02.api.letsencrypt.org/directory";
+    private static final String V02_DIRECTORY_URL = "https://acme.zerossl.com/v2/DV90";
 
     @Override
     public boolean accepts(URI serverUri) {
         return "acme".equals(serverUri.getScheme())
-                && "letsencrypt.org".equals(serverUri.getHost());
+                && "zerossl.com".equals(serverUri.getHost());
     }
 
     @Override
     public URL resolve(URI serverUri) {
         var path = serverUri.getPath();
         String directoryUrl;
-        if (path == null || path.isEmpty() || "/".equals(path) || "/v02".equals(path)) {
+        if (path == null || path.isEmpty() || "/".equals(path)) {
             directoryUrl = V02_DIRECTORY_URL;
-        } else if ("/staging".equals(path)) {
-            directoryUrl = STAGING_DIRECTORY_URL;
         } else {
             throw new IllegalArgumentException("Unknown URI " + serverUri);
         }

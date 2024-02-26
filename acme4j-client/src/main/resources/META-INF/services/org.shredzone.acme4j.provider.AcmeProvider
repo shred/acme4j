@@ -7,3 +7,7 @@ org.shredzone.acme4j.provider.pebble.PebbleAcmeProvider
 
 # SSL.com: https://ssl.com
 org.shredzone.acme4j.provider.sslcom.SslComAcmeProvider
+
+# ZeroSSL: https://zerossl.com
+org.shredzone.acme4j.provider.zerossl.ZeroSSLAcmeProvider
+

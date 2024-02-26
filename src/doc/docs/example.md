@@ -8,9 +8,9 @@ This chapter contains a copy of the class file, along with explanations about wh
 
 - The `ClientTest` is meant to be a simple example and proof of concept. It is not meant for production use as it is.
 
-- The exception handling is very simple. If an exception occurs during the process, the example will fail altogether. A real client should handle exceptions like `AcmeUserActionRequiredException`, `AcmeRateLimitedException`, and `AcmeRetryAfterException` properly, by showing the required user action, or delaying the registration process until the rate limitation has been lifted or the retry time has been reached.
+- The exception handling is very simple. If an exception occurs during the process, the example will fail altogether. A real client should handle exceptions like `AcmeUserActionRequiredException` and `AcmeRateLimitedException` properly, by showing the required user action, or delaying the registration process until the rate limitation has been lifted or the retry time has been reached.
 
-- At some places the example polls the server state by `while` loops and `Thread.sleep()`. This is sufficient for simple cases, but a more complex client should use timers instead. The client should also make use of the fact that authorizations can be executed in parallel, shortening the certification time for multiple domains.
+- At some places the example synchronously polls the server state. This is sufficient for simple cases, but a more complex client should use timers instead. The client should also make use of the fact that authorizations can be executed in parallel, shortening the certification time for multiple domains.
 
 - I recommend to read at least the chapters about [usage](usage/index.md) and [challenges](challenge/index.md), to learn more about how _acme4j_ and the ACME protocol works.
 
@@ -88,27 +88,13 @@ public void fetchCertificate(Collection<String> domains)
     order.execute(domainKeyPair);
 
     // Wait for the order to complete
-    try {
-        int attempts = 10;
-        while (order.getStatus() != Status.VALID && attempts-- > 0) {
-            // Did the order fail?
-            if (order.getStatus() == Status.INVALID) {
-                LOG.error("Order has failed, reason: {}", order.getError()
-                        .map(Problem::toString)
-                        .orElse("unknown")
-                );
-                throw new AcmeException("Order failed... Giving up.");
-            }
-
-            // Wait for a few seconds
-            Thread.sleep(3000L);
-
-            // Then update the status
-            order.update();
-        }
-    } catch (InterruptedException ex) {
-        LOG.error("interrupted", ex);
-        Thread.currentThread().interrupt();
+    Status status = waitForCompletion(order::getStatus, order::update);
+    if (status != Status.VALID) {
+        LOG.error("Order has failed, reason: {}", order.getError()
+                .map(Problem::toString)
+                .orElse("unknown")
+        );
+        throw new AcmeException("Order failed... Giving up.");
     }
 
     // Get the certificate
@@ -250,27 +236,12 @@ private void authorize(Authorization auth)
     challenge.trigger();
 
     // Poll for the challenge to complete.
-    try {
-        int attempts = 10;
-        while (challenge.getStatus() != Status.VALID && attempts-- > 0) {
-            // Did the authorization fail?
-            if (challenge.getStatus() == Status.INVALID) {
-                LOG.error("Challenge has failed, reason: {}", challenge.getError()
-                        .map(Problem::toString)
-                        .orElse("unknown")
-                );
-                throw new AcmeException("Challenge failed... Giving up.");
-            }
-
-            // Wait for a few seconds
-            Thread.sleep(3000L);
-
-            // Then update the status
-            challenge.update();
-        }
-    } catch (InterruptedException ex) {
-        LOG.error("interrupted", ex);
-        Thread.currentThread().interrupt();
+    Status status = waitForCompletion(challenge::getStatus, challenge::update);
+    if (status != Status.VALID) {
+        LOG.error("Challenge has failed, reason: {}", challenge.getError()
+                .map(Problem::toString)
+                .orElse("unknown"));
+        throw new AcmeException("Challenge failed... Giving up.");
     }
 
     // All reattempts are used up and there is
@@ -365,6 +336,66 @@ public Challenge dnsChallenge(Authorization auth) throws AcmeException {
 !!! note
     For security reasons, the DNS challenge is mandatory for creating wildcard certificates.
 
+## Checking the Status
+
+The ACME protocol does not specify the sending of events. For this reason, resource status changes must be actively polled by the client.
+
+This example does a very simple polling in a synchronous busy loop. It updates the local copy of the resource and checks if the status is either `VALID` or `INVALID`. If it is not, it just sleeps for a certain amount of time, and then rechecks the current status.
+
+Some CAs respond with a `Retry-After` HTTP header, which provides a recommendation when to check for a status change again. If this header is present, _acme4j_ will throw an `AcmeRetryAfterException` (and will still update the resource state). If this header is not present, just wait a reasonable amount of time before checking again.
+
+An enterprise level implementation would do an asynchronous polling by storing the recheck time in a database or a queue with scheduled delivery.
+
+The following method will check if a resource reaches completion (by reaching either `VALID` or `INVALID` status). The first parameter provides the method that fetches the current status (e.g. `Order::getStatus`). The second parameter provides the method that updates the resource status (e.g. `Order::update()`). It returned the terminating status once it has been reached, or will throw an exception if something went wrong.
+
+```java
+private Status waitForCompletion(Supplier<Status> statusSupplier,
+        UpdateMethod statusUpdater) throws AcmeException {
+    // A set of terminating status values
+    Set<Status> acceptableStatus = EnumSet.of(Status.VALID, Status.INVALID);
+
+    // Limit the number of checks, to avoid endless loops
+    for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        LOG.info("Checking current status, attempt {} of {}", attempt, MAX_ATTEMPTS);
+
+        // A reasonable default retry-after delay
+        Instant now = Instant.now();
+        Instant retryAfter = now.plusSeconds(3L);
+
+        // Update the status property
+        try {
+            statusUpdater.update();
+        } catch (AcmeRetryAfterException ex) {
+            // Server sent a retry-after header, use this instant instead
+            LOG.info("Server asks to try again at: {}", ex.getRetryAfter());
+            retryAfter = ex.getRetryAfter();
+        }
+
+        // Check the status
+        Status currentStatus = statusSupplier.get();
+        if (acceptableStatus.contains(currentStatus)) {
+            // Reached VALID or INVALID, we're done here
+            return currentStatus;
+        }
+
+        // Wait before checking again
+        try {
+            Thread.sleep(now.until(retryAfter, ChronoUnit.MILLIS));
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new AcmeException("interrupted");
+        }
+    }
+
+    throw new AcmeException("Too many update attempts, status did not change");
+}
+
+@FunctionalInterface
+private interface UpdateMethod {
+    void update() throws AcmeException;
+}
+```
+
 ## User Interaction
 
 In order to keep the example simple, Swing `JOptionPane` dialogs are used for user communication. If the user rejects a dialog, an exception is thrown and the example client is aborted.
@@ -420,4 +451,7 @@ private static final ChallengeType CHALLENGE_TYPE = ChallengeType.HTTP;
 
 // RSA key size of generated key pairs
 private static final int KEY_SIZE = 2048;
+
+// Maximum attempts of status polling until VALID/INVALID is expected
+private static final int MAX_ATTEMPTS = 50;
 ```

@@ -21,9 +21,14 @@ import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.Security;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.Optional;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import javax.swing.JOptionPane;
 
@@ -40,6 +45,7 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
+import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.KeyPairUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +73,9 @@ public class ClientTest {
 
     // RSA key size of generated key pairs
     private static final int KEY_SIZE = 2048;
+
+    // Maximum attempts of status polling until VALID/INVALID is expected
+    private static final int MAX_ATTEMPTS = 50;
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientTest.class);
 
@@ -106,27 +115,13 @@ public class ClientTest {
         order.execute(domainKeyPair);
 
         // Wait for the order to complete
-        try {
-            int attempts = 10;
-            while (order.getStatus() != Status.VALID && attempts-- > 0) {
-                // Did the order fail?
-                if (order.getStatus() == Status.INVALID) {
-                    LOG.error("Order has failed, reason: {}", order.getError()
-                            .map(Problem::toString)
-                            .orElse("unknown")
-                    );
-                    throw new AcmeException("Order failed... Giving up.");
-                }
-
-                // Wait for a few seconds
-                Thread.sleep(3000L);
-
-                // Then update the status
-                order.update();
-            }
-        } catch (InterruptedException ex) {
-            LOG.error("interrupted", ex);
-            Thread.currentThread().interrupt();
+        Status status = waitForCompletion(order::getStatus, order::update);
+        if (status != Status.VALID) {
+            LOG.error("Order has failed, reason: {}", order.getError()
+                    .map(Problem::toString)
+                    .orElse("unknown")
+            );
+            throw new AcmeException("Order failed... Giving up.");
         }
 
         // Get the certificate
@@ -260,32 +255,12 @@ public class ClientTest {
         challenge.trigger();
 
         // Poll for the challenge to complete.
-        try {
-            int attempts = 10;
-            while (challenge.getStatus() != Status.VALID && attempts-- > 0) {
-                // Did the authorization fail?
-                if (challenge.getStatus() == Status.INVALID) {
-                    LOG.error("Challenge has failed, reason: {}", challenge.getError()
-                            .map(Problem::toString)
-                            .orElse("unknown"));
-                    throw new AcmeException("Challenge failed... Giving up.");
-                }
-
-                // Wait for a few seconds
-                Thread.sleep(3000L);
-
-                // Then update the status
-                challenge.update();
-            }
-        } catch (InterruptedException ex) {
-            LOG.error("interrupted", ex);
-            Thread.currentThread().interrupt();
-        }
-
-        // All reattempts are used up and there is still no valid authorization?
-        if (challenge.getStatus() != Status.VALID) {
-            throw new AcmeException("Failed to pass the challenge for domain "
-                    + auth.getIdentifier().getDomain() + ", ... Giving up.");
+        Status status = waitForCompletion(challenge::getStatus, challenge::update);
+        if (status != Status.VALID) {
+            LOG.error("Challenge has failed, reason: {}", challenge.getError()
+                    .map(Problem::toString)
+                    .orElse("unknown"));
+            throw new AcmeException("Challenge failed... Giving up.");
         }
 
         LOG.info("Challenge has been completed. Remember to remove the validation resource.");
@@ -368,6 +343,76 @@ public class ClientTest {
         acceptChallenge(message.toString());
 
         return challenge;
+    }
+
+    /**
+     * Waits for completion of a resource. A resource is completed if the status is either
+     * {@link Status#VALID} or {@link Status#INVALID}.
+     * <p>
+     * This method polls the current status, respecting the retry-after header if set. It
+     * is synchronous and may take a considerable time for completion.
+     * <p>
+     * It is meant as a simple example! For production services, it is recommended to do
+     * an asynchronous processing here.
+     *
+     * @param statusSupplier
+     *         Method of the resource that returns the current status
+     * @param statusUpdater
+     *         Method of the resource that updates the internal state and fetches the
+     *         current status from the server
+     * @return The final status, either {@link Status#VALID} or {@link Status#INVALID}
+     * @throws AcmeException
+     *         If an error occured, or if the status did not reach one of the accepted
+     *         result values after a certain number of checks.
+     */
+    private Status waitForCompletion(Supplier<Status> statusSupplier, UpdateMethod statusUpdater)
+            throws AcmeException {
+        // A set of terminating status values
+        Set<Status> acceptableStatus = EnumSet.of(Status.VALID, Status.INVALID);
+
+        // Limit the number of checks, to avoid endless loops
+        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+            LOG.info("Checking current status, attempt {} of {}", attempt, MAX_ATTEMPTS);
+
+            // A reasonable default retry-after delay
+            Instant now = Instant.now();
+            Instant retryAfter = now.plusSeconds(3L);
+
+            // Update the status property
+            try {
+                statusUpdater.update();
+            } catch (AcmeRetryAfterException ex) {
+                // Server sent a retry-after header, use this instant instead
+                LOG.info("Server asks to try again at: {}", ex.getRetryAfter());
+                retryAfter = ex.getRetryAfter();
+            }
+
+            // Check the status
+            Status currentStatus = statusSupplier.get();
+            if (acceptableStatus.contains(currentStatus)) {
+                // Reached VALID or INVALID, we're done here
+                return currentStatus;
+            }
+
+            // Wait before checking again
+            try {
+                Thread.sleep(now.until(retryAfter, ChronoUnit.MILLIS));
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new AcmeException("interrupted");
+            }
+        }
+
+        throw new AcmeException("Too many update attempts, status did not change");
+    }
+
+    /**
+     * Functional interface that refers to a resource update method that is able to
+     * throw an {@link AcmeException}.
+     */
+    @FunctionalInterface
+    private interface UpdateMethod {
+        void update() throws AcmeException;
     }
 
     /**
