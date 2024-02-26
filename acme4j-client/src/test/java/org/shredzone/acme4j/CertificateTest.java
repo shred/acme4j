@@ -340,13 +340,11 @@ public class CertificateTest {
         assertThat(cert.getCertID()).isEqualTo("MFgwCwYJYIZIAWUDBAIBBCCeWLRusNLb--vmWOkxm34qDjTMWkc3utIhOMoMwKDqbgQg2iiKWySZrD-6c88HMZ6vhIHZPamChLlzGHeZ7pTS8jYCBQCHZUMh");
         assertThat(cert.hasRenewalInfo()).isTrue();
         assertThat(cert.getRenewalInfoLocation())
-                .isNotEmpty()
-                .contains(certResourceUrl);
+                .hasValue(certResourceUrl);
 
         var renewalInfo = cert.getRenewalInfo();
-        assertThat(renewalInfo.getRecheckAfter())
-                .isNotEmpty()
-                .contains(retryAfterInstant);
+        assertThat(renewalInfo.getRetryAfter())
+                .isEmpty();
         assertThat(renewalInfo.getSuggestedWindowStart())
                 .isEqualTo("2021-01-03T00:00:00Z");
         assertThat(renewalInfo.getSuggestedWindowEnd())
@@ -354,6 +352,9 @@ public class CertificateTest {
         assertThat(renewalInfo.getExplanation())
                 .isNotEmpty()
                 .contains(url("https://example.com/docs/example-mass-reissuance-event"));
+
+        assertThat(renewalInfo.fetch()).hasValue(retryAfterInstant);
+        assertThat(renewalInfo.getRetryAfter()).hasValue(retryAfterInstant);
 
         provider.close();
     }
@@ -404,9 +405,7 @@ public class CertificateTest {
 
         var cert = new Certificate(provider.createLogin(), locationUrl);
         assertThat(cert.hasRenewalInfo()).isTrue();
-        assertThat(cert.getRenewalInfoLocation())
-                .isNotEmpty()
-                .contains(certResourceUrl);
+        assertThat(cert.getRenewalInfoLocation()).hasValue(certResourceUrl);
 
         provider.close();
     }

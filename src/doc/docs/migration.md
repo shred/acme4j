@@ -8,6 +8,7 @@ This document will help you migrate your code to the latest _acme4j_ version.
 - acme4j was updated to support the latest [draft-ietf-acme-ari-03](https://www.ietf.org/archive/id/draft-ietf-acme-ari-03.html) now. It is a breaking change! If you use ARI, make sure your server supports the latest draft before updating to this version of acme4j.
 - `Certificate.markAsReplace()` has been removed, because this method is not supported by [draft-ietf-acme-ari-03](https://www.ietf.org/archive/id/draft-ietf-acme-ari-03.html) anymore. To mark an existing certificate as replaced, use the new method `OrderBuilder.replaces()` now.
 - `Certificate.getCertID()` is not needed in the ACME context anymore. This method has been marked as deprecated. In a future version of acme4j, it will be removed without replacement. Refer to the source code to see how the certificate ID is computed.
+- Instead of invoking `update()` and then handling an `AcmeRetryAfterException`, you should now prefer to invoke `fetch()`. It gives an optional retry-after `Instant` as return value, which makes the retry-after handling less complex. In a future version, `update()` will be fully replaced by `fetch()`.
 
 ## Migration to Version 3.0.0
 

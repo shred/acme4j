@@ -26,14 +26,13 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 import org.assertj.core.api.AutoCloseableSoftAssertions;
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Status;
-import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
-import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -141,11 +140,6 @@ public class ChallengeTest {
             public JSON readJsonResponse() {
                 return getJSON("updateHttpChallengeResponse");
             }
-
-            @Override
-            public void handleRetryAfter(String message) {
-                // Just do nothing
-            }
         };
 
         var login = provider.createLogin();
@@ -179,17 +173,17 @@ public class ChallengeTest {
                 return getJSON("updateHttpChallengeResponse");
             }
 
-
             @Override
-            public void handleRetryAfter(String message) throws AcmeException {
-                throw new AcmeRetryAfterException(message, retryAfter);
+            public Optional<Instant> getRetryAfter() {
+                return Optional.of(retryAfter);
             }
         };
 
         var login = provider.createLogin();
 
         var challenge = new Http01Challenge(login, getJSON("triggerHttpChallengeResponse"));
-        assertThrows(AcmeRetryAfterException.class, challenge::update);
+        var returnedRetryAfter = challenge.fetch();
+        assertThat(returnedRetryAfter).hasValue(retryAfter);
 
         assertThat(challenge.getStatus()).isEqualTo(Status.VALID);
         assertThat(challenge.getLocation()).isEqualTo(locationUrl);

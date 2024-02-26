@@ -72,7 +72,7 @@ Now you have to wait for the server to check your response. If the checks are co
 ```java
 while (!EnumSet.of(Status.VALID, Status.INVALID).contains(auth.getStatus())) {
   Thread.sleep(3000L);
-  auth.update();
+  auth.fetch();
 }
 ```
 
@@ -81,7 +81,7 @@ This is a very simple example which can be improved in many ways:
 * Limit the number of checks, to avoid endless loops if an authorization is stuck on server side.
 * Wait with the status checks until the CA has accessed the response for the first time (e.g. after an incoming HTTP request to the response file).
 * Use an asynchronous architecture instead of a blocking `Thread.sleep()`.
-* Check if `auth.update()` throws an `AcmeRetryAfterException`, and wait for the next update until `AcmeRetryAfterException.getRetryAfter()`. See the [example](../example.md) for a simple way to do that.
+* Check if `auth.fetch()` returns a retry-after `Instant`, and wait for the next update at least until this moment is reached. See the [example](../example.md) for a simple way to do that.
 
 The CA server may start with the validation immediately after `trigger()` is invoked, so make sure your server is ready to respond to requests before invoking `trigger()`. Otherwise the challenge might fail instantly.
 
@@ -135,7 +135,7 @@ Order order = ... // your Order object from the previous step
 
 while (!EnumSet.of(Status.VALID, Status.INVALID).contains(order.getStatus())) {
   Thread.sleep(3000L);
-  order.update();
+  order.fetch();
 }
 ```
 
@@ -143,7 +143,7 @@ This is a very simple example which can be improved in many ways:
 
 * Limit the number of checks, to avoid endless loops if the order is stuck on server side.
 * Use an asynchronous architecture instead of a blocking `Thread.sleep()`.
-* Check if `order.update()` throws an `AcmeRetryAfterException`, and wait for the next update until `AcmeRetryAfterException.getRetryAfter()`. See the [example](../example.md) for a simple way to do that.
+* Check if `order.fetch()` returns a retry-after `Instant`, and wait for the next update at least until this moment is reached. See the [example](../example.md) for a simple way to do that.
 
 !!! tip
     If the status is `PENDING`, you have not completed all authorizations yet.

@@ -16,8 +16,10 @@ package org.shredzone.acme4j.provider;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiFunction;
 
 import org.shredzone.acme4j.Login;
@@ -107,6 +109,11 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
     public Login createLogin() throws IOException {
         var session = createSession();
         return session.login(new URL(TestUtils.ACCOUNT_URL), TestUtils.createKeyPair());
+    }
+
+    @Override
+    public Optional<Instant> getRetryAfter() {
+        return Optional.empty();
     }
 
     @Override

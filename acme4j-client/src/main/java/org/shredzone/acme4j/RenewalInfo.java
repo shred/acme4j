@@ -38,8 +38,6 @@ import org.slf4j.LoggerFactory;
 public class RenewalInfo extends AcmeJsonResource {
     private static final Logger LOG = LoggerFactory.getLogger(RenewalInfo.class);
 
-    private @Nullable Instant recheckAfter = null;
-
     protected RenewalInfo(Login login, URL location) {
         super(login, location);
     }
@@ -66,15 +64,6 @@ public class RenewalInfo extends AcmeJsonResource {
      */
     public Optional<URL> getExplanation() {
         return getJSON().get("explanationURL").optional().map(Value::asURL);
-    }
-
-    /**
-     * An optional {@link Instant} that serves as recommendation when to re-check the
-     * renewal information of a certificate.
-     */
-    public Optional<Instant> getRecheckAfter() {
-        getJSON();  // make sure resource is loaded
-        return Optional.ofNullable(recheckAfter);
     }
 
     /**
@@ -175,22 +164,25 @@ public class RenewalInfo extends AcmeJsonResource {
                 end.toEpochMilli())));
     }
 
-    @Override
-    public void update() throws AcmeException {
-        LOG.debug("update RenewalInfo");
-        try (Connection conn = getSession().connect()) {
-            conn.sendRequest(getLocation(), getSession(), null);
-            setJSON(conn.readJsonResponse());
-            recheckAfter = conn.getRetryAfter().orElse(null);
-        }
-    }
-
     /**
      * Asserts that the end of the suggested time window is after the start.
      */
     private void assertValidTimeWindow() {
         if (getSuggestedWindowStart().isAfter(getSuggestedWindowEnd())) {
             throw new AcmeProtocolException("Received an invalid suggested window");
+        }
+    }
+
+    @Override
+    public Optional<Instant> fetch() throws AcmeException {
+        LOG.debug("update RenewalInfo");
+        try (Connection conn = getSession().connect()) {
+            conn.sendRequest(getLocation(), getSession(), null);
+            setJSON(conn.readJsonResponse());
+            var retryAfterOpt = conn.getRetryAfter();
+            retryAfterOpt.ifPresent(instant -> LOG.debug("Retry-After: {}", instant));
+            setRetryAfter(retryAfterOpt.orElse(null));
+            return retryAfterOpt;
         }
     }
 

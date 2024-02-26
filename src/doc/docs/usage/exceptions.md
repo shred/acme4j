@@ -31,7 +31,7 @@ The exception provides the causing `IOException`.
 
 This `AcmeException` shows that a server-side process has not been completed yet, and gives an estimation when the process might be completed.
 
-It can only be thrown when invoking `update()` or one of the getters.
+It can only be thrown when invoking `update()`. However, it is preferred to invoke `fetch()`, which returns the retry-after instant directly, instead of throwing this exception.
 
 !!! note
     The internal state of the resource is still updated.

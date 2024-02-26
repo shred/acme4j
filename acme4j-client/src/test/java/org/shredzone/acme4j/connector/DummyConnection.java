@@ -81,11 +81,6 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public void handleRetryAfter(String message) throws AcmeException {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Optional<String> getNonce() {
         throw new UnsupportedOperationException();
     }

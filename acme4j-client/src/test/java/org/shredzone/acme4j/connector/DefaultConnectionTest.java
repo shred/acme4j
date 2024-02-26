@@ -52,7 +52,6 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRateLimitedException;
-import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.exception.AcmeUserActionRequiredException;
@@ -310,30 +309,24 @@ public class DefaultConnectionTest {
      * Test if Retry-After header with absolute date is correctly parsed.
      */
     @Test
-    public void testHandleRetryAfterHeaderDate() {
+    public void testHandleRetryAfterHeaderDate() throws AcmeException {
         var retryDate = Instant.now().plus(Duration.ofHours(10)).truncatedTo(SECONDS);
-        var retryMsg = "absolute date";
 
         stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
                 .withHeader("Retry-After", DATE_FORMATTER.format(retryDate))
         ));
 
-        var ex = assertThrows(AcmeRetryAfterException.class, () -> {
-            try (var conn = session.connect()) {
-                conn.sendRequest(requestUrl, session, null);
-                conn.handleRetryAfter(retryMsg);
-            }
-        });
-
-        assertThat(ex.getRetryAfter()).isEqualTo(retryDate);
-        assertThat(ex.getMessage()).isEqualTo(retryMsg);
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
+            assertThat(conn.getRetryAfter()).hasValue(retryDate);
+        }
     }
 
     /**
      * Test if Retry-After header with relative timespan is correctly parsed.
      */
     @Test
-    public void testHandleRetryAfterHeaderDelta() {
+    public void testHandleRetryAfterHeaderDelta() throws AcmeException {
         var delta = 10 * 60 * 60;
         var now = Instant.now().truncatedTo(SECONDS);
         var retryMsg = "relative time";
@@ -343,15 +336,10 @@ public class DefaultConnectionTest {
                 .withHeader("Date", DATE_FORMATTER.format(now))
         ));
 
-        var ex = assertThrows(AcmeRetryAfterException.class, () -> {
-            try (var conn = session.connect()) {
-                conn.sendRequest(requestUrl, session, null);
-                conn.handleRetryAfter(retryMsg);
-            }
-        });
-
-        assertThat(ex.getRetryAfter()).isEqualTo(now.plusSeconds(delta));
-        assertThat(ex.getMessage()).isEqualTo(retryMsg);
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
+            assertThat(conn.getRetryAfter()).hasValue(now.plusSeconds(delta));
+        }
     }
 
     /**
@@ -365,7 +353,7 @@ public class DefaultConnectionTest {
 
         try (var conn = session.connect()) {
             conn.sendRequest(requestUrl, session, null);
-            conn.handleRetryAfter("no header");
+            assertThat(conn.getRetryAfter()).isEmpty();
         }
 
         verify(getRequestedFor(urlEqualTo(REQUEST_PATH)));

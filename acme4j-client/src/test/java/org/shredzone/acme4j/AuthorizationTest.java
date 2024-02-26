@@ -25,6 +25,7 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Test;
@@ -32,9 +33,7 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
-import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
-import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.provider.TestableConnectionProvider;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -128,11 +127,6 @@ public class AuthorizationTest {
             public JSON readJsonResponse() {
                 return getJSON("updateAuthorizationResponse");
             }
-
-            @Override
-            public void handleRetryAfter(String message) {
-                // Just do nothing
-            }
         };
 
         var login = provider.createLogin();
@@ -174,11 +168,6 @@ public class AuthorizationTest {
             public JSON readJsonResponse() {
                 return getJSON("updateAuthorizationWildcardResponse");
             }
-
-            @Override
-            public void handleRetryAfter(String message) {
-                // Just do nothing
-            }
         };
 
         var login = provider.createLogin();
@@ -218,11 +207,6 @@ public class AuthorizationTest {
             @Override
             public JSON readJsonResponse() {
                 return getJSON("updateAuthorizationResponse");
-            }
-
-            @Override
-            public void handleRetryAfter(String message) {
-                // Just do nothing
             }
         };
 
@@ -270,8 +254,8 @@ public class AuthorizationTest {
             }
 
             @Override
-            public void handleRetryAfter(String message) throws AcmeException {
-                throw new AcmeRetryAfterException(message, retryAfter);
+            public Optional<Instant> getRetryAfter() {
+                return Optional.of(retryAfter);
             }
         };
 
@@ -282,8 +266,8 @@ public class AuthorizationTest {
         provider.putTestChallenge("tls-alpn-01", TlsAlpn01Challenge::new);
 
         var auth = new Authorization(login, locationUrl);
-        var ex = assertThrows(AcmeRetryAfterException.class, auth::update);
-        assertThat(ex.getRetryAfter()).isEqualTo(retryAfter);
+        var returnedRetryAfter = auth.fetch();
+        assertThat(returnedRetryAfter).hasValue(retryAfter);
 
         assertThat(auth.getIdentifier().getDomain()).isEqualTo("example.org");
         assertThat(auth.getStatus()).isEqualTo(Status.VALID);

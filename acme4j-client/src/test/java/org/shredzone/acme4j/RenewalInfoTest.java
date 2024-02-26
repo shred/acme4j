@@ -68,14 +68,12 @@ public class RenewalInfoTest {
         var login = provider.createLogin();
 
         var renewalInfo = new RenewalInfo(login, locationUrl);
-        renewalInfo.update();
+        var recheckAfter = renewalInfo.fetch();
+        assertThat(recheckAfter).hasValue(retryAfterInstant);
 
         // Check getters
         try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(renewalInfo.getLocation()).isEqualTo(locationUrl);
-            softly.assertThat(renewalInfo.getRecheckAfter())
-                    .isNotEmpty()
-                    .contains(retryAfterInstant);
             softly.assertThat(renewalInfo.getSuggestedWindowStart())
                     .isEqualTo(startWindow);
             softly.assertThat(renewalInfo.getSuggestedWindowEnd())

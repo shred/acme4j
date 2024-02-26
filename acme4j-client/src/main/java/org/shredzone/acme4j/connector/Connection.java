@@ -162,8 +162,15 @@ public interface Connection extends AutoCloseable {
      *
      * @param message
      *            Message to be sent along with the {@link AcmeRetryAfterException}
+     * @deprecated Prefer to use {@link #getRetryAfter()}.
      */
-    void handleRetryAfter(String message) throws AcmeException;
+    @Deprecated
+    default void handleRetryAfter(String message) throws AcmeException {
+        var retryAfter = getRetryAfter();
+        if (retryAfter.isPresent()) {
+            throw new AcmeRetryAfterException(message, retryAfter.get());
+        }
+    }
 
     /**
      * Gets the nonce from the nonce header.

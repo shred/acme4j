@@ -155,6 +155,7 @@ public class AccountBuilderTest {
         };
 
         provider.putTestResource(Resource.NEW_ACCOUNT, resourceUrl);
+        provider.putMetadata("externalAccountRequired", true);
 
         var builder = new AccountBuilder();
         builder.useKeyPair(accountKey);

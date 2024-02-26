@@ -18,8 +18,12 @@ import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.net.URL;
+import java.time.Instant;
+import java.util.Optional;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.junit.jupiter.api.Test;
+import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.TestUtils;
 
@@ -43,6 +47,7 @@ public class AcmeJsonResourceTest {
         assertThat(resource.getSession()).isEqualTo(login.getSession());
         assertThat(resource.getLocation()).isEqualTo(LOCATION_URL);
         assertThat(resource.isValid()).isFalse();
+        assertThat(resource.getRetryAfter()).isEmpty();
         assertUpdateInvoked(resource, 0);
 
         assertThat(resource.getJSON()).isEqualTo(JSON_DATA);
@@ -72,6 +77,25 @@ public class AcmeJsonResourceTest {
         assertThat(resource.getJSON()).isEqualTo(jsonData2);
         assertThat(resource.isValid()).isTrue();
         assertUpdateInvoked(resource, 0);
+    }
+
+    /**
+     * Test Retry-After
+     */
+    @Test
+    public void testRetryAfter() {
+        var login = TestUtils.login();
+        var retryAfter = Instant.now().plusSeconds(30L);
+        var jsonData = getJSON("requestOrderResponse");
+
+        var resource = new DummyJsonResource(login, LOCATION_URL, jsonData, retryAfter);
+        assertThat(resource.isValid()).isTrue();
+        assertThat(resource.getJSON()).isEqualTo(jsonData);
+        assertThat(resource.getRetryAfter()).hasValue(retryAfter);
+        assertUpdateInvoked(resource, 0);
+
+        resource.setRetryAfter(null);
+        assertThat(resource.getRetryAfter()).isEmpty();
     }
 
     /**
@@ -124,17 +148,19 @@ public class AcmeJsonResourceTest {
             super(login, location);
         }
 
-        public DummyJsonResource(Login login, URL location, JSON json) {
+        public DummyJsonResource(Login login, URL location, JSON json, @Nullable Instant retryAfter) {
             super(login, location);
             setJSON(json);
+            setRetryAfter(retryAfter);
         }
 
         @Override
-        public void update() {
-            // update() is tested individually in all AcmeJsonResource subclasses.
+        public Optional<Instant> fetch() throws AcmeException {
+            // fetch() is tested individually in all AcmeJsonResource subclasses.
             // Here we just simulate the update, by setting a JSON.
             updateCount++;
             setJSON(JSON_DATA);
+            return Optional.empty();
         }
     }
 

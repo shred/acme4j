@@ -96,11 +96,6 @@ public class AccountTest {
             public Collection<URL> getLinks(String relation) {
                 return emptyList();
             }
-
-            @Override
-            public void handleRetryAfter(String message) {
-                // do nothing
-            }
         };
 
         var login = provider.createLogin();
@@ -155,11 +150,6 @@ public class AccountTest {
                     case "termsOfService": return singletonList(agreementUrl);
                     default: return emptyList();
                 }
-            }
-
-            @Override
-            public void handleRetryAfter(String message) {
-                // do nothing
             }
         };
 

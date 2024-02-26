@@ -51,7 +51,6 @@ import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRateLimitedException;
-import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.exception.AcmeUserActionRequiredException;
@@ -228,14 +227,6 @@ public class DefaultConnection implements Connection {
             throw new AcmeNetworkException(ex);
         } catch (CertificateException ex) {
             throw new AcmeProtocolException("Failed to read certificate", ex);
-        }
-    }
-
-    @Override
-    public void handleRetryAfter(String message) throws AcmeException {
-        var retryAfter = getRetryAfter();
-        if (retryAfter.isPresent()) {
-            throw new AcmeRetryAfterException(message, retryAfter.get());
         }
     }
 

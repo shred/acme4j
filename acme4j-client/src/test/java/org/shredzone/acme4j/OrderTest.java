@@ -56,11 +56,6 @@ public class OrderTest {
             public JSON readJsonResponse() {
                 return getJSON("updateOrderResponse");
             }
-
-            @Override
-            public void handleRetryAfter(String message) {
-                assertThat(message).isNotNull();
-            }
         };
 
         var login = provider.createLogin();
@@ -133,11 +128,6 @@ public class OrderTest {
             public JSON readJsonResponse() {
                 return getJSON("updateOrderResponse");
             }
-
-            @Override
-            public void handleRetryAfter(String message) {
-                assertThat(message).isNotNull();
-            }
         };
 
         var login = provider.createLogin();
@@ -192,11 +182,6 @@ public class OrderTest {
             public JSON readJsonResponse() {
                 return getJSON(isFinalized ? "finalizeResponse" : "updateOrderResponse");
             }
-
-            @Override
-            public void handleRetryAfter(String message) {
-                assertThat(message).isNotNull();
-            }
         };
 
         var login = provider.createLogin();
@@ -250,11 +235,6 @@ public class OrderTest {
             public JSON readJsonResponse() {
                 return getJSON("updateAutoRenewOrderResponse");
             }
-
-            @Override
-            public void handleRetryAfter(String message) {
-                assertThat(message).isNotNull();
-            }
         };
 
         provider.putMetadata("auto-renewal", JSON.empty());
@@ -297,11 +277,6 @@ public class OrderTest {
             @Override
             public JSON readJsonResponse() {
                 return getJSON("finalizeAutoRenewResponse");
-            }
-
-            @Override
-            public void handleRetryAfter(String message) {
-                assertThat(message).isNotNull();
             }
         };
 

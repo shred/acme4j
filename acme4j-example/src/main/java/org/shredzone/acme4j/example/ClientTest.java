@@ -45,7 +45,6 @@ import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.util.KeyPairUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,7 +141,7 @@ public class ClientTest {
         order.execute(domainKeyPair);
 
         // Wait for the order to complete
-        Status status = waitForCompletion(order::getStatus, order::update);
+        Status status = waitForCompletion(order::getStatus, order::fetch);
         if (status != Status.VALID) {
             LOG.error("Order has failed, reason: {}", order.getError()
                     .map(Problem::toString)
@@ -293,7 +292,7 @@ public class ClientTest {
         challenge.trigger();
 
         // Poll for the challenge to complete.
-        Status status = waitForCompletion(challenge::getStatus, challenge::update);
+        Status status = waitForCompletion(challenge::getStatus, challenge::fetch);
         if (status != Status.VALID) {
             LOG.error("Challenge has failed, reason: {}", challenge.getError()
                     .map(Problem::toString)
@@ -397,7 +396,8 @@ public class ClientTest {
      *         Method of the resource that returns the current status
      * @param statusUpdater
      *         Method of the resource that updates the internal state and fetches the
-     *         current status from the server
+     *         current status from the server. It returns the instant of an optional
+     *         retry-after header.
      * @return The final status, either {@link Status#VALID} or {@link Status#INVALID}
      * @throws AcmeException
      *         If an error occured, or if the status did not reach one of the accepted
@@ -412,18 +412,11 @@ public class ClientTest {
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
             LOG.info("Checking current status, attempt {} of {}", attempt, MAX_ATTEMPTS);
 
-            // A reasonable default retry-after delay
             Instant now = Instant.now();
-            Instant retryAfter = now.plusSeconds(3L);
 
             // Update the status property
-            try {
-                statusUpdater.update();
-            } catch (AcmeRetryAfterException ex) {
-                // Server sent a retry-after header, use this instant instead
-                LOG.info("Server asks to try again at: {}", ex.getRetryAfter());
-                retryAfter = ex.getRetryAfter();
-            }
+            Instant retryAfter = statusUpdater.updateAndGetRetryAfter()
+                    .orElse(now.plusSeconds(3L));
 
             // Check the status
             Status currentStatus = statusSupplier.get();
@@ -445,12 +438,12 @@ public class ClientTest {
     }
 
     /**
-     * Functional interface that refers to a resource update method that is able to
-     * throw an {@link AcmeException}.
+     * Functional interface that refers to a resource update method that returns an
+     * optional retry-after instant and is able to throw an {@link AcmeException}.
      */
     @FunctionalInterface
     private interface UpdateMethod {
-        void update() throws AcmeException;
+        Optional<Instant> updateAndGetRetryAfter() throws AcmeException;
     }
 
     /**
