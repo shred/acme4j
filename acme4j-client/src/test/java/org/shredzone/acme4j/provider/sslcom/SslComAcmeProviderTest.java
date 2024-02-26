@@ -28,8 +28,10 @@ import org.junit.jupiter.api.Test;
  */
 public class SslComAcmeProviderTest {
 
-    private static final String PRODUCTION_DIRECTORY_URL = "https://acme.ssl.com/sslcom-dv-ecc";
-    private static final String STAGING_DIRECTORY_URL = "https://acme-try.ssl.com/sslcom-dv-ecc";
+    private static final String PRODUCTION_ECC_DIRECTORY_URL = "https://acme.ssl.com/sslcom-dv-ecc";
+    private static final String PRODUCTION_RSA_DIRECTORY_URL = "https://acme.ssl.com/sslcom-dv-rsa";
+    private static final String STAGING_ECC_DIRECTORY_URL = "https://acme-try.ssl.com/sslcom-dv-ecc";
+    private static final String STAGING_RSA_DIRECTORY_URL = "https://acme-try.ssl.com/sslcom-dv-rsa";
 
     /**
      * Tests if the provider accepts the correct URIs.
@@ -41,7 +43,11 @@ public class SslComAcmeProviderTest {
         try (var softly = new AutoCloseableSoftAssertions()) {
             softly.assertThat(provider.accepts(new URI("acme://ssl.com"))).isTrue();
             softly.assertThat(provider.accepts(new URI("acme://ssl.com/"))).isTrue();
+            softly.assertThat(provider.accepts(new URI("acme://ssl.com/ecc"))).isTrue();
+            softly.assertThat(provider.accepts(new URI("acme://ssl.com/rsa"))).isTrue();
             softly.assertThat(provider.accepts(new URI("acme://ssl.com/staging"))).isTrue();
+            softly.assertThat(provider.accepts(new URI("acme://ssl.com/staging/ecc"))).isTrue();
+            softly.assertThat(provider.accepts(new URI("acme://ssl.com/staging/rsa"))).isTrue();
             softly.assertThat(provider.accepts(new URI("acme://example.com"))).isFalse();
             softly.assertThat(provider.accepts(new URI("http://example.com/acme"))).isFalse();
             softly.assertThat(provider.accepts(new URI("https://example.com/acme"))).isFalse();
@@ -55,9 +61,13 @@ public class SslComAcmeProviderTest {
     public void testResolve() throws URISyntaxException {
         var provider = new SslComAcmeProvider();
 
-        assertThat(provider.resolve(new URI("acme://ssl.com"))).isEqualTo(url(PRODUCTION_DIRECTORY_URL));
-        assertThat(provider.resolve(new URI("acme://ssl.com/"))).isEqualTo(url(PRODUCTION_DIRECTORY_URL));
-        assertThat(provider.resolve(new URI("acme://ssl.com/staging"))).isEqualTo(url(STAGING_DIRECTORY_URL));
+        assertThat(provider.resolve(new URI("acme://ssl.com"))).isEqualTo(url(PRODUCTION_ECC_DIRECTORY_URL));
+        assertThat(provider.resolve(new URI("acme://ssl.com/"))).isEqualTo(url(PRODUCTION_ECC_DIRECTORY_URL));
+        assertThat(provider.resolve(new URI("acme://ssl.com/ecc"))).isEqualTo(url(PRODUCTION_ECC_DIRECTORY_URL));
+        assertThat(provider.resolve(new URI("acme://ssl.com/rsa"))).isEqualTo(url(PRODUCTION_RSA_DIRECTORY_URL));
+        assertThat(provider.resolve(new URI("acme://ssl.com/staging"))).isEqualTo(url(STAGING_ECC_DIRECTORY_URL));
+        assertThat(provider.resolve(new URI("acme://ssl.com/staging/ecc"))).isEqualTo(url(STAGING_ECC_DIRECTORY_URL));
+        assertThat(provider.resolve(new URI("acme://ssl.com/staging/rsa"))).isEqualTo(url(STAGING_RSA_DIRECTORY_URL));
 
         assertThatIllegalArgumentException().isThrownBy(() -> provider.resolve(new URI("acme://ssl.com/v99")));
     }

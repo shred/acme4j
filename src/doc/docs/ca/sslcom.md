@@ -6,5 +6,15 @@ Available since acme4j 3.2.0
 
 ## Connection URIs
 
-* `acme://ssl.com` - Production server
-* `acme://ssl.com/staging` - Testing server
+* `acme://ssl.com`, `acme://ssl.com/ecc` - Production server, ECDSA certificate mode
+* `acme://ssl.com/rsa` - Production server, RSA certificate mode
+* `acme://ssl.com/staging`, `acme://ssl.com/staging/ecc` - Testing server, ECDSA certificate mode
+* `acme://ssl.com/staging/rsa` - Testing server, RSA certificate mode
+
+## Note
+
+* This CA requires [External Account Binding (EAB)](../usage/account.md#external-account-binding) for account creation. However `Metadata.isExternalAccountRequired()` returns `false` due to an error in the CA's directory resource.
+
+## Disclaimer
+
+_acme4j_ is not officially supported or endorsed by SSL.com. If you have _acme4j_ related issues, please do not ask them for support, but [open an issue here](https://github.com/shred/acme4j/issues).

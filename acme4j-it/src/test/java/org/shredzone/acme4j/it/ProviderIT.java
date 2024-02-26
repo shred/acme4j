@@ -71,17 +71,29 @@ public class ProviderIT {
      */
     @Test
     public void testSslCom() throws AcmeException, MalformedURLException {
-        var session = new Session("acme://ssl.com");
-        assertThat(session.getMetadata().getWebsite()).hasValue(new URL("https://www.ssl.com"));
-        assertThatNoException().isThrownBy(() -> session.resourceUrl(Resource.NEW_ACCOUNT));
-        assertThat(session.getMetadata().isExternalAccountRequired()).isFalse();
-        assertThat(session.getMetadata().isAutoRenewalEnabled()).isFalse();
+        var sessionEcc = new Session("acme://ssl.com/ecc");
+        assertThat(sessionEcc.getMetadata().getWebsite()).hasValue(new URL("https://www.ssl.com"));
+        assertThatNoException().isThrownBy(() -> sessionEcc.resourceUrl(Resource.NEW_ACCOUNT));
+        assertThat(sessionEcc.getMetadata().isExternalAccountRequired()).isFalse();
+        assertThat(sessionEcc.getMetadata().isAutoRenewalEnabled()).isFalse();
 
-        var sessionStage = new Session("acme://ssl.com/staging");
-        assertThat(sessionStage.getMetadata().getWebsite()).hasValue(new URL("https://www.ssl.com"));
-        assertThatNoException().isThrownBy(() -> sessionStage.resourceUrl(Resource.NEW_ACCOUNT));
-        assertThat(sessionStage.getMetadata().isExternalAccountRequired()).isFalse();
-        assertThat(sessionStage.getMetadata().isAutoRenewalEnabled()).isFalse();
+        var sessionRsa = new Session("acme://ssl.com/rsa");
+        assertThat(sessionRsa.getMetadata().getWebsite()).hasValue(new URL("https://www.ssl.com"));
+        assertThatNoException().isThrownBy(() -> sessionRsa.resourceUrl(Resource.NEW_ACCOUNT));
+        assertThat(sessionRsa.getMetadata().isExternalAccountRequired()).isFalse();
+        assertThat(sessionRsa.getMetadata().isAutoRenewalEnabled()).isFalse();
+
+        var sessionEccStage = new Session("acme://ssl.com/staging/ecc");
+        assertThat(sessionEccStage.getMetadata().getWebsite()).hasValue(new URL("https://www.ssl.com"));
+        assertThatNoException().isThrownBy(() -> sessionEccStage.resourceUrl(Resource.NEW_ACCOUNT));
+        assertThat(sessionEccStage.getMetadata().isExternalAccountRequired()).isFalse();
+        assertThat(sessionEccStage.getMetadata().isAutoRenewalEnabled()).isFalse();
+
+        var sessionRsaStage = new Session("acme://ssl.com/staging/rsa");
+        assertThat(sessionRsaStage.getMetadata().getWebsite()).hasValue(new URL("https://www.ssl.com"));
+        assertThatNoException().isThrownBy(() -> sessionRsaStage.resourceUrl(Resource.NEW_ACCOUNT));
+        assertThat(sessionRsaStage.getMetadata().isExternalAccountRequired()).isFalse();
+        assertThat(sessionRsaStage.getMetadata().isAutoRenewalEnabled()).isFalse();
     }
 
     /**

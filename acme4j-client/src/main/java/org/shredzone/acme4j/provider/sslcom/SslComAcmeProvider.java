@@ -34,8 +34,10 @@ import org.shredzone.acme4j.provider.AcmeProvider;
  */
 public class SslComAcmeProvider extends AbstractAcmeProvider {
 
-    private static final String PRODUCTION_DIRECTORY_URL = "https://acme.ssl.com/sslcom-dv-ecc";
-    private static final String STAGING_DIRECTORY_URL = "https://acme-try.ssl.com/sslcom-dv-ecc";
+    private static final String PRODUCTION_ECC_DIRECTORY_URL = "https://acme.ssl.com/sslcom-dv-ecc";
+    private static final String PRODUCTION_RSA_DIRECTORY_URL = "https://acme.ssl.com/sslcom-dv-rsa";
+    private static final String STAGING_ECC_DIRECTORY_URL = "https://acme-try.ssl.com/sslcom-dv-ecc";
+    private static final String STAGING_RSA_DIRECTORY_URL = "https://acme-try.ssl.com/sslcom-dv-rsa";
 
     @Override
     public boolean accepts(URI serverUri) {
@@ -47,10 +49,14 @@ public class SslComAcmeProvider extends AbstractAcmeProvider {
     public URL resolve(URI serverUri) {
         var path = serverUri.getPath();
         String directoryUrl;
-        if (path == null || path.isEmpty() || "/".equals(path)) {
-            directoryUrl = PRODUCTION_DIRECTORY_URL;
-        } else if ("/staging".equals(path)) {
-            directoryUrl = STAGING_DIRECTORY_URL;
+        if (path == null || path.isEmpty() || "/".equals(path) || "/ecc".equals(path)) {
+            directoryUrl = PRODUCTION_ECC_DIRECTORY_URL;
+        } else if ("/rsa".equals(path)) {
+            directoryUrl = PRODUCTION_RSA_DIRECTORY_URL;
+        } else if ("/staging".equals(path) || "/staging/ecc".equals(path)) {
+            directoryUrl = STAGING_ECC_DIRECTORY_URL;
+        } else if ("/staging/rsa".equals(path)) {
+            directoryUrl = STAGING_RSA_DIRECTORY_URL;
         } else {
             throw new IllegalArgumentException("Unknown URI " + serverUri);
         }
