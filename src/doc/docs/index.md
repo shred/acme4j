@@ -6,8 +6,6 @@ ACME is a protocol that a certificate authority (CA) and an applicant can use to
 
 This Java client helps connecting to an ACME server, and performing all necessary steps to manage certificates.
 
-It is an independent open source implementation that is not affiliated with or endorsed by _Let's Encrypt_.
-
 The source code can be found at [GitHub](https://github.com/shred/acme4j) and is distributed under the terms of [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
 Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzone.acme4j/acme4j/badge.svg)
@@ -20,9 +18,10 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 * Supports [RFC 8738](https://tools.ietf.org/html/rfc8738) IP identifier validation
 * Supports [RFC 8739](https://tools.ietf.org/html/rfc8739) short-term automatic certificate renewal (experimental)
 * Supports [RFC 8823](https://tools.ietf.org/html/rfc8823) for S/MIME certificates (experimental)
-* Supports [draft-ietf-acme-ari-03](https://www.ietf.org/archive/id/draft-ietf-acme-ari-03.html) for renewal information
+* Supports [draft-ietf-acme-ari-03](https://www.ietf.org/archive/id/draft-ietf-acme-ari-03.html) for renewal information (experimental)
 * Easy to use Java API
 * Requires JRE 11 or higher
+* Supports [Let's Encrypt](https://letsencrypt.org/), [SSL.com](https://www.ssl.com/), [ZeroSSL](https://zerossl.com), and all other CAs that comply with the ACME protocol (RFC 8555). Note that _acme4j_ is an independent project that is not supported or endorsed by any of the CAs.
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
 * Extensive unit and integration tests
 * Adheres to [Semantic Versioning](https://semver.org/)
@@ -42,7 +41,7 @@ There is an [example source code](example.md) included in this project. It gives
 
 ## Modules
 
-_acme4j_ consists of five modules. All modules are [available at Maven Central](https://mvnrepository.com/artifact/org.shredzone.acme4j) and can easily be added to the dependency list of your project. You can also download the jar files [at GitHub](https://github.com/shred/acme4j/releases/latest).
+_acme4j_ consists of four modules. All modules are [available at Maven Central](https://mvnrepository.com/artifact/org.shredzone.acme4j) and can easily be added to the dependency list of your project. You can also download the jar files [at GitHub](https://github.com/shred/acme4j/releases/latest).
 
 acme4j-client
 :   [`acme4j-client`](https://mvnrepository.com/artifact/org.shredzone.acme4j/acme4j-client/latest) is the main module. It contains everything that is required to get certificates for domains.
