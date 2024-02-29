@@ -28,7 +28,7 @@ import org.shredzone.acme4j.toolbox.TestUtils;
 /**
  * Unit tests for {@link Http01Challenge}.
  */
-public class HttpChallengeTest {
+public class Http01ChallengeTest {
     private static final String TOKEN =
             "rSoI9JpyvFi-ltdnBW0W1DjKstzG7cHixjzcOjwzAEQ";
     private static final String KEY_AUTHORIZATION =

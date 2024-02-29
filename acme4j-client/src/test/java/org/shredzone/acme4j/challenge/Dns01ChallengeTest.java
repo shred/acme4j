@@ -29,7 +29,7 @@ import org.shredzone.acme4j.toolbox.TestUtils;
 /**
  * Unit tests for {@link Dns01Challenge}.
  */
-public class DnsChallengeTest {
+public class Dns01ChallengeTest {
 
     private final Login login = TestUtils.login();
 
