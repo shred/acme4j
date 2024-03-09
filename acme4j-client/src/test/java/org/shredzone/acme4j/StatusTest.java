@@ -15,6 +15,8 @@ package org.shredzone.acme4j;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Locale;
+
 import org.junit.jupiter.api.Test;
 
 /**
@@ -27,8 +29,11 @@ public class StatusTest {
      */
     @Test
     public void testParse() {
+        // Would break toUpperCase() if English locale is not set, see #156.
+        Locale.setDefault(new Locale("tr"));
+
         for (var s : Status.values()) {
-            var parsed = Status.parse(s.name().toLowerCase());
+            var parsed = Status.parse(s.name().toLowerCase(Locale.ENGLISH));
             assertThat(parsed).isEqualTo(s);
         }
 

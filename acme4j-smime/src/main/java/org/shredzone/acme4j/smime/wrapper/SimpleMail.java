@@ -19,6 +19,7 @@ import static java.util.stream.Collectors.toUnmodifiableList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Optional;
 
 import jakarta.mail.Message;
@@ -136,7 +137,7 @@ public class SimpleMail implements Mail {
             }
             return Arrays.stream(autoSubmitted)
                     .map(String::trim)
-                    .map(String::toLowerCase)
+                    .map(as -> as.toLowerCase(Locale.ENGLISH))
                     .anyMatch(h -> h.equals("auto-generated") || h.startsWith("auto-generated;"));
         } catch (MessagingException ex) {
             throw new AcmeInvalidMessageException("Could not read '" + HEADER_AUTO_SUBMITTED + "' header", ex);

@@ -14,6 +14,7 @@
 package org.shredzone.acme4j;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * An enumeration of status codes of challenges and authorizations.
@@ -84,7 +85,7 @@ public enum Status {
      *         no match
      */
     public static Status parse(String str) {
-        var check = str.toUpperCase();
+        var check = str.toUpperCase(Locale.ENGLISH);
         return Arrays.stream(values())
                 .filter(s -> s.name().equals(check))
                 .findFirst()

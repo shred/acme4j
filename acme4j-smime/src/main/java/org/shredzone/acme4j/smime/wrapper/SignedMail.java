@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
@@ -74,7 +75,7 @@ public class SignedMail implements Mail {
         while (en.hasMoreElements()) {
             var h = en.nextElement();
             var name = h.getName();
-            if (IGNORE_HEADERS.contains(name.toUpperCase())) {
+            if (IGNORE_HEADERS.contains(name.toUpperCase(Locale.ENGLISH))) {
                 continue;
             }
 
@@ -95,7 +96,7 @@ public class SignedMail implements Mail {
         while (en.hasMoreElements()) {
             var h = en.nextElement();
             var name = h.getName();
-            if (IGNORE_HEADERS.contains(name.toUpperCase())) {
+            if (IGNORE_HEADERS.contains(name.toUpperCase(Locale.ENGLISH))) {
                 continue;
             }
 
@@ -122,7 +123,7 @@ public class SignedMail implements Mail {
         while (en.hasMoreElements()) {
             var h = en.nextElement();
             var name = h.getName();
-            if (IGNORE_HEADERS.contains(name.toUpperCase())) {
+            if (IGNORE_HEADERS.contains(name.toUpperCase(Locale.ENGLISH))) {
                 continue;
             }
 
@@ -252,7 +253,7 @@ public class SignedMail implements Mail {
                 .filter(mh -> "AUTO-SUBMITTED".equalsIgnoreCase(mh.name))
                 .map(mh -> mh.value)
                 .map(String::trim)
-                .map(String::toLowerCase)
+                .map(mh -> mh.toLowerCase(Locale.ENGLISH))
                 .anyMatch(h -> h.equals("auto-generated") || h.startsWith("auto-generated;"));
     }
 
@@ -266,7 +267,7 @@ public class SignedMail implements Mail {
         headers.stream()
                 .filter(mh -> mh.trusted)
                 .map(mh -> mh.name)
-                .map(String::toUpperCase)
+                .map(mh -> mh.toUpperCase(Locale.ENGLISH))
                 .forEach(missing::remove);
         return missing;
     }

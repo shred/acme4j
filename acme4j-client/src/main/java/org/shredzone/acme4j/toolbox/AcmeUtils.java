@@ -183,7 +183,7 @@ public final class AcmeUtils {
      */
     public static String toAce(String domain) {
         Objects.requireNonNull(domain, "domain");
-        return IDN.toASCII(domain.trim()).toLowerCase();
+        return IDN.toASCII(domain.trim()).toLowerCase(Locale.ENGLISH);
     }
 
     /**
@@ -307,7 +307,7 @@ public final class AcmeUtils {
                 if (charset != null && !"utf-8".equalsIgnoreCase(charset)) {
                     throw new AcmeProtocolException("Unsupported charset " + charset);
                 }
-                return m.group(1).trim().toLowerCase();
+                return m.group(1).trim().toLowerCase(Locale.ENGLISH);
             }
         }
         return null;
