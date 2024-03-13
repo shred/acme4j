@@ -220,7 +220,7 @@ public class CertificateUtilsTest {
 
         var builder = new CSRBuilder();
         builder.addDomains("example.org", "www.example.org");
-        builder.addIP(InetAddress.getByName("192.168.0.1"));
+        builder.addIP(InetAddress.getByName("192.0.2.1"));
         builder.sign(keypair);
         var csr = builder.getCSR();
 
@@ -230,7 +230,7 @@ public class CertificateUtilsTest {
         assertThat(cert.getIssuerX500Principal().getName()).isEqualTo(rootSubject);
         assertThat(cert.getSubjectX500Principal().getName()).isEqualTo("");
         assertThat(getSANs(cert)).contains("example.org", "www.example.org");
-        assertThat(getIpSANs(cert)).contains(InetAddress.getByName("192.168.0.1"));
+        assertThat(getIpSANs(cert)).contains(InetAddress.getByName("192.0.2.1"));
         assertThat(cert.getNotBefore().toInstant()).isEqualTo(notBefore);
         assertThat(cert.getNotAfter().toInstant()).isEqualTo(notAfter);
         assertThat(cert.getSerialNumber()).isNotNull();

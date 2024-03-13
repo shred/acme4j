@@ -36,7 +36,7 @@ public class NetworkSettingsTest {
     public void testGettersAndSetters() {
         var settings = new NetworkSettings();
 
-        var proxyAddress = new InetSocketAddress("10.0.0.1", 8080);
+        var proxyAddress = new InetSocketAddress("198.51.100.1", 8080);
         var proxySelector = ProxySelector.of(proxyAddress);
 
         assertThat(settings.getProxySelector()).isSameAs(HttpClient.Builder.NO_PROXY);

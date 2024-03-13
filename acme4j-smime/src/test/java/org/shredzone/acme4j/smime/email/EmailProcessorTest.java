@@ -227,7 +227,7 @@ public class EmailProcessorTest extends SMIMETests {
         assertThatExceptionOfType(AcmeProtocolException.class)
                 .isThrownBy(() -> {
                     var processor = EmailProcessor.plainMessage(message);
-                    processor.expectedIdentifier(Identifier.ip("192.168.0.1"));
+                    processor.expectedIdentifier(Identifier.ip("192.0.2.1"));
                 })
                 .withMessage("Wrong identifier type: ip");
     }

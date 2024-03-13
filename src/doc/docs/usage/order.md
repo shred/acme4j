@@ -212,8 +212,8 @@ Besides domains, _acme4j_ also supports IP identifier validation as specified in
 
 ```java
 Order order = account.newOrder()
-        .identifier(Identifier.ip(InetAddress.getByName("192.168.1.2")))
-        .identifier(Identifier.ip("192.168.2.3"))   // for your convenience
+        .identifier(Identifier.ip(InetAddress.getByName("192.0.2.2")))
+        .identifier(Identifier.ip("192.0.2.3"))   // for your convenience
         .identifier(Identifier.dns("example.org"))
         .create();
 ```

@@ -83,7 +83,7 @@ public class OrderBuilderTest {
                         .identifier(Identifier.dns("d.example.com"))
                         .identifiers(Arrays.asList(
                                     Identifier.dns("d2.example.com"),
-                                    Identifier.ip(InetAddress.getByName("192.168.1.2"))))
+                                    Identifier.ip(InetAddress.getByName("192.0.2.2"))))
                         .notBefore(notBefore)
                         .notAfter(notAfter)
                         .create();
@@ -97,7 +97,7 @@ public class OrderBuilderTest {
                         Identifier.dns("m.example.org"),
                         Identifier.dns("d.example.com"),
                         Identifier.dns("d2.example.com"),
-                        Identifier.ip(InetAddress.getByName("192.168.1.2")));
+                        Identifier.ip(InetAddress.getByName("192.0.2.2")));
             softly.assertThat(order.getNotBefore().orElseThrow())
                     .isEqualTo("2016-01-01T00:10:00Z");
             softly.assertThat(order.getNotAfter().orElseThrow())

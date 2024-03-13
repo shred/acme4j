@@ -35,8 +35,8 @@ The `CSRBuilder` also accepts IP addresses and `Identifier` for generating the C
 
 ```java
 CSRBuilder csrb = new CSRBuilder();
-csrb.addIP(InetAddress.getByName("192.168.1.2"));
-csrb.addIdentifier(Identifier.ip("192.168.2.3"));
+csrb.addIP(InetAddress.getByName("192.0.2.2"));
+csrb.addIdentifier(Identifier.ip("192.0.2.3"));
 csrb.sign(domainKeyPair);
 ```
 

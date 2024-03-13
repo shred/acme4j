@@ -80,20 +80,20 @@ public class IdentifierTest {
 
     @Test
     public void testIp() throws UnknownHostException {
-        var id1 = Identifier.ip(InetAddress.getByName("192.168.1.2"));
+        var id1 = Identifier.ip(InetAddress.getByName("192.0.2.2"));
         assertThat(id1.getType()).isEqualTo(Identifier.TYPE_IP);
-        assertThat(id1.getValue()).isEqualTo("192.168.1.2");
-        assertThat(id1.getIP().getHostAddress()).isEqualTo("192.168.1.2");
+        assertThat(id1.getValue()).isEqualTo("192.0.2.2");
+        assertThat(id1.getIP().getHostAddress()).isEqualTo("192.0.2.2");
 
         var id2 = Identifier.ip(InetAddress.getByName("2001:db8:85a3::8a2e:370:7334"));
         assertThat(id2.getType()).isEqualTo(Identifier.TYPE_IP);
         assertThat(id2.getValue()).isEqualTo("2001:db8:85a3:0:0:8a2e:370:7334");
         assertThat(id2.getIP().getHostAddress()).isEqualTo("2001:db8:85a3:0:0:8a2e:370:7334");
 
-        var id3 = Identifier.ip("192.168.2.99");
+        var id3 = Identifier.ip("192.0.2.99");
         assertThat(id3.getType()).isEqualTo(Identifier.TYPE_IP);
-        assertThat(id3.getValue()).isEqualTo("192.168.2.99");
-        assertThat(id3.getIP().getHostAddress()).isEqualTo("192.168.2.99");
+        assertThat(id3.getValue()).isEqualTo("192.0.2.99");
+        assertThat(id3.getIP().getHostAddress()).isEqualTo("192.0.2.99");
     }
 
     @Test

@@ -209,14 +209,14 @@ public class CSRBuilderTest {
         builder.addDomains("jklm.no", "pqr.st");
         builder.addDomains(Arrays.asList("uv.wx", "y.z"));
         builder.addDomain("*.wild.card");
-        builder.addIP(InetAddress.getByName("192.168.0.1"));
-        builder.addIP(InetAddress.getByName("192.168.0.2"));
-        builder.addIPs(InetAddress.getByName("10.0.0.1"), InetAddress.getByName("10.0.0.2"));
-        builder.addIPs(Arrays.asList(InetAddress.getByName("fd00::1"), InetAddress.getByName("fd00::2")));
+        builder.addIP(InetAddress.getByName("192.0.2.1"));
+        builder.addIP(InetAddress.getByName("192.0.2.2"));
+        builder.addIPs(InetAddress.getByName("198.51.100.1"), InetAddress.getByName("198.51.100.2"));
+        builder.addIPs(Arrays.asList(InetAddress.getByName("2001:db8::1"), InetAddress.getByName("2001:db8::2")));
         builder.addIdentifier(Identifier.dns("ide1.nt"));
-        builder.addIdentifier(Identifier.ip("192.168.5.5"));
-        builder.addIdentifiers(Identifier.dns("ide2.nt"), Identifier.ip("192.168.5.6"));
-        builder.addIdentifiers(Arrays.asList(Identifier.dns("ide3.nt"), Identifier.ip("192.168.5.7")));
+        builder.addIdentifier(Identifier.ip("203.0.113.5"));
+        builder.addIdentifiers(Identifier.dns("ide2.nt"), Identifier.ip("203.0.113.6"));
+        builder.addIdentifiers(Arrays.asList(Identifier.dns("ide3.nt"), Identifier.ip("203.0.113.7")));
 
         builder.setCommonName("abc.de");
         builder.setCountry("XX");
@@ -229,9 +229,9 @@ public class CSRBuilderTest {
                         + "OU=Testunit,ST=ABC,"
                         + "DNS=abc.de,DNS=fg.hi,DNS=jklm.no,DNS=pqr.st,DNS=uv.wx,DNS=y.z,DNS=*.wild.card,"
                         + "DNS=ide1.nt,DNS=ide2.nt,DNS=ide3.nt,"
-                        + "IP=192.168.0.1,IP=192.168.0.2,IP=10.0.0.1,IP=10.0.0.2,"
-                        + "IP=fd00:0:0:0:0:0:0:1,IP=fd00:0:0:0:0:0:0:2,"
-                        + "IP=192.168.5.5,IP=192.168.5.6,IP=192.168.5.7");
+                        + "IP=192.0.2.1,IP=192.0.2.2,IP=198.51.100.1,IP=198.51.100.2,"
+                        + "IP=2001:db8:0:0:0:0:0:1,IP=2001:db8:0:0:0:0:0:2,"
+                        + "IP=203.0.113.5,IP=203.0.113.6,IP=203.0.113.7");
         return builder;
     }
 
@@ -281,9 +281,9 @@ public class CSRBuilderTest {
         assertThat(names.getNames())
                 .filteredOn(gn -> gn.getTagNo() == GeneralName.iPAddress)
                 .extracting(gn -> getIP(gn.getName()).getHostAddress())
-                .containsExactlyInAnyOrder("192.168.0.1", "192.168.0.2", "10.0.0.1",
-                        "10.0.0.2", "fd00:0:0:0:0:0:0:1", "fd00:0:0:0:0:0:0:2",
-                        "192.168.5.5", "192.168.5.6", "192.168.5.7");
+                .containsExactlyInAnyOrder("192.0.2.1", "192.0.2.2", "198.51.100.1",
+                        "198.51.100.2", "2001:db8:0:0:0:0:0:1", "2001:db8:0:0:0:0:0:2",
+                        "203.0.113.5", "203.0.113.6", "203.0.113.7");
     }
 
     /**
