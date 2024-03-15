@@ -50,11 +50,20 @@ It is possible to pro-actively authorize a domain, without ordering a certificat
 Account account = ... // your Account object
 String domain = ...   // Domain name to authorize
 
-Authorization auth = account.preAuthorizeDomain(domain);
+Authorization auth = account.preAuthorize(Identifier.dns(domain));
 ```
 
 !!! note
     Some CAs may not offer domain pre-authorization, `preAuthorizeDomain()` will then fail and throw an `AcmeNotSupportedException`. Some CAs may limit pre-authorization to certain domain types (e.g. non-wildcard) and throw an `AcmeServerException` otherwise.
+
+To pre-authorize a domain for subdomain certificates as specified in [RFC 9444](https://tools.ietf.org/html/rfc9444), flag the `Identifier` accordingly using `allowSubdomainAuth()`:
+
+```java
+Account account = ... // your Account object
+String domain = ...   // Domain name to authorize
+
+Authorization auth = account.preAuthorize(Identifier.dns(domain).allowSubdomainAuth());
+```
 
 ## Localized Error Messages
 

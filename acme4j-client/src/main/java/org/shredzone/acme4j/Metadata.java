@@ -132,6 +132,15 @@ public class Metadata {
     }
 
     /**
+     * Returns whether the CA supports subdomain auth according to RFC9444.
+     *
+     * @since 3.3.0
+     */
+    public boolean isSubdomainAuthAllowed() {
+        return meta.get("subdomainAuthAllowed").map(Value::asBoolean).orElse(false);
+    }
+
+    /**
      * Returns the JSON representation of the metadata. This is useful for reading
      * proprietary metadata properties.
      */

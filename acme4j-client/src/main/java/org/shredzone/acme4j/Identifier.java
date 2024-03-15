@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j;
 
+import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.toAce;
 
@@ -20,10 +21,10 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSON;
-import org.shredzone.acme4j.toolbox.JSONBuilder;
 
 /**
  * Represents an identifier.
@@ -50,11 +51,12 @@ public class Identifier implements Serializable {
      */
     public static final String TYPE_IP = "ip";
 
-    private static final String KEY_TYPE = "type";
-    private static final String KEY_VALUE = "value";
+    static final String KEY_TYPE = "type";
+    static final String KEY_VALUE = "value";
+    static final String KEY_ANCESTOR_DOMAIN = "ancestorDomain";
+    static final String KEY_SUBDOMAIN_AUTH_ALLOWED = "subdomainAuthAllowed";
 
-    private final String type;
-    private final String value;
+    private final Map<String, Object> content = new TreeMap<>();
 
     /**
      * Creates a new {@link Identifier}.
@@ -71,8 +73,8 @@ public class Identifier implements Serializable {
      *            Identifier value
      */
     public Identifier(String type, String value) {
-        this.type = requireNonNull(type, KEY_TYPE);
-        this.value = requireNonNull(value, KEY_VALUE);
+        content.put(KEY_TYPE, requireNonNull(type, KEY_TYPE));
+        content.put(KEY_VALUE, requireNonNull(value, KEY_VALUE));
     }
 
     /**
@@ -82,7 +84,20 @@ public class Identifier implements Serializable {
      *            {@link JSON} containing the identifier data
      */
     public Identifier(JSON json) {
-        this(json.get(KEY_TYPE).asString(), json.get(KEY_VALUE).asString());
+        if (!json.contains(KEY_TYPE)) {
+            throw new AcmeProtocolException("Required key " + KEY_TYPE + " is missing");
+        }
+        if (!json.contains(KEY_VALUE)) {
+            throw new AcmeProtocolException("Required key " + KEY_VALUE + " is missing");
+        }
+        content.putAll(json.toMap());
+    }
+
+    /**
+     * Makes a copy of the given Identifier.
+     */
+    private Identifier(Identifier identifier) {
+        content.putAll(identifier.content);
     }
 
     /**
@@ -124,17 +139,49 @@ public class Identifier implements Serializable {
     }
 
     /**
+     * Sets an ancestor domain, as required in RFC-9444.
+     *
+     * @param domain
+     *         The ancestor domain to be set. Unicode domains are automatically ASCII
+     *         encoded.
+     * @return An {@link Identifier} that contains the ancestor domain.
+     * @since 3.3.0
+     */
+    public Identifier withAncestorDomain(String domain) {
+        expectType(TYPE_DNS);
+
+        var result = new Identifier(this);
+        result.content.put(KEY_ANCESTOR_DOMAIN, toAce(domain));
+        return result;
+    }
+
+    /**
+     * Gives the permission to authorize subdomains of this domain, as required in
+     * RFC-9444.
+     *
+     * @return An {@link Identifier} that allows subdomain auths.
+     * @since 3.3.0
+     */
+    public Identifier allowSubdomainAuth() {
+        expectType(TYPE_DNS);
+
+        var result = new Identifier(this);
+        result.content.put(KEY_SUBDOMAIN_AUTH_ALLOWED, true);
+        return result;
+    }
+
+    /**
      * Returns the identifier type.
      */
     public String getType() {
-        return type;
+        return content.get(KEY_TYPE).toString();
     }
 
     /**
      * Returns the identifier value.
      */
     public String getValue() {
-        return value;
+        return content.get(KEY_VALUE).toString();
     }
 
     /**
@@ -145,10 +192,8 @@ public class Identifier implements Serializable {
      *             if this is not a DNS identifier.
      */
     public String getDomain() {
-        if (!TYPE_DNS.equals(type)) {
-            throw new AcmeProtocolException("expected 'dns' identifier, but found '" + type + "'");
-        }
-        return value;
+        expectType(TYPE_DNS);
+        return getValue();
     }
 
     /**
@@ -159,11 +204,9 @@ public class Identifier implements Serializable {
      *             if this is not a DNS identifier.
      */
     public InetAddress getIP() {
-        if (!TYPE_IP.equals(type)) {
-            throw new AcmeProtocolException("expected 'ip' identifier, but found '" + type + "'");
-        }
+        expectType(TYPE_IP);
         try {
-            return InetAddress.getByName(value);
+            return InetAddress.getByName(getValue());
         } catch (UnknownHostException ex) {
             throw new AcmeProtocolException("bad ip identifier value", ex);
         }
@@ -173,12 +216,29 @@ public class Identifier implements Serializable {
      * Returns the identifier as JSON map.
      */
     public Map<String, Object> toMap() {
-        return new JSONBuilder().put(KEY_TYPE, type).put(KEY_VALUE, value).toMap();
+        return unmodifiableMap(content);
+    }
+
+    /**
+     * Makes sure this identifier is of the given type.
+     *
+     * @param type
+     *         Expected type
+     * @throws AcmeProtocolException
+     *         if this identifier is of a different type
+     */
+    private void expectType(String type) {
+        if (!type.equals(getType())) {
+            throw new AcmeProtocolException("expected '" + type + "' identifier, but found '" + getType() + "'");
+        }
     }
 
     @Override
     public String toString() {
-        return type + "=" + value;
+        if (content.size() == 2) {
+            return getType() + '=' + getValue();
+        }
+        return content.toString();
     }
 
     @Override
@@ -188,12 +248,12 @@ public class Identifier implements Serializable {
         }
 
         var i = (Identifier) obj;
-        return type.equals(i.type) && value.equals(i.value);
+        return content.equals(i.content);
     }
 
     @Override
     public int hashCode() {
-        return type.hashCode() ^ value.hashCode();
+        return content.hashCode();
     }
 
 }

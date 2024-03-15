@@ -203,7 +203,7 @@ public class AccountTest {
         var domainName = "example.org";
 
         var account = new Account(login);
-        var auth = account.preAuthorizeDomain(domainName);
+        var auth = account.preAuthorize(Identifier.dns(domainName));
 
         assertThat(auth.getIdentifier().getDomain()).isEqualTo(domainName);
         assertThat(auth.getStatus()).isEqualTo(Status.PENDING);
@@ -213,6 +213,77 @@ public class AccountTest {
         assertThat(auth.getChallenges()).containsExactlyInAnyOrder(
                         provider.getChallenge(Http01Challenge.TYPE),
                         provider.getChallenge(Dns01Challenge.TYPE));
+
+        provider.close();
+    }
+
+    /**
+     * Test that pre-authorization with subdomains fails if not supported.
+     */
+    @Test
+    public void testPreAuthorizeDomainSubdomainsFails() throws Exception {
+        var provider = new TestableConnectionProvider();
+
+        var login = provider.createLogin();
+
+        provider.putTestResource(Resource.NEW_AUTHZ, resourceUrl);
+
+        assertThat(login.getSession().getMetadata().isSubdomainAuthAllowed()).isFalse();
+
+        var account = new Account(login);
+
+        assertThatExceptionOfType(AcmeNotSupportedException.class).isThrownBy(() ->
+                account.preAuthorize(Identifier.dns("example.org").allowSubdomainAuth())
+        );
+
+        provider.close();
+    }
+
+    /**
+     * Test that a domain can be pre-authorized, with allowed subdomains.
+     */
+    @Test
+    public void testPreAuthorizeDomainSubdomains() throws Exception {
+        var provider = new TestableConnectionProvider() {
+            @Override
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
+                assertThat(url).isEqualTo(resourceUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("newAuthorizationRequestSub").toString());
+                assertThat(login).isNotNull();
+                return HttpURLConnection.HTTP_CREATED;
+            }
+
+            @Override
+            public JSON readJsonResponse() {
+                return getJSON("newAuthorizationResponseSub");
+            }
+
+            @Override
+            public URL getLocation() {
+                return locationUrl;
+            }
+        };
+
+        var login = provider.createLogin();
+
+        provider.putMetadata("subdomainAuthAllowed", true);
+        provider.putTestResource(Resource.NEW_AUTHZ, resourceUrl);
+        provider.putTestChallenge(Dns01Challenge.TYPE, Dns01Challenge::new);
+
+        var domainName = "example.org";
+
+        var account = new Account(login);
+        var auth = account.preAuthorize(Identifier.dns(domainName).allowSubdomainAuth());
+
+        assertThat(login.getSession().getMetadata().isSubdomainAuthAllowed()).isTrue();
+        assertThat(auth.getIdentifier().getDomain()).isEqualTo(domainName);
+        assertThat(auth.getStatus()).isEqualTo(Status.PENDING);
+        assertThat(auth.getExpires()).isEmpty();
+        assertThat(auth.getLocation()).isEqualTo(locationUrl);
+        assertThat(auth.isSubdomainAuthAllowed()).isTrue();
+
+        assertThat(auth.getChallenges()).containsExactlyInAnyOrder(
+                provider.getChallenge(Dns01Challenge.TYPE));
 
         provider.close();
     }

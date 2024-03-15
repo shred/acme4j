@@ -184,6 +184,7 @@ public class SessionTest {
             softly.assertThat(meta.getAutoRenewalMinLifetime()).isEqualTo(Duration.ofHours(24));
             softly.assertThat(meta.isAutoRenewalGetAllowed()).isTrue();
             softly.assertThat(meta.isExternalAccountRequired()).isTrue();
+            softly.assertThat(meta.isSubdomainAuthAllowed()).isTrue();
             softly.assertThat(meta.getJSON()).isNotNull();
         }
 
@@ -227,6 +228,7 @@ public class SessionTest {
             softly.assertThat(meta.getWebsite()).isEmpty();
             softly.assertThat(meta.getCaaIdentities()).isEmpty();
             softly.assertThat(meta.isAutoRenewalEnabled()).isFalse();
+            softly.assertThat(meta.isSubdomainAuthAllowed()).isFalse();
             softly.assertThatExceptionOfType(AcmeNotSupportedException.class)
                     .isThrownBy(meta::getAutoRenewalMaxDuration);
             softly.assertThatExceptionOfType(AcmeNotSupportedException.class)

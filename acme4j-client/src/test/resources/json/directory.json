@@ -16,6 +16,7 @@
       "allow-certificate-get": true
     },
     "externalAccountRequired": true,
+    "subdomainAuthAllowed": true,
     "xTestString": "foobar",
     "xTestUri": "https://www.example.org",
     "xTestArray": [

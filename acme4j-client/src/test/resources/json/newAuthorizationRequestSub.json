@@ -1,0 +1,7 @@
+{
+  "identifier": {
+    "type": "dns",
+    "value": "example.org",
+    "subdomainAuthAllowed": true
+  }
+}

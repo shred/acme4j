@@ -344,6 +344,13 @@ public class OrderBuilder {
             throw new AcmeNotSupportedException("auto-renewal");
         }
 
+        var hasAncestorDomain = identifierSet.stream()
+                .filter(id -> Identifier.TYPE_DNS.equals(id.getType()))
+                .anyMatch(id -> id.toMap().containsKey(Identifier.KEY_ANCESTOR_DOMAIN));
+        if (hasAncestorDomain && !login.getSession().getMetadata().isSubdomainAuthAllowed()) {
+            throw new AcmeNotSupportedException("ancestor-domain");
+        }
+
         LOG.debug("create");
         try (var conn = session.connect()) {
             var claims = new JSONBuilder();

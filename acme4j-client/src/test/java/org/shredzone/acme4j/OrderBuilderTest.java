@@ -15,6 +15,7 @@ package org.shredzone.acme4j;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
@@ -183,6 +184,87 @@ public class OrderBuilderTest {
             softly.assertThat(order.isAutoRenewalGetEnabled()).isTrue();
             softly.assertThat(order.getLocation()).isEqualTo(locationUrl);
         }
+
+        provider.close();
+    }
+
+    /**
+     * Test that a new {@link Order} with ancestor domain can be created.
+     */
+    @Test
+    public void testOrderCertificateWithAncestor() throws Exception {
+        var notBefore = parseTimestamp("2016-01-01T00:00:00Z");
+        var notAfter = parseTimestamp("2016-01-08T00:00:00Z");
+
+        var provider = new TestableConnectionProvider() {
+            @Override
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
+                assertThat(url).isEqualTo(resourceUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("requestOrderRequestSub").toString());
+                assertThat(login).isNotNull();
+                return HttpURLConnection.HTTP_CREATED;
+            }
+
+            @Override
+            public JSON readJsonResponse() {
+                return getJSON("requestOrderResponseSub");
+            }
+
+            @Override
+            public URL getLocation() {
+                return locationUrl;
+            }
+        };
+
+        var login = provider.createLogin();
+
+        provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
+        provider.putMetadata("subdomainAuthAllowed", true);
+
+        var account = new Account(login);
+        var order = account.newOrder()
+                .identifier(Identifier.dns("foo.bar.example.com").withAncestorDomain("example.com"))
+                .notBefore(notBefore)
+                .notAfter(notAfter)
+                .create();
+
+        try (var softly = new AutoCloseableSoftAssertions()) {
+            softly.assertThat(order.getIdentifiers()).containsExactlyInAnyOrder(
+                    Identifier.dns("foo.bar.example.com"));
+            softly.assertThat(order.getNotBefore().orElseThrow())
+                    .isEqualTo("2016-01-01T00:10:00Z");
+            softly.assertThat(order.getNotAfter().orElseThrow())
+                    .isEqualTo("2016-01-08T00:10:00Z");
+            softly.assertThat(order.getExpires().orElseThrow())
+                    .isEqualTo("2016-01-10T00:00:00Z");
+            softly.assertThat(order.getStatus()).isEqualTo(Status.PENDING);
+            softly.assertThat(order.getLocation()).isEqualTo(locationUrl);
+            softly.assertThat(order.getAuthorizations()).isNotNull();
+            softly.assertThat(order.getAuthorizations()).hasSize(2);
+        }
+
+        provider.close();
+    }
+
+    /**
+     * Test that a new {@link Order} with ancestor domain fails if not supported.
+     */
+    @Test
+    public void testOrderCertificateWithAncestorFails() throws Exception {
+        var provider = new TestableConnectionProvider();
+
+        var login = provider.createLogin();
+
+        provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
+
+        assertThat(login.getSession().getMetadata().isSubdomainAuthAllowed()).isFalse();
+
+        var account = new Account(login);
+        assertThatExceptionOfType(AcmeNotSupportedException.class).isThrownBy(() ->
+                account.newOrder()
+                        .identifier(Identifier.dns("foo.bar.example.com").withAncestorDomain("example.com"))
+                        .create()
+        );
 
         provider.close();
     }

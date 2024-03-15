@@ -219,3 +219,24 @@ Order order = account.newOrder()
 ```
 
 The example also shows how to add domain names as DNS `Identifier` objects. Adding domain names via `domain()` is just a shortcut notation for it.
+
+## Subdomains
+
+Ordering certificates for subdomains is not different to ordering certificates for domains. You prove ownership of that subdomain, and then get a certificate for it.
+
+If your CA supports [RFC 9444](https://tools.ietf.org/html/rfc9444), you can also get certificates for all subdomains only by proving ownership of an ancestor domain. To do so, add the ancestor domain to your `Identifier` when creating the order:
+
+```java
+Order order = account.newOrder()
+        .identifier(
+            Identifier.dns("foo.bar.example.org")
+                .withAncestorDomain("example.org")
+        )
+        .create();
+```
+
+The CA can then choose to issue challenges for any of `foo.bar.example.org`, `bar.example.org`, or `example.org`. For each challenge, the related domain can be get via `Authorization.getIdentifier()`.
+
+`Authorization.isSubdomainAuthAllowed()` will return `true` if that `Authorization` is used to issue subdomain certificates.
+
+To check if your CA supports RFC 9444, read `Metadata.isSubdomainAuthAllowed()`.

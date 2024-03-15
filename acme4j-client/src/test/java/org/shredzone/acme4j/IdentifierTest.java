@@ -13,7 +13,7 @@
  */
 package org.shredzone.acme4j;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.InetAddress;
@@ -104,11 +104,74 @@ public class IdentifierTest {
     }
 
     @Test
+    public void testAncestorDomain() {
+        var id1 = Identifier.dns("foo.bar.example.com");
+        var id1a = id1.withAncestorDomain("example.com");
+        assertThat(id1a).isNotSameAs(id1);
+        assertThat(id1a.getType()).isEqualTo(Identifier.TYPE_DNS);
+        assertThat(id1a.getValue()).isEqualTo("foo.bar.example.com");
+        assertThat(id1a.getDomain()).isEqualTo("foo.bar.example.com");
+        assertThat(id1a.toMap()).contains(
+                entry("type", "dns"),
+                entry("value", "foo.bar.example.com"),
+                entry("ancestorDomain", "example.com")
+        );
+        assertThat(id1a.toString()).isEqualTo("{ancestorDomain=example.com, type=dns, value=foo.bar.example.com}");
+
+        var id2 = Identifier.dns("föö.ëxämþlë.com").withAncestorDomain("ëxämþlë.com");
+        assertThat(id2.getType()).isEqualTo(Identifier.TYPE_DNS);
+        assertThat(id2.getValue()).isEqualTo("xn--f-1gaa.xn--xml-qla7ae5k.com");
+        assertThat(id2.getDomain()).isEqualTo("xn--f-1gaa.xn--xml-qla7ae5k.com");
+        assertThat(id2.toMap()).contains(
+                entry("type", "dns"),
+                entry("value", "xn--f-1gaa.xn--xml-qla7ae5k.com"),
+                entry("ancestorDomain", "xn--xml-qla7ae5k.com")
+        );
+
+        var id3 = Identifier.dns("foo.bar.example.com").withAncestorDomain("example.com");
+        assertThat(id3.equals(id1)).isFalse();
+        assertThat(id3.equals(id1a)).isTrue();
+
+        assertThatExceptionOfType(AcmeProtocolException.class).isThrownBy(() ->
+                Identifier.ip("192.0.2.99").withAncestorDomain("example.com")
+        );
+
+        assertThatNullPointerException().isThrownBy(() ->
+                Identifier.dns("example.org").withAncestorDomain(null)
+        );
+    }
+
+    @Test
+    public void testAllowSubdomainAuth() {
+        var id1 = Identifier.dns("example.com");
+        var id1a = id1.allowSubdomainAuth();
+        assertThat(id1a).isNotSameAs(id1);
+        assertThat(id1a.getType()).isEqualTo(Identifier.TYPE_DNS);
+        assertThat(id1a.getValue()).isEqualTo("example.com");
+        assertThat(id1a.getDomain()).isEqualTo("example.com");
+        assertThat(id1a.toMap()).contains(
+                entry("type", "dns"),
+                entry("value", "example.com"),
+                entry("subdomainAuthAllowed", true)
+        );
+        assertThat(id1a.toString()).isEqualTo("{subdomainAuthAllowed=true, type=dns, value=example.com}");
+
+        var id3 = Identifier.dns("example.com").allowSubdomainAuth();
+        assertThat(id3.equals(id1)).isFalse();
+        assertThat(id3.equals(id1a)).isTrue();
+
+        assertThatExceptionOfType(AcmeProtocolException.class).isThrownBy(() ->
+                Identifier.ip("192.0.2.99").allowSubdomainAuth()
+        );
+    }
+
+    @Test
     public void testEquals() {
         var idRef = new Identifier("foo", "123.456");
 
         var id1 = new Identifier("foo", "123.456");
         assertThat(idRef.equals(id1)).isTrue();
+        assertThat(id1.equals(idRef)).isTrue();
 
         var id2 = new Identifier("bar", "654.321");
         assertThat(idRef.equals(id2)).isFalse();

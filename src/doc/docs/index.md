@@ -18,6 +18,7 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 * Supports [RFC 8738](https://tools.ietf.org/html/rfc8738) IP identifier validation
 * Supports [RFC 8739](https://tools.ietf.org/html/rfc8739) short-term automatic certificate renewal (experimental)
 * Supports [RFC 8823](https://tools.ietf.org/html/rfc8823) for S/MIME certificates (experimental)
+* Supports [RFC 9444](https://tools.ietf.org/html/rfc9444) for subdomain validation
 * Supports [draft-ietf-acme-ari-03](https://www.ietf.org/archive/id/draft-ietf-acme-ari-03.html) for renewal information (experimental)
 * Easy to use Java API
 * Requires JRE 11 or higher

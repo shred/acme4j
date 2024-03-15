@@ -84,6 +84,18 @@ public class Authorization extends AcmeJsonResource {
     }
 
     /**
+     * Returns {@code true} if certificates for subdomains can be issued according to
+     * RFC9444.
+     *
+     * @since 3.3.0
+     */
+    public boolean isSubdomainAuthAllowed() {
+        return getJSON().get("subdomainAuthAllowed")
+                .map(Value::asBoolean)
+                .orElse(false);
+    }
+
+    /**
      * Gets a list of all challenges offered by the server, in no specific order.
      */
     public List<Challenge> getChallenges() {

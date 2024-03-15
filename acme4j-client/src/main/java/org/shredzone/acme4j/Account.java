@@ -189,6 +189,11 @@ public class Account extends AcmeJsonResource {
 
         var newAuthzUrl = getSession().resourceUrl(Resource.NEW_AUTHZ);
 
+        if (identifier.toMap().containsKey(Identifier.KEY_SUBDOMAIN_AUTH_ALLOWED)
+                && !getSession().getMetadata().isSubdomainAuthAllowed()) {
+            throw new AcmeNotSupportedException("subdomain-auth");
+        }
+
         LOG.debug("preAuthorize {}", identifier);
         try (var conn = getSession().connect()) {
             var claims = new JSONBuilder();
