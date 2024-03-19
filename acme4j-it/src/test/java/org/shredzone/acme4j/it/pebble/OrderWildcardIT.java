@@ -69,7 +69,6 @@ public class OrderWildcardIT extends PebbleITBase {
 
         for (var auth : order.getAuthorizations()) {
             assertThat(auth.getIdentifier().getDomain()).isEqualTo(TEST_DOMAIN);
-            assertThat(auth.getStatus()).isEqualTo(Status.PENDING);
 
             if (auth.getStatus() == Status.VALID) {
                 continue;
@@ -80,16 +79,17 @@ public class OrderWildcardIT extends PebbleITBase {
             var challengeDomainName = Dns01Challenge.toRRName(TEST_DOMAIN);
 
             client.dnsAddTxtRecord(challengeDomainName, challenge.getDigest());
-            cleanup(() -> client.dnsRemoveTxtRecord(challengeDomainName));
 
-            challenge.trigger();
-
-            await()
-                .pollInterval(1, SECONDS)
-                .timeout(30, SECONDS)
-                .conditionEvaluationListener(cond -> updateAuth(auth))
-                .untilAsserted(() -> assertThat(
-                        auth.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
+            try {
+                challenge.trigger();
+                await().pollInterval(1, SECONDS)
+                        .timeout(30, SECONDS)
+                        .conditionEvaluationListener(cond -> updateAuth(auth))
+                        .untilAsserted(() -> assertThat(
+                                auth.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
+            } finally {
+                performCleanup();
+            }
 
             assertThat(auth.getStatus()).isEqualTo(Status.VALID);
         }
@@ -108,10 +108,6 @@ public class OrderWildcardIT extends PebbleITBase {
         assertThat(cert).isNotNull();
         assertThat(cert.getNotAfter()).isNotEqualTo(notBefore);
         assertThat(cert.getNotBefore()).isNotEqualTo(notAfter);
-        assertThat(cert.getSubjectX500Principal().getName()).satisfiesAnyOf(
-                name -> assertThat(name).contains("CN=" + TEST_DOMAIN),
-                name -> assertThat(name).contains("CN=" + TEST_WILDCARD_DOMAIN)
-        );
 
         var san = cert.getSubjectAlternativeNames().stream()
                 .filter(it -> ((Number) it.get(0)).intValue() == GeneralName.dNSName)

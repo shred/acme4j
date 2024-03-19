@@ -125,7 +125,7 @@ public class BammBammClient {
      */
     public void dnsRemoveTxtRecord(String domain) throws IOException {
         var jb = new JSONBuilder();
-        jb.put("host", domain + '.');
+        jb.put("host", domain);
         sendRequest("clear-txt", jb.toString());
     }
 

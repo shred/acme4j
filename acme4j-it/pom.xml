@@ -105,32 +105,28 @@
             <plugin>
                 <groupId>io.fabric8</groupId>
                 <artifactId>docker-maven-plugin</artifactId>
-                <version>0.35.0</version>
+                <version>0.44.0</version>
 
                 <configuration>
                     <logStdout>true</logStdout>
                     <verbose>true</verbose>
                     <removeAll>true</removeAll>
-
+                    <containerNamePattern>%a</containerNamePattern>
                     <images>
                         <image>
                             <alias>pebble</alias>
-                            <name>letsencrypt/pebble:${pebble.version}</name>
+                            <name>acme4j/pebble:${project.version}</name>
+                            <build>
+                                <dockerFile>pebble.dockerfile</dockerFile>
+                            </build>
                             <run>
-                                <namingStrategy>alias</namingStrategy>
                                 <ports>
-                                    <port>14000:14000</port>
+                                    <port>14000:14000</port><!-- ACME API -->
+                                    <port>15000:15000</port><!-- Management API -->
                                 </ports>
                                 <links>
                                     <link>bammbamm</link>
                                 </links>
-                                <cmd>
-                                    <exec>
-                                        <arg>sh</arg>
-                                        <arg>-c</arg>
-                                        <arg>pebble -strict -dnsserver $(getent hosts bammbamm|cut -d' ' -f1):8053 -config /test/config/pebble-config.json</arg>
-                                    </exec>
-                                </cmd>
                                 <wait>
                                     <log>Listening</log>
                                 </wait>
@@ -142,20 +138,15 @@
                         </image>
                         <image>
                             <alias>bammbamm</alias>
-                            <name>letsencrypt/pebble-challtestsrv:${pebble.version}</name>
+                            <name>acme4j/challtestsrv:${project.version}</name>
+                            <build>
+                                <dockerFile>challtestsrv.dockerfile</dockerFile>
+                            </build>
                             <run>
-                                <namingStrategy>alias</namingStrategy>
                                 <hostname>bammbamm</hostname>
                                 <ports>
                                     <port>8055:8055</port>
                                 </ports>
-                                <cmd>
-                                    <exec>
-                                        <arg>sh</arg>
-                                        <arg>-c</arg>
-                                        <arg>pebble-challtestsrv -defaultIPv6 "" -defaultIPv4 $(getent hosts bammbamm|cut -d' ' -f1)</arg>
-                                    </exec>
-                                </cmd>
                                 <wait>
                                     <log>Starting management server</log>
                                 </wait>

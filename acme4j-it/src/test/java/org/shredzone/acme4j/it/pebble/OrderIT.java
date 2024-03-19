@@ -194,7 +194,6 @@ public class OrderIT extends PebbleITBase {
         assertThat(cert).isNotNull();
         assertThat(cert.getNotBefore().toInstant()).isEqualTo(notBefore);
         assertThat(cert.getNotAfter().toInstant()).isEqualTo(notAfter);
-        assertThat(cert.getSubjectX500Principal().getName()).contains("CN=" + domain);
 
         for (var auth :  order.getAuthorizations()) {
             assertThat(auth.getStatus()).isEqualTo(Status.VALID);

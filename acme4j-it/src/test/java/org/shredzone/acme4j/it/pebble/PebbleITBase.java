@@ -111,7 +111,7 @@ public abstract class PebbleITBase {
      */
     protected void updateAuth(Authorization auth) {
         try {
-            auth.update();
+            auth.fetch();
         } catch (AcmeException ex) {
             throw new AcmeLazyLoadingException(auth, ex);
         }
@@ -125,7 +125,7 @@ public abstract class PebbleITBase {
      */
     protected void updateOrder(Order order) {
         try {
-            order.update();
+            order.fetch();
         } catch (AcmeException ex) {
             throw new AcmeLazyLoadingException(order, ex);
         }
