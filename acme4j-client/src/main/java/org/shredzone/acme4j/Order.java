@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j;
 
+import static java.util.Collections.unmodifiableList;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.io.IOException;
@@ -25,6 +27,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNotSupportedException;
@@ -114,9 +117,9 @@ public class Order extends AcmeJsonResource {
                     .stream()
                     .map(Value::asURL)
                     .map(login::bindAuthorization)
-                    .collect(toUnmodifiableList());
+                    .collect(toList());
         }
-        return authorizations;
+        return unmodifiableList(authorizations);
     }
 
     /**
@@ -135,6 +138,7 @@ public class Order extends AcmeJsonResource {
      *         if the order is not ready yet. You must finalize the order first, and wait
      *         for the status to become {@link Status#VALID}.
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")    // behavior is intended
     public Certificate getCertificate() {
         if (certificate == null) {
             certificate = getJSON().get("certificate")
@@ -154,6 +158,7 @@ public class Order extends AcmeJsonResource {
      *         for the status to become {@link Status#VALID}. It is also thrown if the
      *         order has been {@link Status#CANCELED}.
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")    // behavior is intended
     public Certificate getAutoRenewalCertificate() {
         if (autoRenewalCertificate == null) {
             autoRenewalCertificate = getJSON().get("star-certificate")

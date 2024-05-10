@@ -2,6 +2,10 @@
 
 This document will help you migrate your code to the latest _acme4j_ version.
 
+## Migration to Version 3.2.2
+
+- This version is unable to deserialize resource objects that were serialized by a previous version using Java's serialization mechanism. This shouldn't be a problem, as [it was not allowed](usage/persistence.md#serialization) to share serialized data between different versions anyway.
+
 ## Migration to Version 3.2.0
 
 - Starting with this version, the `CSRBuilder` won't add the first domain as common name automatically. This permits the issuance of very long domain names, and should have no negative impact otherwise, as this field is usually ignored by CAs anyway. If you should encounter a problem here, you can use `CSRBuilder.setCommonName()` to set the first domain as common name manually. Discussion see [here](https://community.letsencrypt.org/t/questions-re-simplifying-issuance-for-very-long-domain-names/207925/11).

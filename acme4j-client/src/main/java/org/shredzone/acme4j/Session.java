@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.StreamSupport;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.NetworkSettings;
 import org.shredzone.acme4j.connector.Resource;
@@ -200,6 +201,7 @@ public class Session {
      * @return {@link NetworkSettings}
      * @since 2.8
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")    // behavior is intended
     public NetworkSettings networkSettings() {
         return networkSettings;
     }
@@ -366,6 +368,11 @@ public class Session {
         }
 
         resourceMap.set(map);
+    }
+
+    @Override
+    protected final void finalize() {
+        // CT_CONSTRUCTOR_THROW: Prevents finalizer attack
     }
 
 }

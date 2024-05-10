@@ -79,7 +79,12 @@ public class SslComAcmeProvider extends AbstractAcmeProvider {
         // by EAB, but the "externalAccountRequired" flag in the directory is set to
         // false. This patch reads the directory and forcefully sets the flag to true.
         // The entire method can be removed once it is fixed on SSL.com side.
-        var directory = super.directory(session, serverUri).toMap();
+        var superdirectory = super.directory(session, serverUri);
+        if (superdirectory == null) {
+            return null;
+        }
+
+        var directory = superdirectory.toMap();
         var meta = directory.get("meta");
         if (meta instanceof Map) {
             var metaMap = ((Map<String, Object>) meta);

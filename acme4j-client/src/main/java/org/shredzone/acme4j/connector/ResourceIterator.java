@@ -13,12 +13,13 @@
  */
 package org.shredzone.acme4j.connector;
 
+import static java.util.Objects.requireNonNull;
+
 import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.function.BiFunction;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -58,10 +59,10 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
      *            {@link Login} and {@link URL}.
      */
     public ResourceIterator(Login login, String field, @Nullable URL start, BiFunction<Login, URL, T> creator) {
-        this.login = Objects.requireNonNull(login, "login");
-        this.field = Objects.requireNonNull(field, "field");
+        this.login = requireNonNull(login, "login");
+        this.field = requireNonNull(field, "field");
         this.nextUrl = start;
-        this.creator = Objects.requireNonNull(creator, "creator");
+        this.creator = requireNonNull(creator, "creator");
     }
 
     /**
@@ -141,7 +142,7 @@ public class ResourceIterator<T extends AcmeResource> implements Iterator<T> {
     private void readAndQueue() throws AcmeException {
         var session = login.getSession();
         try (var conn = session.connect()) {
-            conn.sendSignedPostAsGetRequest(nextUrl, login);
+            conn.sendSignedPostAsGetRequest(requireNonNull(nextUrl), login);
             fillUrlList(conn.readJsonResponse());
 
             nextUrl = conn.getLinks("next").stream().findFirst().orElse(null);

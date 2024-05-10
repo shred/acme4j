@@ -256,4 +256,9 @@ public class Identifier implements Serializable {
         return content.hashCode();
     }
 
+    @Override
+    protected final void finalize() {
+        // CT_CONSTRUCTOR_THROW: Prevents finalizer attack
+    }
+
 }

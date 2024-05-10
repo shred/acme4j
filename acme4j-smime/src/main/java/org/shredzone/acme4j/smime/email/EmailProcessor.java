@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.smime.email;
 
+import static java.util.Collections.unmodifiableCollection;
 import static java.util.Objects.requireNonNull;
 
 import java.net.URL;
@@ -208,14 +209,14 @@ public final class EmailProcessor {
      * Returns the sender of the "challenge" email.
      */
     public InternetAddress getSender() {
-        return sender;
+        return (InternetAddress) sender.clone();
     }
 
     /**
      * Returns the recipient of the "challenge" email.
      */
     public InternetAddress getRecipient() {
-        return recipient;
+        return (InternetAddress) recipient.clone();
     }
 
     /**
@@ -224,7 +225,7 @@ public final class EmailProcessor {
      * Empty if there was no reply-to header, but never {@code null}.
      */
     public Collection<InternetAddress> getReplyTo() {
-        return replyTo;
+        return unmodifiableCollection(replyTo);
     }
 
     /**

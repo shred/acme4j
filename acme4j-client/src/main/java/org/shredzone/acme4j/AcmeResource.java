@@ -87,4 +87,9 @@ public abstract class AcmeResource implements Serializable {
         return location;
     }
 
+    @Override
+    protected final void finalize() {
+        // CT_CONSTRUCTOR_THROW: Prevents finalizer attack
+    }
+
 }

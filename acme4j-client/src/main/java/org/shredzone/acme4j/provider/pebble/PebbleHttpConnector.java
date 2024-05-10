@@ -21,11 +21,11 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.connector.NetworkSettings;
 
@@ -34,7 +34,7 @@ import org.shredzone.acme4j.connector.NetworkSettings;
  * certificate.
  */
 public class PebbleHttpConnector extends HttpConnector {
-    private static @Nullable SSLContext sslContext = null;
+    private static final AtomicReference<SSLContext> SSL_CONTEXT_REF = new AtomicReference<>();
 
     public PebbleHttpConnector(NetworkSettings settings) {
         super(settings);
@@ -51,8 +51,8 @@ public class PebbleHttpConnector extends HttpConnector {
      * Lazily creates an {@link SSLContext} that exclusively accepts the Pebble
      * certificate.
      */
-    protected synchronized SSLContext createSSLContext() {
-        if (sslContext == null) {
+    protected SSLContext createSSLContext() {
+        if (SSL_CONTEXT_REF.get() == null) {
             try (var in = getClass().getResourceAsStream("/org/shredzone/acme4j/provider/pebble/pebble.truststore")) {
                 var keystore = KeyStore.getInstance(KeyStore.getDefaultType());
                 keystore.load(in, "acme4j".toCharArray());
@@ -60,14 +60,15 @@ public class PebbleHttpConnector extends HttpConnector {
                 var tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
                 tmf.init(keystore);
 
-                sslContext = SSLContext.getInstance("TLS");
+                var sslContext = SSLContext.getInstance("TLS");
                 sslContext.init(null, tmf.getTrustManagers(), null);
+                SSL_CONTEXT_REF.set(sslContext);
             } catch (IOException | KeyStoreException | CertificateException
                      | NoSuchAlgorithmException | KeyManagementException ex) {
                 throw new RuntimeException("Could not create truststore", ex);
             }
         }
-        return Objects.requireNonNull(sslContext);
+        return Objects.requireNonNull(SSL_CONTEXT_REF.get());
     }
 
 }

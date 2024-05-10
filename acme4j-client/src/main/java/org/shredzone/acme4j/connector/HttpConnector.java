@@ -19,6 +19,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.util.Properties;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -62,6 +63,7 @@ public class HttpConnector {
      * Creates a new {@link HttpConnector} that is using the given
      * {@link NetworkSettings}.
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP2")   // behavior is intended
     public HttpConnector(NetworkSettings networkSettings) {
         this.networkSettings = networkSettings;
     }

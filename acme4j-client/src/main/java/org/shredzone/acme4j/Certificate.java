@@ -15,6 +15,7 @@ package org.shredzone.acme4j;
 
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
+import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toUnmodifiableList;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.base64UrlEncode;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.getRenewalUniqueIdentifier;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -132,9 +134,9 @@ public class Certificate extends AcmeResource {
             var login = getLogin();
             alternateCerts = getAlternates().stream()
                     .map(login::bindCertificate)
-                    .collect(toUnmodifiableList());
+                    .collect(toList());
         }
-        return alternateCerts;
+        return unmodifiableList(alternateCerts);
     }
 
     /**
@@ -274,6 +276,7 @@ public class Certificate extends AcmeResource {
      * @throws AcmeNotSupportedException if the CA does not support renewal information.
      * @since 3.0.0
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")   // behavior is intended
     public RenewalInfo getRenewalInfo() {
         if (renewalInfo == null) {
             renewalInfo = getRenewalInfoLocation()

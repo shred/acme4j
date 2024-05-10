@@ -21,8 +21,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -44,7 +42,6 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.jose4j.json.JsonUtil;
 import org.jose4j.lang.JoseException;
 import org.shredzone.acme4j.Identifier;
@@ -57,14 +54,12 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
  * A model containing a JSON result. The content is immutable.
  */
 public final class JSON implements Serializable {
-    private static final long serialVersionUID = 3091273044605709204L;
+    private static final long serialVersionUID = 418332625174149030L;
 
     private static final JSON EMPTY_JSON = new JSON(new HashMap<>());
 
     private final String path;
-
-    @SuppressFBWarnings("JCIP_FIELD_ISNT_FINAL_IN_IMMUTABLE_CLASS")
-    private transient Map<String, Object> data; // Must not be final for deserialization
+    private final Map<String, Object> data;
 
     /**
      * Creates a new {@link JSON} root object.
@@ -205,26 +200,6 @@ public final class JSON implements Serializable {
      */
     public Map<String,Object> toMap() {
         return Collections.unmodifiableMap(data);
-    }
-
-    /**
-     * Serialize the data map in JSON.
-     */
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeUTF(JsonUtil.toJson(data));
-        out.defaultWriteObject();
-    }
-
-    /**
-     * Deserialize the JSON representation of the data map.
-     */
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        try {
-            data = new HashMap<>(JsonUtil.parseJson(in.readUTF()));
-            in.defaultReadObject();
-        } catch (JoseException ex) {
-            throw new AcmeProtocolException("Cannot deserialize", ex);
-        }
     }
 
     /**
@@ -369,20 +344,15 @@ public final class JSON implements Serializable {
          * Returns the value as {@link String}.
          */
         public String asString() {
-            required();
-            return val.toString();
+            return required().toString();
         }
 
         /**
          * Returns the value as JSON object.
          */
+        @SuppressWarnings("unchecked")
         public JSON asObject() {
-            required();
-            try {
-                return new JSON(path, (Map<String, Object>) val);
-            } catch (ClassCastException ex) {
-                throw new AcmeProtocolException(path + ": expected an object", ex);
-            }
+            return new JSON(path, (Map<String, Object>) required(Map.class));
         }
 
         /**
@@ -391,9 +361,8 @@ public final class JSON implements Serializable {
          * @since 2.8
          */
         public JSON asEncodedObject() {
-            required();
             try {
-                var raw = AcmeUtils.base64UrlDecode(val.toString());
+                var raw = AcmeUtils.base64UrlDecode(asString());
                 return new JSON(path, JsonUtil.parseJson(new String(raw, UTF_8)));
             } catch (IllegalArgumentException | JoseException ex) {
                 throw new AcmeProtocolException(path + ": expected an encoded object", ex);
@@ -407,7 +376,6 @@ public final class JSON implements Serializable {
          *            Base {@link URL} to resolve relative links against
          */
         public Problem asProblem(URL baseUrl) {
-            required();
             return new Problem(asObject(), baseUrl);
         }
 
@@ -417,7 +385,6 @@ public final class JSON implements Serializable {
          * @since 2.3
          */
         public Identifier asIdentifier() {
-            required();
             return new Identifier(asObject());
         }
 
@@ -427,6 +394,7 @@ public final class JSON implements Serializable {
          * Unlike the other getters, this method returns an empty array if the value is
          * not set. Use {@link #isPresent()} to find out if the value was actually set.
          */
+        @SuppressWarnings("unchecked")
         public Array asArray() {
             if (val == null) {
                 return new Array(path, Collections.emptyList());
@@ -443,33 +411,22 @@ public final class JSON implements Serializable {
          * Returns the value as int.
          */
         public int asInt() {
-            required();
-            try {
-                return ((Number) val).intValue();
-            } catch (ClassCastException ex) {
-                throw new AcmeProtocolException(path + ": bad number " + val, ex);
-            }
+            return (required(Number.class)).intValue();
         }
 
         /**
          * Returns the value as boolean.
          */
         public boolean asBoolean() {
-            required();
-            try {
-                return (Boolean) val;
-            } catch (ClassCastException ex) {
-                throw new AcmeProtocolException(path + ": bad boolean " + val, ex);
-            }
+            return required(Boolean.class);
         }
 
         /**
          * Returns the value as {@link URI}.
          */
         public URI asURI() {
-            required();
             try {
-                return new URI(val.toString());
+                return new URI(asString());
             } catch (URISyntaxException ex) {
                 throw new AcmeProtocolException(path + ": bad URI " + val, ex);
             }
@@ -479,9 +436,8 @@ public final class JSON implements Serializable {
          * Returns the value as {@link URL}.
          */
         public URL asURL() {
-            required();
             try {
-                return new URL(val.toString());
+                return new URL(asString());
             } catch (MalformedURLException ex) {
                 throw new AcmeProtocolException(path + ": bad URL " + val, ex);
             }
@@ -491,9 +447,8 @@ public final class JSON implements Serializable {
          * Returns the value as {@link Instant}.
          */
         public Instant asInstant() {
-            required();
             try {
-                return parseTimestamp(val.toString());
+                return parseTimestamp(asString());
             } catch (IllegalArgumentException ex) {
                 throw new AcmeProtocolException(path + ": bad date " + val, ex);
             }
@@ -505,38 +460,52 @@ public final class JSON implements Serializable {
          * @since 2.3
          */
         public Duration asDuration() {
-            required();
-            try {
-                return Duration.ofSeconds(((Number) val).longValue());
-            } catch (ClassCastException ex) {
-                throw new AcmeProtocolException(path + ": bad duration " + val, ex);
-            }
+            return Duration.ofSeconds(required(Number.class).longValue());
         }
 
         /**
          * Returns the value as base64 decoded byte array.
          */
         public byte[] asBinary() {
-            required();
-            return AcmeUtils.base64UrlDecode(val.toString());
+            return AcmeUtils.base64UrlDecode(asString());
         }
 
         /**
          * Returns the parsed {@link Status}.
          */
         public Status asStatus() {
-            required();
-            return Status.parse(val.toString());
+            return Status.parse(asString());
         }
 
         /**
          * Checks if the value is present. An {@link AcmeProtocolException} is thrown if
          * the value is {@code null}.
+         *
+         * @return val that is guaranteed to be non-{@code null}
          */
-        private void required() {
-            if (!isPresent()) {
+        private Object required() {
+            if (val == null) {
                 throw new AcmeProtocolException(path + ": required, but not set");
             }
+            return val;
+        }
+
+        /**
+         * Checks if the value is present. An {@link AcmeProtocolException} is thrown if
+         * the value is {@code null} or is not of the expected type.
+         *
+         * @param type
+         *         expected type
+         * @return val that is guaranteed to be non-{@code null}
+         */
+        private <T> T required(Class<T> type) {
+            if (val == null) {
+                throw new AcmeProtocolException(path + ": required, but not set");
+            }
+            if (!type.isInstance(val)) {
+                throw new AcmeProtocolException(path + ": cannot convert to " + type.getSimpleName());
+            }
+            return type.cast(val);
         }
 
         @Override

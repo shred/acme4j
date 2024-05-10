@@ -22,6 +22,7 @@ import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.Objects;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -74,6 +75,7 @@ public class Login {
     /**
      * Gets the {@link Session} that is used.
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")    // behavior is intended
     public Session getSession() {
         return session;
     }
@@ -97,6 +99,7 @@ public class Login {
      *
      * @return {@link Account} bound to the login
      */
+    @SuppressFBWarnings("EI_EXPOSE_REP")    // behavior is intended
     public Account getAccount() {
         return account;
     }

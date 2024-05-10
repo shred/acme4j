@@ -49,8 +49,7 @@ public class AcmeRateLimitedException extends AcmeServerException {
                 @Nullable Collection<URL> documents) {
         super(problem);
         this.retryAfter = retryAfter;
-        this.documents =
-                documents != null ? Collections.unmodifiableCollection(documents) : Collections.emptyList();
+        this.documents = documents != null ? documents : Collections.emptyList();
     }
 
     /**
@@ -66,7 +65,7 @@ public class AcmeRateLimitedException extends AcmeServerException {
      * Empty if the server did not provide such URLs.
      */
     public Collection<URL> getDocuments() {
-        return documents;
+        return Collections.unmodifiableCollection(documents);
     }
 
 }

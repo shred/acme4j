@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.connector.ResourceIterator;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -285,6 +286,7 @@ public class Account extends AcmeJsonResource {
          * sure that they are valid according to the RFC. It is recommended to use
          * the {@code addContact()} methods below to add new contacts to the list.
          */
+        @SuppressFBWarnings("EI_EXPOSE_REP")   // behavior is intended
         public List<URI> getContacts() {
             return editContacts;
         }

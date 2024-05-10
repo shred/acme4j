@@ -70,7 +70,7 @@ public abstract class AcmeJsonResource extends AcmeResource {
                 throw new AcmeLazyLoadingException(this, ex);
             }
         }
-        return data;
+        return Objects.requireNonNull(data);
     }
 
     /**
