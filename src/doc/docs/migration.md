@@ -5,6 +5,7 @@ This document will help you migrate your code to the latest _acme4j_ version.
 ## Migration to Version 3.2.2
 
 - This version is unable to deserialize resource objects that were serialized by a previous version using Java's serialization mechanism. This shouldn't be a problem, as [it was not allowed](usage/persistence.md#serialization) to share serialized data between different versions anyway.
+- _acme4j_ version 2 is now discontinued. Please migrate your code to version 3. For most clients, it is less work than it seems. 😉
 
 ## Migration to Version 3.2.0
 

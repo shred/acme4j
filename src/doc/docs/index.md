@@ -27,8 +27,6 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 * Extensive unit and integration tests
 * Adheres to [Semantic Versioning](https://semver.org/)
 
-If you require Java 8 or Android compatibility, you can use [acme4j v2](https://shredzone.org/maven/acme4j-v2/index.html) instead.
-
 ## Dependencies
 
 * [Bouncy Castle](https://www.bouncycastle.org/)

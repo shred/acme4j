@@ -23,8 +23,6 @@ This Java client helps connecting to an ACME server, and performing all necessar
 * Extensive unit and integration tests
 * Adheres to [Semantic Versioning](https://semver.org/)
 
-If you require Java 8 or Android compatibility, you can use [acme4j v2](https://shredzone.org/maven/acme4j-v2/index.html) instead. However, v2 is not actively developed anymore and will only receive security fixes.
-
 ## Dependencies
 
 * [Bouncy Castle](https://www.bouncycastle.org/)
