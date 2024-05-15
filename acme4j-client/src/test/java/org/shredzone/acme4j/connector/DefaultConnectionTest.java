@@ -52,6 +52,7 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRateLimitedException;
+import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.exception.AcmeUserActionRequiredException;
@@ -140,6 +141,57 @@ public class DefaultConnectionTest {
         }
 
         verify(getRequestedFor(urlEqualTo(REQUEST_PATH)));
+    }
+
+    /**
+     * Test that {@link DefaultConnection#getNonce()} handles a retry-after header
+     * correctly.
+     */
+    @Test
+    public void testGetNonceFromHeaderRetryAfter() {
+        var retryAfter = Instant.now().plusSeconds(30L).truncatedTo(SECONDS);
+
+        stubFor(head(urlEqualTo(NEW_NONCE_PATH)).willReturn(aResponse()
+                .withStatus(HttpURLConnection.HTTP_UNAVAILABLE)
+                .withHeader("Content-Type", "application/problem+json")
+                .withHeader("Retry-After", DATE_FORMATTER.format(retryAfter))
+                // do not send a body here because it is a HEAD request!
+        ));
+
+        assertThat(session.getNonce()).isNull();
+
+        var ex = assertThrows(AcmeRetryAfterException.class, () -> {
+            try (var conn = session.connect()) {
+                conn.resetNonce(session);
+            }
+        });
+        assertThat(ex.getMessage()).isEqualTo("Server responded with HTTP 503 while trying to retrieve a nonce");
+        assertThat(ex.getRetryAfter()).isEqualTo(retryAfter);
+
+        verify(headRequestedFor(urlEqualTo(NEW_NONCE_PATH)));
+    }
+
+    /**
+     * Test that {@link DefaultConnection#getNonce()} handles a general HTTP error
+     * correctly.
+     */
+    @Test
+    public void testGetNonceFromHeaderHttpError() {
+        stubFor(head(urlEqualTo(NEW_NONCE_PATH)).willReturn(aResponse()
+                .withStatus(HttpURLConnection.HTTP_INTERNAL_ERROR)
+                // do not send a body here because it is a HEAD request!
+        ));
+
+        assertThat(session.getNonce()).isNull();
+
+        var ex = assertThrows(AcmeException.class, () -> {
+            try (var conn = session.connect()) {
+                conn.resetNonce(session);
+            }
+        });
+        assertThat(ex.getMessage()).isEqualTo("Server responded with HTTP 500 while trying to retrieve a nonce");
+
+        verify(headRequestedFor(urlEqualTo(NEW_NONCE_PATH)));
     }
 
     /**

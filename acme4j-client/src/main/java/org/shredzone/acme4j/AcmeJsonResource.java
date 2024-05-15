@@ -152,6 +152,10 @@ public abstract class AcmeJsonResource extends AcmeResource {
             retryAfterOpt.ifPresent(instant -> LOG.debug("Retry-After: {}", instant));
             setRetryAfter(retryAfterOpt.orElse(null));
             return retryAfterOpt;
+        } catch (AcmeRetryAfterException ex) {
+            LOG.debug("Retry-After while attempting to read the resource", ex);
+            setRetryAfter(ex.getRetryAfter());
+            return Optional.of(ex.getRetryAfter());
         }
     }
 
