@@ -25,7 +25,7 @@ You can still revoke certificates without account key pair though, see [here](us
 
 **Cause:** There may be multiple causes for that, but usually it means that the CA could not verify your challenge.
 
-**Solution:** If the status is `INVALID`, invoke `Challenge.getError()` to get the cause of the failure. For example, you can log the output of `challenge.getError().toString()`. Make sure that your challenge is ready for verification _before_ you invoke `Challenge.trigger()`. Also make sure not to remove the challenge until the status is either `VALID` or `INVALID`.
+**Solution:** If the status is `INVALID`, invoke `Challenge.getError()` to get the cause of the failure. For example, you can log the output of `challenge.getError().toString()`. Make sure that your challenge is ready for verification _before_ you invoke `Challenge.trigger()`. Also make sure not to remove the challenge until the status is either `VALID` or `INVALID`. Read more about errors [here](usage/errors.md).
 
 ## My `Order` returns status `INVALID`. What has gone wrong?
 
@@ -33,7 +33,7 @@ You can still revoke certificates without account key pair though, see [here](us
 
 **Cause:** There may be multiple reasons for that. It seems that you are still missing steps that are required by the CA before completion.
 
-**Solution:** If the status is `INVALID`, invoke `Order.getError()` to get the cause of the failure. For example, you can log the output of `order.getError().toString()`.
+**Solution:** If the status is `INVALID`, invoke `Order.getError()` to get the cause of the failure. For example, you can log the output of `order.getError().toString()`. Also see [here](usage/errors.md).
 
 ## My `Order` seems to be stuck in status `PROCESSING`. What can I do?
 
@@ -88,5 +88,5 @@ Unfortunately, manual action is required in any case, there is no way to automat
 ## Where can I find more help?
 
 * [Let's Encrypt Documentation](https://letsencrypt.org/docs/)
-* [Let's Encrypt Community](https://community.letsencrypt.org/) - If the question is _acme4j_ related, please mention it in your post.
+* [Let's Encrypt Community](https://community.letsencrypt.org/) - If the question is _acme4j_ related, please mention it in your post. I don't read the forum every day, but I will answer as soon as I notice it.
 * [SSL.com Knowledgebase](https://www.ssl.com/info/)

@@ -30,6 +30,7 @@ nav:
     - 'usage/renewal.md'
     - 'usage/revocation.md'
     - 'usage/persistence.md'
+    - 'usage/errors.md'
     - 'usage/exceptions.md'
     - 'usage/advanced.md'
     - 'usage/debugging.md'
