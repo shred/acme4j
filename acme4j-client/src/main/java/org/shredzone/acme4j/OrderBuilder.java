@@ -179,65 +179,6 @@ public class OrderBuilder {
     }
 
     /**
-     * Notifies the CA that the ordered certificate will replace a previously issued
-     * certificate. The certificate is identified by its ARI unique identifier.
-     * <p>
-     * Optional, only supported if the CA provides renewal information. However, in this
-     * case the client <em>should</em> include this field.
-     *
-     * @param uniqueId
-     *         Certificate's renewal unique identifier.
-     * @return itself
-     * @draft This method is currently based on an RFC draft. It may be changed or removed
-     * without notice to reflect future changes to the draft. SemVer rules do not apply
-     * here.
-     * @since 3.2.0
-     */
-    public OrderBuilder replaces(String uniqueId) {
-        autoRenewal();
-        this.replaces = Objects.requireNonNull(uniqueId);
-        return this;
-    }
-
-    /**
-     * Notifies the CA that the ordered certificate will replace a previously issued
-     * certificate.
-     * <p>
-     * Optional, only supported if the CA provides renewal information. However, in this
-     * case the client <em>should</em> include this field.
-     *
-     * @param certificate
-     *         Certificate to be replaced
-     * @return itself
-     * @draft This method is currently based on an RFC draft. It may be changed or removed
-     * without notice to reflect future changes to the draft. SemVer rules do not apply
-     * here.
-     * @since 3.2.0
-     */
-    public OrderBuilder replaces(X509Certificate certificate) {
-        return replaces(getRenewalUniqueIdentifier(certificate));
-    }
-
-    /**
-     * Notifies the CA that the ordered certificate will replace a previously issued
-     * certificate.
-     * <p>
-     * Optional, only supported if the CA provides renewal information. However, in this
-     * case the client <em>should</em> include this field.
-     *
-     * @param certificate
-     *         Certificate to be replaced
-     * @return itself
-     * @draft This method is currently based on an RFC draft. It may be changed or removed
-     * without notice to reflect future changes to the draft. SemVer rules do not apply
-     * here.
-     * @since 3.2.0
-     */
-    public OrderBuilder replaces(Certificate certificate) {
-        return replaces(certificate.getCertificate());
-    }
-
-    /**
      * Sets the earliest date of validity of the first issued certificate. If not set,
      * the start date is the earliest possible date.
      * <p>
@@ -326,6 +267,64 @@ public class OrderBuilder {
         autoRenewal();
         this.autoRenewalGet = true;
         return this;
+    }
+
+    /**
+     * Notifies the CA that the ordered certificate will replace a previously issued
+     * certificate. The certificate is identified by its ARI unique identifier.
+     * <p>
+     * Optional, only supported if the CA provides renewal information. However, in this
+     * case the client <em>should</em> include this field.
+     *
+     * @param uniqueId
+     *         Certificate's renewal unique identifier.
+     * @return itself
+     * @draft This method is currently based on an RFC draft. It may be changed or removed
+     * without notice to reflect future changes to the draft. SemVer rules do not apply
+     * here.
+     * @since 3.2.0
+     */
+    public OrderBuilder replaces(String uniqueId) {
+        this.replaces = Objects.requireNonNull(uniqueId);
+        return this;
+    }
+
+    /**
+     * Notifies the CA that the ordered certificate will replace a previously issued
+     * certificate.
+     * <p>
+     * Optional, only supported if the CA provides renewal information. However, in this
+     * case the client <em>should</em> include this field.
+     *
+     * @param certificate
+     *         Certificate to be replaced
+     * @return itself
+     * @draft This method is currently based on an RFC draft. It may be changed or removed
+     * without notice to reflect future changes to the draft. SemVer rules do not apply
+     * here.
+     * @since 3.2.0
+     */
+    public OrderBuilder replaces(X509Certificate certificate) {
+        return replaces(getRenewalUniqueIdentifier(certificate));
+    }
+
+    /**
+     * Notifies the CA that the ordered certificate will replace a previously issued
+     * certificate.
+     * <p>
+     * Optional, only supported if the CA provides renewal information. However, in this
+     * case the client <em>should</em> include this field.
+     *
+     * @param certificate
+     *         Certificate to be replaced
+     * @return itself
+     * @draft This method is currently based on an RFC draft. It may be changed or removed
+     * without notice to reflect future changes to the draft. SemVer rules do not apply
+     * here.
+     * @since 3.2.0
+     */
+    public OrderBuilder replaces(Certificate certificate) {
+        return replaces(certificate.getCertificate());
     }
 
     /**
