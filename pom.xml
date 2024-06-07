@@ -51,11 +51,11 @@
     </developers>
 
     <properties>
-        <bouncycastle.version>1.77</bouncycastle.version>
+        <bouncycastle.version>1.78.1</bouncycastle.version>
         <httpclient.version>4.5.14</httpclient.version>
         <jakarta.mail.version>2.0.1</jakarta.mail.version>
         <jose4j.version>0.9.6</jose4j.version>
-        <slf4j.version>2.0.12</slf4j.version>
+        <slf4j.version>2.0.13</slf4j.version>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
     </properties>
@@ -201,7 +201,7 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.25.3</version>
+            <version>3.26.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -220,16 +220,17 @@
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>5.11.0</version>
+            <version>5.12.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.awaitility</groupId>
             <artifactId>awaitility</artifactId>
-            <version>4.2.0</version>
+            <version>4.2.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
+            <!-- Fixed to 3.2.0 until https://github.com/wiremock/wiremock/issues/2480 is resolved -->
             <groupId>org.wiremock</groupId>
             <artifactId>wiremock</artifactId>
             <version>3.2.0</version>
