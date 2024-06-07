@@ -115,10 +115,7 @@
                     <images>
                         <image>
                             <alias>pebble</alias>
-                            <name>acme4j/pebble:${project.version}</name>
-                            <build>
-                                <dockerFile>pebble.dockerfile</dockerFile>
-                            </build>
+                            <name>ghcr.io/letsencrypt/pebble:latest</name>
                             <run>
                                 <ports>
                                     <port>14000:14000</port><!-- ACME API -->
@@ -127,6 +124,15 @@
                                 <links>
                                     <link>bammbamm</link>
                                 </links>
+                                <cmd>
+                                    <exec>
+                                        <arg>-strict</arg>
+                                        <arg>-dnsserver</arg>
+                                        <arg>bammbamm:8053</arg>
+                                        <arg>-config</arg>
+                                        <arg>/test/config/pebble-config.json</arg>
+                                    </exec>
+                                </cmd>
                                 <wait>
                                     <log>Listening</log>
                                 </wait>
@@ -140,6 +146,7 @@
                             <alias>bammbamm</alias>
                             <name>acme4j/challtestsrv:${project.version}</name>
                             <build>
+                                <!-- Workaround for https://github.com/letsencrypt/pebble/issues/418 -->
                                 <dockerFile>challtestsrv.dockerfile</dockerFile>
                             </build>
                             <run>
