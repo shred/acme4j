@@ -332,8 +332,7 @@ public final class AcmeUtils {
     }
 
     /**
-     * Returns the certificate's unique identifier for renewal according to
-     * draft-ietf-acme-ari-03.
+     * Returns the certificate's unique identifier for renewal.
      *
      * @param certificate
      *         Certificate to get the unique identifier for.

@@ -284,7 +284,7 @@ public class CertificateTest {
      */
     @Test
     public void testRenewalInfo() throws AcmeException, IOException {
-        // certid-cert.pem and certId provided by draft-ietf-acme-ari-03 and known good
+        // certid-cert.pem and certId provided by ACME ARI specs and known good
         var certId = "aYhba4dGQEHhs3uEe6CuLN4ByNQ.AIdlQyE";
         var certIdCert = TestUtils.createCertificate("/certid-cert.pem");
         var certResourceUrl = new URL(resourceUrl.toExternalForm() + "/" + certId);
@@ -364,7 +364,7 @@ public class CertificateTest {
      */
     @Test
     public void testMarkedAsReplaced() throws AcmeException, IOException {
-        // certid-cert.pem and certId provided by draft-ietf-acme-ari-03 and known good
+        // certid-cert.pem and certId provided by ACME ARI specs and known good
         var certId = "aYhba4dGQEHhs3uEe6CuLN4ByNQ.AIdlQyE";
         var certIdCert = TestUtils.createCertificate("/certid-cert.pem");
         var certResourceUrl = new URL(resourceUrl.toExternalForm() + "/" + certId);
