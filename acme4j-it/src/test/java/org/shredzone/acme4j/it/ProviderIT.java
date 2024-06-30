@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThatNoException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.connector.Resource;
@@ -67,7 +68,7 @@ public class ProviderIT {
     }
 
     /**
-     * Test ssl.com
+     * Test ssl.com, production
      */
     @Test
     public void testSslCom() throws AcmeException, MalformedURLException {
@@ -83,6 +84,18 @@ public class ProviderIT {
         assertThat(sessionRsa.getMetadata().isExternalAccountRequired()).isTrue();
         assertThat(sessionRsa.getMetadata().isAutoRenewalEnabled()).isFalse();
 
+        // If this test fails, the metadata has been fixed on server side. Then remove
+        // the patch at ZeroSSLAcmeProvider, and update the documentation.
+        var sessionEABCheck = new Session("https://acme.ssl.com/sslcom-dv-ecc");
+        assertThat(sessionEABCheck.getMetadata().isExternalAccountRequired()).isFalse();
+    }
+
+    /**
+     * Test ssl.com, staging server
+     */
+    @Test
+    @Disabled("Instable due to frequent certificate expiration of acme-try.ssl.com")
+    public void testSslComStaging() throws AcmeException, MalformedURLException {
         var sessionEccStage = new Session("acme://ssl.com/staging/ecc");
         assertThat(sessionEccStage.getMetadata().getWebsite()).hasValue(new URL("https://www.ssl.com"));
         assertThatNoException().isThrownBy(() -> sessionEccStage.resourceUrl(Resource.NEW_ACCOUNT));
@@ -95,10 +108,8 @@ public class ProviderIT {
         assertThat(sessionRsaStage.getMetadata().isExternalAccountRequired()).isTrue();
         assertThat(sessionRsaStage.getMetadata().isAutoRenewalEnabled()).isFalse();
 
-        // If these tests fail, the metadata have been fixed on server side. Then remove
+        // If this test fails, the metadata has been fixed on server side. Then remove
         // the patch at ZeroSSLAcmeProvider, and update the documentation.
-        var sessionEABCheck = new Session("https://acme.ssl.com/sslcom-dv-ecc");
-        assertThat(sessionEABCheck.getMetadata().isExternalAccountRequired()).isFalse();
         var sessionEABCheckStage = new Session("https://acme-try.ssl.com/sslcom-dv-ecc");
         assertThat(sessionEABCheckStage.getMetadata().isExternalAccountRequired()).isFalse();
     }

@@ -2,7 +2,7 @@
 
 Web site: [SSL.com](https://ssl.com)
 
-Available since acme4j 3.2.0
+Available since acme4j 3.2.0. **This provider is experimental!**
 
 ## Connection URIs
 
@@ -14,6 +14,7 @@ Available since acme4j 3.2.0
 ## Note
 
 * This CA requires [External Account Binding (EAB)](../usage/account.md#external-account-binding) for account creation. However, the CA's directory resource returns `externalAccountRequired` as `false`, which is incorrect. If you use one of the `acme:` URIs above, _acme4j_ will patch the metadata transparently. If you directly connect to SSL.com via `https:` URI though, `Metadata.isExternalAccountRequired()` could return a wrong value. (As of February 2024)
+* The certificate of the ssl.com staging server seems to be unmonitored. When it expires, an `AcmeNetworkException` is thrown which is caused by a `CertificateExpiredException`. There is nothing you can do to fix this error, except to ask the ssl.com support to renew the expired certificate on their server. **Please do not open an issue at acme4j.** (As of June 2024)
 
 ## Disclaimer
 
