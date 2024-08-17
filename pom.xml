@@ -55,7 +55,7 @@
         <httpclient.version>4.5.14</httpclient.version>
         <jakarta.mail.version>2.0.1</jakarta.mail.version>
         <jose4j.version>0.9.6</jose4j.version>
-        <junit.version>5.10.2</junit.version>
+        <junit.version>5.11.0</junit.version>
         <slf4j.version>2.0.13</slf4j.version>
         <project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>utf-8</project.reporting.outputEncoding>
@@ -167,7 +167,7 @@
             <plugin>
                 <groupId>org.shredzone.maven</groupId>
                 <artifactId>mkdocs-maven-plugin</artifactId>
-                <version>1.1</version>
+                <version>1.2</version>
                 <configuration>
                     <outputDirectory>${project.build.directory}/site</outputDirectory>
                 </configuration>
@@ -178,7 +178,7 @@
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
-            <version>4.8.5</version>
+            <version>4.8.6</version>
             <optional>true</optional>
             <exclusions>
                 <exclusion>
@@ -208,7 +208,7 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.26.0</version>
+            <version>3.26.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
