@@ -13,9 +13,7 @@
  */
 package org.shredzone.acme4j.it.pebble;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URI;
@@ -46,6 +44,7 @@ import org.shredzone.acme4j.exception.AcmeServerException;
 public class OrderIT extends PebbleITBase {
 
     private static final String TEST_DOMAIN = "example.com";
+    private static final Duration TIMEOUT = Duration.ofSeconds(30L);
 
     /**
      * Test if a certificate can be ordered via http-01 challenge.
@@ -169,24 +168,20 @@ public class OrderIT extends PebbleITBase {
             var challenge = validator.prepare(auth);
             challenge.trigger();
 
-            await()
-                .pollInterval(1, SECONDS)
-                .timeout(30, SECONDS)
-                .conditionEvaluationListener(cond -> updateAuth(auth))
-                .untilAsserted(() -> assertThat(auth.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
+            challenge.waitForCompletion(TIMEOUT);
 
+            assertThat(challenge.getStatus()).isEqualTo(Status.VALID);
+
+            auth.fetch();
             assertThat(auth.getStatus()).isEqualTo(Status.VALID);
         }
 
+        order.waitUntilReady(TIMEOUT);
+        assertThat(order.getStatus()).isEqualTo(Status.READY);
+
         order.execute(domainKeyPair);
 
-        await()
-            .pollInterval(1, SECONDS)
-            .timeout(30, SECONDS)
-            .conditionEvaluationListener(cond -> updateOrder(order))
-            .untilAsserted(() -> assertThat(order.getStatus())
-                    .isNotIn(Status.PENDING, Status.PROCESSING, Status.READY));
-
+        order.waitForCompletion(TIMEOUT);
         assertThat(order.getStatus()).isEqualTo(Status.VALID);
 
         var certificate = order.getCertificate();

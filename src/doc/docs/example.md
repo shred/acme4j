@@ -37,7 +37,7 @@ The other constants should work with their default values, but can still be chan
 * `DOMAIN_KEY_FILE`: File name where the generated domain key is stored. Default is `domain.key`.
 * `DOMAIN_CHAIN_FILE`: File name where the ordered domain certificate chain is stored. Default is `domain-chain.crt`.
 * `CHALLENGE_TYPE`: The challenge type you want to perform for domain validation. The default is `ChallengeType.HTTP` for [http-01](challenge/http-01.md) validation, but you can also use `ChallengeType.DNS` to perform a [dns-01](challenge/dns-01.md) validation. The example does not support other kind of challenges.
-* `MAX_ATTEMPTS`: Maximum number of poll attempts until a status poll is aborted.
+* `TIMEOUT`: Maximum time until an expected resource status must be reached. Default is 60 seconds. If you get frequent timeouts with your CA, increase the timeout.
 
 ## Running the Example
 
@@ -81,7 +81,7 @@ The `fetchCertificate()` method contains the main workflow. It expects a collect
 
 ```java
 public void fetchCertificate(Collection<String> domains)
-        throws IOException, AcmeException {
+        throws IOException, AcmeException, InterruptedException {
     // Load the user key file. If there is no key file, create a new one.
     KeyPair userKeyPair = loadOrCreateUserKeyPair();
 
@@ -104,16 +104,18 @@ public void fetchCertificate(Collection<String> domains)
         authorize(auth);
     }
 
+    // Wait for the order to become READY
+    order.waitUntilReady(TIMEOUT);
+
     // Order the certificate
     order.execute(domainKeyPair);
 
     // Wait for the order to complete
-    Status status = waitForCompletion(order::getStatus, order::fetch);
+    Status status = order.waitForCompletion(TIMEOUT);
     if (status != Status.VALID) {
         LOG.error("Order has failed, reason: {}", order.getError()
                 .map(Problem::toString)
-                .orElse("unknown")
-        );
+                .orElse("unknown"));
         throw new AcmeException("Order failed... Giving up.");
     }
 
@@ -230,7 +232,7 @@ In order to get a certificate, you need to prove ownership of the domains. In th
 
 ```java
 private void authorize(Authorization auth)
-        throws AcmeException {
+        throws AcmeException, InterruptedException {
     LOG.info("Authorization for domain {}", auth.getIdentifier().getDomain());
 
     // The authorization is already valid.
@@ -265,7 +267,7 @@ private void authorize(Authorization auth)
     challenge.trigger();
 
     // Poll for the challenge to complete.
-    Status status = waitForCompletion(challenge::getStatus, challenge::fetch);
+    Status status = challenge.waitForCompletion(TIMEOUT);
     if (status != Status.VALID) {
         LOG.error("Challenge has failed, reason: {}", challenge.getError()
                 .map(Problem::toString)
@@ -362,54 +364,11 @@ public Challenge dnsChallenge(Authorization auth) throws AcmeException {
 
 The ACME protocol does not specify the sending of events. For this reason, resource status changes must be actively polled by the client.
 
-This example does a very simple polling in a synchronous busy loop. It updates the local copy of the resource and checks if the status is either `VALID` or `INVALID`. If it is not, it just sleeps for a certain amount of time, and then rechecks the current status.
+_acme4j_ offers very simple polling methods called `waitForStatus()`, `waitUntilReady()`, and `waitForCompletion()`. These methods check the status in a synchronous busy loop. It updates the local copy of the resource using the `fetch()` method, and then checks if the status is either `VALID` or `INVALID` (or `READY` on `waitUntilReady()`). If none of these states have been reached, it just sleeps for a certain amount of time, and then rechecks the resource status.
 
-Some CAs respond with a `Retry-After` HTTP header, which provides a recommendation when to check for a status change again. If this header is present, the updater function will return the given instant. If this header is not present, we will just wait a reasonable amount of time before checking again.
+Some CAs respond with a `Retry-After` HTTP header, which provides a recommendation when to check for a status change again. If this header is present, the `fetch()` method will return the given instant. If this header is not present, we will just wait a reasonable amount of time before checking again.
 
-An enterprise level implementation would do an asynchronous polling by storing the recheck time in a database or a queue with scheduled delivery.
-
-The following method will check if a resource reaches completion (by reaching either `VALID` or `INVALID` status). The first parameter provides the method that fetches the current status (e.g. `Order::getStatus`). The second parameter provides the method that updates the resource status (e.g. `Order::fetch`). It returned the terminating status once it has been reached, or will throw an exception if something went wrong.
-
-```java
-private Status waitForCompletion(Supplier<Status> statusSupplier,
-        UpdateMethod statusUpdater) throws AcmeException {
-    // A set of terminating status values
-    Set<Status> acceptableStatus = EnumSet.of(Status.VALID, Status.INVALID);
-
-    // Limit the number of checks, to avoid endless loops
-    for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-        LOG.info("Checking current status, attempt {} of {}", attempt, MAX_ATTEMPTS);
-
-        Instant now = Instant.now();
-
-        // Update the status property
-        Instant retryAfter = statusUpdater.updateAndGetRetryAfter()
-                .orElse(now.plusSeconds(3L));
-
-        // Check the status
-        Status currentStatus = statusSupplier.get();
-        if (acceptableStatus.contains(currentStatus)) {
-            // Reached VALID or INVALID, we're done here
-            return currentStatus;
-        }
-
-        // Wait before checking again
-        try {
-            Thread.sleep(now.until(retryAfter, ChronoUnit.MILLIS));
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new AcmeException("interrupted");
-        }
-    }
-
-    throw new AcmeException("Too many update attempts, status did not change");
-}
-
-@FunctionalInterface
-private interface UpdateMethod {
-    Optional<Instant> updateAndGetRetryAfter() throws AcmeException;
-}
-```
+An enterprise level implementation would do an asynchronous polling instead, by storing the recheck time in a database or a queue with scheduled delivery.
 
 !!! note
     Some CAs might provide a `Retry-After` even if the resource has reached a terminal state. For this reason, always check the status _before_ waiting for the recommended time, and leave the loop if a terminal status has been reached.

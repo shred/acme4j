@@ -16,7 +16,9 @@ package org.shredzone.acme4j;
 import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.net.URL;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,7 +34,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Represents an authorization request at the ACME server.
  */
-public class Authorization extends AcmeJsonResource {
+public class Authorization extends AcmeJsonResource implements PollableResource {
     private static final long serialVersionUID = -3116928998379417741L;
     private static final Logger LOG = LoggerFactory.getLogger(Authorization.class);
 
@@ -60,6 +62,7 @@ public class Authorization extends AcmeJsonResource {
      * {@link Status#INVALID}, {@link Status#DEACTIVATED}, {@link Status#EXPIRED},
      * {@link Status#REVOKED}.
      */
+    @Override
     public Status getStatus() {
         return getJSON().get("status").asStatus();
     }
@@ -149,6 +152,24 @@ public class Authorization extends AcmeJsonResource {
                 .reduce((a, b) -> {
                     throw new AcmeProtocolException("Found more than one challenge of type " + type.getName());
                 });
+    }
+
+    /**
+     * Waits until the authorization is completed.
+     * <p>
+     * Is is completed if it reaches either {@link Status#VALID} or
+     * {@link Status#INVALID}.
+     * <p>
+     * This method is synchronous and blocks the current thread.
+     *
+     * @param timeout
+     *         Timeout until a terminal status must have been reached
+     * @return Status that was reached
+     * @since 3.4.0
+     */
+    public Status waitForCompletion(Duration timeout)
+            throws AcmeException, InterruptedException {
+        return waitForStatus(EnumSet.of(Status.VALID, Status.INVALID), timeout);
     }
 
     /**

@@ -13,10 +13,8 @@
  */
 package org.shredzone.acme4j.it.pebble;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toList;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -37,6 +35,7 @@ public class OrderWildcardIT extends PebbleITBase {
 
     private static final String TEST_DOMAIN = "example.com";
     private static final String TEST_WILDCARD_DOMAIN = "*.example.com";
+    private static final Duration TIMEOUT = Duration.ofSeconds(30L);
 
     /**
      * Test if a wildcard certificate can be ordered via dns-01 challenge.
@@ -82,27 +81,22 @@ public class OrderWildcardIT extends PebbleITBase {
 
             try {
                 challenge.trigger();
-                await().pollInterval(1, SECONDS)
-                        .timeout(30, SECONDS)
-                        .conditionEvaluationListener(cond -> updateAuth(auth))
-                        .untilAsserted(() -> assertThat(
-                                auth.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
+                challenge.waitForCompletion(TIMEOUT);
+                assertThat(challenge.getStatus()).isEqualTo(Status.VALID);
             } finally {
                 performCleanup();
             }
 
+            auth.fetch();
             assertThat(auth.getStatus()).isEqualTo(Status.VALID);
         }
 
+        order.waitUntilReady(TIMEOUT);
+        assertThat(order.getStatus()).isEqualTo(Status.READY);
+
         order.execute(domainKeyPair);
-
-        await()
-            .pollInterval(1, SECONDS)
-            .timeout(30, SECONDS)
-            .conditionEvaluationListener(cond -> updateOrder(order))
-            .untilAsserted(() -> assertThat(
-                    order.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
-
+        order.waitForCompletion(TIMEOUT);
+        assertThat(order.getStatus()).isEqualTo(Status.VALID);
 
         var cert = order.getCertificate().getCertificate();
         assertThat(cert).isNotNull();

@@ -13,11 +13,14 @@
  */
 package org.shredzone.acme4j.challenge;
 
+import java.time.Duration;
 import java.time.Instant;
+import java.util.EnumSet;
 import java.util.Optional;
 
 import org.shredzone.acme4j.AcmeJsonResource;
 import org.shredzone.acme4j.Login;
+import org.shredzone.acme4j.PollableResource;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -37,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * own type. {@link Challenge#prepareResponse(JSONBuilder)} can be overridden to put all
  * required data to the challenge response.
  */
-public class Challenge extends AcmeJsonResource {
+public class Challenge extends AcmeJsonResource implements PollableResource {
     private static final long serialVersionUID = 2338794776848388099L;
     private static final Logger LOG = LoggerFactory.getLogger(Challenge.class);
 
@@ -76,6 +79,7 @@ public class Challenge extends AcmeJsonResource {
      * A challenge is only completed when it reaches either status {@link Status#VALID} or
      * {@link Status#INVALID}.
      */
+    @Override
     public Status getStatus() {
         return getJSON().get(KEY_STATUS).asStatus();
     }
@@ -155,6 +159,8 @@ public class Challenge extends AcmeJsonResource {
      * If this method is invoked a second time, the ACME server is requested to retry the
      * validation. This can be useful if the client state has changed, for example after a
      * firewall rule has been updated.
+     *
+     * @see #waitForCompletion(Duration)
      */
     public void trigger() throws AcmeException {
         LOG.debug("trigger");
@@ -165,6 +171,24 @@ public class Challenge extends AcmeJsonResource {
             conn.sendSignedRequest(getLocation(), claims, getLogin());
             setJSON(conn.readJsonResponse());
         }
+    }
+
+    /**
+     * Waits until the challenge is completed.
+     * <p>
+     * Is is completed if it reaches either {@link Status#VALID} or
+     * {@link Status#INVALID}.
+     * <p>
+     * This method is synchronous and blocks the current thread.
+     *
+     * @param timeout
+     *         Timeout until a terminal status must have been reached
+     * @return Status that was reached
+     * @since 3.4.0
+     */
+    public Status waitForCompletion(Duration timeout)
+            throws AcmeException, InterruptedException {
+        return waitForStatus(EnumSet.of(Status.VALID, Status.INVALID), timeout);
     }
 
 }

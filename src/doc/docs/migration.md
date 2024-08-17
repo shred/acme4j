@@ -2,6 +2,11 @@
 
 This document will help you migrate your code to the latest _acme4j_ version.
 
+## Migration to Version 3.4.0
+
+- To be futureproof, you should wait for your `Order` resource's state to become `READY` before invoking `Order.execute()`. Most CAs change to the `READY` state immediately, but this behavior is not specified in RFC8555. Future CA implementations may stay in `PENDING` state for a short while, and would return an error if `execute()` is invoked too early. Also see the [example](example.md#the-main-workflow) for how wait for the `READY` state.
+- There are new methods `waitForCompletion()` and `waitUntilReady()` that will do the synchronous busy wait for the resource state for you. It will remove a lot of boilerplate code that is also bug prone if implemented individually. If you use synchronous polling and waiting (like shown in the example code), I recommend to change to these methods instead of waiting for the correct state yourself. See the [example](example.md) for how to use the new methods.
+
 ## Migration to Version 3.3.0
 
 - This version is unable to deserialize resource objects that were serialized by a previous version using Java's serialization mechanism. This shouldn't be a problem, as [it was not allowed](usage/persistence.md#serialization) to share serialized data between different versions anyway.
@@ -21,10 +26,7 @@ Although acme4j has made a major version bump, the migration of your code should
 
 - The `acme4j-utils` module has been removed, and its classes moved into `acme4j-client` module. If you have used it before, just remove the dependency. If your project has a `module-info.java` file, remember to remove the `requires org.shredzone.acme4j.utils` line there as well.
 - All `@Nullable` return values have been removed where possible. Returned collections may now be empty, but are never `null`. Most of the other return values are now either `Optional`, or are throwing an exception if more reasonable. If your code fails to compile because the return type has changed to `Optional`, you could simply add `.orElse(null)` to emulate the old behavior. But often your code will reveal a better way to handle the former `null` pointer instead.
-- `acme4j-client` now depends on Bouncy Castle, so you might need to register it as security provider at the start of your code:
-  ```java
-  Security.addProvider(new BouncyCastleProvider());
-  ```
+- `acme4j-client` now depends on Bouncy Castle, so you might need to register it as security provider at the start of your code: `Security.addProvider(new BouncyCastleProvider())`.
 
 What you might also need to know:
 

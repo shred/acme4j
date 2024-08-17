@@ -21,13 +21,10 @@ import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.Security;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import javax.swing.JOptionPane;
@@ -101,8 +98,8 @@ public class ClientTest {
     //Challenge type to be used
     private static final ChallengeType CHALLENGE_TYPE = ChallengeType.HTTP;
 
-    // Maximum attempts of status polling until VALID/INVALID is expected
-    private static final int MAX_ATTEMPTS = 50;
+    // Maximum time to wait until VALID/INVALID is expected
+    private static final Duration TIMEOUT = Duration.ofSeconds(60L);
 
     private static final Logger LOG = LoggerFactory.getLogger(ClientTest.class);
 
@@ -115,7 +112,7 @@ public class ClientTest {
      * @param domains
      *         Domains to get a common certificate for
      */
-    public void fetchCertificate(Collection<String> domains) throws IOException, AcmeException {
+    public void fetchCertificate(Collection<String> domains) throws IOException, AcmeException, InterruptedException {
         // Load the user key file. If there is no key file, create a new one.
         KeyPair userKeyPair = loadOrCreateUserKeyPair();
 
@@ -137,16 +134,18 @@ public class ClientTest {
             authorize(auth);
         }
 
+        // Wait for the order to become READY
+        order.waitUntilReady(TIMEOUT);
+
         // Order the certificate
         order.execute(domainKeyPair);
 
         // Wait for the order to complete
-        Status status = waitForCompletion(order::getStatus, order::fetch);
+        Status status = order.waitForCompletion(TIMEOUT);
         if (status != Status.VALID) {
             LOG.error("Order has failed, reason: {}", order.getError()
                     .map(Problem::toString)
-                    .orElse("unknown")
-            );
+                    .orElse("unknown"));
             throw new AcmeException("Order failed... Giving up.");
         }
 
@@ -259,7 +258,7 @@ public class ClientTest {
      * @param auth
      *         {@link Authorization} to perform
      */
-    private void authorize(Authorization auth) throws AcmeException {
+    private void authorize(Authorization auth) throws AcmeException, InterruptedException {
         LOG.info("Authorization for domain {}", auth.getIdentifier().getDomain());
 
         // The authorization is already valid. No need to process a challenge.
@@ -292,7 +291,7 @@ public class ClientTest {
         challenge.trigger();
 
         // Poll for the challenge to complete.
-        Status status = waitForCompletion(challenge::getStatus, challenge::fetch);
+        Status status = challenge.waitForCompletion(TIMEOUT);
         if (status != Status.VALID) {
             LOG.error("Challenge has failed, reason: {}", challenge.getError()
                     .map(Problem::toString)
@@ -380,70 +379,6 @@ public class ClientTest {
         acceptChallenge(message.toString());
 
         return challenge;
-    }
-
-    /**
-     * Waits for completion of a resource. A resource is completed if the status is either
-     * {@link Status#VALID} or {@link Status#INVALID}.
-     * <p>
-     * This method polls the current status, respecting the retry-after header if set. It
-     * is synchronous and may take a considerable time for completion.
-     * <p>
-     * It is meant as a simple example! For production services, it is recommended to do
-     * an asynchronous processing here.
-     *
-     * @param statusSupplier
-     *         Method of the resource that returns the current status
-     * @param statusUpdater
-     *         Method of the resource that updates the internal state and fetches the
-     *         current status from the server. It returns the instant of an optional
-     *         retry-after header.
-     * @return The final status, either {@link Status#VALID} or {@link Status#INVALID}
-     * @throws AcmeException
-     *         If an error occured, or if the status did not reach one of the accepted
-     *         result values after a certain number of checks.
-     */
-    private Status waitForCompletion(Supplier<Status> statusSupplier, UpdateMethod statusUpdater)
-            throws AcmeException {
-        // A set of terminating status values
-        Set<Status> acceptableStatus = EnumSet.of(Status.VALID, Status.INVALID);
-
-        // Limit the number of checks, to avoid endless loops
-        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-            LOG.info("Checking current status, attempt {} of {}", attempt, MAX_ATTEMPTS);
-
-            Instant now = Instant.now();
-
-            // Update the status property
-            Instant retryAfter = statusUpdater.updateAndGetRetryAfter()
-                    .orElse(now.plusSeconds(3L));
-
-            // Check the status
-            Status currentStatus = statusSupplier.get();
-            if (acceptableStatus.contains(currentStatus)) {
-                // Reached VALID or INVALID, we're done here
-                return currentStatus;
-            }
-
-            // Wait before checking again
-            try {
-                Thread.sleep(now.until(retryAfter, ChronoUnit.MILLIS));
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                throw new AcmeException("interrupted");
-            }
-        }
-
-        throw new AcmeException("Too many update attempts, status did not change");
-    }
-
-    /**
-     * Functional interface that refers to a resource update method that returns an
-     * optional retry-after instant and is able to throw an {@link AcmeException}.
-     */
-    @FunctionalInterface
-    private interface UpdateMethod {
-        Optional<Instant> updateAndGetRetryAfter() throws AcmeException;
     }
 
     /**

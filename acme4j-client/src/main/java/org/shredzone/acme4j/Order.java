@@ -22,6 +22,7 @@ import java.net.URL;
 import java.security.KeyPair;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -41,7 +42,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A representation of a certificate order at the CA.
  */
-public class Order extends AcmeJsonResource {
+public class Order extends AcmeJsonResource implements PollableResource {
     private static final long serialVersionUID = 5435808648658292177L;
     private static final Logger LOG = LoggerFactory.getLogger(Order.class);
 
@@ -60,6 +61,7 @@ public class Order extends AcmeJsonResource {
      * {@link Status#PROCESSING}, {@link Status#VALID}, {@link Status#INVALID}.
      * If the server supports STAR, another possible value is {@link Status#CANCELED}.
      */
+    @Override
     public Status getStatus() {
         return getJSON().get("status").asStatus();
     }
@@ -186,6 +188,8 @@ public class Order extends AcmeJsonResource {
      * @see #execute(KeyPair, Consumer)
      * @see #execute(PKCS10CertificationRequest)
      * @see #execute(byte[])
+     * @see #waitUntilReady(Duration)
+     * @see #waitForCompletion(Duration)
      * @since 3.0.0
      */
     public void execute(KeyPair domainKeyPair) throws AcmeException {
@@ -208,6 +212,8 @@ public class Order extends AcmeJsonResource {
      * @see #execute(KeyPair)
      * @see #execute(PKCS10CertificationRequest)
      * @see #execute(byte[])
+     * @see #waitUntilReady(Duration)
+     * @see #waitForCompletion(Duration)
      * @since 3.0.0
      */
     public void execute(KeyPair domainKeyPair, Consumer<CSRBuilder> builderConsumer) throws AcmeException {
@@ -235,6 +241,8 @@ public class Order extends AcmeJsonResource {
      * @see #execute(KeyPair)
      * @see #execute(KeyPair, Consumer)
      * @see #execute(byte[])
+     * @see #waitUntilReady(Duration)
+     * @see #waitForCompletion(Duration)
      * @since 3.0.0
      */
     public void execute(PKCS10CertificationRequest csr) throws AcmeException {
@@ -256,6 +264,8 @@ public class Order extends AcmeJsonResource {
      * @param csr
      *         Binary representation of a CSR containing the parameters for the
      *         certificate being requested, in DER format
+     * @see #waitUntilReady(Duration)
+     * @see #waitForCompletion(Duration)
      */
     public void execute(byte[] csr) throws AcmeException {
         LOG.debug("finalize");
@@ -266,6 +276,43 @@ public class Order extends AcmeJsonResource {
             conn.sendSignedRequest(getFinalizeLocation(), claims, getLogin());
         }
         invalidate();
+    }
+
+    /**
+     * Waits until the order is ready for finalization.
+     * <p>
+     * Is is ready if it reaches {@link Status#READY}. The method will also return if the
+     * order already has another terminal state, which is either {@link Status#VALID} or
+     * {@link Status#INVALID}.
+     * <p>
+     * This method is synchronous and blocks the current thread.
+     *
+     * @param timeout
+     *         Timeout until a terminal status must have been reached
+     * @return Status that was reached
+     * @since 3.4.0
+     */
+    public Status waitUntilReady(Duration timeout)
+            throws AcmeException, InterruptedException {
+        return waitForStatus(EnumSet.of(Status.READY, Status.VALID, Status.INVALID), timeout);
+    }
+
+    /**
+     * Waits until the order finalization is completed.
+     * <p>
+     * Is is completed if it reaches either {@link Status#VALID} or
+     * {@link Status#INVALID}.
+     * <p>
+     * This method is synchronous and blocks the current thread.
+     *
+     * @param timeout
+     *         Timeout until a terminal status must have been reached
+     * @return Status that was reached
+     * @since 3.4.0
+     */
+    public Status waitForCompletion(Duration timeout)
+            throws AcmeException, InterruptedException {
+        return waitForStatus(EnumSet.of(Status.VALID, Status.INVALID), timeout);
     }
 
     /**

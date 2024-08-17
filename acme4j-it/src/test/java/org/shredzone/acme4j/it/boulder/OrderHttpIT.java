@@ -13,22 +13,17 @@
  */
 package org.shredzone.acme4j.it.boulder;
 
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.awaitility.Awaitility.await;
 
 import java.net.URI;
 import java.security.KeyPair;
+import java.time.Duration;
 
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.AccountBuilder;
-import org.shredzone.acme4j.Authorization;
-import org.shredzone.acme4j.Order;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Http01Challenge;
-import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
 import org.shredzone.acme4j.it.BammBammClient;
 import org.shredzone.acme4j.util.KeyPairUtils;
 
@@ -38,6 +33,7 @@ import org.shredzone.acme4j.util.KeyPairUtils;
 public class OrderHttpIT {
 
     private static final String TEST_DOMAIN = "example.com";
+    private static final Duration TIMEOUT = Duration.ofSeconds(30L);
 
     private final String bammbammUrl = System.getProperty("bammbammUrl", "http://localhost:14001");
 
@@ -66,25 +62,20 @@ public class OrderHttpIT {
             client.httpAddToken(challenge.getToken(), challenge.getAuthorization());
 
             challenge.trigger();
+            challenge.waitForCompletion(TIMEOUT);
 
-            await()
-                .pollInterval(1, SECONDS)
-                .timeout(30, SECONDS)
-                .conditionEvaluationListener(cond -> updateAuth(auth))
-                .untilAsserted(() -> assertThat(auth.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
-
+            assertThat(challenge.getStatus()).isEqualTo(Status.VALID);
             assertThat(auth.getStatus()).isEqualTo(Status.VALID);
 
             client.httpRemoveToken(challenge.getToken());
         }
 
-        order.execute(domainKeyPair);
+        order.waitUntilReady(TIMEOUT);
+        assertThat(order.getStatus()).isEqualTo(Status.READY);
 
-        await()
-            .pollInterval(1, SECONDS)
-            .timeout(30, SECONDS)
-            .conditionEvaluationListener(cond -> updateOrder(order))
-            .untilAsserted(() -> assertThat(order.getStatus()).isNotIn(Status.PENDING, Status.PROCESSING));
+        order.execute(domainKeyPair);
+        order.waitForCompletion(TIMEOUT);
+        assertThat(order.getStatus()).isEqualTo(Status.VALID);
 
         var cert = order.getCertificate().getCertificate();
         assertThat(cert.getNotAfter()).isNotNull();
@@ -106,34 +97,6 @@ public class OrderHttpIT {
      */
     protected KeyPair createKeyPair() {
         return KeyPairUtils.createKeyPair(2048);
-    }
-
-    /**
-     * Safely updates the authorization, catching checked exceptions.
-     *
-     * @param auth
-     *            {@link Authorization} to update
-     */
-    private void updateAuth(Authorization auth) {
-        try {
-            auth.update();
-        } catch (AcmeException ex) {
-            throw new AcmeLazyLoadingException(auth, ex);
-        }
-    }
-
-    /**
-     * Safely updates the order, catching checked exceptions.
-     *
-     * @param order
-     *            {@link Order} to update
-     */
-    private void updateOrder(Order order) {
-        try {
-            order.update();
-        } catch (AcmeException ex) {
-            throw new AcmeLazyLoadingException(order, ex);
-        }
     }
 
 }

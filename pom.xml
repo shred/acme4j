@@ -231,12 +231,6 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.awaitility</groupId>
-            <artifactId>awaitility</artifactId>
-            <version>4.2.1</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <!-- Fixed to 3.2.0 until https://github.com/wiremock/wiremock/issues/2480 is resolved -->
             <groupId>org.wiremock</groupId>
             <artifactId>wiremock</artifactId>
