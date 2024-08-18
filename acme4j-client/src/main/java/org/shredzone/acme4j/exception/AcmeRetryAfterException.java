@@ -25,7 +25,10 @@ import org.shredzone.acme4j.AcmeJsonResource;
  * Note: Prefer to use {@link AcmeJsonResource#fetch()}. Invoking
  * {@link AcmeJsonResource#update()} and catching this exception is unnecessary
  * complicated and a legacy from acme4j v2 which will disappear in a future release.
+ *
+ * @deprecated Will be removed in a future version.
  */
+@Deprecated
 public class AcmeRetryAfterException extends AcmeException {
     private static final long serialVersionUID = 4461979121063649905L;
 

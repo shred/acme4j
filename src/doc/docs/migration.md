@@ -6,6 +6,7 @@ This document will help you migrate your code to the latest _acme4j_ version.
 
 - To be futureproof, you should wait for your `Order` resource's state to become `READY` before invoking `Order.execute()`. Most CAs change to the `READY` state immediately, but this behavior is not specified in RFC8555. Future CA implementations may stay in `PENDING` state for a short while, and would return an error if `execute()` is invoked too early. Also see the [example](example.md#the-main-workflow) for how wait for the `READY` state.
 - There are new methods `waitForCompletion()` and `waitUntilReady()` that will do the synchronous busy wait for the resource state for you. It will remove a lot of boilerplate code that is also bug prone if implemented individually. If you use synchronous polling and waiting (like shown in the example code), I recommend to change to these methods instead of waiting for the correct state yourself. See the [example](example.md) for how to use the new methods.
+- Marked `update()` (and `AcmeRetryAfterException`) as deprecated now. Please use `fetch()` instead, it returns the retry-after time as `Optional` instead of throwing an `AcmeRetryAfterException`.
 
 ## Migration to Version 3.3.0
 

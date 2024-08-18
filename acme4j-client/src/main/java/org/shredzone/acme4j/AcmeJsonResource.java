@@ -123,7 +123,11 @@ public abstract class AcmeJsonResource extends AcmeResource {
      *         {@link AcmeRetryAfterException#getRetryAfter()}. Note that the status of
      *         the resource is updated even if this exception was thrown.
      * @see #fetch()
+     * @deprecated Use {@link #fetch()} instead. It returns the retry-after value as
+     * {@link Optional} instead of throwing an {@link AcmeRetryAfterException}. This
+     * method will be removed in a future version.
      */
+    @Deprecated
     public void update() throws AcmeException {
         var retryAfter = fetch();
         if (retryAfter.isPresent()) {
