@@ -11,6 +11,5 @@
     "lifetime": 604800,
     "lifetime-adjust": 518400,
     "allow-certificate-get": true
-  },
-  "replaces": "aYhba4dGQEHhs3uEe6CuLN4ByNQ.AIdlQyE"
+  }
 }

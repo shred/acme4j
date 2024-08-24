@@ -14,8 +14,7 @@
 package org.shredzone.acme4j;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
@@ -169,7 +168,6 @@ public class OrderBuilderTest {
                         .autoRenewalLifetime(validity)
                         .autoRenewalLifetimeAdjust(predate)
                         .autoRenewalEnableGet()
-                        .replaces("aYhba4dGQEHhs3uEe6CuLN4ByNQ.AIdlQyE")
                         .create();
 
         try (var softly = new AutoCloseableSoftAssertions()) {
@@ -331,6 +329,75 @@ public class OrderBuilderTest {
             OrderBuilder ob = account.newOrder().notBefore(someInstant);
             ob.autoRenewalLifetime(Duration.ofDays(7));
         }, "accepted autoRenewalLifetime");
+
+        provider.close();
+    }
+
+    /**
+     * Test that the ARI replaces field is set.
+     */
+    @Test
+    public void testARIReplaces() throws Exception {
+        var provider = new TestableConnectionProvider() {
+            @Override
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
+                assertThat(url).isEqualTo(resourceUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("requestReplacesRequest").toString());
+                assertThat(login).isNotNull();
+                return HttpURLConnection.HTTP_CREATED;
+            }
+
+            @Override
+            public JSON readJsonResponse() {
+                return getJSON("requestReplacesResponse");
+            }
+
+            @Override
+            public URL getLocation() {
+                return locationUrl;
+            }
+        };
+
+        var login = provider.createLogin();
+
+        provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
+        provider.putTestResource(Resource.RENEWAL_INFO, resourceUrl);
+
+        var account = new Account(login);
+        account.newOrder()
+                .domain("example.org")
+                .replaces("aYhba4dGQEHhs3uEe6CuLN4ByNQ.AIdlQyE")
+                .create();
+
+        provider.close();
+    }
+
+    /**
+     * Test that exception is thrown if the ARI replaces field is set but ARI is not
+     * supported.
+     */
+    @Test
+    public void testARIReplaceFails() throws Exception {
+        var provider = new TestableConnectionProvider() {
+            @Override
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
+                fail("Request was sent");
+                return HttpURLConnection.HTTP_FORBIDDEN;
+            }
+        };
+
+        var login = provider.createLogin();
+
+        provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
+
+        var account = new Account(login);
+        assertThatExceptionOfType(AcmeNotSupportedException.class).isThrownBy(() -> {
+                    account.newOrder()
+                            .domain("example.org")
+                            .replaces("aYhba4dGQEHhs3uEe6CuLN4ByNQ.AIdlQyE")
+                            .create();
+                })
+                .withMessage("Server does not support renewal-information");
 
         provider.close();
     }

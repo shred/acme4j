@@ -13,7 +13,7 @@ There is no special path for renewing a certificate. To renew it, just [order](o
 
 ## Renewal Information
 
-_acme4j_ supports the [draft-ietf-acme-ari-04](https://www.ietf.org/archive/id/draft-ietf-acme-ari-04.html) draft.
+_acme4j_ supports the [draft-ietf-acme-ari-05](https://www.ietf.org/archive/id/draft-ietf-acme-ari-05.html) draft.
 
 You can check if the CA offers renewal information by invoking `Certificate.hasRenewalInfo()`. If it does, you can get a suggested time window for certificate nenewal by invoking `Certificate.getRenewalInfo()`.
 
