@@ -21,6 +21,7 @@ import java.net.URI;
 import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.crypto.SecretKey;
@@ -279,7 +280,10 @@ public class AccountBuilder {
                 claims.put("termsOfServiceAgreed", termsOfServiceAgreed);
             }
             if (keyIdentifier != null && macKey != null) {
-                var algorithm = macAlgorithm != null ? macAlgorithm : macKeyAlgorithm(macKey);
+                var algorithm = Optional.ofNullable(macAlgorithm)
+                        .or(session.provider()::getProposedEabMacAlgorithm)
+// FIXME: Cannot use a Supplier here due to a Spotbugs false positive "null pointer dereference"
+                        .orElse(macKeyAlgorithm(macKey));
                 claims.put("externalAccountBinding", JoseUtils.createExternalAccountBinding(
                         keyIdentifier, keyPair.getPublic(), macKey, algorithm, resourceUrl));
             }

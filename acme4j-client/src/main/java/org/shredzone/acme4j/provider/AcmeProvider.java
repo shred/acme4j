@@ -15,6 +15,7 @@ package org.shredzone.acme4j.provider;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.Optional;
 import java.util.ServiceLoader;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -95,5 +96,18 @@ public interface AcmeProvider {
      */
     @Nullable
     Challenge createChallenge(Login login, JSON data);
+
+    /**
+     * Returns a proposal for the EAB MAC algorithm to be used. Only set if the CA
+     * requires External Account Binding and the MAC algorithm cannot be correctly derived
+     * from the MAC key. Empty otherwise.
+     *
+     * @return Proposed MAC algorithm to be used for EAB, or empty for the default
+     * behavior.
+     * @since 3.5.0
+     */
+    default Optional<String> getProposedEabMacAlgorithm() {
+        return Optional.empty();
+    }
 
 }

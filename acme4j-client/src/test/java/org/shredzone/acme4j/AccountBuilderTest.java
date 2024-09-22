@@ -22,6 +22,7 @@ import static org.shredzone.acme4j.toolbox.TestUtils.url;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.KeyPair;
+import java.util.Optional;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.jose4j.jwx.CompactSerializer;
@@ -113,11 +114,29 @@ public class AccountBuilderTest {
      */
     @ParameterizedTest
     @CsvSource({
-            "SHA-256,HS256,",      "SHA-384,HS384,",      "SHA-512,HS512,",
-            "SHA-256,HS256,HS256", "SHA-384,HS384,HS384", "SHA-512,HS512,HS512",
-            "SHA-512,HS256,HS256"
+            // Derived from key size
+            "SHA-256,HS256,,",
+            "SHA-384,HS384,,",
+            "SHA-512,HS512,,",
+
+            // Enforced, but same as key size
+            "SHA-256,HS256,HS256,",
+            "SHA-384,HS384,HS384,",
+            "SHA-512,HS512,HS512,",
+
+            // Enforced, different from key size
+            "SHA-512,HS256,HS256,",
+
+            // Proposed by provider
+            "SHA-256,HS256,,HS256",
+            "SHA-512,HS256,,HS256",
+            "SHA-512,HS512,HS512,HS256",
     })
-    public void testRegistrationWithKid(String keyAlg, String expectedMacAlg, @Nullable String macAlg) throws Exception {
+    public void testRegistrationWithKid(String keyAlg,
+                                        String expectedMacAlg,
+                                        @Nullable String macAlg,
+                                        @Nullable String providerAlg
+    ) throws Exception {
         var accountKey = TestUtils.createKeyPair();
         var keyIdentifier = "NCC-1701";
         var macKey = TestUtils.createSecretKey(keyAlg);
@@ -151,6 +170,11 @@ public class AccountBuilderTest {
             @Override
             public JSON readJsonResponse() {
                 return JSON.empty();
+            }
+
+            @Override
+            public Optional<String> getProposedEabMacAlgorithm() {
+                return Optional.ofNullable(providerAlg);
             }
         };
 

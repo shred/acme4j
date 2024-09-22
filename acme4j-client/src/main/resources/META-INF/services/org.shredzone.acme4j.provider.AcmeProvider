@@ -1,4 +1,7 @@
 
+#  Google Trust Services: https://pki.goog/
+org.shredzone.acme4j.provider.google.GoogleAcmeProvider
+
 # Let's Encrypt: https://letsencrypt.org
 org.shredzone.acme4j.provider.letsencrypt.LetsEncryptAcmeProvider
 

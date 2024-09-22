@@ -38,6 +38,26 @@ import org.shredzone.acme4j.exception.AcmeException;
 public class ProviderIT {
 
     /**
+     * Test Google CA
+     */
+    @Test
+    public void testGoogle() throws AcmeException, MalformedURLException {
+        var session = new Session("acme://pki.goog");
+        assertThat(session.getMetadata().getWebsite()).hasValue(new URL("https://pki.goog"));
+        assertThatNoException().isThrownBy(() -> session.resourceUrl(Resource.NEW_ACCOUNT));
+        assertThat(session.getMetadata().isExternalAccountRequired()).isTrue();
+        assertThat(session.getMetadata().isAutoRenewalEnabled()).isFalse();
+        assertThat(session.resourceUrlOptional(Resource.RENEWAL_INFO)).isNotEmpty();
+
+        var sessionStage = new Session("acme://pki.goog/staging");
+        assertThat(sessionStage.getMetadata().getWebsite()).hasValue(new URL("https://pki.goog"));
+        assertThatNoException().isThrownBy(() -> sessionStage.resourceUrl(Resource.NEW_ACCOUNT));
+        assertThat(sessionStage.getMetadata().isExternalAccountRequired()).isTrue();
+        assertThat(sessionStage.getMetadata().isAutoRenewalEnabled()).isFalse();
+        assertThat(sessionStage.resourceUrlOptional(Resource.RENEWAL_INFO)).isNotEmpty();
+    }
+
+    /**
      * Test Let's Encrypt
      */
     @Test
@@ -47,12 +67,14 @@ public class ProviderIT {
         assertThatNoException().isThrownBy(() -> session.resourceUrl(Resource.NEW_ACCOUNT));
         assertThat(session.getMetadata().isExternalAccountRequired()).isFalse();
         assertThat(session.getMetadata().isAutoRenewalEnabled()).isFalse();
+        assertThat(session.resourceUrlOptional(Resource.RENEWAL_INFO)).isNotEmpty();
 
         var sessionStage = new Session("acme://letsencrypt.org/staging");
         assertThat(sessionStage.getMetadata().getWebsite()).hasValue(new URL("https://letsencrypt.org/docs/staging-environment/"));
         assertThatNoException().isThrownBy(() -> sessionStage.resourceUrl(Resource.NEW_ACCOUNT));
         assertThat(sessionStage.getMetadata().isExternalAccountRequired()).isFalse();
         assertThat(sessionStage.getMetadata().isAutoRenewalEnabled()).isFalse();
+        assertThat(sessionStage.resourceUrlOptional(Resource.RENEWAL_INFO)).isNotEmpty();
     }
 
     /**
@@ -65,6 +87,7 @@ public class ProviderIT {
         assertThatNoException().isThrownBy(() -> session.resourceUrl(Resource.NEW_ACCOUNT));
         assertThat(session.getMetadata().isExternalAccountRequired()).isFalse();
         assertThat(session.getMetadata().isAutoRenewalEnabled()).isFalse();
+        assertThat(session.resourceUrlOptional(Resource.RENEWAL_INFO)).isNotEmpty();
     }
 
     /**
@@ -77,12 +100,14 @@ public class ProviderIT {
         assertThatNoException().isThrownBy(() -> sessionEcc.resourceUrl(Resource.NEW_ACCOUNT));
         assertThat(sessionEcc.getMetadata().isExternalAccountRequired()).isTrue();
         assertThat(sessionEcc.getMetadata().isAutoRenewalEnabled()).isFalse();
+        assertThat(sessionEcc.resourceUrlOptional(Resource.RENEWAL_INFO)).isEmpty();
 
         var sessionRsa = new Session("acme://ssl.com/rsa");
         assertThat(sessionRsa.getMetadata().getWebsite()).hasValue(new URL("https://www.ssl.com"));
         assertThatNoException().isThrownBy(() -> sessionRsa.resourceUrl(Resource.NEW_ACCOUNT));
         assertThat(sessionRsa.getMetadata().isExternalAccountRequired()).isTrue();
         assertThat(sessionRsa.getMetadata().isAutoRenewalEnabled()).isFalse();
+        assertThat(sessionRsa.resourceUrlOptional(Resource.RENEWAL_INFO)).isEmpty();
 
         // If this test fails, the metadata has been fixed on server side. Then remove
         // the patch at ZeroSSLAcmeProvider, and update the documentation.
@@ -101,12 +126,14 @@ public class ProviderIT {
         assertThatNoException().isThrownBy(() -> sessionEccStage.resourceUrl(Resource.NEW_ACCOUNT));
         assertThat(sessionEccStage.getMetadata().isExternalAccountRequired()).isTrue();
         assertThat(sessionEccStage.getMetadata().isAutoRenewalEnabled()).isFalse();
+        assertThat(sessionEccStage.resourceUrlOptional(Resource.RENEWAL_INFO)).isEmpty();
 
         var sessionRsaStage = new Session("acme://ssl.com/staging/rsa");
         assertThat(sessionRsaStage.getMetadata().getWebsite()).hasValue(new URL("https://www.ssl.com"));
         assertThatNoException().isThrownBy(() -> sessionRsaStage.resourceUrl(Resource.NEW_ACCOUNT));
         assertThat(sessionRsaStage.getMetadata().isExternalAccountRequired()).isTrue();
         assertThat(sessionRsaStage.getMetadata().isAutoRenewalEnabled()).isFalse();
+        assertThat(sessionRsaStage.resourceUrlOptional(Resource.RENEWAL_INFO)).isEmpty();
 
         // If this test fails, the metadata has been fixed on server side. Then remove
         // the patch at ZeroSSLAcmeProvider, and update the documentation.
@@ -124,6 +151,7 @@ public class ProviderIT {
         assertThatNoException().isThrownBy(() -> session.resourceUrl(Resource.NEW_ACCOUNT));
         assertThat(session.getMetadata().isExternalAccountRequired()).isTrue();
         assertThat(session.getMetadata().isAutoRenewalEnabled()).isFalse();
+        assertThat(session.resourceUrlOptional(Resource.RENEWAL_INFO)).isEmpty();
 
         // ZeroSSL has no documented staging server (as of February 2024)
     }
