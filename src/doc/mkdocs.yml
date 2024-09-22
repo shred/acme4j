@@ -43,6 +43,7 @@ nav:
     - 'challenge/email-reply-00.md'
   - CA:
     - 'ca/index.md'
+    - 'ca/buypass.md'
     - 'ca/google.md'
     - 'ca/letsencrypt.md'
     - 'ca/pebble.md'

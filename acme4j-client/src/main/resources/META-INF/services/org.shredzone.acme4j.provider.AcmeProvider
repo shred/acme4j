@@ -1,4 +1,7 @@
 
+#  Buypass: https://buypass.com/
+org.shredzone.acme4j.provider.buypass.BuypassAcmeProvider
+
 #  Google Trust Services: https://pki.goog/
 org.shredzone.acme4j.provider.google.GoogleAcmeProvider
 
