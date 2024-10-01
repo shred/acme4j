@@ -1,6 +1,8 @@
 {
+  "status": "valid",
   "termsOfServiceAgreed": true,
   "contact": [
     "mailto:foo@example.com"
-  ]
+  ],
+  "orders": "https://example.com/acme/orders/rzGoeA"
 }
