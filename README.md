@@ -15,7 +15,7 @@ This Java client helps connecting to an ACME server, and performing all necessar
 * Supports [RFC 8739](https://tools.ietf.org/html/rfc8739) short-term automatic certificate renewal (experimental)
 * Supports [RFC 8823](https://tools.ietf.org/html/rfc8823) for S/MIME certificates (experimental)
 * Supports [RFC 9444](https://tools.ietf.org/html/rfc9444) for subdomain validation
-* Supports [draft-ietf-acme-ari-05](https://www.ietf.org/archive/id/draft-ietf-acme-ari-05.html) for renewal information (experimental)
+* Supports [draft-ietf-acme-ari-06](https://www.ietf.org/archive/id/draft-ietf-acme-ari-06.html) for renewal information (experimental)
 * Easy to use Java API
 * Requires JRE 11 or higher
 * Supports [Buypass](https://buypass.com/), [Google Trust Services](https://pki.goog/), [Let's Encrypt](https://letsencrypt.org/), [SSL.com](https://www.ssl.com/), [ZeroSSL](https://zerossl.com/), and all other CAs that comply with the ACME protocol (RFC 8555). Note that _acme4j_ is an independent project that is not supported or endorsed by any of the CAs.
