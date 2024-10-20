@@ -171,7 +171,7 @@ public class ProviderIT {
         assertThatNoException().isThrownBy(() -> session.resourceUrl(Resource.NEW_ACCOUNT));
         assertThat(session.getMetadata().isExternalAccountRequired()).isTrue();
         assertThat(session.getMetadata().isAutoRenewalEnabled()).isFalse();
-        assertThat(session.resourceUrlOptional(Resource.RENEWAL_INFO)).isEmpty();
+        assertThat(session.resourceUrlOptional(Resource.RENEWAL_INFO)).isNotEmpty();
 
         // ZeroSSL has no documented staging server (as of February 2024)
     }
