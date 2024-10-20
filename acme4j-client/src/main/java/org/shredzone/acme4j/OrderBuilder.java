@@ -343,6 +343,10 @@ public class OrderBuilder {
             throw new AcmeNotSupportedException("auto-renewal");
         }
 
+        if (autoRenewalGet && !session.getMetadata().isAutoRenewalGetAllowed()) {
+            throw new AcmeNotSupportedException("auto-renewal-get");
+        }
+
         if (replaces != null && session.resourceUrlOptional(Resource.RENEWAL_INFO).isEmpty()) {
             throw new AcmeNotSupportedException("renewal-information");
         }

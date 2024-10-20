@@ -156,7 +156,9 @@ public class OrderBuilderTest {
 
         var login = provider.createLogin();
 
-        provider.putMetadata("auto-renewal", JSON.empty());
+        provider.putMetadata("auto-renewal",JSON.parse(
+                "{\"allow-certificate-get\": true}"
+        ).toMap());
         provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
 
         var account = new Account(login);
