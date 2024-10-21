@@ -143,7 +143,9 @@ public class Order extends AcmeJsonResource implements PollableResource {
     @SuppressFBWarnings("EI_EXPOSE_REP")    // behavior is intended
     public Certificate getCertificate() {
         if (certificate == null) {
-            certificate = getJSON().get("certificate")
+            certificate = getJSON().get("star-certificate")
+                    .optional()
+                    .or(() -> getJSON().get("certificate").optional())
                     .map(Value::asURL)
                     .map(getLogin()::bindCertificate)
                     .orElseThrow(() -> new IllegalStateException("Order is not completed"));
@@ -159,7 +161,9 @@ public class Order extends AcmeJsonResource implements PollableResource {
      *         if the order is not ready yet. You must finalize the order first, and wait
      *         for the status to become {@link Status#VALID}. It is also thrown if the
      *         order has been {@link Status#CANCELED}.
+     * @deprecated Use {@link #getCertificate()} for STAR certificates as well.
      */
+    @Deprecated
     @SuppressFBWarnings("EI_EXPOSE_REP")    // behavior is intended
     public Certificate getAutoRenewalCertificate() {
         if (autoRenewalCertificate == null) {
@@ -170,6 +174,16 @@ public class Order extends AcmeJsonResource implements PollableResource {
                     .orElseThrow(() -> new IllegalStateException("Order is in an invalid state"));
         }
         return autoRenewalCertificate;
+    }
+
+    /**
+     * Returns whether this is a STAR certificate ({@code true}) or a standard certificate
+     * ({@code false}).
+     *
+     * @since 3.5.0
+     */
+    public boolean isAutoRenewalCertificate() {
+        return getJSON().contains("star-certificate");
     }
 
     /**

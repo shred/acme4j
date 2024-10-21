@@ -47,9 +47,6 @@ You can also use `autoRenewalStart()`, `autoRenewalEnd()`, `autoRenewalLifetime(
 
 The `Metadata` object also holds the accepted renewal limits (see `Metadata.getAutoRenewalMinLifetime()` and `Metadata.getAutoRenewalMaxDuration()`).
 
-!!! important
-    After your order is finalized, you must use `Order.getAutoRenewalCertificate()` to retrieve a STAR certificate! Do not use `Order.getCertificate()` here.
-
 The STAR certificates are automatically renewed by the CA. You will always find the latest certificate at the certificate location URL.
 
 To download the latest certificate issue, you can bind the certificate URL to your `Login` and then use the `Certificate` object.

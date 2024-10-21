@@ -2,6 +2,10 @@
 
 This document will help you migrate your code to the latest _acme4j_ version.
 
+## Migration to Version 3.5.0
+
+- If you use STAR auto renewal certificates, you can now use `Order.getCertificate()` instead of `Order.getAutoRenewalCertificate()` to retrieve the STAR certificate. `Order.getAutoRenewalCertificate()` is marked as deprecated, but still functional. The new method `Order.isAutoRenewalCertificate()` can be used to check if the order resulted in a standard or auto-renewing certificate.
+
 ## Migration to Version 3.4.0
 
 - To be futureproof, you should wait for your `Order` resource's state to become `READY` before invoking `Order.execute()`. Most CAs change to the `READY` state immediately, but this behavior is not specified in RFC8555. Future CA implementations may stay in `PENDING` state for a short while, and would return an error if `execute()` is invoked too early. Also see the [example](example.md#the-main-workflow) for how wait for the `READY` state.
