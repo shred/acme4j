@@ -1,0 +1,9 @@
+{
+  "identifiers": [
+    {
+      "type": "dns",
+      "value": "example.org"
+    }
+  ],
+  "profile": "classic"
+}
