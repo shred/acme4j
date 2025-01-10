@@ -54,6 +54,7 @@ public class OrderBuilder {
     private @Nullable Duration autoRenewalLifetime;
     private @Nullable Duration autoRenewalLifetimeAdjust;
     private boolean autoRenewalGet;
+    private @Nullable String profile;
 
     /**
      * Create a new {@link OrderBuilder}.
@@ -270,6 +271,25 @@ public class OrderBuilder {
     }
 
     /**
+     * Notifies the CA of the desired profile of the ordered certificate.
+     * <p>
+     * Optional, only supported if the CA supports profiles. However, in this
+     * case the client <em>may</em> include this field.
+     *
+     * @param profile
+     *         Identifier of the desired profile
+     * @return itself
+     * @draft This method is currently based on RFC draft draft-aaron-acme-profiles. It may be changed or removed
+     * without notice to reflect future changes to the draft. SemVer rules do not apply
+     * here.
+     * @since 3.5.0
+     */
+    public OrderBuilder profile(String profile) {
+        this.profile = Objects.requireNonNull(profile);
+        return this;
+    }
+
+    /**
      * Notifies the CA that the ordered certificate will replace a previously issued
      * certificate. The certificate is identified by its ARI unique identifier.
      * <p>
@@ -351,6 +371,14 @@ public class OrderBuilder {
             throw new AcmeNotSupportedException("renewal-information");
         }
 
+        if (profile != null && !session.getMetadata().isProfileAllowed()) {
+            throw new AcmeNotSupportedException("profile");
+        }
+
+        if (profile != null && !session.getMetadata().isProfileAllowed(profile)) {
+            throw new AcmeNotSupportedException("profile with value " + profile);
+        }
+
         var hasAncestorDomain = identifierSet.stream()
                 .filter(id -> Identifier.TYPE_DNS.equals(id.getType()))
                 .anyMatch(id -> id.toMap().containsKey(Identifier.KEY_ANCESTOR_DOMAIN));
@@ -391,6 +419,10 @@ public class OrderBuilder {
 
             if (replaces != null) {
                 claims.put("replaces", replaces);
+            }
+
+            if(profile != null) {
+                claims.put("profile", profile);
             }
 
             conn.sendSignedRequest(session.resourceUrl(Resource.NEW_ORDER), claims, login);

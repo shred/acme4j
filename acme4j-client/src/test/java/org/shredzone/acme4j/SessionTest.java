@@ -183,6 +183,9 @@ public class SessionTest {
             softly.assertThat(meta.getAutoRenewalMaxDuration()).isEqualTo(Duration.ofDays(365));
             softly.assertThat(meta.getAutoRenewalMinLifetime()).isEqualTo(Duration.ofHours(24));
             softly.assertThat(meta.isAutoRenewalGetAllowed()).isTrue();
+            softly.assertThat(meta.isProfileAllowed()).isTrue();
+            softly.assertThat(meta.isProfileAllowed("classic")).isTrue();
+            softly.assertThat(meta.isProfileAllowed("invalid")).isFalse();
             softly.assertThat(meta.isExternalAccountRequired()).isTrue();
             softly.assertThat(meta.isSubdomainAuthAllowed()).isTrue();
             softly.assertThat(meta.getJSON()).isNotNull();
@@ -235,6 +238,8 @@ public class SessionTest {
                     .isThrownBy(meta::getAutoRenewalMinLifetime);
             softly.assertThatExceptionOfType(AcmeNotSupportedException.class)
                     .isThrownBy(meta::isAutoRenewalGetAllowed);
+            softly.assertThat(meta.isProfileAllowed()).isFalse();
+            softly.assertThat(meta.isProfileAllowed("classic")).isFalse();
         }
     }
 

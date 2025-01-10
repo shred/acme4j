@@ -23,6 +23,10 @@
       "foo",
       "bar",
       "barfoo"
-    ]
+    ],
+    "profiles": {
+      "classic": "The profile you're accustomed to",
+      "custom": "Some other profile"
+    }
   }
 }

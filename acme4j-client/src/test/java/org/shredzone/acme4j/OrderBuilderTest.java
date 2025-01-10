@@ -336,6 +336,111 @@ public class OrderBuilderTest {
     }
 
     /**
+     * Test that a new profile {@link Order} can be created.
+     */
+    @Test
+    public void testProfileOrderCertificate() throws Exception {
+
+        var provider = new TestableConnectionProvider() {
+            @Override
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
+                assertThat(url).isEqualTo(resourceUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("requestProfileOrderRequest").toString());
+                assertThat(login).isNotNull();
+                return HttpURLConnection.HTTP_CREATED;
+            }
+
+            @Override
+            public JSON readJsonResponse() {
+                return getJSON("requestAutoRenewOrderResponse");
+            }
+
+            @Override
+            public URL getLocation() {
+                return locationUrl;
+            }
+        };
+
+        var login = provider.createLogin();
+
+        provider.putMetadata("profile",JSON.parse(
+                "{\"classic\": true}"
+        ).toMap());
+        provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
+
+        var account = new Account(login);
+        account.newOrder()
+                .domain("example.org")
+                .profile("classic")
+                .create();
+
+        provider.close();
+    }
+
+    /**
+     * Test that a profile {@link Order} cannot be created if the profile is unsupported by the CA.
+     */
+    @Test
+    public void testUnsupportedProfileOrderCertificateFails() throws Exception {
+
+        var provider = new TestableConnectionProvider() {
+            @Override
+            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
+                assertThat(url).isEqualTo(resourceUrl);
+                assertThatJson(claims.toString()).isEqualTo(getJSON("requestProfileOrderRequest").toString());
+                assertThat(login).isNotNull();
+                return HttpURLConnection.HTTP_CREATED;
+            }
+
+            @Override
+            public JSON readJsonResponse() {
+                return getJSON("requestAutoRenewOrderResponse");
+            }
+
+            @Override
+            public URL getLocation() {
+                return locationUrl;
+            }
+        };
+
+        assertThrows(AcmeNotSupportedException.class, () -> {
+            provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
+
+            var login = provider.createLogin();
+
+            var account = new Account(login);
+            account.newOrder()
+                    .domain("example.org")
+                    .profile("invalid")
+                    .create();
+
+            provider.close();
+        });
+    }
+
+    /**
+     * Test that a profile {@link Order} cannot be created if the feature is unsupported by the CA.
+     */
+    @Test
+    public void testProfileOrderCertificateFails() {
+        assertThrows(AcmeNotSupportedException.class, () -> {
+            var provider = new TestableConnectionProvider();
+            provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
+
+            var login = provider.createLogin();
+
+            var account = new Account(login);
+            account.newOrder()
+                    .domain("example.org")
+                    .profile("classic")
+                    .create();
+
+            provider.close();
+        });
+    }
+
+
+    /**
      * Test that the ARI replaces field is set.
      */
     @Test
