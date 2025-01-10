@@ -90,6 +90,8 @@ public class OrderTest {
                     .isThrownBy(order::getAutoRenewalLifetimeAdjust);
             softly.assertThatExceptionOfType(AcmeNotSupportedException.class)
                     .isThrownBy(order::isAutoRenewalGetEnabled);
+            softly.assertThatExceptionOfType(AcmeNotSupportedException.class)
+                    .isThrownBy(order::getProfile);
 
             softly.assertThat(order.getError()).isNotEmpty();
             softly.assertThat(order.getError().orElseThrow().getType())

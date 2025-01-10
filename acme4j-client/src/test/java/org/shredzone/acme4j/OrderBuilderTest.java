@@ -116,6 +116,8 @@ public class OrderBuilderTest {
                     .isThrownBy(order::getAutoRenewalLifetimeAdjust);
             softly.assertThatExceptionOfType(AcmeNotSupportedException.class)
                     .isThrownBy(order::isAutoRenewalGetEnabled);
+            softly.assertThatExceptionOfType(AcmeNotSupportedException.class)
+                    .isThrownBy(order::getProfile);
             softly.assertThat(order.getLocation()).isEqualTo(locationUrl);
             softly.assertThat(order.getAuthorizations()).isNotNull();
             softly.assertThat(order.getAuthorizations()).hasSize(2);
@@ -369,11 +371,16 @@ public class OrderBuilderTest {
         provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
 
         var account = new Account(login);
-        account.newOrder()
+        var order = account.newOrder()
                 .domain("example.org")
                 .profile("classic")
                 .create();
 
+        try (var softly = new AutoCloseableSoftAssertions()) {
+            softly.assertThat(order.getProfile()).isEqualTo("classic");
+        }
+
+        provider.close();
         provider.close();
     }
 
