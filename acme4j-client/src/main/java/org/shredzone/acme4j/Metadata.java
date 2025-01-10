@@ -132,6 +132,31 @@ public class Metadata {
     }
 
     /**
+     * Returns whether the CA supports the profile feature.
+     *
+     * @since 3.5
+     * @throws AcmeNotSupportedException if the server does not support the profile feature.
+     */
+    public boolean isProfileAllowed() {
+        return meta.getFeature("profile").optional().isPresent();
+    }
+
+    /**
+     * Returns whether the CA supports the requested profile.
+     *
+     * @since 3.5
+     * @throws AcmeNotSupportedException if the server does not support the requested profile.
+     */
+    public boolean isProfileAllowed(String profile) {
+        return meta.getFeature("profile").optional()
+                .map(Value::asObject)
+                .orElseGet(JSON::empty)
+                .get(profile)
+                .optional()
+                .isPresent();
+    }
+
+    /**
      * Returns whether the CA supports subdomain auth according to RFC9444.
      *
      * @since 3.3.0
