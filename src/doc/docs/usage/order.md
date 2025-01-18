@@ -240,3 +240,20 @@ The CA can then choose to issue challenges for any of `foo.bar.example.org`, `ba
 `Authorization.isSubdomainAuthAllowed()` will return `true` if that `Authorization` is used to issue subdomain certificates.
 
 To check if your CA supports RFC 9444, read `Metadata.isSubdomainAuthAllowed()`.
+
+## Profiles
+
+If your CA supports [draft-aaron-acme-profiles](https://www.ietf.org/archive/id/draft-aaron-acme-profiles-00.html), you can select a profile when ordering a certificate:
+
+```java
+Order order = account.newOrder()
+        .profile("tlsserver")
+        .create();
+```
+
+You can use `Metadata` to check if profiles are supported, and which ones:
+
+* `Metadata.isProfileAllowed()`: `true` if profiles are supported
+* `Metadata.isProfileAllowed(String)`: `true` if the given profile is supported
+* `Metadata.getProfiles()`: returns a `Set` of all profile names
+* `Metadata.getProfileDescription(String)`: returns a human-readable profile description
