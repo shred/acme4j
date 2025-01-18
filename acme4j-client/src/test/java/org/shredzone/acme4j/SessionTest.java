@@ -185,7 +185,11 @@ public class SessionTest {
             softly.assertThat(meta.isAutoRenewalGetAllowed()).isTrue();
             softly.assertThat(meta.isProfileAllowed()).isTrue();
             softly.assertThat(meta.isProfileAllowed("classic")).isTrue();
+            softly.assertThat(meta.isProfileAllowed("custom")).isTrue();
             softly.assertThat(meta.isProfileAllowed("invalid")).isFalse();
+            softly.assertThat(meta.getProfileDescription("classic")).contains("The profile you're accustomed to");
+            softly.assertThat(meta.getProfileDescription("custom")).contains("Some other profile");
+            softly.assertThat(meta.getProfileDescription("invalid")).isEmpty();
             softly.assertThat(meta.isExternalAccountRequired()).isTrue();
             softly.assertThat(meta.isSubdomainAuthAllowed()).isTrue();
             softly.assertThat(meta.getJSON()).isNotNull();
@@ -240,6 +244,7 @@ public class SessionTest {
                     .isThrownBy(meta::isAutoRenewalGetAllowed);
             softly.assertThat(meta.isProfileAllowed()).isFalse();
             softly.assertThat(meta.isProfileAllowed("classic")).isFalse();
+            softly.assertThat(meta.getProfileDescription("classic")).isEmpty();
         }
     }
 

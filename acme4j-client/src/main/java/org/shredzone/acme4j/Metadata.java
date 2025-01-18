@@ -156,6 +156,23 @@ public class Metadata {
     }
 
     /**
+     * Returns a description of the requested profile. This can be a human-readable string
+     * or a URL linking to a documentation.
+     * <p>
+     * Empty if the profile is not allowed.
+     *
+     * @since 3.5.0
+     */
+    public Optional<String> getProfileDescription(String profile) {
+        return meta.get("profiles").optional()
+                .map(Value::asObject)
+                .orElseGet(JSON::empty)
+                .get(profile)
+                .optional()
+                .map(Value::asString);
+    }
+
+    /**
      * Returns whether the CA supports subdomain auth according to RFC9444.
      *
      * @since 3.3.0
