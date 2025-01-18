@@ -20,6 +20,7 @@ import static org.shredzone.acme4j.toolbox.AcmeUtils.parseTimestamp;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
@@ -342,7 +343,6 @@ public class OrderBuilderTest {
      */
     @Test
     public void testProfileOrderCertificate() throws Exception {
-
         var provider = new TestableConnectionProvider() {
             @Override
             public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
@@ -354,7 +354,7 @@ public class OrderBuilderTest {
 
             @Override
             public JSON readJsonResponse() {
-                return getJSON("requestAutoRenewOrderResponse");
+                return getJSON("requestProfileOrderResponse");
             }
 
             @Override
@@ -365,8 +365,8 @@ public class OrderBuilderTest {
 
         var login = provider.createLogin();
 
-        provider.putMetadata("profile",JSON.parse(
-                "{\"classic\": true}"
+        provider.putMetadata("profiles",JSON.parse(
+                "{\"classic\": \"The same profile you're accustomed to\"}"
         ).toMap());
         provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
 
@@ -381,71 +381,53 @@ public class OrderBuilderTest {
         }
 
         provider.close();
-        provider.close();
     }
 
     /**
-     * Test that a profile {@link Order} cannot be created if the profile is unsupported by the CA.
+     * Test that a profile {@link Order} cannot be created if the profile is unsupported
+     * by the CA.
      */
     @Test
     public void testUnsupportedProfileOrderCertificateFails() throws Exception {
+        var provider = new TestableConnectionProvider();
+        provider.putMetadata("profiles",JSON.parse(
+                "{\"classic\": \"The same profile you're accustomed to\"}"
+        ).toMap());
+        provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
 
-        var provider = new TestableConnectionProvider() {
-            @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Login login) {
-                assertThat(url).isEqualTo(resourceUrl);
-                assertThatJson(claims.toString()).isEqualTo(getJSON("requestProfileOrderRequest").toString());
-                assertThat(login).isNotNull();
-                return HttpURLConnection.HTTP_CREATED;
-            }
+        var login = provider.createLogin();
 
-            @Override
-            public JSON readJsonResponse() {
-                return getJSON("requestAutoRenewOrderResponse");
-            }
-
-            @Override
-            public URL getLocation() {
-                return locationUrl;
-            }
-        };
-
-        assertThrows(AcmeNotSupportedException.class, () -> {
-            provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
-
-            var login = provider.createLogin();
-
-            var account = new Account(login);
+        var account = new Account(login);
+        assertThatExceptionOfType(AcmeNotSupportedException.class).isThrownBy(() -> {
             account.newOrder()
                     .domain("example.org")
                     .profile("invalid")
                     .create();
-
-            provider.close();
-        });
+        }).withMessage("Server does not support profile: invalid");
+        provider.close();
     }
 
     /**
-     * Test that a profile {@link Order} cannot be created if the feature is unsupported by the CA.
+     * Test that a profile {@link Order} cannot be created if the feature is unsupported
+     * by the CA.
      */
     @Test
-    public void testProfileOrderCertificateFails() {
-        assertThrows(AcmeNotSupportedException.class, () -> {
-            var provider = new TestableConnectionProvider();
-            provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
+    public void testProfileOrderCertificateFails() throws IOException {
+        var provider = new TestableConnectionProvider();
+        provider.putTestResource(Resource.NEW_ORDER, resourceUrl);
 
-            var login = provider.createLogin();
+        var login = provider.createLogin();
 
-            var account = new Account(login);
+        var account = new Account(login);
+        assertThatExceptionOfType(AcmeNotSupportedException.class).isThrownBy(() -> {
             account.newOrder()
                     .domain("example.org")
                     .profile("classic")
                     .create();
+        }).withMessage("Server does not support profile");
 
-            provider.close();
-        });
+        provider.close();
     }
-
 
     /**
      * Test that the ARI replaces field is set.

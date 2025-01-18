@@ -440,11 +440,11 @@ public class Order extends AcmeJsonResource implements PollableResource {
     /**
      * Returns the selected profile.
      *
-     * @since 3.5
+     * @since 3.5.0
      * @throws AcmeNotSupportedException if profile is not supported
      */
     public String getProfile() {
-        return getJSON().getFeature("profile").toString();
+        return getJSON().getFeature("profile").asString();
     }
 
     @Override

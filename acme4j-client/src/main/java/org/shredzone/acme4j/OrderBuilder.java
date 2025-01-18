@@ -273,15 +273,15 @@ public class OrderBuilder {
     /**
      * Notifies the CA of the desired profile of the ordered certificate.
      * <p>
-     * Optional, only supported if the CA supports profiles. However, in this
-     * case the client <em>may</em> include this field.
+     * Optional, only supported if the CA supports profiles. However, in this case the
+     * client <em>may</em> include this field.
      *
      * @param profile
      *         Identifier of the desired profile
      * @return itself
-     * @draft This method is currently based on RFC draft draft-aaron-acme-profiles. It may be changed or removed
-     * without notice to reflect future changes to the draft. SemVer rules do not apply
-     * here.
+     * @draft This method is currently based on RFC draft draft-aaron-acme-profiles. It
+     * may be changed or removed without notice to reflect future changes to the draft.
+     * SemVer rules do not apply here.
      * @since 3.5.0
      */
     public OrderBuilder profile(String profile) {
@@ -376,7 +376,7 @@ public class OrderBuilder {
         }
 
         if (profile != null && !session.getMetadata().isProfileAllowed(profile)) {
-            throw new AcmeNotSupportedException("profile with value " + profile);
+            throw new AcmeNotSupportedException("profile: " + profile);
         }
 
         var hasAncestorDomain = identifierSet.stream()
@@ -421,7 +421,7 @@ public class OrderBuilder {
                 claims.put("replaces", replaces);
             }
 
-            if(profile != null) {
+            if (profile != null) {
                 claims.put("profile", profile);
             }
 

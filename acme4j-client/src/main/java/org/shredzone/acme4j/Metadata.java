@@ -134,25 +134,24 @@ public class Metadata {
     /**
      * Returns whether the CA supports the profile feature.
      *
-     * @since 3.5
-     * @throws AcmeNotSupportedException if the server does not support the profile feature.
+     * @since 3.5.0
      */
     public boolean isProfileAllowed() {
-        return meta.getFeature("profile").optional().isPresent();
+        return meta.get("profiles").isPresent();
     }
 
     /**
      * Returns whether the CA supports the requested profile.
+     * <p>
+     * Also returns {@code false} if profiles are not allowed in general.
      *
-     * @since 3.5
-     * @throws AcmeNotSupportedException if the server does not support the requested profile.
+     * @since 3.5.0
      */
     public boolean isProfileAllowed(String profile) {
-        return meta.getFeature("profile").optional()
+        return meta.get("profiles").optional()
                 .map(Value::asObject)
                 .orElseGet(JSON::empty)
                 .get(profile)
-                .optional()
                 .isPresent();
     }
 
