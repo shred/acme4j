@@ -189,6 +189,7 @@ public class SessionTest {
             softly.assertThat(meta.isProfileAllowed("invalid")).isFalse();
             softly.assertThat(meta.getProfileDescription("classic")).contains("The profile you're accustomed to");
             softly.assertThat(meta.getProfileDescription("custom")).contains("Some other profile");
+            softly.assertThat(meta.getProfiles()).contains("classic", "custom");
             softly.assertThat(meta.getProfileDescription("invalid")).isEmpty();
             softly.assertThat(meta.isExternalAccountRequired()).isTrue();
             softly.assertThat(meta.isSubdomainAuthAllowed()).isTrue();
@@ -245,6 +246,7 @@ public class SessionTest {
             softly.assertThat(meta.isProfileAllowed()).isFalse();
             softly.assertThat(meta.isProfileAllowed("classic")).isFalse();
             softly.assertThat(meta.getProfileDescription("classic")).isEmpty();
+            softly.assertThat(meta.getProfiles()).isEmpty();
         }
     }
 

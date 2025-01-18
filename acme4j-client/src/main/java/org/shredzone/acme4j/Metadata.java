@@ -20,6 +20,7 @@ import java.net.URL;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.toolbox.JSON;
@@ -135,6 +136,9 @@ public class Metadata {
      * Returns whether the CA supports the profile feature.
      *
      * @since 3.5.0
+     * @draft This method is currently based on RFC draft draft-aaron-acme-profiles. It
+     * may be changed or removed without notice to reflect future changes to the draft.
+     * SemVer rules do not apply here.
      */
     public boolean isProfileAllowed() {
         return meta.get("profiles").isPresent();
@@ -146,13 +150,29 @@ public class Metadata {
      * Also returns {@code false} if profiles are not allowed in general.
      *
      * @since 3.5.0
+     * @draft This method is currently based on RFC draft draft-aaron-acme-profiles. It
+     * may be changed or removed without notice to reflect future changes to the draft.
+     * SemVer rules do not apply here.
      */
     public boolean isProfileAllowed(String profile) {
-        return meta.get("profiles").optional()
+        return getProfiles().contains(profile);
+    }
+
+    /**
+     * Returns all profiles supported by the CA. May be empty if the CA does not support
+     * profiles.
+     *
+     * @since 3.5.0
+     * @draft This method is currently based on RFC draft draft-aaron-acme-profiles. It
+     * may be changed or removed without notice to reflect future changes to the draft.
+     * SemVer rules do not apply here.
+     */
+    public Set<String> getProfiles() {
+        return meta.get("profiles")
+                .optional()
                 .map(Value::asObject)
                 .orElseGet(JSON::empty)
-                .get(profile)
-                .isPresent();
+                .keySet();
     }
 
     /**
@@ -162,6 +182,9 @@ public class Metadata {
      * Empty if the profile is not allowed.
      *
      * @since 3.5.0
+     * @draft This method is currently based on RFC draft draft-aaron-acme-profiles. It
+     * may be changed or removed without notice to reflect future changes to the draft.
+     * SemVer rules do not apply here.
      */
     public Optional<String> getProfileDescription(String profile) {
         return meta.get("profiles").optional()
