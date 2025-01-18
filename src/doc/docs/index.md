@@ -19,7 +19,7 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 * Supports [RFC 8739](https://tools.ietf.org/html/rfc8739) short-term automatic certificate renewal (experimental)
 * Supports [RFC 8823](https://tools.ietf.org/html/rfc8823) for S/MIME certificates (experimental)
 * Supports [RFC 9444](https://tools.ietf.org/html/rfc9444) for subdomain validation
-* Supports [draft-ietf-acme-ari-06](https://www.ietf.org/archive/id/draft-ietf-acme-ari-06.html) for renewal information (experimental)
+* Supports [draft-ietf-acme-ari-07](https://www.ietf.org/archive/id/draft-ietf-acme-ari-07.html) for renewal information (experimental)
 * Supports [draft-aaron-acme-profiles-00](https://www.ietf.org/archive/id/draft-aaron-acme-profiles-00.html) for certificate profiles (experimental)
 * Easy to use Java API
 * Requires JRE 11 or higher
