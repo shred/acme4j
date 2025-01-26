@@ -57,7 +57,7 @@ import org.shredzone.acme4j.smime.EmailIdentifier;
  * Requires {@code Bouncy Castle}. The {@link org.bouncycastle.jce.provider.BouncyCastleProvider}
  * must also be added as security provider.
  * <p>
- * A {@code javax.mail} implementation must be present in the classpath.
+ * A {@code jakarta.mail} implementation must be present in the classpath.
  *
  * @since 2.12
  */

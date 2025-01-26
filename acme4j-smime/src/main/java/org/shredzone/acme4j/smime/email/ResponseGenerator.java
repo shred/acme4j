@@ -129,7 +129,7 @@ public class ResponseGenerator {
      * MTA.
      *
      * @param session
-     *         {@code javax.mail} {@link Session} to be used for this mail.
+     *         {@code jakarta.mail} {@link Session} to be used for this mail.
      * @return Generated {@link Message}.
      */
     public Message generateResponse(Session session) throws MessagingException {

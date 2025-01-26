@@ -49,7 +49,7 @@ acme4j-client
     The Java module name is `org.shredzone.acme4j`.
 
 acme4j-smime
-:   [`acme4j-smime`](https://mvnrepository.com/artifact/org.shredzone.acme4j/acme4j-smime/latest) contains the [RFC 8823](https://tools.ietf.org/html/rfc8823) implementation for ordering S/MIME certificates. It requires [Bouncy Castle](https://www.bouncycastle.org/java.html) and a `javax.mail` implementation.
+:   [`acme4j-smime`](https://mvnrepository.com/artifact/org.shredzone.acme4j/acme4j-smime/latest) contains the [RFC 8823](https://tools.ietf.org/html/rfc8823) implementation for ordering S/MIME certificates. It requires [Bouncy Castle](https://www.bouncycastle.org/java.html) and a `jakarta.mail` implementation.
 
     The Java module name is `org.shredzone.acme4j.smime`.
 

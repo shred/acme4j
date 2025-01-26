@@ -57,7 +57,7 @@ It is basically invoked like this:
 Message               challengeMessage = // incoming challenge message from the CA
 EmailReply00Challenge challenge        = // challenge that is requested by the CA
 EmailIdentifier       identifier       = // email address to get the S/MIME cert for
-javax.mail.Session    mailSession      = // javax.mail session
+jakarta.mail.Session  mailSession      = // jakarta.mail session
 
 Message response = EmailProcessor.plainMessage(challengeMessage)
             .expectedIdentifier(identifier)
