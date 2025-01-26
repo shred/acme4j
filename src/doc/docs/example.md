@@ -8,11 +8,11 @@ This chapter contains a copy of the class file, along with explanations about wh
 
 - The `ClientTest` is meant to be a simple example and proof of concept. It is not meant for production use as it is.
 
-- The exception handling is very simple. If an exception occurs during the process, the example will fail altogether. A real client should handle exceptions like `AcmeUserActionRequiredException` and `AcmeRateLimitedException` properly, by showing the required user action, or delaying the registration process until the rate limitation has been lifted or the retry time has been reached.
+- The exception handling is very simple. If an exception occurs during the process, the example will fail altogether. A real client should handle exceptions like `AcmeUserActionRequiredException` and `AcmeRateLimitedException` properly, by showing the required user action, or delaying the registration process until the rate limitation has been lifted, or the retry time has been reached.
 
 - At some places the example synchronously polls the server state. This is sufficient for simple cases, but a more complex client should use timers instead. The client should also make use of the fact that authorizations can be executed in parallel, shortening the certification time for multiple domains.
 
-- I recommend to read at least the chapters about [usage](usage/index.md) and [challenges](challenge/index.md), to learn more about how _acme4j_ and the ACME protocol works.
+- I recommend reading at least the chapters about [usage](usage/index.md) and [challenges](challenge/index.md), to learn more about how _acme4j_ and the ACME protocol works.
 
 - To make the example easier to understand, I will use the specific datatypes instead of the `var` keyword.
 
@@ -27,7 +27,7 @@ There is one constant that you **must** change in order to make the example work
 Depending on the requirements of your CA, you might also need to set these constants:
 
 * `ACCOUNT_EMAIL`: This is the email address that is connected to your account. The default is `null`, meaning that no email address is set. Some CAs accept that, but otherwise you can set your email address here.
-* `EAB_KID`, `EAB_HMAC`: If your CA requires External Account Binding (EAB), it will provide you with a KID and a HMAC pair that is connected to your account. In this case, you must provide both values in the corresponding constants (be careful not to mix them up). Otherwise both constants must be set to `null`, which is the default and disables EAB.
+* `EAB_KID`, `EAB_HMAC`: If your CA requires External Account Binding (EAB), it will provide you with a KID and a HMAC pair that is connected to your account. In this case, you must provide both values in the corresponding constants (be careful not to mix them up). Otherwise, both constants must be set to `null`, which is the default and disables EAB.
 
 The other constants should work with their default values, but can still be changed if necessary:
 
@@ -188,7 +188,7 @@ private KeyPair loadOrCreateDomainKeyPair() throws IOException {
 
 ## Registering an Account
 
-If you does not have an account set up already, you need to create one first. The following method will show a link to the terms of service and ask you to accept it.
+If you do not have an account set up already, you need to create one first. The following method will show a link to the terms of service and ask you to accept it.
 
 After that, the `AccountBuilder` will create an account using the given account `KeyPair`. It will set an email address if provided. If the CA performs External Account Binding and a KID and HMAC is provided, it is forwarded to the CA.
 

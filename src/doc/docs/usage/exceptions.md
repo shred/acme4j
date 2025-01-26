@@ -56,7 +56,7 @@ An `AcmeServerException` that indicates that the client has insufficient permiss
 
 ## AcmeUserActionRequiredException
 
-This `AcmeServerException` is thrown when an user action is required. The most likely reason is that the Terms of Service have been changed and must be confirmed before proceeding.
+This `AcmeServerException` is thrown when a user action is required. The most likely reason is that the Terms of Service have been changed and must be confirmed before proceeding.
 
 The exception provides a `Problem` object with a detailed reason, a link to a web page with further instructions to be taken by a human, and an optional link to the new Terms of Service.
 

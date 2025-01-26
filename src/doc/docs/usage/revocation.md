@@ -12,7 +12,7 @@ Optionally, you can provide a revocation reason that the ACME server may use whe
 cert.revoke(RevocationReason.KEY_COMPROMISE);
 ```
 
-There are different reasons for a certificate revocation. If you have sold or deleted the associated domain, you should also deactivate the respective `Authorization` using `Authorization.deactivate()`. Otherwise the new owner of the domain might have problems to get a certificate because the domain name is still associated with your account.
+There are different reasons for a certificate revocation. If you have sold or deleted the associated domain, you should also deactivate the respective `Authorization` using `Authorization.deactivate()`. Otherwise, the new owner of the domain might have problems to get a certificate because the domain name is still associated with your account.
 
 !!! tip
     It is not documented if the deactivation of an authorization also revokes the related certificate automatically. If in doubt, revoke the certificate yourself before deactivation.

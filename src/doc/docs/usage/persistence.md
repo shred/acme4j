@@ -22,7 +22,7 @@ To revive an `AcmeResource` object from its location URL, you can bind it to you
 * `Login.bindAuthorization()` takes an authorization URL and returns the corresponding `Authorization` object.
 * `Login.bindCertificate()` takes a certificate URL and returns the corresponding `Certificate` object.
 * `Login.bindOrder()` takes an order URL and returns the corresponding `Order` object.
-* `Login.bindRenewalInfo()` takes an renewal info URL and returns the corresponding `RenewalInfo` object.
+* `Login.bindRenewalInfo()` takes a renewal info URL and returns the corresponding `RenewalInfo` object.
 
 There are two methods for binding a `Challenge`:
 
@@ -38,7 +38,7 @@ There is no way to bind an `Account`. To retrieve your account resource, simply 
 
 All resource objects are serializable, so the current state of the object can also be frozen by Java's serialization mechanism.
 
-However the `Login` that the object is bound to is _not_ serialized! This is because in addition to volatile data, the `Login` object also holds a copy of your private key. Not serializing it prevents you from accidentally exposing your private key in a place with lowered access restrictions.
+However, the `Login` that the object is bound to is _not_ serialized! This is because in addition to volatile data, the `Login` object also holds a copy of your private key. Not serializing it prevents you from accidentally exposing your private key in a place with lowered access restrictions.
 
 After deserialization, an object is not bound to a `Login` yet. It is required to rebind it by invoking the `rebind()` method of the resource object.
 

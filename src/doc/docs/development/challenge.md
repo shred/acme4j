@@ -10,7 +10,7 @@ If your provider requires a challenge that is too special for generic use, you c
 
 Starting with _acme4j_ v2.12, generic challenges can be added globally using Java's `ServiceLoader` mechanism.
 
-Your implementation must provide a challenge provider that implements the `org.shredzone.acme4j.provider.ChallengeProvider` interface and is annotated with a `org.shredzone.acme4j.provider.ChallengeType` annotation giving the name of your challenge. The only method `Challenge create(Login login, JSON data)` must return a new instance of your `Challenge` class which is initalized with the challenge data given in the `data` JSON structure.
+Your implementation must provide a challenge provider that implements the `org.shredzone.acme4j.provider.ChallengeProvider` interface and is annotated with a `org.shredzone.acme4j.provider.ChallengeType` annotation giving the name of your challenge. The only method `Challenge create(Login login, JSON data)` must return a new instance of your `Challenge` class which is initialized with the challenge data given in the `data` JSON structure.
 
 A simple example of a `ChallengeProvider` is:
 
@@ -42,7 +42,7 @@ After you completed your challenge code, you can send in a pull request and appl
 These preconditions must be met:
 
 * The challenge must be of common interest. If the challenge is only useful to your CA, better publish an own Java package instead.
-* The specification of the challenge must be available to the general public. It must be downloadable free of charge and without prior obligation to register.
+* The specification of the challenge must be available to the public. It must be downloadable free of charge and without prior obligation to register.
 * Your source code must be published under the terms of [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 * You have the permission of all trademark holders involved, to use their trademarks in the source codes, and package names.
 

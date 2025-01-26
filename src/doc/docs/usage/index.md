@@ -1,6 +1,6 @@
 # How to Use acme4j
 
-_acme4j_ is a client library that helps connecting to ACME servers without worrying about specification details.
+_acme4j_ is a client library that helps to connect to ACME servers without worrying about specification details.
 
 This is the main part of the documentation about how to use _acme4j_.
 

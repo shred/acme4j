@@ -6,7 +6,7 @@ Basically, it is possible to connect to any kind of ACME server just by connecti
 Session session = new Session("https://api.example.org/directory");
 ```
 
-ACME providers are "plug-ins" to _acme4j_ that are specialized on a single CA. The example above would then look like this (if the CA is supported by _acme4j_):
+ACME providers are "plugins" to _acme4j_ that are specialized on a single CA. The example above would then look like this (if the CA is supported by _acme4j_):
 
 ```java
 Session session = new Session("acme://example.org");
@@ -20,7 +20,7 @@ However, it is also possible to adapt the behavior of wide parts of _acme4j_ to 
 
 A client provider implements the [`AcmeProvider`](../acme4j-client/apidocs/org.shredzone.acme4j/org/shredzone/acme4j/provider/AcmeProvider.html) interface, but usually it is easier to extend [`AbstractAcmeProvider`](../acme4j-client/apidocs/org.shredzone.acme4j/org/shredzone/acme4j/provider/AbstractAcmeProvider.html) and implement only these two methods:
 
-* `accepts(URI)` checks if the client provider is accepting the provided URI. Usually it would be an URI like `acme://example.com`. Note that the `http` and `https` schemes are reserved for the generic provider and cannot be used by other providers.
+* `accepts(URI)` checks if the client provider is accepting the provided URI. Usually it would be a URI like `acme://example.com`. Note that the `http` and `https` schemes are reserved for the generic provider and cannot be used by other providers.
 * `resolve(URI)` parses the URI and returns the corresponding URL of the directory service.
 
 The `AcmeProvider` implementation needs to be registered with Java's `ServiceLoader`. In the `META-INF/services` path of your project, create a file `org.shredzone.acme4j.provider.AcmeProvider` and write the fully qualified class name of your implementation into that file. If you use Java modules, there must also be a `provides` section in your `module-info.java`, e.g.:

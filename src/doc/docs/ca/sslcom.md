@@ -1,6 +1,6 @@
 # SSL.com
 
-Web site: [SSL.com](https://ssl.com)
+Website: [SSL.com](https://ssl.com)
 
 Available since acme4j 3.2.0. **This provider is experimental!**
 

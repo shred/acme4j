@@ -7,7 +7,7 @@ Your account requires a key pair. The public key is used to identify your accoun
 !!! note
     The private key is never transmitted to the ACME server.
 
-You can use external tools like `openssl` or standard Java methods to create the key pair. A more convenient way is to use the `KeyPairUtils` class. This call generates a RSA key pair with a 2048 bit key:
+You can use external tools like `openssl` or standard Java methods to create the key pair. A more convenient way is to use the `KeyPairUtils` class. This call generates an RSA key pair with a 2048-bit key:
 
 ```java
 KeyPair accountKeyPair = KeyPairUtils.createKeyPair(2048);
@@ -47,7 +47,7 @@ It is recommended to store the location URL along with your key pair. While this
 
 ## External Account Binding
 
-At some CAs, you need to create a customer account on their website first, and associate it with your ACME account and keypair later. The CA indicates that this process is required if `session.getMetadata().isExternalAccountRequired()` returns `true`.
+At some CAs, you need to create a customer account on their website first, and associate it with your ACME account and key pair later. The CA indicates that this process is required if `session.getMetadata().isExternalAccountRequired()` returns `true`.
 
 In this case, your CA provides you a _Key Identifier_ (or _KID_) and a _MAC Key_ (or _HMAC Key_). You can pass these credentials to the builder using the `withKeyIdentifier()` method:
 
@@ -71,7 +71,7 @@ For your convenience, you can also pass a base64 encoded MAC Key as `String`.
 
 ## Login
 
-After creating an account, you need to login into it. You get a `Login` object by providing your account information to the session:
+After creating an account, you need to log in into it. You get a `Login` object by providing your account information to the session:
 
 ```java
 KeyPair accountKeyPair = ... // account's key pair
@@ -115,7 +115,7 @@ Login login = new AccountBuilder()
 URL accountLocationUrl = login.getAccountLocation();
 ```
 
-It will return a `Login` object just from your keypair, or throw an error if the key was not known to the server.
+It will return a `Login` object just from your key pair, or throw an error if the key was not known to the server.
 
 Remember that there is no way to log into your account without the key pair! 
 
@@ -133,14 +133,14 @@ account.modify()
       .commit();
 ```
 
-You can also get the list of contacts via `getContacts()`, and modify or remove contact `URI`s there. However, some CAs do not allow to remove all contacts.
+You can also get the list of contacts via `getContacts()`, and modify or remove contact `URI`s there. However, some CAs do not allow removing all contacts.
 
 !!! note
     `AccountBuilder` only accepts contact addresses when a _new account_ is created. To modify an existing account, use `Account.modify()` as described in this section. It is not possible to modify the account using the `AccountBuilder` on an existing account.
 
 ## Changing the Account Key
 
-It is recommended to change the account key from time to time, e.g if you suspect that your key has been compromised, or if a staff member with knowledge of the key has left the company.
+It is recommended to change the account key from time to time, e.g. if you suspect that your key has been compromised, or if a staff member with knowledge of the key has left the company.
 
 To change the key pair that is associated with your account, you can use the `Account.changeKey()` method:
 
@@ -153,11 +153,11 @@ account.changeKey(newKeyPair);
 
 After a successful change, all subsequent calls related to this account must use the new key pair. The key is automatically updated on the `Login` that was bound to this `Account` instance, so it can be used further. Other existing `Login` instances to the account need to be recreated.
 
-The old key pair can be disposed of after that. However, better keep a backup of the old key pair until the key change was proven to be successful, by making a subsequent call with the new key pair. Otherwise you might lock yourself out from your account if the key change should have failed silently, for whatever reason.
+The old key pair can be disposed of after that. However, better keep a backup of the old key pair until the key change was proven to be successful, by making a subsequent call with the new key pair. Otherwise, you might lock yourself out from your account if the key change should have failed silently, for whatever reason.
 
 ## Account Deactivation
 
-You can deactivate your account if you don't need it any more:
+You can deactivate your account if you don't need it anymore:
 
 ```java
 account.deactivate();

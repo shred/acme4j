@@ -45,7 +45,7 @@ The `Authorization` instance contains further details about how you can prove th
 `Authorization.getChallenges()` returns a collection of all `Challenge`s offered by the CA for domain ownership validation. You only need to complete _one_ of them to successfully authorize your domain. You would usually pick the challenge that is best suited for your infrastructure.
 
 !!! tip
-    See [here](../challenge/index.md) for a description of all standard challenges. However, your CA may not offer all of the standard types, and may offer additional, proprietary challenge types.
+    See [here](../challenge/index.md) for a description of all standard challenges. However, your CA may not offer all the standard types, and may offer additional, proprietary challenge types.
 
 The simplest way is to invoke `findChallenge()`, stating the challenge type your system is able to provide (either as challenge name or challenge class type):
 
@@ -54,7 +54,7 @@ Optional<Http01Challenge> challenge = auth.findChallenge(Http01Challenge.TYPE); 
 Optional<Http01Challenge> challenge = auth.findChallenge(Http01Challenge.class); // by type
 ```
 
-It returns a properly casted `Challenge` object, or _empty_ if your challenge type was not offered by the CA. In this example, your system choses `Http01Challenge` because it is able to respond to a [http-01](../challenge/http-01.md) challenge.
+It returns a properly cast `Challenge` object, or _empty_ if your challenge type was not offered by the CA. In this example, your system chooses `Http01Challenge` because it is able to respond to an [http-01](../challenge/http-01.md) challenge.
 
 !!! tip
     Passing the challenge type is preferred over the challenge name, as type checks are performed at compile time here. Passing in the challenge name might result in a `ClassCastException` at runtime.
@@ -83,7 +83,7 @@ This is a very simple example which can be improved in many ways:
 * Use an asynchronous architecture instead of a blocking `Thread.sleep()`.
 * Check if `auth.fetch()` returns a retry-after `Instant`, and wait for the next update at least until this moment is reached. See the [example](../example.md) for a simple way to do that.
 
-The CA server may start with the validation immediately after `trigger()` is invoked, so make sure your server is ready to respond to requests before invoking `trigger()`. Otherwise the challenge might fail instantly.
+The CA server may start with the validation immediately after `trigger()` is invoked, so make sure your server is ready to respond to requests before invoking `trigger()`. Otherwise, the challenge might fail instantly.
 
 Also keep your response available until the status has changed to `VALID` or `INVALID`. The ACME server may check your response multiple times, and from different IPs! If the status gets `VALID` or `INVALID`, the response you have set up before is not needed anymore. It can (and should) be removed.
 
@@ -96,7 +96,7 @@ If your authorization status turned to `VALID`, you have successfully authorized
 
 After successfully completing all authorizations, the order needs to be finalized.
 
-First of all, you will need to generate a key pair that is used for certification and encryption of the domain. Similar to the account key pair, you can either use external tool, Java's own crypto framework, or use the [`KeyPairUtils`](../acme4j-client/apidocs/org.shredzone.acme4j.utils/org/shredzone/acme4j/util/KeyPairUtils.html).
+First, you will need to generate a key pair that is used for certification and encryption of the domain. Similar to the account key pair, you can either use external tool, Java's own crypto framework, or use the [`KeyPairUtils`](../acme4j-client/apidocs/org.shredzone.acme4j.utils/org/shredzone/acme4j/util/KeyPairUtils.html).
 
 !!! tip
     Never use your account key pair as domain key pair, but always generate separate key pairs!
@@ -235,7 +235,7 @@ Order order = account.newOrder()
         .create();
 ```
 
-The CA can then choose to issue challenges for any of `foo.bar.example.org`, `bar.example.org`, or `example.org`. For each challenge, the related domain can be get via `Authorization.getIdentifier()`.
+The CA can then choose to issue challenges for any of `foo.bar.example.org`, `bar.example.org`, or `example.org`. For each challenge, the related domain can be got via `Authorization.getIdentifier()`.
 
 `Authorization.isSubdomainAuthAllowed()` will return `true` if that `Authorization` is used to issue subdomain certificates.
 

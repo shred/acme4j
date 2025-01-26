@@ -4,7 +4,7 @@ A Java client for the _Automatic Certificate Management Environment_ (ACME) prot
 
 ACME is a protocol that a certificate authority (CA) and an applicant can use to automate the process of verification and certificate issuance.
 
-This Java client helps connecting to an ACME server, and performing all necessary steps to manage certificates.
+This Java client helps to connect to an ACME server, and performing all necessary steps to manage certificates.
 
 The source code can be found at [GitHub](https://github.com/shred/acme4j) and is distributed under the terms of [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
@@ -57,7 +57,7 @@ acme4j-example
 :   This module only contains [an example code](example.md) that demonstrates how to get a certificate with _acme4j_. It is not useful as a dependency in other projects.
 
 acme4j-it
-:   [`acme4j-it`](https://mvnrepository.com/artifact/org.shredzone.acme4j/acme4j-it/latest) mainly serves as integration test suite for _acme4j_ itself. It is not really useful as a dependency in other projects. However if you write own integration tests using [pebble](https://github.com/letsencrypt/pebble) and [pebble-challtestsrv](https://hub.docker.com/r/letsencrypt/pebble-challtestsrv), you may find the [`challtestsrv` configuration client](acme4j-it/apidocs/org.shredzone.acme4j.it/org/shredzone/acme4j/it/BammBammClient.html) useful in your project.
+:   [`acme4j-it`](https://mvnrepository.com/artifact/org.shredzone.acme4j/acme4j-it/latest) mainly serves as integration test suite for _acme4j_ itself. It is not really useful as a dependency in other projects. However, if you write own integration tests using [pebble](https://github.com/letsencrypt/pebble) and [pebble-challtestsrv](https://hub.docker.com/r/letsencrypt/pebble-challtestsrv), you may find the [`challtestsrv` configuration client](acme4j-it/apidocs/org.shredzone.acme4j.it/org/shredzone/acme4j/it/BammBammClient.html) useful in your project.
 
     The Java module name is `org.shredzone.acme4j.it`.
 

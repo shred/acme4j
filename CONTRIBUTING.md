@@ -43,7 +43,7 @@ Good programming does not end with a clean source code, but should have pretty c
 * Always put separate concerns into separate commits.
 * If you have interim commits in your history, squash them with an interactive rebase before sending the pull request.
 * Use present tense and imperative mood in commit messages ("fix bug #1234", not "fixed bug #1234").
-* Always give meaningful commit messages (not just "bugfix").
+* Always give meaningful commit messages (not just "bug fix").
 * The commit message must be concise and should not exceed 50 characters. Further explanations may follow in subsequent lines, with an empty line as separator.
 * Commits must compile and must not break unit tests.
 * Do not commit IDE generated files and directories (like `.project` or `.idea`).

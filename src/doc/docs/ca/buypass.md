@@ -1,6 +1,6 @@
 # Buypass
 
-Web site: [Buypass](https://buypass.com/)
+Website: [Buypass](https://buypass.com/)
 
 Available since acme4j 3.5.0
 

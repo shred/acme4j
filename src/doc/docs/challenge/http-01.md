@@ -1,6 +1,6 @@
 # http-01 Challenge
 
-With the `http-01` challenge, you prove to the CA that you are able to control the web site content of the domain to be authorized, by making a file with a signed content available at a given path.
+With the `http-01` challenge, you prove to the CA that you are able to control the website content of the domain to be authorized, by making a file with a signed content available at a given path.
 
 `Http01Challenge` provides two strings:
 

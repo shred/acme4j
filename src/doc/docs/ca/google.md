@@ -1,6 +1,6 @@
 # Google
 
-Web site: [Google Trust Services](https://pki.goog/)
+Website: [Google Trust Services](https://pki.goog/)
 
 Available since acme4j 3.5.0
 

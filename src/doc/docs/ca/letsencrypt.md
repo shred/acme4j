@@ -1,6 +1,6 @@
 # Let's Encrypt
 
-Web site: [Let's Encrypt](https://letsencrypt.org)
+Website: [Let's Encrypt](https://letsencrypt.org)
 
 ## Connection URIs
 

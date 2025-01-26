@@ -4,7 +4,7 @@ This is a Java client for the _Automatic Certificate Management Environment_ (AC
 
 ACME is a protocol that a certificate authority (CA) and an applicant can use to automate the process of verification and certificate issuance.
 
-This Java client helps connecting to an ACME server, and performing all necessary steps to manage certificates.
+This Java client helps to connect to an ACME server, and performing all necessary steps to manage certificates.
 
 ## Features
 
@@ -34,7 +34,7 @@ This Java client helps connecting to an ACME server, and performing all necessar
 ## Usage
 
 * See the [online documentation](https://shredzone.org/maven/acme4j/) about how to use _acme4j_.
-* For a quick start, have a look at [the source code of an example](https://shredzone.org/maven/acme4j/example.html).
+* For a quick start, take a look at [the source code of an example](https://shredzone.org/maven/acme4j/example.html).
 
 ## Announcements
 

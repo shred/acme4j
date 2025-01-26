@@ -19,7 +19,7 @@ The Pebble server provides an end-entity certificate for the `localhost` and `pe
 
 If your Pebble server can be reached at a different domain (like `pebble.example.com` above), you need to create a correct end-entity certificate on your Pebble server. [See here](https://github.com/letsencrypt/pebble/tree/main/test/certs) for how to use `minica` to create a matching certificate.
 
-Otherwise you will get an `AcmeNetworkException: Network error` that is caused by a `java.io.IOException: No subject alternative DNS name matching [...] found` when trying to access the Pebble server.
+Otherwise, you will get an `AcmeNetworkException: Network error` that is caused by a `java.io.IOException: No subject alternative DNS name matching [...] found` when trying to access the Pebble server.
 
 If you cannot create a correct end-entity certificate on your Pebble server, you could also disable host name verification on Java side: `-Djdk.internal.httpclient.disableHostnameVerification`
 

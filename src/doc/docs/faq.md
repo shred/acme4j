@@ -29,7 +29,7 @@ You can still revoke certificates without account key pair though, see [here](us
 
 ## My `Order` returns status `INVALID`. What has gone wrong?
 
-**Symptom:** Your challenge(s) passed as `VALID`. However when you execute the order, it changes to status `INVALID`. No certificate was issued.
+**Symptom:** Your challenge(s) passed as `VALID`. However, when you execute the order, it changes to status `INVALID`. No certificate was issued.
 
 **Cause:** There may be multiple reasons for that. It seems that you are still missing steps that are required by the CA before completion.
 
@@ -37,7 +37,7 @@ You can still revoke certificates without account key pair though, see [here](us
 
 ## My `Order` seems to be stuck in status `PROCESSING`. What can I do?
 
-**Symptom:** Your challenge(s) passed as `VALID`. However when you execute the order, it seems to be stuck in status `PROCESSING`.
+**Symptom:** Your challenge(s) passed as `VALID`. However, when you execute the order, it seems to be stuck in status `PROCESSING`.
 
 **Cause:** The CA may have retained your order to carry out background checks. These checks can take hours or even days. Please read the CA documentation for further details.
 
@@ -45,7 +45,7 @@ You can still revoke certificates without account key pair though, see [here](us
 
 ## Browsers do not accept my certificate.
 
-**Symptom:** A certificate was successfully issued. However the browser does not accept the certificate, and shows an error that the cert authority is invalid.
+**Symptom:** A certificate was successfully issued. However, the browser does not accept the certificate, and shows an error that the cert authority is invalid.
 
 **Cause:** This problem occurs when the staging server of a CA is used (e.g. `acme://letsencrypt.org/staging`). The certificate is signed correctly, but the staging issuer certificate is not known to the browser.
 
@@ -69,19 +69,19 @@ You can still revoke certificates without account key pair though, see [here](us
 
 ## The S/MIME certificate challenge fails.
 
-**Sympton:** You try to order an S/MIME certificate from a providing CA. However the CA constantly refuses the response e-mail because the contained ACME response is purportedly invalid.
+**Symptom:** You try to order an S/MIME certificate from a providing CA. However, the CA constantly refuses the response e-mail because the contained ACME response is purportedly invalid.
 
 **Cause:** Unfortunately [RFC 8823](https://tools.ietf.org/html/rfc8823) has an ambiguous specification about how to concatenate the two token parts. The text permits two different interpretations that may give different results. _acme4j_ uses an implementation that corresponds to the [intention of the author of RFC 8823](https://mailarchive.ietf.org/arch/msg/acme/KusfZm3qC50IfcAAuTXtmbFK0KM/). If the CA is implemented following the other interpretation, the ACME e-mail response will not match (see [this issue](https://github.com/shred/acme4j/issues/123)).
 
-**Solution:** It is a difficult situation that is caused by an ambiguous specification, but it is like it is now. Since _acme4j_ follows the intention of the RFC author, I take the position that the _acme4j_ implementation is correct. Please open a bug report at the CA, and refer to [this issue](https://github.com/shred/acme4j/issues/123). If the two tokens are split at a position so the first token won't have trailing base64 padding bits, the CA service can be implemented in a way that is compatible to both interpretations.
+**Solution:** It is a difficult situation that is caused by an ambiguous specification, but it is like it is now. Since _acme4j_ follows the intention of the RFC author, I take the position that the _acme4j_ implementation is correct. Please open a bug report at the CA, and refer to [this issue](https://github.com/shred/acme4j/issues/123). If the two tokens are split at a position, so the first token won't have trailing base64 padding bits, the CA service can be implemented in a way that is compatible to both interpretations.
 
 ## Suddenly acme4j starts throwing `AcmeUserActionRequiredException` everywhere! How can I fix that?
 
-**Sympton:** Many _acme4j_ methods suddenly throw a `AcmeUserActionRequiredException` after interacting with the server. It is impossible to order certificates.
+**Symptom:** Many _acme4j_ methods suddenly throw a `AcmeUserActionRequiredException` after interacting with the server. It is impossible to order certificates.
 
 **Cause:** The CA has probably changed its terms of service and wants you to accept them before resuming.
 
-**Solution:** Invoke `AcmeUserActionRequiredException.getInstance()` to get an URL of a web page that describes all further steps to be taken. You might also be able to resolve the issue by logging into your CA's account, but that is up to the CA's discretion.
+**Solution:** Invoke `AcmeUserActionRequiredException.getInstance()` to get a URL of a web page that describes all further steps to be taken. You might also be able to resolve the issue by logging into your CA's account, but that is up to the CA's discretion.
 
 Unfortunately, manual action is required in any case, there is no way to automate this process. This is an intentional protocol decision, and _acme4j_ is just the messenger.
 
@@ -89,4 +89,4 @@ Unfortunately, manual action is required in any case, there is no way to automat
 
 * [Let's Encrypt Documentation](https://letsencrypt.org/docs/)
 * [Let's Encrypt Community](https://community.letsencrypt.org/) - If the question is _acme4j_ related, please mention it in your post. I don't read the forum every day, but I will answer as soon as I notice it.
-* [SSL.com Knowledgebase](https://www.ssl.com/info/)
+* [SSL.com Knowledge base](https://www.ssl.com/info/)

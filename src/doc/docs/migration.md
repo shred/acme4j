@@ -4,11 +4,11 @@ This document will help you migrate your code to the latest _acme4j_ version.
 
 ## Migration to Version 3.5.0
 
-- If you use STAR auto renewal certificates, you can now use `Order.getCertificate()` instead of `Order.getAutoRenewalCertificate()` to retrieve the STAR certificate. `Order.getAutoRenewalCertificate()` is marked as deprecated, but still functional. The new method `Order.isAutoRenewalCertificate()` can be used to check if the order resulted in a standard or auto-renewing certificate.
+- If you use STAR auto-renewal certificates, you can now use `Order.getCertificate()` instead of `Order.getAutoRenewalCertificate()` to retrieve the STAR certificate. `Order.getAutoRenewalCertificate()` is marked as deprecated, but still functional. The new method `Order.isAutoRenewalCertificate()` can be used to check if the order resulted in a standard or auto-renewing certificate.
 
 ## Migration to Version 3.4.0
 
-- To be futureproof, you should wait for your `Order` resource's state to become `READY` before invoking `Order.execute()`. Most CAs change to the `READY` state immediately, but this behavior is not specified in RFC8555. Future CA implementations may stay in `PENDING` state for a short while, and would return an error if `execute()` is invoked too early. Also see the [example](example.md#the-main-workflow) for how wait for the `READY` state.
+- To be future-proof, you should wait for your `Order` resource's state to become `READY` before invoking `Order.execute()`. Most CAs change to the `READY` state immediately, but this behavior is not specified in RFC8555. Future CA implementations may stay in `PENDING` state for a short while, and would return an error if `execute()` is invoked too early. Also see the [example](example.md#the-main-workflow) for how wait for the `READY` state.
 - There are new methods `waitForCompletion()` and `waitUntilReady()` that will do the synchronous busy wait for the resource state for you. It will remove a lot of boilerplate code that is also bug prone if implemented individually. If you use synchronous polling and waiting (like shown in the example code), I recommend to change to these methods instead of waiting for the correct state yourself. See the [example](example.md) for how to use the new methods.
 - Marked `update()` (and `AcmeRetryAfterException`) as deprecated now. Please use `fetch()` instead, it returns the retry-after time as `Optional` instead of throwing an `AcmeRetryAfterException`.
 
@@ -36,14 +36,14 @@ Although acme4j has made a major version bump, the migration of your code should
 What you might also need to know:
 
 - A new `AcmeNotSupportedException` is thrown if a feature is not supported by the server. It is a subclass of the `AcmeProtocolException` runtime exception.
-- Starting with _acme4j_ v3, we will require the smallest Java SE LTS version that is still receiving premier support according to the [Oracle Java SE Support Roadmap](https://www.oracle.com/java/technologies/java-se-support-roadmap.html). At the time of writing, these are Java 11 and Java 17, so _acme4j_ requires Java 11 starting from now. With the prospected release of Java 21 (LTS) in September 2023, we will move to Java 17, and so on. If you still need Java 8, you can use _acme4j_ v2. However it won't receive updates anymore, except of security related fixes.
+- Starting with _acme4j_ v3, we will require the smallest Java SE LTS version that is still receiving premier support according to the [Oracle Java SE Support Roadmap](https://www.oracle.com/java/technologies/java-se-support-roadmap.html). At the time of writing, these are Java 11 and Java 17, so _acme4j_ requires Java 11 starting from now. With the prospected release of Java 21 (LTS) in September 2023, we will move to Java 17, and so on. If you still need Java 8, you can use _acme4j_ v2. However, it won't receive updates anymore, except of security related fixes.
 - _acme4j_ now uses the new `java.net.http` client. Due to limitations of the API, HTTP errors are only thrown with the error code, but the respective error message is missing. If you checked the error message in your unit tests, be prepared that they might fail now.
 - acme4j now accepts HTTP gzip compression. It is enabled by default, but if it causes problems or impedes debugging, it can be disabled in the `NetworkSettings` or by setting the `org.shredzone.acme4j.gzip_compression` system property to `false`.
 - All deprecated methods have been removed.
 
 ## Migration to Version 2.16
 
-- In `acme4j-smime`, the `EmailProcessor.smimeMessage()` method is now deprecated. Use either `EmailProcessor.signedMessage()`, or `EmailProcessor.builder()` if you need custom verification configuration (e.g. an own truststore).
+- In `acme4j-smime`, the `EmailProcessor.smimeMessage()` method is now deprecated. Use either `EmailProcessor.signedMessage()`, or `EmailProcessor.builder()` if you need custom verification configuration (e.g. an own trust store).
 - In `acme4j-smime`, major parts of the S/MIME message verification have been rewritten. The verification is much stricter now, and also supports secured headers in the certificate. Verification might now fail while it was successful in v2.15. Also, exception messages might have changed.
 
 ## Migration to Version 2.15
@@ -63,9 +63,9 @@ What you might also need to know:
 
 - In a preparation for Java 9 modules, the JSR305 null-safe annotations have been replaced by SpotBugs annotations. This _should_ have no impact on your code, as the method signatures themselves are unchanged. However, the compiler could now complain about some `null` dereferences that have been undetected before. Reason is that JSR305 uses the `javax.annotations` package, which leads to split packages in a Java 9 modular environment.
 
-- When fetching the directory, acme4j now evaluates HTTP caching headers instead of just caching the directory for 1 hour. However, Let's Encrypt explicitly forbids caching, which means that a fresh copy of the directory is now fetched from the server every time it is needed. I don't like it, but it is the RFC conformous behavior. It needs to be [fixed on Let's Encrypt side](https://github.com/letsencrypt/boulder/issues/4814).
+- When fetching the directory, acme4j now evaluates HTTP caching headers instead of just caching the directory for 1 hour. However, Let's Encrypt explicitly forbids caching, which means that a fresh copy of the directory is now fetched from the server every time it is needed. I don't like it, but it is the RFC compliant behavior. It needs to be [fixed on Let's Encrypt side](https://github.com/letsencrypt/boulder/issues/4814).
 
-- `AcmeProvider.directory(Session, URI)` is now responsible for maintaining the cache. Implementations can use `Session.setDirectoryExpires()`, `Session.setDirectoryLastModified()`, and the respective getters, for keeping track of the local directory state. `AcmeProvider.directory(Session, URI)` may now return `null`, to indicate that the remote directory was unchanged and the local copy is still valid. It's not permitted to return `null` if `Session.hasDirectory()` returns `false`, though! If your `AcmeProvider` is derived from `AbstractAcmeProvider`, and you haven't overridden the `directory()` method, no migration is necessary.
+- `AcmeProvider.directory(Session, URI)` is now responsible for maintaining the cache. Implementations can use `Session.setDirectoryExpires()`, `Session.setDirectoryLastModified()`, and the respective getters, for keeping track of the local directory state. `AcmeProvider.directory(Session, URI)` may now return `null`, to indicate that the remote directory was unchanged, and the local copy is still valid. It's not permitted to return `null` if `Session.hasDirectory()` returns `false`, though! If your `AcmeProvider` is derived from `AbstractAcmeProvider`, and you haven't overridden the `directory()` method, no migration is necessary.
 
 ## Migration to Version 2.9
 
@@ -73,7 +73,7 @@ What you might also need to know:
 
 ## Migration to Version 2.8
 
-- Challenges can now be found by their class type instead of a type string, which makes finding a challenge type safe. I recommend to migrate your code to this new way. The classic way is not deprecated and will not be removed though. Example:
+- Challenges can now be found by their class type instead of a type string, which makes finding a challenge type safe. I recommend migrating your code to this new way. The classic way is not deprecated and will not be removed though. Example:
 
 ```java
 Http01Challenge challenge = auth.findChallenge(Http01Challenge.TYPE);   // old style: by name
@@ -99,15 +99,15 @@ Http01Challenge challenge = auth.findChallenge(Http01Challenge.class);  // new s
 - The GET compatibility mode has been removed. It also means that the `postasget=false` parameter is ignored from now on. If you need it to connect to your ACME server, do not update to this version until your ACME server has been fixed to support ACME draft 15.
 
 !!! warning
-    _acme4j_ before version 2.5 will not work with providers like Let's Encrypt any more!
+    _acme4j_ before version 2.5 will not work with providers like Let's Encrypt anymore!
 
 ## Migration to Version 2.4
 
 - There was a major change in ACME draft 15. If you use _acme4j_ in a common way, it will transparently take care of everything in the background, so you won't even notice the change.
 
-  However, if you connect to a different ACME server than Boulder (Let's Encrypt) or Pebble, you may now get strange errors from the server if it does not support the `POST-as-GET` requests of draft 15 yet. In that case, you can add a `postasget=false` parameter to the ACME server URI (e. g. `"https://localhost:15000/dir?postasget=false"`). Note that this is only a temporary workaround. It will be removed in a future version. Ask the server's CA to add support for ACME draft 15.
+  However, if you connect to a different ACME server than Boulder (Let's Encrypt) or Pebble, you may now get strange errors from the server if it does not support the `POST-as-GET` requests of draft 15 yet. In that case, you can add a `postasget=false` parameter to the ACME server URI (e.g. `"https://localhost:15000/dir?postasget=false"`). Note that this is only a temporary workaround. It will be removed in a future version. Ask the server's CA to add support for ACME draft 15.
 
-- The `AcmeProvider.connect()` method now gets the ACME server URI as parameter. It allows to add query parameters to the server URI that change the behavior of the resulting connection. If you have implemented your own AcmeProvider, just change the method's signature to `Connection connect(URI serverUri)`, and ignore the parameter value.
+- The `AcmeProvider.connect()` method now gets the ACME server URI as parameter. It allows adding query parameters to the server URI that change the behavior of the resulting connection. If you have implemented your own AcmeProvider, just change the method's signature to `Connection connect(URI serverUri)`, and ignore the parameter value.
 
 ## Migration to Version 2.3
 
@@ -121,10 +121,10 @@ Http01Challenge challenge = auth.findChallenge(Http01Challenge.class);  // new s
 
 - This version adds [JSR 305](https://jcp.org/en/jsr/detail?id=305) annotations. If you use a null-safe language like Kotlin, or tools like SpotBugs, your code may fail to compile because of detected possible null pointer dereferences and unclosed streams. These are potential bugs that need to be resolved.
 
-- In _acme4j_'s `JSON` class, all `as...()` getters now expect a value to be present. For optional values, use `JSON.Value.optional()` or `JSON.Value.map()`. This class is rarely used outside of _acme4j_ itself, so you usually won't need to change anything.
+- In _acme4j_'s `JSON` class, all `as...()` getters now expect a value to be present. For optional values, use `JSON.Value.optional()` or `JSON.Value.map()`. This class is rarely used outside _acme4j_ itself, so you usually won't need to change anything.
 
 ## Migration to Version 2.0
 
 _acme4j_ 2.0 fully supports the ACMEv2 protocol. Sadly, the ACMEv2 protocol is a major change.
 
-There is no easy recipe to migrate your code to _acme4j_ 2.0. I recommend to have a look at the example, and read this documentation. Altogether, it shouldn't be too much work to update your code, though.
+There is no easy recipe to migrate your code to _acme4j_ 2.0. I recommend taking a look at the example, and read this documentation. Altogether, it shouldn't be too much work to update your code, though.

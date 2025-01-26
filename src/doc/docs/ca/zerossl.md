@@ -1,6 +1,6 @@
 # ZeroSSL
 
-Web site: [ZeroSSL](https://zerossl.com)
+Website: [ZeroSSL](https://zerossl.com)
 
 Available since acme4j 3.2.0
 
@@ -8,7 +8,7 @@ Available since acme4j 3.2.0
 
 * `acme://zerossl.com` - Production server
 
-ZeroSSL does not provide a staging server (as of Feburary 2024).
+ZeroSSL does not provide a staging server (as of February 2024).
 
 ## Note
 

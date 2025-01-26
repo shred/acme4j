@@ -5,7 +5,7 @@ Certificates are only valid for a limited time, and need to be renewed before ex
 To read the expiration date of your certificate, use `X509Certificate.getNotAfter()`. The certificate is eligible to be renewed a few days or weeks before its expiry. Check the documentation of your CA about a recommended time window. Also do not postpone the renewal to the last minute, as there can always be unexpected network issues that delay the issuance of a renewed certificate.
 
 !!! tip
-    Some CAs send a notification mail to your account's mail addresses in time before expiration. However you should not rely on those mails, and only use them as an ultimate warning.
+    Some CAs send a notification mail to your account's mail addresses in time before expiration. However, you should not rely on those mails, and only use them as an ultimate warning.
 
 ## How to Renew
 
@@ -15,7 +15,7 @@ There is no special path for renewing a certificate. To renew it, just [order](o
 
 _acme4j_ supports the [draft-ietf-acme-ari](https://www.ietf.org/archive/id/draft-ietf-acme-ari-07.html) draft.
 
-You can check if the CA offers renewal information by invoking `Certificate.hasRenewalInfo()`. If it does, you can get a suggested time window for certificate nenewal by invoking `Certificate.getRenewalInfo()`.
+You can check if the CA offers renewal information by invoking `Certificate.hasRenewalInfo()`. If it does, you can get a suggested time window for certificate renewal by invoking `Certificate.getRenewalInfo()`.
 
 When renewing a certificate, you can use `OrderBuilder.replaces()` to mark your current certificate as the one being replaced. This step is optional though.
 
@@ -69,4 +69,4 @@ To enable this `GET` method, first check if it is offered by the CA, by invoking
 
 ### Cancelling Auto-Renewals
 
-Use `Order.cancelAutoRenewal()` to terminate automatical certificate renewals.
+Use `Order.cancelAutoRenewal()` to terminate automatic certificate renewals.

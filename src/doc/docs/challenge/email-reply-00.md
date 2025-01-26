@@ -24,7 +24,7 @@ However, if `Identifier` objects are needed, use `EmailIdentifier.email()` to ge
 
 To generate a CSR, the module provides a `SMIMECSRBuilder` that works similar to the standard `CSRBuilder`, but accepts `EmailIdentifier` objects.
 
-With the `SMIMECSRBuilder.setKeyUsageType()`, the desired usage type of the S/MIME certificate can be selected. By default the certificate can be used both for encryption and signing. However this is just a proposal, and the CA is free to ignore it or return an error if the desired usage type is not supported.
+With the `SMIMECSRBuilder.setKeyUsageType()`, the desired usage type of the S/MIME certificate can be selected. By default, the certificate can be used both for encryption and signing. However, this is just a proposal, and the CA is free to ignore it or return an error if the desired usage type is not supported.
 
 ## Challenge and Response
 
@@ -49,7 +49,7 @@ After that, the `EmailReply00Challenge` is triggered. The CA now has a proof of 
 
 ## Response Helper
 
-The response process can be executed programatically, or even manually. To help with the process, `acme4j-smime` provides an `EmailProcessor` that helps you parsing the challenge email, and generate a matching response mail.
+The response process can be executed programmatically, or even manually. To help with the process, `acme4j-smime` provides an `EmailProcessor` that helps you to parse the challenge email, and generate a matching response mail.
 
 It is basically invoked like this:
 
@@ -90,4 +90,4 @@ Transport.send(response);   // send response to the CA
 challenge.trigger();        // trigger the challenge
 ```
 
-If you need more control of the signature verification process, you can use `EmailProcessor.builder()`. It is useful e.g. if you need to use a different truststore, or if your MTA has mangled the incoming message, so a relaxed verification is needed.
+If you need more control of the signature verification process, you can use `EmailProcessor.builder()`. It is useful e.g. if you need to use a different trust store, or if your MTA has mangled the incoming message, so a relaxed verification is needed.

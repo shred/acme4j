@@ -17,7 +17,7 @@ The Session now knows where to locate the service endpoints. However, no actual 
 
 ## ACME URIs
 
-Such an URI is hard to remember and might even change in the future. For this reason, special ACME connection URIs should be preferred. These special ACME URIs look like this:
+Such a URI is hard to remember and might even change in the future. For this reason, special ACME connection URIs should be preferred. These special ACME URIs look like this:
 
 ```java
 Session session = new Session("acme://example.org/staging");

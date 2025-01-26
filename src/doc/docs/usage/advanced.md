@@ -44,7 +44,7 @@ The `CSRBuilder` is used internally for creating the CSR, and you can take influ
 
 ## Domain Pre-Authorization
 
-It is possible to pro-actively authorize a domain, without ordering a certificate yet. This can be useful to find out what challenges are requested by the CA to authorize a domain. It may also help to speed up the ordering process, as already completed authorizations do not need to be completed again when ordering the certificate in the near future.
+It is possible to proactively authorize a domain, without ordering a certificate yet. This can be useful to find out what challenges are requested by the CA to authorize a domain. It may also help to speed up the ordering process, as already completed authorizations do not need to be completed again when ordering the certificate in the near future.
 
 ```java
 Account account = ... // your Account object

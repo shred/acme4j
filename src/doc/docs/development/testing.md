@@ -17,7 +17,7 @@ If you like to change the default configuration of the integration tests (e.g. b
 * `bammbammUrl`: URI of the _pebble-challtestsrv_ to connect to. Default: `http://localhost:8055`
 
 !!! warning
-    _pebble-challtestsrv_ is meant for testing purposes only. Only use it in secured testing environments. The server is neither hardened, nor does it offer any kind of authentication.
+    _pebble-challtestsrv_ is meant for testing purposes only. Only use it in secured testing environments. The server is neither hardened nor does it offer any kind of authentication.
 
 ## Boulder
 
