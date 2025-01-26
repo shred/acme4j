@@ -24,6 +24,9 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Certificate;
@@ -49,8 +52,10 @@ public class OrderIT extends PebbleITBase {
     /**
      * Test if a certificate can be ordered via http-01 challenge.
      */
-    @Test
-    public void testHttpValidation() throws Exception {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"default", "shortlived"})
+    public void testHttpValidation(String profile) throws Exception {
         orderCertificate(TEST_DOMAIN, auth -> {
             var client = getBammBammClient();
 
@@ -61,14 +66,16 @@ public class OrderIT extends PebbleITBase {
             cleanup(() -> client.httpRemoveToken(challenge.getToken()));
 
             return challenge;
-        }, OrderIT::standardRevoker);
+        }, OrderIT::standardRevoker, profile);
     }
 
     /**
      * Test if a certificate can be ordered via dns-01 challenge.
      */
-    @Test
-    public void testDnsValidation() throws Exception {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"default", "shortlived"})
+    public void testDnsValidation(String profile) throws Exception {
         orderCertificate(TEST_DOMAIN, auth -> {
             var client = getBammBammClient();
 
@@ -81,14 +88,16 @@ public class OrderIT extends PebbleITBase {
             cleanup(() -> client.dnsRemoveTxtRecord(challengeDomainName));
 
             return challenge;
-        }, OrderIT::standardRevoker);
+        }, OrderIT::standardRevoker, profile);
     }
 
     /**
      * Test if a certificate can be ordered via tns-alpn-01 challenge.
      */
-    @Test
-    public void testTlsAlpnValidation() throws Exception {
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"default", "shortlived"})
+    public void testTlsAlpnValidation(String profile) throws Exception {
         orderCertificate(TEST_DOMAIN, auth -> {
             var client = getBammBammClient();
 
@@ -101,7 +110,7 @@ public class OrderIT extends PebbleITBase {
             cleanup(() -> client.tlsAlpnRemoveCertificate(auth.getIdentifier().getDomain()));
 
             return challenge;
-        }, OrderIT::standardRevoker);
+        }, OrderIT::standardRevoker, profile);
     }
 
     /**
@@ -119,7 +128,7 @@ public class OrderIT extends PebbleITBase {
             cleanup(() -> client.httpRemoveToken(challenge.getToken()));
 
             return challenge;
-        }, OrderIT::domainKeyRevoker);
+        }, OrderIT::domainKeyRevoker, null);
     }
 
     /**
@@ -132,8 +141,10 @@ public class OrderIT extends PebbleITBase {
      *            validation
      * @param revoker
      *            {@link Revoker} that finally revokes the certificate
+     * @param profile
+     *            Profile to be used, or {@code null} for no profile selection.
      */
-    private void orderCertificate(String domain, Validator validator, Revoker revoker)
+    private void orderCertificate(String domain, Validator validator, Revoker revoker, String profile)
             throws Exception {
         var keyPair = createKeyPair();
         var session = new Session(pebbleURI());
@@ -148,14 +159,25 @@ public class OrderIT extends PebbleITBase {
         var notBefore = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         var notAfter = notBefore.plus(Duration.ofDays(20L));
 
-        var order = account.newOrder()
-                    .domain(domain)
-                    .notBefore(notBefore)
-                    .notAfter(notAfter)
-                    .create();
+        var orderBuilder = account.newOrder()
+                .domain(domain)
+                .notBefore(notBefore)
+                .notAfter(notAfter);
+
+        if (profile != null) {
+            orderBuilder.profile(profile);
+        }
+
+        var order = orderBuilder.create();
         assertThat(order.getNotBefore().orElseThrow()).isEqualTo(notBefore);
         assertThat(order.getNotAfter().orElseThrow()).isEqualTo(notAfter);
         assertThat(order.getStatus()).isEqualTo(Status.PENDING);
+
+        if (profile != null) {
+            assertThat(order.getProfile()).contains(profile);
+        } else {
+            // FIXME: Pebble falls back to different values here, cannot be tested properly
+        }
 
         for (var auth : order.getAuthorizations()) {
             assertThat(auth.getIdentifier().getDomain()).isEqualTo(domain);
