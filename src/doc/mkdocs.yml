@@ -2,7 +2,7 @@ site_name: acme4j
 site_author: Richard Körber
 site_url: https://acme4j.shredzone.org
 site_dir: target/site/
-repo_url: https://github.com/shred/acme4j
+repo_url: https://codeberg.org/shred/acme4j
 edit_uri: ''
 use_directory_urls: false
 theme:

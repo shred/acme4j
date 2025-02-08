@@ -71,9 +71,9 @@ You can still revoke certificates without account key pair though, see [here](us
 
 **Symptom:** You try to order an S/MIME certificate from a providing CA. However, the CA constantly refuses the response e-mail because the contained ACME response is purportedly invalid.
 
-**Cause:** Unfortunately [RFC 8823](https://tools.ietf.org/html/rfc8823) has an ambiguous specification about how to concatenate the two token parts. The text permits two different interpretations that may give different results. _acme4j_ uses an implementation that corresponds to the [intention of the author of RFC 8823](https://mailarchive.ietf.org/arch/msg/acme/KusfZm3qC50IfcAAuTXtmbFK0KM/). If the CA is implemented following the other interpretation, the ACME e-mail response will not match (see [this issue](https://github.com/shred/acme4j/issues/123)).
+**Cause:** Unfortunately [RFC 8823](https://tools.ietf.org/html/rfc8823) has an ambiguous specification about how to concatenate the two token parts. The text permits two different interpretations that may give different results. _acme4j_ uses an implementation that corresponds to the [intention of the author of RFC 8823](https://mailarchive.ietf.org/arch/msg/acme/KusfZm3qC50IfcAAuTXtmbFK0KM/). If the CA is implemented following the other interpretation, the ACME e-mail response will not match (see [this issue](https://codeberg.org/shred/acme4j/issues/123)).
 
-**Solution:** It is a difficult situation that is caused by an ambiguous specification, but it is like it is now. Since _acme4j_ follows the intention of the RFC author, I take the position that the _acme4j_ implementation is correct. Please open a bug report at the CA, and refer to [this issue](https://github.com/shred/acme4j/issues/123). If the two tokens are split at a position, so the first token won't have trailing base64 padding bits, the CA service can be implemented in a way that is compatible to both interpretations.
+**Solution:** It is a difficult situation that is caused by an ambiguous specification, but it is like it is now. Since _acme4j_ follows the intention of the RFC author, I take the position that the _acme4j_ implementation is correct. Please open a bug report at the CA, and refer to [this issue](https://codeberg.org/shred/acme4j/issues/123). If the two tokens are split at a position, so the first token won't have trailing base64 padding bits, the CA service can be implemented in a way that is compatible to both interpretations.
 
 ## Suddenly acme4j starts throwing `AcmeUserActionRequiredException` everywhere! How can I fix that?
 
@@ -84,6 +84,13 @@ You can still revoke certificates without account key pair though, see [here](us
 **Solution:** Invoke `AcmeUserActionRequiredException.getInstance()` to get a URL of a web page that describes all further steps to be taken. You might also be able to resolve the issue by logging into your CA's account, but that is up to the CA's discretion.
 
 Unfortunately, manual action is required in any case, there is no way to automate this process. This is an intentional protocol decision, and _acme4j_ is just the messenger.
+
+## Where can I find the _acme4j_ Repository?
+
+* The main repository is hosted at [Codeberg](https://codeberg.org/shred/acme4j).
+* There is a fully functional mirror at [GitHub](https://github.com/shred/acme4j).
+
+You can use both sites for posting issues and pull requests. However, Codeberg is the preferred repository.
 
 ## Where can I find more help?
 

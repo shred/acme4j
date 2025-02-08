@@ -33,7 +33,7 @@ Android does not log SLF4J output by default. To enable debug logging to logcat,
     
     **Do not blindly post debug logs to public bug reports or questions!**
 
-Understanding the debug log output requires some basic knowledge about the [RFC 8555](https://tools.ietf.org/html/rfc8555) protocol. If you need assistance with your problem, don't hesitate to [open an issue](https://github.com/shred/acme4j/issues).
+Understanding the debug log output requires some basic knowledge about the [RFC 8555](https://tools.ietf.org/html/rfc8555) protocol. If you need assistance with your problem, don't hesitate to [open an issue](https://codeberg.org/shred/acme4j/issues).
 
 ## Example Log Output
 

@@ -34,14 +34,14 @@
         </license>
     </licenses>
     <scm>
-        <url>https://github.com/shred/acme4j/</url>
-        <connection>scm:git:git@github.com:shred/acme4j.git</connection>
-        <developerConnection>scm:git:git@github.com:shred/acme4j.git</developerConnection>
+        <url>https://codeberg.org/shred/acme4j/</url>
+        <connection>scm:git:git@codeberg.org:shred/acme4j.git</connection>
+        <developerConnection>scm:git:git@codeberg.org:shred/acme4j.git</developerConnection>
       <tag>HEAD</tag>
   </scm>
     <issueManagement>
-        <system>GitHub</system>
-        <url>https://github.com/shred/acme4j/issues</url>
+        <system>Codeberg</system>
+        <url>https://codeberg.org/shred/acme4j/issues</url>
     </issueManagement>
     <developers>
         <developer>

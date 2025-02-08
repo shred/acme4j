@@ -20,4 +20,4 @@ _Google Trust Services_ request `HS256` as MAC algorithm. If you use the connect
 
 ## Disclaimer
 
-_acme4j_ is not officially supported or endorsed by Google. If you have _acme4j_ related issues, please do not ask them for support, but [open an issue here](https://github.com/shred/acme4j/issues).
+_acme4j_ is not officially supported or endorsed by Google. If you have _acme4j_ related issues, please do not ask them for support, but [open an issue here](https://codeberg.org/shred/acme4j/issues).

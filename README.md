@@ -45,8 +45,8 @@ Follow our Mastodon feed for release notes and other acme4j related news.
 
 ## Contribute
 
-* Fork the [Source code at GitHub](https://github.com/shred/acme4j). Feel free to send pull requests (see [Contributing](CONTRIBUTING.md) for the rules).
-* Found a bug? [File a bug report!](https://github.com/shred/acme4j/issues)
+* Fork the [Source code at Codeberg](https://codeberg.org/shred/acme4j) or [GitHub](https://github.com/shred/acme4j). Feel free to send pull requests (see [Contributing](CONTRIBUTING.md) for the rules).
+* Found a bug? [File a bug report!](https://codeberg.org/shred/acme4j/issues) ([GitHub](https://github.com/shred/acme4j/issues))
 
 ## License
 
@@ -61,5 +61,5 @@ If you would like to support my work on _acme4j_, you can do so on at [GitHub Sp
 * I would like to thank Brian Campbell and all the other [jose4j](https://bitbucket.org/b_c/jose4j/wiki/Home) developers. _acme4j_ would not exist without your excellent work.
 * Thanks to [Daniel McCarney](https://github.com/cpu) for his help with the ACME protocol, Pebble, and Boulder.
 * [Ulrich Krause](https://github.com/eknori) for his help to make _acme4j_ run on IBM Java VMs.
-* I also like to thank [everyone who contributed to _acme4j_](https://github.com/shred/acme4j/graphs/contributors).
+* I also like to thank [everyone who contributed to _acme4j_](https://codeberg.org/shred/acme4j/activity/contributors).
 * The Mastodon account is hosted by [foojay.io](https://foojay.io).
