@@ -21,6 +21,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Serial;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -54,6 +55,7 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
  * A model containing a JSON result. The content is immutable.
  */
 public final class JSON implements Serializable {
+    @Serial
     private static final long serialVersionUID = 418332625174149030L;
 
     private static final JSON EMPTY_JSON = new JSON(new HashMap<>());

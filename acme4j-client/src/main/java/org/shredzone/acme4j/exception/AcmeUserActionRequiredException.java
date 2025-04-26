@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.exception;
 
+import java.io.Serial;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -28,6 +29,7 @@ import org.shredzone.acme4j.Problem;
  * requires an agreement to the new terms before proceeding.
  */
 public class AcmeUserActionRequiredException extends AcmeServerException {
+    @Serial
     private static final long serialVersionUID = 7719055447283858352L;
 
     private final @Nullable URI tosUri;

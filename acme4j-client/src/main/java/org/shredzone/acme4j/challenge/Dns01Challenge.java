@@ -16,6 +16,8 @@ package org.shredzone.acme4j.challenge;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.base64UrlEncode;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.sha256hash;
 
+import java.io.Serial;
+
 import org.shredzone.acme4j.Identifier;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.toolbox.JSON;
@@ -25,6 +27,7 @@ import org.shredzone.acme4j.toolbox.JSON;
  * validation. See the acme4j documentation for a detailed explanation.
  */
 public class Dns01Challenge extends TokenChallenge {
+    @Serial
     private static final long serialVersionUID = 6964687027713533075L;
 
     /**

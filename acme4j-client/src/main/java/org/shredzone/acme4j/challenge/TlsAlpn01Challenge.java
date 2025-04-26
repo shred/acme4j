@@ -16,6 +16,7 @@ package org.shredzone.acme4j.challenge;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.sha256hash;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 
@@ -32,6 +33,7 @@ import org.shredzone.acme4j.util.CertificateUtils;
  * @since 2.1
  */
 public class TlsAlpn01Challenge extends TokenChallenge {
+    @Serial
     private static final long serialVersionUID = -5590351078176091228L;
 
     /**

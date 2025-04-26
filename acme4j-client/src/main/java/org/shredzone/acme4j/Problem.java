@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j;
 
-import static java.util.stream.Collectors.toUnmodifiableList;
-
+import java.io.Serial;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,6 +32,7 @@ import org.shredzone.acme4j.toolbox.JSON.Value;
  * @see <a href="https://tools.ietf.org/html/rfc7807">RFC 7807</a>
  */
 public class Problem implements Serializable {
+    @Serial
     private static final long serialVersionUID = -8418248862966754214L;
 
     private final URL baseUrl;
@@ -122,7 +122,7 @@ public class Problem implements Serializable {
                         .asArray()
                         .stream()
                         .map(o -> o.asProblem(baseUrl))
-                        .collect(toUnmodifiableList());
+                        .toList();
     }
 
     /**

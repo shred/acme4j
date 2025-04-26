@@ -81,10 +81,10 @@ public class ClientTest {
     private static final String EAB_HMAC = null;
 
     // A supplier for a new account KeyPair. The default creates a new EC key pair.
-    private static Supplier<KeyPair> ACCOUNT_KEY_SUPPLIER = () -> KeyPairUtils.createKeyPair();
+    private static final Supplier<KeyPair> ACCOUNT_KEY_SUPPLIER = KeyPairUtils::createKeyPair;
 
     // A supplier for a new domain KeyPair. The default creates a RSA key pair.
-    private static Supplier<KeyPair> DOMAIN_KEY_SUPPLIER = () -> KeyPairUtils.createKeyPair(4096);
+    private static final Supplier<KeyPair> DOMAIN_KEY_SUPPLIER = () -> KeyPairUtils.createKeyPair(4096);
 
     // File name of the User Key Pair
     private static final File USER_KEY_FILE = new File("user.key");
@@ -267,16 +267,10 @@ public class ClientTest {
         }
 
         // Find the desired challenge and prepare it.
-        Challenge challenge = null;
-        switch (CHALLENGE_TYPE) {
-            case HTTP:
-                challenge = httpChallenge(auth);
-                break;
-
-            case DNS:
-                challenge = dnsChallenge(auth);
-                break;
-        }
+        Challenge challenge = switch (CHALLENGE_TYPE) {
+            case HTTP -> httpChallenge(auth);
+            case DNS -> dnsChallenge(auth);
+        };
 
         if (challenge == null) {
             throw new AcmeException("No challenge found");

@@ -243,11 +243,9 @@ public class Identifier implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof Identifier)) {
+        if (!(obj instanceof Identifier i)) {
             return false;
         }
-
-        var i = (Identifier) obj;
         return content.equals(i.content);
     }
 

@@ -14,12 +14,14 @@
 package org.shredzone.acme4j.exception;
 
 import java.io.IOException;
+import java.io.Serial;
 
 /**
  * A general network error has occured while communicating with the server (e.g. network
  * timeout).
  */
 public class AcmeNetworkException extends AcmeException {
+    @Serial
     private static final long serialVersionUID = 2054398693543329179L;
 
     /**

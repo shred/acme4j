@@ -146,10 +146,10 @@ public class AccountTest {
 
             @Override
             public Collection<URL> getLinks(String relation) {
-                switch(relation) {
-                    case "termsOfService": return singletonList(agreementUrl);
-                    default: return emptyList();
-                }
+                return switch (relation) {
+                    case "termsOfService" -> singletonList(agreementUrl);
+                    default -> emptyList();
+                };
             }
         };
 

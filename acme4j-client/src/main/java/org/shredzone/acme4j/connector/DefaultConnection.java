@@ -15,7 +15,6 @@ package org.shredzone.acme4j.connector;
 
 import static java.time.format.DateTimeFormatter.RFC_1123_DATE_TIME;
 import static java.util.function.Predicate.not;
-import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -137,7 +136,7 @@ public class DefaultConnection implements Connection {
                 var retryAfterInstant = getRetryAfter();
                 if (retryAfterInstant.isPresent()) {
                     throw new AcmeRetryAfterException(message, retryAfterInstant.get());
-                };
+                }
                 throw new AcmeException(message);
             }
 
@@ -228,7 +227,7 @@ public class DefaultConnection implements Connection {
             var cf = CertificateFactory.getInstance("X.509");
             return cf.generateCertificates(in).stream()
                     .map(X509Certificate.class::cast)
-                    .collect(toUnmodifiableList());
+                    .toList();
         } catch (IOException ex) {
             throw new AcmeNetworkException(ex);
         } catch (CertificateException ex) {
@@ -311,7 +310,7 @@ public class DefaultConnection implements Connection {
     public Collection<URL> getLinks(String relation) {
         return collectLinks(relation).stream()
                 .map(this::resolveRelative)
-                .collect(toUnmodifiableList());
+                .toList();
     }
 
     @Override
@@ -620,7 +619,7 @@ public class DefaultConnection implements Connection {
                 .filter(Matcher::matches)
                 .map(m -> m.group(1))
                 .peek(location -> LOG.debug("Link: {} -> {}", relation, location))
-                .collect(toUnmodifiableList());
+                .toList();
     }
 
     /**

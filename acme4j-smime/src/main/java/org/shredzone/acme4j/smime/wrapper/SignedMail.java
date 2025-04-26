@@ -149,24 +149,19 @@ public class SignedMail implements Mail {
 
         var relaxed = false;
         for (var element : (ASN1Set) attr.getAttributeValues()[0]) {
-            if (element instanceof ASN1Enumerated) {
-                var algorithm = ((ASN1Enumerated) element).intValueExact();
-                switch (algorithm) {
-                    case 0:
-                        relaxed = false;
-                        break;
-                    case 1:
-                        relaxed = true;
-                        break;
-                    default:
-                        throw new AcmeInvalidMessageException("Unknown algorithm: " + algorithm);
-                }
+            if (element instanceof ASN1Enumerated asn1element) {
+                var algorithm = asn1element.intValueExact();
+                relaxed = switch (algorithm) {
+                    case 0 -> false;
+                    case 1 -> true;
+                    default -> throw new AcmeInvalidMessageException("Unknown algorithm: " + algorithm);
+                };
             }
         }
 
         for (var element : (ASN1Set) attr.getAttributeValues()[0]) {
-            if (element instanceof ASN1Sequence) {
-                for (var sequenceElement : (ASN1Sequence) element) {
+            if (element instanceof ASN1Sequence asn1sequence) {
+                for (var sequenceElement : asn1sequence) {
                     var headerField = (ASN1Sequence) sequenceElement;
                     var fieldName = ((ASN1String) headerField.getObjectAt(0)).getString();
                     var fieldValue = ((ASN1String) headerField.getObjectAt(1)).getString();

@@ -126,18 +126,11 @@ public final class CertificateUtils {
 
         var gns = new GeneralName[1];
 
-        switch (id.getType()) {
-            case Identifier.TYPE_DNS:
-                gns[0] = new GeneralName(GeneralName.dNSName, id.getDomain());
-                break;
-
-            case Identifier.TYPE_IP:
-                gns[0] = new GeneralName(GeneralName.iPAddress, id.getIP().getHostAddress());
-                break;
-
-            default:
-                throw new IllegalArgumentException("Unsupported Identifier type " + id.getType());
-        }
+        gns[0] = switch (id.getType()) {
+            case Identifier.TYPE_DNS -> new GeneralName(GeneralName.dNSName, id.getDomain());
+            case Identifier.TYPE_IP -> new GeneralName(GeneralName.iPAddress, id.getIP().getHostAddress());
+            default -> throw new IllegalArgumentException("Unsupported Identifier type " + id.getType());
+        };
         certBuilder.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(gns));
         certBuilder.addExtension(ACME_VALIDATION, true, new DEROctetString(acmeValidation));
 
@@ -268,8 +261,8 @@ public final class CertificateUtils {
             var attr = csr.getAttributes(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
             if (attr.length > 0) {
                 var extensions = attr[0].getAttrValues().toArray();
-                if (extensions.length > 0 && extensions[0] instanceof Extensions) {
-                    var san = GeneralNames.fromExtensions((Extensions) extensions[0], Extension.subjectAlternativeName);
+                if (extensions.length > 0 && extensions[0] instanceof Extensions extension0) {
+                    var san = GeneralNames.fromExtensions(extension0, Extension.subjectAlternativeName);
                     var critical = csr.getSubject().getRDNs().length == 0;
                     certBuilder.addExtension(Extension.subjectAlternativeName, critical, san);
                 }

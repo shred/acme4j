@@ -203,23 +203,13 @@ public final class JoseUtils {
      *         there is no corresponding algorithm identifier for the key
      */
     public static String keyAlgorithm(JsonWebKey jwk) {
-        if (jwk instanceof EllipticCurveJsonWebKey) {
-            var ecjwk = (EllipticCurveJsonWebKey) jwk;
-
-            switch (ecjwk.getCurveName()) {
-                case "P-256":
-                    return AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256;
-
-                case "P-384":
-                    return AlgorithmIdentifiers.ECDSA_USING_P384_CURVE_AND_SHA384;
-
-                case "P-521":
-                    return AlgorithmIdentifiers.ECDSA_USING_P521_CURVE_AND_SHA512;
-
-                default:
-                    throw new IllegalArgumentException("Unknown EC name "
-                            + ecjwk.getCurveName());
-            }
+        if (jwk instanceof EllipticCurveJsonWebKey ecjwk) {
+            return switch (ecjwk.getCurveName()) {
+                case "P-256" -> AlgorithmIdentifiers.ECDSA_USING_P256_CURVE_AND_SHA256;
+                case "P-384" -> AlgorithmIdentifiers.ECDSA_USING_P384_CURVE_AND_SHA384;
+                case "P-521" -> AlgorithmIdentifiers.ECDSA_USING_P521_CURVE_AND_SHA512;
+                default -> throw new IllegalArgumentException("Unknown EC name " + ecjwk.getCurveName());
+            };
 
         } else if (jwk instanceof RsaJsonWebKey) {
             return AlgorithmIdentifiers.RSA_USING_SHA256;

@@ -22,7 +22,7 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 * Supports [draft-ietf-acme-ari-07](https://www.ietf.org/archive/id/draft-ietf-acme-ari-07.html) for renewal information (experimental)
 * Supports [draft-aaron-acme-profiles-00](https://www.ietf.org/archive/id/draft-aaron-acme-profiles-00.html) for certificate profiles (experimental)
 * Easy to use Java API
-* Requires JRE 11 or higher
+* Requires JRE 17 or higher
 * Supports [Buypass](https://buypass.com/), [Google Trust Services](https://pki.goog/), [Let's Encrypt](https://letsencrypt.org/), [SSL.com](https://www.ssl.com/), [ZeroSSL](https://zerossl.com/), and all other CAs that comply with the ACME protocol (RFC 8555). Note that _acme4j_ is an independent project that is not supported or endorsed by any of the CAs.
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
 * Extensive unit and integration tests

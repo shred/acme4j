@@ -15,9 +15,9 @@ package org.shredzone.acme4j;
 
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toUnmodifiableList;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.net.URL;
 import java.security.KeyPair;
 import java.time.Duration;
@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
  * A representation of a certificate order at the CA.
  */
 public class Order extends AcmeJsonResource implements PollableResource {
+    @Serial
     private static final long serialVersionUID = 5435808648658292177L;
     private static final Logger LOG = LoggerFactory.getLogger(Order.class);
 
@@ -90,7 +91,7 @@ public class Order extends AcmeJsonResource implements PollableResource {
                     .asArray()
                     .stream()
                     .map(Value::asIdentifier)
-                    .collect(toUnmodifiableList());
+                    .toList();
     }
 
     /**

@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.exception;
 
+import java.io.Serial;
 import java.net.URL;
 import java.time.Instant;
 import java.util.Collection;
@@ -28,6 +29,7 @@ import org.shredzone.acme4j.Problem;
  * further explains the rate limit that was exceeded.
  */
 public class AcmeRateLimitedException extends AcmeServerException {
+    @Serial
     private static final long serialVersionUID = 4150484059796413069L;
 
     private final @Nullable Instant retryAfter;

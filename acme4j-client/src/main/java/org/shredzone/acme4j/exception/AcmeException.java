@@ -13,10 +13,13 @@
  */
 package org.shredzone.acme4j.exception;
 
+import java.io.Serial;
+
 /**
  * The root class of all checked acme4j exceptions.
  */
 public class AcmeException extends Exception {
+    @Serial
     private static final long serialVersionUID = -2935088954705632025L;
 
     /**

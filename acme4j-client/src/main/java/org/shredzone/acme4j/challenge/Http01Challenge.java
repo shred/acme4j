@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j.challenge;
 
+import java.io.Serial;
+
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.toolbox.JSON;
 
@@ -22,6 +24,7 @@ import org.shredzone.acme4j.toolbox.JSON;
  * detailed explanation.
  */
 public class Http01Challenge extends TokenChallenge {
+    @Serial
     private static final long serialVersionUID = 3322211185872544605L;
 
     /**

@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.challenge;
 
+import java.io.Serial;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.EnumSet;
@@ -41,6 +42,7 @@ import org.slf4j.LoggerFactory;
  * required data to the challenge response.
  */
 public class Challenge extends AcmeJsonResource implements PollableResource {
+    @Serial
     private static final long serialVersionUID = 2338794776848388099L;
     private static final Logger LOG = LoggerFactory.getLogger(Challenge.class);
 

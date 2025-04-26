@@ -55,10 +55,10 @@ public class SimpleMail implements Mail {
             if (from.length != 1) {
                 throw new AcmeInvalidMessageException("Message must have exactly one sender, but has " + from.length);
             }
-            if (!(from[0] instanceof InternetAddress)) {
+            if (!(from[0] instanceof InternetAddress from0)) {
                 throw new AcmeInvalidMessageException("Invalid sender message type: " + from[0].getClass().getName());
             }
-            return (InternetAddress) from[0];
+            return from0;
         } catch (MessagingException ex) {
             throw new AcmeInvalidMessageException("Could not read 'From' header", ex);
         }
@@ -74,10 +74,10 @@ public class SimpleMail implements Mail {
             if (to.length != 1) {
                 throw new AcmeInvalidMessageException("Message must have exactly one recipient, but has " + to.length);
             }
-            if (!(to[0] instanceof InternetAddress)) {
+            if (!(to[0] instanceof InternetAddress to0)) {
                 throw new AcmeInvalidMessageException("Invalid recipient message type: " + to[0].getClass().getName());
             }
-            return (InternetAddress) to[0];
+            return to0;
         } catch (MessagingException ex) {
             throw new AcmeInvalidMessageException("Could not read 'To' header", ex);
         }

@@ -33,7 +33,7 @@ public enum Status {
 
     /**
      * The server is processing the resource. The client should invoke
-     * {@link AcmeJsonResource#update()} and re-check the status.
+     * {@link AcmeJsonResource#fetch()} and re-check the status.
      */
     PROCESSING,
 

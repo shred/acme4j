@@ -13,12 +13,15 @@
  */
 package org.shredzone.acme4j.exception;
 
+import java.io.Serial;
+
 /**
  * A runtime exception that is thrown when the response of the server is violating the
  * RFC, and could not be handled or parsed for that reason. It is an indicator that the CA
  * does not fully comply with the RFC, and is usually not expected to be thrown.
  */
 public class AcmeProtocolException extends RuntimeException {
+    @Serial
     private static final long serialVersionUID = 2031203835755725193L;
 
     /**

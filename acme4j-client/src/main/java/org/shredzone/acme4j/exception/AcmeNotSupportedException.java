@@ -13,12 +13,15 @@
  */
 package org.shredzone.acme4j.exception;
 
+import java.io.Serial;
+
 /**
  * A runtime exception that is thrown if the ACME server does not support a certain
  * feature. It might be either because that feature is optional, or because the server
  * is not fully RFC compliant.
  */
 public class AcmeNotSupportedException extends AcmeProtocolException {
+    @Serial
     private static final long serialVersionUID = 3434074002226584731L;
 
     /**

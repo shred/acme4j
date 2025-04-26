@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.exception;
 
+import java.io.Serial;
 import java.net.URI;
 import java.util.Objects;
 
@@ -26,6 +27,7 @@ import org.shredzone.acme4j.Problem;
  * individually.
  */
 public class AcmeServerException extends AcmeException {
+    @Serial
     private static final long serialVersionUID = 5971622508467042792L;
 
     private final Problem problem;

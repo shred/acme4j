@@ -163,12 +163,11 @@ public class SignedMailBuilder {
         requireNonNull(message, "message");
         try {
             // Check all parameters
-            if (!(message instanceof MimeMessage)) {
+            if (!(message instanceof MimeMessage mimeMessage)) {
                 throw new IllegalArgumentException("Message must be a MimeMessage");
             }
-            MimeMessage mimeMessage = (MimeMessage) message;
 
-            if (!(mimeMessage.getContent() instanceof MimeMultipart)) {
+            if (!(mimeMessage.getContent() instanceof MimeMultipart contentMultipart)) {
                 throw new AcmeProtocolException("S/MIME signed message must contain MimeMultipart");
             }
 
@@ -177,7 +176,7 @@ public class SignedMailBuilder {
             }
 
             // Get the signed message
-            SMIMESigned signed = new SMIMESigned((MimeMultipart) mimeMessage.getContent());
+            SMIMESigned signed = new SMIMESigned(contentMultipart);
 
             // Validate the signature
             SignerInformation si = validateSignature(mimeMessage, pkixParameters);

@@ -13,8 +13,7 @@
  */
 package org.shredzone.acme4j;
 
-import static java.util.stream.Collectors.toUnmodifiableList;
-
+import java.io.Serial;
 import java.net.URI;
 import java.security.KeyPair;
 import java.util.ArrayList;
@@ -42,6 +41,7 @@ import org.slf4j.LoggerFactory;
  * A representation of an account at the ACME server.
  */
 public class Account extends AcmeJsonResource {
+    @Serial
     private static final long serialVersionUID = 7042863483428051319L;
     private static final Logger LOG = LoggerFactory.getLogger(Account.class);
 
@@ -76,7 +76,7 @@ public class Account extends AcmeJsonResource {
                 .asArray()
                 .stream()
                 .map(Value::asURI)
-                .collect(toUnmodifiableList());
+                .toList();
     }
 
     /**

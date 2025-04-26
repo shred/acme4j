@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j.exception;
 
+import java.io.Serial;
+
 import org.shredzone.acme4j.Problem;
 
 /**
@@ -20,6 +22,7 @@ import org.shredzone.acme4j.Problem;
  * will give further details (e.g. "client IP is blocked").
  */
 public class AcmeUnauthorizedException extends AcmeServerException {
+    @Serial
     private static final long serialVersionUID = 9064697508262919366L;
 
     /**

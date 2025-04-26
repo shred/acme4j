@@ -37,8 +37,8 @@ public class EmailIdentifierTest {
     @ParameterizedTest
     @MethodSource("provideTestEmails")
     public void testEmail(Object input, String expected) {
-        var id = input instanceof InternetAddress
-                ? EmailIdentifier.email((InternetAddress) input)
+        var id = input instanceof InternetAddress internetAddress
+                ? EmailIdentifier.email(internetAddress)
                 : EmailIdentifier.email(input.toString());
 
         assertThat(id.getType()).isEqualTo(EmailIdentifier.TYPE_EMAIL);

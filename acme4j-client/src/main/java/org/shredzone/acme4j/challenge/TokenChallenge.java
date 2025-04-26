@@ -15,6 +15,8 @@ package org.shredzone.acme4j.challenge;
 
 import static org.shredzone.acme4j.toolbox.AcmeUtils.base64UrlEncode;
 
+import java.io.Serial;
+
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
@@ -26,6 +28,7 @@ import org.shredzone.acme4j.toolbox.JoseUtils;
  * and {@code keyAuthorization}.
  */
 public class TokenChallenge extends Challenge {
+    @Serial
     private static final long serialVersionUID = 1634133407432681800L;
 
     protected static final String KEY_TOKEN = "token";

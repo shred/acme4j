@@ -13,6 +13,8 @@
  */
 package org.shredzone.acme4j.smime;
 
+import java.io.Serial;
+
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import org.shredzone.acme4j.Identifier;
@@ -24,6 +26,7 @@ import org.shredzone.acme4j.exception.AcmeProtocolException;
  * @since 2.12
  */
 public class EmailIdentifier extends Identifier {
+    @Serial
     private static final long serialVersionUID = -1473014167038845395L;
 
     /**

@@ -15,6 +15,7 @@ package org.shredzone.acme4j.exception;
 
 import static java.util.Objects.requireNonNull;
 
+import java.io.Serial;
 import java.net.URL;
 
 import org.shredzone.acme4j.AcmeResource;
@@ -26,6 +27,7 @@ import org.shredzone.acme4j.AcmeResource;
  * thrown by getter methods, so the API is not polluted with checked exceptions.
  */
 public class AcmeLazyLoadingException extends RuntimeException {
+    @Serial
     private static final long serialVersionUID = 1000353433913721901L;
 
     private final Class<? extends AcmeResource> type;

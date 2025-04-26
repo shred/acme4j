@@ -16,6 +16,8 @@ package org.shredzone.acme4j.smime.challenge;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.base64UrlEncode;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.sha256hash;
 
+import java.io.Serial;
+
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import org.shredzone.acme4j.Login;
@@ -30,6 +32,7 @@ import org.shredzone.acme4j.toolbox.JSON;
  * @since 2.12
  */
 public class EmailReply00Challenge extends TokenChallenge {
+    @Serial
     private static final long serialVersionUID = 2502329538019544794L;
 
     /**

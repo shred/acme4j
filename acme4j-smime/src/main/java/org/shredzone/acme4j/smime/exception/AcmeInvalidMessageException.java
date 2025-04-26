@@ -15,6 +15,7 @@ package org.shredzone.acme4j.smime.exception;
 
 import static java.util.Collections.unmodifiableList;
 
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +41,7 @@ import org.shredzone.acme4j.exception.AcmeException;
  * @since 2.15
  */
 public class AcmeInvalidMessageException extends AcmeException {
+    @Serial
     private static final long serialVersionUID = 5607857024718309330L;
 
     private final List<ErrorBundle> errors;
