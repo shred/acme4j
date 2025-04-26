@@ -21,6 +21,7 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 * Supports [RFC 9444](https://tools.ietf.org/html/rfc9444) for subdomain validation
 * Supports [draft-ietf-acme-ari-07](https://www.ietf.org/archive/id/draft-ietf-acme-ari-07.html) for renewal information (experimental)
 * Supports [draft-aaron-acme-profiles-00](https://www.ietf.org/archive/id/draft-aaron-acme-profiles-00.html) for certificate profiles (experimental)
+* Supports [draft-ietf-acme-dns-account-label-00](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-account-label/) for DNS labeled with ACME account ID challenges (experimental)
 * Easy to use Java API
 * Requires JRE 17 or higher
 * Supports [Buypass](https://buypass.com/), [Google Trust Services](https://pki.goog/), [Let's Encrypt](https://letsencrypt.org/), [SSL.com](https://www.ssl.com/), [ZeroSSL](https://zerossl.com/), and all other CAs that comply with the ACME protocol (RFC 8555). Note that _acme4j_ is an independent project that is not supported or endorsed by any of the CAs.

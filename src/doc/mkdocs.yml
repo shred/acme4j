@@ -37,10 +37,11 @@ nav:
     - 'faq.md'
   - Challenges:
     - 'challenge/index.md'
-    - 'challenge/http-01.md'
     - 'challenge/dns-01.md'
-    - 'challenge/tls-alpn-01.md'
+    - 'challenge/dns-account-01.md'
     - 'challenge/email-reply-00.md'
+    - 'challenge/http-01.md'
+    - 'challenge/tls-alpn-01.md'
   - CA:
     - 'ca/index.md'
     - 'ca/buypass.md'

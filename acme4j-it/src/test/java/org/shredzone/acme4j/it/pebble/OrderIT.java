@@ -23,6 +23,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
@@ -36,6 +37,7 @@ import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
+import org.shredzone.acme4j.challenge.DnsAccount01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -81,7 +83,30 @@ public class OrderIT extends PebbleITBase {
 
             var challenge = auth.findChallenge(Dns01Challenge.class).orElseThrow();
 
-            var challengeDomainName = Dns01Challenge.toRRName(auth.getIdentifier());
+            var challengeDomainName = challenge.getRRName(auth.getIdentifier());
+
+            client.dnsAddTxtRecord(challengeDomainName, challenge.getDigest());
+
+            cleanup(() -> client.dnsRemoveTxtRecord(challengeDomainName));
+
+            return challenge;
+        }, OrderIT::standardRevoker, profile);
+    }
+
+    /**
+     * Test if a certificate can be ordered via dns-account-01 challenge.
+     */
+    @ParameterizedTest
+    @NullSource
+    @ValueSource(strings = {"default", "shortlived"})
+    @Disabled("Waiting for https://github.com/letsencrypt/pebble/pull/489")
+    public void testDnsAccountValidation(String profile) throws Exception {
+        orderCertificate(TEST_DOMAIN, auth -> {
+            var client = getBammBammClient();
+
+            var challenge = auth.findChallenge(DnsAccount01Challenge.class).orElseThrow();
+
+            var challengeDomainName = challenge.getRRName(auth.getIdentifier());
 
             client.dnsAddTxtRecord(challengeDomainName, challenge.getDigest());
 

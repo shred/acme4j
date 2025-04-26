@@ -49,7 +49,9 @@ public class Dns01Challenge extends TokenChallenge {
      * @return Resource Record name (e.g. {@code _acme-challenge.www.example.org.}, note
      * the trailing full stop character).
      * @since 2.14
+     * @deprecated Use {@link #getRRName(Identifier)}
      */
+    @Deprecated
     public static String toRRName(Identifier identifier) {
         return toRRName(identifier.getDomain());
     }
@@ -63,7 +65,9 @@ public class Dns01Challenge extends TokenChallenge {
      * @return Resource Record name (e.g. {@code _acme-challenge.www.example.org.}, note
      * the trailing full stop character).
      * @since 2.14
+     * @deprecated Use {@link #getRRName(String)}
      */
+    @Deprecated
     public static String toRRName(String domain) {
         return RECORD_NAME_PREFIX + '.' + domain + '.';
     }
@@ -78,6 +82,34 @@ public class Dns01Challenge extends TokenChallenge {
      */
     public Dns01Challenge(Login login, JSON data) {
         super(login, data);
+    }
+
+    /**
+     * Converts a domain identifier to the Resource Record name to be used for the DNS TXT
+     * record.
+     *
+     * @param identifier
+     *         Domain {@link Identifier} of the domain to be validated
+     * @return Resource Record name (e.g. {@code _acme-challenge.www.example.org.}, note
+     * the trailing full stop character).
+     * @since 3.6.0
+     */
+    public String getRRName(Identifier identifier) {
+        return toRRName(identifier);
+    }
+
+    /**
+     * Converts a domain identifier to the Resource Record name to be used for the DNS TXT
+     * record.
+     *
+     * @param domain
+     *         Domain name to be validated
+     * @return Resource Record name (e.g. {@code _acme-challenge.www.example.org.}, note
+     * the trailing full stop character).
+     * @since 3.6.0
+     */
+    public String getRRName(String domain) {
+        return toRRName(domain);
     }
 
     /**

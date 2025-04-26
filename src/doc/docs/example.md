@@ -340,12 +340,12 @@ public Challenge dnsChallenge(Authorization auth) throws AcmeException {
     // Output the challenge, wait for acknowledge...
     LOG.info("Please create a TXT record:");
     LOG.info("{} IN TXT {}",
-            Dns01Challenge.toRRName(auth.getIdentifier()), challenge.getDigest());
+            challenge.getRRName(auth.getIdentifier()), challenge.getDigest());
     LOG.info("If you're ready, dismiss the dialog...");
 
     StringBuilder message = new StringBuilder();
     message.append("Please create a TXT record:\n\n");
-    message.append(Dns01Challenge.toRRName(auth.getIdentifier()))
+    message.append(challenge.getRRName(auth.getIdentifier()))
             .append(" IN TXT ")
             .append(challenge.getDigest());
     acceptChallenge(message.toString());

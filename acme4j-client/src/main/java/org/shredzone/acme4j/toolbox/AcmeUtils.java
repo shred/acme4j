@@ -72,6 +72,8 @@ public final class AcmeUtils {
     private static final Base64.Encoder URL_ENCODER = Base64.getUrlEncoder().withoutPadding();
     private static final Base64.Decoder URL_DECODER = Base64.getUrlDecoder();
 
+    private static final char[] BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567".toCharArray();
+
     /**
      * Enumeration of PEM labels.
      */
@@ -152,6 +154,59 @@ public final class AcmeUtils {
      */
     public static byte[] base64UrlDecode(String base64) {
         return URL_DECODER.decode(base64);
+    }
+
+    /**
+     * Base32 encodes a byte array.
+     *
+     * @param data Byte array to encode
+     * @return Base32 encoded data (includes padding)
+     * @since 3.6.0
+     */
+    public static String base32Encode(byte[] data) {
+        var result = new StringBuilder();
+        var unconverted = new int[5];
+        var converted = new int[8];
+
+        for (var ix = 0; ix < (data.length + 4) / 5; ix++) {
+            var blocklen = unconverted.length;
+            for (var pos = 0; pos < unconverted.length; pos++) {
+                if ((ix * 5 + pos) < data.length) {
+                    unconverted[pos] = data[ix * 5 + pos] & 0xFF;
+                } else {
+                    unconverted[pos] = 0;
+                    blocklen--;
+                }
+            }
+
+            converted[0] = (unconverted[0] >> 3) & 0x1F;
+            converted[1] = ((unconverted[0] & 0x07) << 2) | ((unconverted[1] >> 6) & 0x03);
+            converted[2] = (unconverted[1] >> 1) & 0x1F;
+            converted[3] = ((unconverted[1] & 0x01) << 4) | ((unconverted[2] >> 4) & 0x0F);
+            converted[4] = ((unconverted[2] & 0x0F) << 1) | ((unconverted[3] >> 7) & 0x01);
+            converted[5] = (unconverted[3] >> 2) & 0x1F;
+            converted[6] = ((unconverted[3] & 0x03) << 3) | ((unconverted[4] >> 5) & 0x07);
+            converted[7] = unconverted[4] & 0x1F;
+
+            var padding = switch (blocklen) {
+                case 1 -> 6;
+                case 2 -> 4;
+                case 3 -> 3;
+                case 4 -> 1;
+                case 5 -> 0;
+                default -> throw new IllegalArgumentException("blocklen " + blocklen + " out of range");
+            };
+
+            Arrays.stream(converted)
+                    .limit(converted.length - padding)
+                    .map(v -> BASE32_ALPHABET[v])
+                    .forEach(v -> result.append((char) v));
+
+            if (padding > 0) {
+                result.append("=".repeat(padding));
+            }
+        }
+        return result.toString();
     }
 
     /**

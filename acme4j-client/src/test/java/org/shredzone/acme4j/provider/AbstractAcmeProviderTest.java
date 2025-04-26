@@ -32,6 +32,7 @@ import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
+import org.shredzone.acme4j.challenge.DnsAccount01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
 import org.shredzone.acme4j.challenge.TokenChallenge;
@@ -243,13 +244,17 @@ public class AbstractAcmeProviderTest {
         var c2 = provider.createChallenge(login, getJSON("httpChallenge"));
         assertThat(c2).isNotSameAs(c1);
 
-        var c3 = provider.createChallenge(login, getJSON("dnsChallenge"));
+        var c3 = provider.createChallenge(login, getJSON("dns01Challenge"));
         assertThat(c3).isNotNull();
         assertThat(c3).isInstanceOf(Dns01Challenge.class);
 
-        var c4 = provider.createChallenge(login, getJSON("tlsAlpnChallenge"));
+        var c4 = provider.createChallenge(login, getJSON("dnsAccount01Challenge"));
         assertThat(c4).isNotNull();
-        assertThat(c4).isInstanceOf(TlsAlpn01Challenge.class);
+        assertThat(c4).isInstanceOf(DnsAccount01Challenge.class);
+
+        var c5 = provider.createChallenge(login, getJSON("tlsAlpnChallenge"));
+        assertThat(c5).isNotNull();
+        assertThat(c5).isInstanceOf(TlsAlpn01Challenge.class);
 
         var json6 = new JSONBuilder()
                     .put("type", "foobar-01")

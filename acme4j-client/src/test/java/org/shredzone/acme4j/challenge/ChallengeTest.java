@@ -88,7 +88,7 @@ public class ChallengeTest {
     @Test
     public void testNotAcceptable() {
         assertThrows(AcmeProtocolException.class, () ->
-            new Http01Challenge(TestUtils.login(), getJSON("dnsChallenge"))
+            new Http01Challenge(TestUtils.login(), getJSON("dns01Challenge"))
         );
     }
 

@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.toolbox;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.within;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -35,6 +36,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -86,6 +88,23 @@ public class AcmeUtilsTest {
     public void testBase64UrlDecode() {
         var base64UrlDecode = base64UrlDecode("w6uP8Tcg6K2QR905Rms8iXTlksL6OD1KOWBxTK7wxPI");
         assertThat(base64UrlDecode).isEqualTo(sha256hash("foobar"));
+    }
+
+    /**
+     * Test base32 encode.
+     */
+    @ParameterizedTest
+    @CsvSource({    // Test vectors according to RFC 4648 section 10
+            "'',''",
+            "f,MY======",
+            "fo,MZXQ====",
+            "foo,MZXW6===",
+            "foob,MZXW6YQ=",
+            "fooba,MZXW6YTB",
+            "foobar,MZXW6YTBOI======",
+    })
+    public void testBase32Encode(String unencoded, String encoded) {
+        assertThat(base32Encode(unencoded.getBytes(UTF_8))).isEqualTo(encoded);
     }
 
     /**

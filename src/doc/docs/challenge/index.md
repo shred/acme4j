@@ -6,10 +6,11 @@ There are different kinds of challenges. The most simple is maybe the HTTP chall
 
 The ACME specifications define these standard challenges:
 
-* [http-01](http-01.md)
 * [dns-01](dns-01.md)
+* [http-01](http-01.md)
 
 _acme4j_ also supports these non-standard challenges:
 
-* [tls-alpn-01](tls-alpn-01.md)
+* [dns-account-01](dns-account-01.md) ([draft-ietf-acme-dns-account-label-00](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-account-label/00/))
 * [email-reply-00](email-reply-00.md)
+* [tls-alpn-01](tls-alpn-01.md)

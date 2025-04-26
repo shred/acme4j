@@ -5,6 +5,7 @@ This document will help you migrate your code to the latest _acme4j_ version.
 ## Migration to Version 3.6.0
 
 - _acme4j_ requires JRE 17 or higher now.
+- In order to keep the API consistent, the static method `Dns01Challenge.toRRName()` is replaced with a class method `Dns01Challenge.getRRName()`. The static method is marked as deprecated, but is still functional.
 
 ## Migration to Version 3.5.0
 
