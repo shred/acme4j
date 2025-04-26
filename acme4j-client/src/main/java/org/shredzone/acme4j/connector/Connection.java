@@ -26,7 +26,6 @@ import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
 
@@ -155,22 +154,6 @@ public interface Connection extends AutoCloseable {
      * @since 3.0.0
      */
     Optional<Instant> getRetryAfter();
-
-    /**
-     * Throws an {@link AcmeRetryAfterException} if the last status was HTTP Accepted and
-     * a Retry-After header was received.
-     *
-     * @param message
-     *            Message to be sent along with the {@link AcmeRetryAfterException}
-     * @deprecated Prefer to use {@link #getRetryAfter()}.
-     */
-    @Deprecated
-    default void handleRetryAfter(String message) throws AcmeException {
-        var retryAfter = getRetryAfter();
-        if (retryAfter.isPresent()) {
-            throw new AcmeRetryAfterException(message, retryAfter.get());
-        }
-    }
 
     /**
      * Gets the nonce from the nonce header.
