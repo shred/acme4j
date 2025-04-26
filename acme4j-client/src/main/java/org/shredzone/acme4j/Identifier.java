@@ -17,6 +17,7 @@ import static java.util.Collections.unmodifiableMap;
 import static java.util.Objects.requireNonNull;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.toAce;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -37,6 +38,7 @@ import org.shredzone.acme4j.toolbox.JSON;
  * @since 2.3
  */
 public class Identifier implements Serializable {
+    @Serial
     private static final long serialVersionUID = -7777851842076362412L;
 
     /**

@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j;
 
+import java.io.Serial;
 import java.net.URL;
 import java.time.Instant;
 import java.util.Objects;
@@ -32,6 +33,7 @@ import org.slf4j.LoggerFactory;
  * fetching it from the server if necessary.
  */
 public abstract class AcmeJsonResource extends AcmeResource {
+    @Serial
     private static final long serialVersionUID = -5060364275766082345L;
     private static final Logger LOG = LoggerFactory.getLogger(AcmeJsonResource.class);
 

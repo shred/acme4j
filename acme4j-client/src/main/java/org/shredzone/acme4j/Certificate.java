@@ -20,6 +20,7 @@ import static java.util.stream.Collectors.toUnmodifiableList;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.getRenewalUniqueIdentifier;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -50,6 +51,7 @@ import org.slf4j.LoggerFactory;
  * ordered.
  */
 public class Certificate extends AcmeResource {
+    @Serial
     private static final long serialVersionUID = 7381527770159084201L;
     private static final Logger LOG = LoggerFactory.getLogger(Certificate.class);
 

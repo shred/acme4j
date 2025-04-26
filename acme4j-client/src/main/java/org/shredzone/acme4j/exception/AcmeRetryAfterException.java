@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j.exception;
 
+import java.io.Serial;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -30,6 +31,7 @@ import org.shredzone.acme4j.AcmeJsonResource;
  */
 @Deprecated
 public class AcmeRetryAfterException extends AcmeException {
+    @Serial
     private static final long serialVersionUID = 4461979121063649905L;
 
     private final Instant retryAfter;

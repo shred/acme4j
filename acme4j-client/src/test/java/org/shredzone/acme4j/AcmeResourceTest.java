@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serial;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
@@ -113,6 +114,7 @@ public class AcmeResourceTest {
      * Minimum implementation of {@link AcmeResource}.
      */
     private static class DummyResource extends AcmeResource {
+        @Serial
         private static final long serialVersionUID = 7188822681353082472L;
         public DummyResource(Login login, URL location) {
             super(login, location);

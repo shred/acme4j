@@ -13,6 +13,7 @@
  */
 package org.shredzone.acme4j;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.Objects;
@@ -28,6 +29,7 @@ import edu.umd.cs.findbugs.annotations.Nullable;
  * using {@link #rebind(Login)}.
  */
 public abstract class AcmeResource implements Serializable {
+    @Serial
     private static final long serialVersionUID = -7930580802257379731L;
 
     private transient @Nullable Login login;

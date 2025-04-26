@@ -16,6 +16,7 @@ package org.shredzone.acme4j.exception;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
+import java.io.Serial;
 import java.net.URL;
 
 import org.junit.jupiter.api.Test;
@@ -47,6 +48,7 @@ public class AcmeLazyLoadingExceptionTest {
     }
 
     private static class TestResource extends AcmeResource {
+        @Serial
         private static final long serialVersionUID = 1023419539450677538L;
 
         public TestResource(Login login, URL location) {

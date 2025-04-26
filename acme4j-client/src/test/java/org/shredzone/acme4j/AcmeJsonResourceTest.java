@@ -17,6 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.shredzone.acme4j.toolbox.TestUtils.getJSON;
 import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
+import java.io.Serial;
 import java.net.URL;
 import java.time.Instant;
 import java.util.Optional;
@@ -140,6 +141,7 @@ public class AcmeJsonResourceTest {
      * Minimum implementation of {@link AcmeJsonResource}.
      */
     private static class DummyJsonResource extends AcmeJsonResource {
+        @Serial
         private static final long serialVersionUID = -6459238185161771948L;
 
         private int updateCount = 0;
