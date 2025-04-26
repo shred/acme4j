@@ -17,7 +17,6 @@ import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toUnmodifiableList;
-import static org.shredzone.acme4j.toolbox.AcmeUtils.base64UrlEncode;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.getRenewalUniqueIdentifier;
 
 import java.io.IOException;
@@ -26,7 +25,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.Principal;
-import java.security.Security;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
@@ -35,12 +33,6 @@ import java.util.Optional;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.bouncycastle.asn1.nist.NISTObjectIdentifiers;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.ocsp.CertificateID;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
 import org.shredzone.acme4j.connector.Resource;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
@@ -190,38 +182,6 @@ public class Certificate extends AcmeResource {
             }
         } catch (CertificateEncodingException ex) {
             throw new IOException("Encoding error", ex);
-        }
-    }
-
-    /**
-     * Returns this certificate's CertID according to RFC 6960.
-     * <p>
-     * This method requires the {@link org.bouncycastle.jce.provider.BouncyCastleProvider}
-     * security provider.
-     *
-     * @see <a href="https://www.rfc-editor.org/rfc/rfc6960.html">RFC 6960</a>
-     * @since 3.0.0
-     * @deprecated Is not needed in the ACME context anymore and will thus be removed in
-     * a later version.
-     */
-    @Deprecated
-    public String getCertID() {
-        var certChain = getCertificateChain();
-        if (certChain.size() < 2) {
-            throw new AcmeProtocolException("Certificate has no issuer");
-        }
-
-        try {
-            var builder = new JcaDigestCalculatorProviderBuilder();
-            if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) != null) {
-                builder.setProvider(BouncyCastleProvider.PROVIDER_NAME);
-            }
-            var digestCalc = builder.build().get(new AlgorithmIdentifier(NISTObjectIdentifiers.id_sha256));
-            var issuerHolder = new X509CertificateHolder(certChain.get(1).getEncoded());
-            var certId = new CertificateID(digestCalc, issuerHolder, certChain.get(0).getSerialNumber());
-            return base64UrlEncode(certId.toASN1Primitive().getEncoded());
-        } catch (Exception ex) {
-            throw new AcmeProtocolException("Could not compute Certificate ID", ex);
         }
     }
 

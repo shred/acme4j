@@ -337,7 +337,6 @@ public class CertificateTest {
         provider.putTestResource(Resource.RENEWAL_INFO, resourceUrl);
 
         var cert = new Certificate(provider.createLogin(), locationUrl);
-        assertThat(cert.getCertID()).isEqualTo("MFgwCwYJYIZIAWUDBAIBBCCeWLRusNLb--vmWOkxm34qDjTMWkc3utIhOMoMwKDqbgQg2iiKWySZrD-6c88HMZ6vhIHZPamChLlzGHeZ7pTS8jYCBQCHZUMh");
         assertThat(cert.hasRenewalInfo()).isTrue();
         assertThat(cert.getRenewalInfoLocation())
                 .hasValue(certResourceUrl);
