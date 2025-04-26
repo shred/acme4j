@@ -50,7 +50,6 @@ import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNetworkException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.exception.AcmeRateLimitedException;
-import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
 import org.shredzone.acme4j.exception.AcmeUserActionRequiredException;
@@ -132,12 +131,7 @@ public class DefaultConnection implements Connection {
 
             var rc = getResponse().statusCode();
             if (rc != HTTP_OK && rc != HTTP_NO_CONTENT) {
-                var message = "Server responded with HTTP " + rc + " while trying to retrieve a nonce";
-                var retryAfterInstant = getRetryAfter();
-                if (retryAfterInstant.isPresent()) {
-                    throw new AcmeRetryAfterException(message, retryAfterInstant.get());
-                }
-                throw new AcmeException(message);
+                throw new AcmeException("Server responded with HTTP " + rc + " while trying to retrieve a nonce");
             }
 
             session.setNonce(getNonce()

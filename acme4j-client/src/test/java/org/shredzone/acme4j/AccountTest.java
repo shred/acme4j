@@ -100,7 +100,7 @@ public class AccountTest {
 
         var login = provider.createLogin();
         var account = new Account(login);
-        account.update();
+        account.fetch();
 
         assertThat(login.getAccountLocation()).isEqualTo(locationUrl);
         assertThat(account.getLocation()).isEqualTo(locationUrl);

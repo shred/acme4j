@@ -22,7 +22,6 @@ import java.util.Optional;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeLazyLoadingException;
-import org.shredzone.acme4j.exception.AcmeRetryAfterException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,7 +54,7 @@ public abstract class AcmeJsonResource extends AcmeResource {
     /**
      * Returns the JSON representation of the resource data.
      * <p>
-     * If there is no data, {@link #update()} is invoked to fetch it from the server.
+     * If there is no data, {@link #fetch()} is invoked to fetch it from the server.
      * <p>
      * This method can be used to read proprietary data from the resources.
      *
@@ -111,41 +110,12 @@ public abstract class AcmeJsonResource extends AcmeResource {
 
     /**
      * Updates this resource, by fetching the current resource data from the server.
-     * <p>
-     * Note: Prefer to use {@link #fetch()} instead. It is working the same way, but
-     * returns the Retry-After instant instead of throwing an exception. This method will
-     * become deprecated in a future release.
-     *
-     * @throws AcmeException
-     *         if the resource could not be fetched.
-     * @throws AcmeRetryAfterException
-     *         the resource is still being processed, and the server returned an estimated
-     *         date when the process will be completed. If you are polling for the
-     *         resource to complete, you should wait for the date given in
-     *         {@link AcmeRetryAfterException#getRetryAfter()}. Note that the status of
-     *         the resource is updated even if this exception was thrown.
-     * @see #fetch()
-     * @deprecated Use {@link #fetch()} instead. It returns the retry-after value as
-     * {@link Optional} instead of throwing an {@link AcmeRetryAfterException}. This
-     * method will be removed in a future version.
-     */
-    @Deprecated
-    public void update() throws AcmeException {
-        var retryAfter = fetch();
-        if (retryAfter.isPresent()) {
-            throw new AcmeRetryAfterException(getClass().getSimpleName() + " is not completed yet", retryAfter.get());
-        }
-    }
-
-    /**
-     * Updates this resource, by fetching the current resource data from the server.
      *
      * @return An {@link Optional} estimation when the resource status will change. If you
      * are polling for the resource to complete, you should wait for the given instant
      * before trying again. Empty if the server did not return a "Retry-After" header.
      * @throws AcmeException
      *         if the resource could not be fetched.
-     * @see #update()
      * @since 3.2.0
      */
     public Optional<Instant> fetch() throws AcmeException {
@@ -158,10 +128,6 @@ public abstract class AcmeJsonResource extends AcmeResource {
             retryAfterOpt.ifPresent(instant -> LOG.debug("Retry-After: {}", instant));
             setRetryAfter(retryAfterOpt.orElse(null));
             return retryAfterOpt;
-        } catch (AcmeRetryAfterException ex) {
-            LOG.debug("Retry-After while attempting to read the resource", ex);
-            setRetryAfter(ex.getRetryAfter());
-            return Optional.of(ex.getRetryAfter());
         }
     }
 

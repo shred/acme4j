@@ -161,7 +161,7 @@ public final class AcmeUtils {
      *
      * @param data Byte array to encode
      * @return Base32 encoded data (includes padding)
-     * @since 3.6.0
+     * @since 4.0.0
      */
     public static String base32Encode(byte[] data) {
         var result = new StringBuilder();

@@ -30,7 +30,7 @@ import org.shredzone.acme4j.toolbox.JSON;
  *
  * @draft This class is currently based on an RFC draft. It may be changed or removed
  * without notice to reflect future changes to the draft. SemVer rules do not apply here.
- * @since 3.6.0
+ * @since 4.0.0
  */
 public class DnsAccount01Challenge extends TokenChallenge {
     @Serial

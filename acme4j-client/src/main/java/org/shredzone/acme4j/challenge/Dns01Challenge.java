@@ -41,38 +41,6 @@ public class Dns01Challenge extends TokenChallenge {
     public static final String RECORD_NAME_PREFIX = "_acme-challenge";
 
     /**
-     * Converts a domain identifier to the Resource Record name to be used for the DNS TXT
-     * record.
-     *
-     * @param identifier
-     *         Domain {@link Identifier} of the domain to be validated
-     * @return Resource Record name (e.g. {@code _acme-challenge.www.example.org.}, note
-     * the trailing full stop character).
-     * @since 2.14
-     * @deprecated Use {@link #getRRName(Identifier)}
-     */
-    @Deprecated
-    public static String toRRName(Identifier identifier) {
-        return toRRName(identifier.getDomain());
-    }
-
-    /**
-     * Converts a domain identifier to the Resource Record name to be used for the DNS TXT
-     * record.
-     *
-     * @param domain
-     *         Domain name to be validated
-     * @return Resource Record name (e.g. {@code _acme-challenge.www.example.org.}, note
-     * the trailing full stop character).
-     * @since 2.14
-     * @deprecated Use {@link #getRRName(String)}
-     */
-    @Deprecated
-    public static String toRRName(String domain) {
-        return RECORD_NAME_PREFIX + '.' + domain + '.';
-    }
-
-    /**
      * Creates a new generic {@link Dns01Challenge} object.
      *
      * @param login
@@ -92,10 +60,10 @@ public class Dns01Challenge extends TokenChallenge {
      *         Domain {@link Identifier} of the domain to be validated
      * @return Resource Record name (e.g. {@code _acme-challenge.www.example.org.}, note
      * the trailing full stop character).
-     * @since 3.6.0
+     * @since 4.0.0
      */
     public String getRRName(Identifier identifier) {
-        return toRRName(identifier);
+        return getRRName(identifier.getDomain());
     }
 
     /**
@@ -106,10 +74,10 @@ public class Dns01Challenge extends TokenChallenge {
      *         Domain name to be validated
      * @return Resource Record name (e.g. {@code _acme-challenge.www.example.org.}, note
      * the trailing full stop character).
-     * @since 3.6.0
+     * @since 4.0.0
      */
     public String getRRName(String domain) {
-        return toRRName(domain);
+        return RECORD_NAME_PREFIX + '.' + domain + '.';
     }
 
     /**

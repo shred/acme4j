@@ -155,29 +155,6 @@ public class Order extends AcmeJsonResource implements PollableResource {
     }
 
     /**
-     * Gets the STAR extension's {@link Certificate} if it is available.
-     *
-     * @since 2.6
-     * @throws IllegalStateException
-     *         if the order is not ready yet. You must finalize the order first, and wait
-     *         for the status to become {@link Status#VALID}. It is also thrown if the
-     *         order has been {@link Status#CANCELED}.
-     * @deprecated Use {@link #getCertificate()} for STAR certificates as well.
-     */
-    @Deprecated
-    @SuppressFBWarnings("EI_EXPOSE_REP")    // behavior is intended
-    public Certificate getAutoRenewalCertificate() {
-        if (autoRenewalCertificate == null) {
-            autoRenewalCertificate = getJSON().get("star-certificate")
-                    .optional()
-                    .map(Value::asURL)
-                    .map(getLogin()::bindCertificate)
-                    .orElseThrow(() -> new IllegalStateException("Order is in an invalid state"));
-        }
-        return autoRenewalCertificate;
-    }
-
-    /**
      * Returns whether this is a STAR certificate ({@code true}) or a standard certificate
      * ({@code false}).
      *

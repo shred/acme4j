@@ -165,7 +165,7 @@ public class AccountIT extends PebbleITBase {
                         URI.create("mailto:acme2@example.com"));
 
         // Still the same after updating
-        acct.update();
+        acct.fetch();
         assertThat(acct.getContacts()).contains(
                         URI.create("mailto:acme@example.com"),
                         URI.create("mailto:acme2@example.com"));
@@ -191,7 +191,7 @@ public class AccountIT extends PebbleITBase {
         assertThrows(AcmeServerException.class, () -> {
             Session sessionOldKey = new Session(pebbleURI());
             Account oldAccount = sessionOldKey.login(location, keyPair).getAccount();
-            oldAccount.update();
+            oldAccount.fetch();
         }, "Old account key is still accessible");
 
         var sessionNewKey = new Session(pebbleURI());
@@ -223,7 +223,7 @@ public class AccountIT extends PebbleITBase {
                 () -> {
             Session session2 = new Session(pebbleURI());
             Account acct2 = session2.login(location, keyPair).getAccount();
-            acct2.update();
+            acct2.fetch();
         }, "Account can still be accessed");
         assertThat(ex.getMessage()).isEqualTo("Account has been deactivated");
     }

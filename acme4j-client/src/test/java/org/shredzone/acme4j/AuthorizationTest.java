@@ -136,7 +136,7 @@ public class AuthorizationTest {
         provider.putTestChallenge("tls-alpn-01", TlsAlpn01Challenge::new);
 
         var auth = new Authorization(login, locationUrl);
-        auth.update();
+        auth.fetch();
 
         assertThat(auth.getIdentifier().getDomain()).isEqualTo("example.org");
         assertThat(auth.getStatus()).isEqualTo(Status.VALID);
@@ -175,7 +175,7 @@ public class AuthorizationTest {
         provider.putTestChallenge("dns-01", Dns01Challenge::new);
 
         var auth = new Authorization(login, locationUrl);
-        auth.update();
+        auth.fetch();
 
         assertThat(auth.getIdentifier().getDomain()).isEqualTo("example.org");
         assertThat(auth.getStatus()).isEqualTo(Status.VALID);

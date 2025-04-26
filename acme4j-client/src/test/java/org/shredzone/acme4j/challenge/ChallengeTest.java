@@ -146,7 +146,7 @@ public class ChallengeTest {
 
         var challenge = new Http01Challenge(login, getJSON("triggerHttpChallengeResponse"));
 
-        challenge.update();
+        challenge.fetch();
 
         assertThat(challenge.getStatus()).isEqualTo(Status.VALID);
         assertThat(challenge.getLocation()).isEqualTo(locationUrl);

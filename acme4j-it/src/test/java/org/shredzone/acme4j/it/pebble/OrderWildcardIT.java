@@ -75,7 +75,7 @@ public class OrderWildcardIT extends PebbleITBase {
 
             var challenge = auth.findChallenge(Dns01Challenge.class).orElseThrow();
 
-            var challengeDomainName = Dns01Challenge.toRRName(TEST_DOMAIN);
+            var challengeDomainName = challenge.getRRName(TEST_DOMAIN);
 
             client.dnsAddTxtRecord(challengeDomainName, challenge.getDigest());
 
