@@ -17,7 +17,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatNoException;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.time.Duration;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -167,7 +169,8 @@ public class ProviderIT {
     @Test
     public void testZeroSsl() throws AcmeException, MalformedURLException {
         var session = new Session("acme://zerossl.com");
-        assertThat(session.getMetadata().getWebsite()).hasValue(new URL("https://zerossl.com"));
+        session.networkSettings().setTimeout(Duration.ofSeconds(120L));
+        assertThat(session.getMetadata().getWebsite()).hasValue(URI.create("https://zerossl.com").toURL());
         assertThatNoException().isThrownBy(() -> session.resourceUrl(Resource.NEW_ACCOUNT));
         assertThat(session.getMetadata().isExternalAccountRequired()).isTrue();
         assertThat(session.getMetadata().isAutoRenewalEnabled()).isFalse();
