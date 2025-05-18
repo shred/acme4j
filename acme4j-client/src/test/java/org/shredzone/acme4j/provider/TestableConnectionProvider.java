@@ -108,7 +108,7 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
      */
     public Login createLogin() throws IOException {
         var session = createSession();
-        return session.login(new URL(TestUtils.ACCOUNT_URL), TestUtils.createKeyPair());
+        return session.login(URI.create(TestUtils.ACCOUNT_URL).toURL(), TestUtils.createKeyPair());
     }
 
     @Override

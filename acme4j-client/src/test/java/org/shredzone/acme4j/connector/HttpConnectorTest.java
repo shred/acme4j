@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 
 import java.net.Authenticator;
-import java.net.URL;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.time.Duration;
 
@@ -71,7 +71,7 @@ public class HttpConnectorTest {
      */
     @Test
     public void testRequestBuilderDefaultValues() throws Exception {
-        var url = new URL("http://example.org:123/foo");
+        var url = URI.create("http://example.org:123/foo").toURL();
         var settings = new NetworkSettings();
 
         var connector = new HttpConnector(settings);

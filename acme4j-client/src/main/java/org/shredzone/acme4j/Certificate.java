@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.Serial;
 import java.io.Writer;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.Principal;
@@ -206,7 +207,7 @@ public class Certificate extends AcmeResource {
                                 url += '/';
                             }
                             url += getRenewalUniqueIdentifier(getCertificate());
-                            return new URL(url);
+                            return URI.create(url).toURL();
                         } catch (MalformedURLException ex) {
                             throw new AcmeProtocolException("Invalid RenewalInfo URL", ex);
                         }

@@ -21,7 +21,6 @@ import static org.shredzone.acme4j.toolbox.TestUtils.*;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.time.Duration;
 import java.time.ZonedDateTime;
 import java.util.Locale;
@@ -150,15 +149,15 @@ public class SessionTest {
         assertThat(session.hasDirectory()).isFalse();
 
         assertThat(session.resourceUrl(Resource.NEW_ACCOUNT))
-                .isEqualTo(new URL("https://example.com/acme/new-account"));
+                .isEqualTo(URI.create("https://example.com/acme/new-account").toURL());
 
         // There is a local copy of the directory now
         assertThat(session.hasDirectory()).isTrue();
 
         assertThat(session.resourceUrl(Resource.NEW_AUTHZ))
-                .isEqualTo(new URL("https://example.com/acme/new-authz"));
+                .isEqualTo(URI.create("https://example.com/acme/new-authz").toURL());
         assertThat(session.resourceUrl(Resource.NEW_ORDER))
-                .isEqualTo(new URL("https://example.com/acme/new-order"));
+                .isEqualTo(URI.create("https://example.com/acme/new-order").toURL());
 
         assertThatExceptionOfType(AcmeNotSupportedException.class)
                 .isThrownBy(() -> session.resourceUrl(Resource.REVOKE_CERT))
@@ -166,7 +165,7 @@ public class SessionTest {
 
         assertThat(session.resourceUrlOptional(Resource.NEW_AUTHZ))
                 .isNotEmpty()
-                .contains(new URL("https://example.com/acme/new-authz"));
+                .contains(URI.create("https://example.com/acme/new-authz").toURL());
 
         assertThat(session.resourceUrlOptional(Resource.REVOKE_CERT))
                 .isEmpty();
@@ -223,11 +222,11 @@ public class SessionTest {
         };
 
         assertThat(session.resourceUrl(Resource.NEW_ACCOUNT))
-                .isEqualTo(new URL("https://example.com/acme/new-account"));
+                .isEqualTo(URI.create("https://example.com/acme/new-account").toURL());
         assertThat(session.resourceUrl(Resource.NEW_AUTHZ))
-                .isEqualTo(new URL("https://example.com/acme/new-authz"));
+                .isEqualTo(URI.create("https://example.com/acme/new-authz").toURL());
         assertThat(session.resourceUrl(Resource.NEW_ORDER))
-                .isEqualTo(new URL("https://example.com/acme/new-order"));
+                .isEqualTo(URI.create("https://example.com/acme/new-order").toURL());
 
         var meta = session.getMetadata();
         try (var softly = new AutoCloseableSoftAssertions()) {

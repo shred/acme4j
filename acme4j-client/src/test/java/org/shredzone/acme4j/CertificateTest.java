@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -287,7 +288,7 @@ public class CertificateTest {
         // certid-cert.pem and certId provided by ACME ARI specs and known good
         var certId = "aYhba4dGQEHhs3uEe6CuLN4ByNQ.AIdlQyE";
         var certIdCert = TestUtils.createCertificate("/certid-cert.pem");
-        var certResourceUrl = new URL(resourceUrl.toExternalForm() + "/" + certId);
+        var certResourceUrl = URI.create(resourceUrl.toExternalForm() + "/" + certId).toURL();
         var retryAfterInstant = Instant.now().plus(10L, ChronoUnit.DAYS);
 
         var provider = new TestableConnectionProvider() {
@@ -366,7 +367,7 @@ public class CertificateTest {
         // certid-cert.pem and certId provided by ACME ARI specs and known good
         var certId = "aYhba4dGQEHhs3uEe6CuLN4ByNQ.AIdlQyE";
         var certIdCert = TestUtils.createCertificate("/certid-cert.pem");
-        var certResourceUrl = new URL(resourceUrl.toExternalForm() + "/" + certId);
+        var certResourceUrl = URI.create(resourceUrl.toExternalForm() + "/" + certId).toURL();
 
         var provider = new TestableConnectionProvider() {
             private boolean certRequested = false;

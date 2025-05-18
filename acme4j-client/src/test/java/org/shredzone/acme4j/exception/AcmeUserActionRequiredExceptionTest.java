@@ -18,7 +18,6 @@ import static org.shredzone.acme4j.toolbox.TestUtils.createProblem;
 
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 
 import org.junit.jupiter.api.Test;
 
@@ -35,7 +34,7 @@ public class AcmeUserActionRequiredExceptionTest {
         var type = URI.create("urn:ietf:params:acme:error:userActionRequired");
         var detail = "Accept new TOS";
         var tosUri = URI.create("http://example.com/agreement.pdf");
-        var instanceUrl = new URL("http://example.com/howToAgree.html");
+        var instanceUrl = URI.create("http://example.com/howToAgree.html").toURL();
 
         var problem = createProblem(type, detail, instanceUrl);
 
@@ -55,7 +54,7 @@ public class AcmeUserActionRequiredExceptionTest {
     public void testNullAcmeUserActionRequiredException() throws MalformedURLException {
         var type = URI.create("urn:ietf:params:acme:error:userActionRequired");
         var detail = "Call our service";
-        var instanceUrl = new URL("http://example.com/howToContactUs.html");
+        var instanceUrl = URI.create("http://example.com/howToContactUs.html").toURL();
 
         var problem = createProblem(type, detail, instanceUrl);
 

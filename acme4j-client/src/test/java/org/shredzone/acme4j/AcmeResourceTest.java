@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serial;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
@@ -38,7 +39,7 @@ public class AcmeResourceTest {
     @Test
     public void testConstructor() throws Exception {
         var login = TestUtils.login();
-        var location = new URL("http://example.com/acme/resource");
+        var location = URI.create("http://example.com/acme/resource").toURL();
 
         assertThrows(NullPointerException.class, () -> new DummyResource(null, null));
 
@@ -53,7 +54,7 @@ public class AcmeResourceTest {
     @Test
     public void testSerialization() throws Exception {
         var login = TestUtils.login();
-        var location = new URL("http://example.com/acme/resource");
+        var location = URI.create("http://example.com/acme/resource").toURL();
 
         // Create a Challenge for testing
         var challenge = new DummyResource(login, location);
@@ -100,7 +101,7 @@ public class AcmeResourceTest {
     public void testRebind() {
         assertThrows(IllegalStateException.class, () -> {
             var login = TestUtils.login();
-            var location = new URL("http://example.com/acme/resource");
+            var location = URI.create("http://example.com/acme/resource").toURL();
 
             var resource = new DummyResource(login, location);
             assertThat(resource.getLogin()).isEqualTo(login);

@@ -55,7 +55,7 @@ public class LetsEncryptAcmeProvider extends AbstractAcmeProvider {
         }
 
         try {
-            return new URL(directoryUrl);
+            return URI.create(directoryUrl).toURL();
         } catch (MalformedURLException ex) {
             throw new AcmeProtocolException(directoryUrl, ex);
         }

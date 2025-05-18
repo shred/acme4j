@@ -17,6 +17,7 @@ import static java.util.Objects.requireNonNull;
 import static org.shredzone.acme4j.toolbox.AcmeUtils.getRenewalUniqueIdentifier;
 
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
@@ -171,7 +172,7 @@ public class Login {
                 url += '/';
             }
             url += getRenewalUniqueIdentifier(certificate);
-            return bindRenewalInfo(new URL(url));
+            return bindRenewalInfo(URI.create(url).toURL());
         } catch (MalformedURLException ex) {
             throw new AcmeProtocolException("Invalid RenewalInfo URL", ex);
         }

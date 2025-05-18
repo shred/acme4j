@@ -129,7 +129,7 @@ public final class TestUtils {
      */
     public static Login login() {
         try {
-            return session().login(new URL(ACCOUNT_URL), createKeyPair());
+            return session().login(URI.create(ACCOUNT_URL).toURL(), createKeyPair());
         } catch (IOException ex) {
             throw new UncheckedIOException(ex);
         }
@@ -145,7 +145,7 @@ public final class TestUtils {
      */
     public static URL url(String url) {
         try {
-            return new URL(url);
+            return URI.create(url).toURL();
         } catch (MalformedURLException ex) {
             throw new IllegalArgumentException(url, ex);
         }

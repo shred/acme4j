@@ -21,6 +21,7 @@ import static org.shredzone.acme4j.toolbox.TestUtils.url;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 
 import org.junit.jupiter.api.Test;
@@ -145,7 +146,7 @@ public class LoginTest {
      */
     @Test
     public void testBindChallenge() throws Exception {
-        var locationUrl = new URL("https://example.com/acme/challenge/1");
+        var locationUrl = URI.create("https://example.com/acme/challenge/1").toURL();
 
         var mockChallenge = mock(Http01Challenge.class);
         when(mockChallenge.getType()).thenReturn(Http01Challenge.TYPE);

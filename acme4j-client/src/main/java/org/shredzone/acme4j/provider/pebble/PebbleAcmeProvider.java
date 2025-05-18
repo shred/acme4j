@@ -15,6 +15,7 @@ package org.shredzone.acme4j.provider.pebble;
 
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.regex.Pattern;
 
@@ -50,7 +51,7 @@ public class PebbleAcmeProvider extends AbstractAcmeProvider {
             var path = serverUri.getPath();
             int port = serverUri.getPort() != -1 ? serverUri.getPort() : PEBBLE_DEFAULT_PORT;
 
-            var baseUrl = new URL("https://localhost:" + port + "/dir");
+            var baseUrl = URI.create("https://localhost:" + port + "/dir").toURL();
 
             if (path != null && !path.isEmpty() && !"/".equals(path)) {
                 baseUrl = parsePath(path);
@@ -77,7 +78,11 @@ public class PebbleAcmeProvider extends AbstractAcmeProvider {
             if (m.group(2) != null) {
                 port = Integer.parseInt(m.group(2));
             }
-            return new URL("https", host, port, "/dir");
+            try {
+                return new URI("https", null, host, port, "/dir", null, null).toURL();
+            } catch (URISyntaxException ex) {
+                throw new IllegalArgumentException("Malformed Pebble host/port: " + path);
+            }
         } else {
             throw new IllegalArgumentException("Invalid Pebble host/port: " + path);
         }

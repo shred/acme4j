@@ -439,7 +439,7 @@ public final class JSON implements Serializable {
          */
         public URL asURL() {
             try {
-                return new URL(asString());
+                return asURI().toURL();
             } catch (MalformedURLException ex) {
                 throw new AcmeProtocolException(path + ": bad URL " + val, ex);
             }

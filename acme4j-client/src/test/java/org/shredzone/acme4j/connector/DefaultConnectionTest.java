@@ -88,9 +88,9 @@ public class DefaultConnectionTest {
     @BeforeEach
     public void setup(WireMockRuntimeInfo wmRuntimeInfo) throws Exception {
         baseUrl = wmRuntimeInfo.getHttpBaseUrl();
-        directoryUrl = new URL(baseUrl + DIRECTORY_PATH);
-        newNonceUrl = new URL(baseUrl + NEW_NONCE_PATH);
-        requestUrl = new URL(baseUrl + REQUEST_PATH);
+        directoryUrl = URI.create(baseUrl + DIRECTORY_PATH).toURL();
+        newNonceUrl = URI.create(baseUrl + NEW_NONCE_PATH).toURL();
+        requestUrl = URI.create(baseUrl + REQUEST_PATH).toURL();
 
         session = new Session(directoryUrl.toURI());
         session.setLocale(Locale.JAPAN);
@@ -262,7 +262,7 @@ public class DefaultConnectionTest {
         try (var conn = session.connect()) {
             conn.sendRequest(requestUrl, session, null);
             var location = conn.getLocation();
-            assertThat(location).isEqualTo(new URL("https://example.com/otherlocation"));
+            assertThat(location).isEqualTo(URI.create("https://example.com/otherlocation").toURL());
         }
     }
 
@@ -278,7 +278,7 @@ public class DefaultConnectionTest {
         try (var conn = session.connect()) {
             conn.sendRequest(requestUrl, session, null);
             var location = conn.getLocation();
-            assertThat(location).isEqualTo(new URL(baseUrl + "/otherlocation"));
+            assertThat(location).isEqualTo(URI.create(baseUrl + "/otherlocation").toURL());
         }
     }
 
@@ -295,9 +295,9 @@ public class DefaultConnectionTest {
 
         try (var conn = session.connect()) {
             conn.sendRequest(requestUrl, session, null);
-            assertThat(conn.getLinks("next")).containsExactly(new URL("https://example.com/acme/new-authz"));
-            assertThat(conn.getLinks("recover")).containsExactly(new URL(baseUrl + "/recover-acct"));
-            assertThat(conn.getLinks("terms-of-service")).containsExactly(new URL("https://example.com/acme/terms"));
+            assertThat(conn.getLinks("next")).containsExactly(URI.create("https://example.com/acme/new-authz").toURL());
+            assertThat(conn.getLinks("recover")).containsExactly(URI.create(baseUrl + "/recover-acct").toURL());
+            assertThat(conn.getLinks("terms-of-service")).containsExactly(URI.create("https://example.com/acme/terms").toURL());
             assertThat(conn.getLinks("secret-stuff")).isEmpty();
         }
     }
