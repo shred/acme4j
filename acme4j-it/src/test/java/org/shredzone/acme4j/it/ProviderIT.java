@@ -20,7 +20,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.time.Duration;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.connector.Resource;
@@ -140,7 +139,7 @@ public class ProviderIT {
      * Test ssl.com, staging server
      */
     @Test
-    @Disabled("Instable due to frequent certificate expiration of acme-try.ssl.com")
+    @SoftFail("Frequent certificate expiration of acme-try.ssl.com")
     public void testSslComStaging() throws AcmeException, MalformedURLException {
         var sessionEccStage = new Session("acme://ssl.com/staging/ecc");
         assertThat(sessionEccStage.getMetadata().getWebsite()).hasValue(URI.create("https://www.ssl.com").toURL());
@@ -166,6 +165,7 @@ public class ProviderIT {
      * Test ZeroSSL
      */
     @Test
+    @SoftFail("Frequent network timeouts or HTTP errors")
     public void testZeroSsl() throws AcmeException, MalformedURLException {
         var session = new Session("acme://zerossl.com");
         session.networkSettings().setTimeout(Duration.ofSeconds(120L));
