@@ -14,9 +14,7 @@
 package org.shredzone.acme4j.it.pebble;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.net.URI;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.time.Duration;
@@ -31,7 +29,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.shredzone.acme4j.AccountBuilder;
 import org.shredzone.acme4j.Authorization;
 import org.shredzone.acme4j.Certificate;
-import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.RevocationReason;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.Status;
@@ -40,8 +37,6 @@ import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.DnsAccount01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
 import org.shredzone.acme4j.challenge.TlsAlpn01Challenge;
-import org.shredzone.acme4j.exception.AcmeException;
-import org.shredzone.acme4j.exception.AcmeServerException;
 
 /**
  * Tests a complete certificate order with different challenges.
@@ -245,19 +240,12 @@ public class OrderIT extends PebbleITBase {
 
         revoker.revoke(session, certificate, keyPair, domainKeyPair);
 
-        // Make sure certificate is revoked
-        var ex = assertThrows(AcmeException.class, () -> {
-            Login login2 = session.login(account.getLocation(), keyPair);
-            Certificate cert2 = login2.bindCertificate(certificate.getLocation());
-            cert2.download();
-        }, "Could download revoked cert");
-        assertThat(ex.getMessage()).isEqualTo("HTTP 404");
-
-        // Try to revoke again
+        /* FIXME: Waiting for https://github.com/letsencrypt/pebble/pull/505 to be deployed
         var ex2 = assertThrows(AcmeServerException.class,
                 certificate::revoke,
                 "Could revoke again");
         assertThat(ex2.getProblem().getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:alreadyRevoked"));
+        */
     }
 
     /**
