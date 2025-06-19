@@ -160,9 +160,6 @@ public class Login {
      * @param certificate
      *         {@link X509Certificate} to get the {@link RenewalInfo} for
      * @return {@link RenewalInfo} bound to the login
-     * @draft This method is currently based on an RFC draft. It may be changed or removed
-     * without notice to reflect future changes to the draft. SemVer rules do not apply
-     * here.
      * @since 3.2.0
      */
     public RenewalInfo bindRenewalInfo(X509Certificate certificate) throws AcmeException {

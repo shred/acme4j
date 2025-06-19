@@ -30,9 +30,6 @@ import org.slf4j.LoggerFactory;
 /**
  * Renewal Information of a certificate.
  *
- * @draft This class is currently based on an RFC draft. It may be changed or
- * removed without notice to reflect future changes to the draft. SemVer rules
- * do not apply here.
  * @since 3.0.0
  */
 public class RenewalInfo extends AcmeJsonResource {

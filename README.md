@@ -15,7 +15,7 @@ This Java client helps to connect to an ACME server, and performing all necessar
 * Supports [RFC 8739](https://tools.ietf.org/html/rfc8739) short-term automatic certificate renewal (experimental)
 * Supports [RFC 8823](https://tools.ietf.org/html/rfc8823) for S/MIME certificates (experimental)
 * Supports [RFC 9444](https://tools.ietf.org/html/rfc9444) for subdomain validation
-* Supports [draft-ietf-acme-ari-07](https://www.ietf.org/archive/id/draft-ietf-acme-ari-07.html) for renewal information (experimental)
+* Supports [RFC 9773](https://tools.ietf.org/html/rfc9773) for renewal information
 * Supports [draft-aaron-acme-profiles-00](https://www.ietf.org/archive/id/draft-aaron-acme-profiles-00.html) for certificate profiles (experimental)
 * Supports [draft-ietf-acme-dns-account-label-00](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-account-label/) for DNS labeled with ACME account ID challenges (experimental)
 * Easy to use Java API

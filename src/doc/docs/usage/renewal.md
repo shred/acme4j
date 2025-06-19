@@ -13,14 +13,11 @@ There is no special path for renewing a certificate. To renew it, just [order](o
 
 ## Renewal Information
 
-_acme4j_ supports the [draft-ietf-acme-ari](https://www.ietf.org/archive/id/draft-ietf-acme-ari-07.html) draft.
+_acme4j_ supports [RFC 9773](https://tools.ietf.org/html/rfc9773) for renewal information.
 
 You can check if the CA offers renewal information by invoking `Certificate.hasRenewalInfo()`. If it does, you can get a suggested time window for certificate renewal by invoking `Certificate.getRenewalInfo()`.
 
 When renewing a certificate, you can use `OrderBuilder.replaces()` to mark your current certificate as the one being replaced. This step is optional though.
-
-!!! note
-    Starting with _acme4j_ v3.2.0, the now obsolete [draft-ietf-acme-ari-01](https://www.ietf.org/archive/id/draft-ietf-acme-ari-01.html) is not supported anymore! If your server requires the old draft, use _acme4j_ v3.1.1 until the CA upgraded its systems. Because of the dynamic nature of the draft, all parts of the API that are related to this draft may be changed or removed without notice. SemVer rules do not apply here.
 
 ## Short-Term Automatic Renewal
 

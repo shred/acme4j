@@ -299,9 +299,6 @@ public class OrderBuilder {
      * @param uniqueId
      *         Certificate's renewal unique identifier.
      * @return itself
-     * @draft This method is currently based on an RFC draft. It may be changed or removed
-     * without notice to reflect future changes to the draft. SemVer rules do not apply
-     * here.
      * @since 3.2.0
      */
     public OrderBuilder replaces(String uniqueId) {
@@ -319,9 +316,6 @@ public class OrderBuilder {
      * @param certificate
      *         Certificate to be replaced
      * @return itself
-     * @draft This method is currently based on an RFC draft. It may be changed or removed
-     * without notice to reflect future changes to the draft. SemVer rules do not apply
-     * here.
      * @since 3.2.0
      */
     public OrderBuilder replaces(X509Certificate certificate) {
@@ -338,9 +332,6 @@ public class OrderBuilder {
      * @param certificate
      *         Certificate to be replaced
      * @return itself
-     * @draft This method is currently based on an RFC draft. It may be changed or removed
-     * without notice to reflect future changes to the draft. SemVer rules do not apply
-     * here.
      * @since 3.2.0
      */
     public OrderBuilder replaces(Certificate certificate) {

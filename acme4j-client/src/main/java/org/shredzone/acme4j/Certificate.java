@@ -192,9 +192,6 @@ public class Certificate extends AcmeResource {
      * Returns the location of the certificate's RenewalInfo. Empty if the CA does not
      * provide this information.
      *
-     * @draft This method is currently based on an RFC draft. It may be changed or
-     * removed without notice to reflect future changes to the draft. SemVer rules
-     * do not apply here.
      * @since 3.0.0
      */
     public Optional<URL> getRenewalInfoLocation() {
@@ -220,9 +217,6 @@ public class Certificate extends AcmeResource {
     /**
      * Returns {@code true} if the CA provides renewal information.
      *
-     * @draft This method is currently based on an RFC draft. It may be changed or
-     * removed without notice to reflect future changes to the draft. SemVer rules
-     * do not apply here.
      * @since 3.0.0
      */
     public boolean hasRenewalInfo() {
@@ -232,9 +226,6 @@ public class Certificate extends AcmeResource {
     /**
      * Reads the RenewalInfo for this certificate.
      *
-     * @draft This method is currently based on an RFC draft. It may be changed or
-     * removed without notice to reflect future changes to the draft. SemVer rules
-     * do not apply here.
      * @return The {@link RenewalInfo} of this certificate.
      * @throws AcmeNotSupportedException if the CA does not support renewal information.
      * @since 3.0.0
