@@ -43,6 +43,7 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
+import org.shredzone.acme4j.ISession;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
@@ -114,17 +115,17 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public void resetNonce(Session session) throws AcmeException {
+    public void resetNonce(ISession ISession) throws AcmeException {
         assertConnectionIsClosed();
 
         try {
-            session.setNonce(null);
+            ISession.setNonce(null);
 
-            var newNonceUrl = session.resourceUrl(Resource.NEW_NONCE);
+            var newNonceUrl = ISession.resourceUrl(Resource.NEW_NONCE);
 
             LOG.debug("HEAD {}", newNonceUrl);
 
-            sendRequest(session, newNonceUrl, b ->
+            sendRequest(ISession, newNonceUrl, b ->
                     b.method("HEAD", HttpRequest.BodyPublishers.noBody()));
 
             logHeaders();
@@ -134,7 +135,7 @@ public class DefaultConnection implements Connection {
                 throw new AcmeException("Server responded with HTTP " + rc + " while trying to retrieve a nonce");
             }
 
-            session.setNonce(getNonce()
+            ISession.setNonce(getNonce()
                     .orElseThrow(() -> new AcmeProtocolException("Server did not provide a nonce"))
             );
         } catch (IOException ex) {
@@ -145,16 +146,16 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public int sendRequest(URL url, Session session, @Nullable ZonedDateTime ifModifiedSince)
+    public int sendRequest(URL url, ISession ISession, @Nullable ZonedDateTime ifModifiedSince)
             throws AcmeException {
         Objects.requireNonNull(url, "url");
-        Objects.requireNonNull(session, "session");
+        Objects.requireNonNull(ISession, "session");
         assertConnectionIsClosed();
 
         LOG.debug("GET {}", url);
 
         try {
-            sendRequest(session, url, builder -> {
+            sendRequest(ISession, url, builder -> {
                 builder.GET();
                 builder.header(ACCEPT_HEADER, MIME_JSON);
                 if (ifModifiedSince != null) {
@@ -164,7 +165,7 @@ public class DefaultConnection implements Connection {
 
             logHeaders();
 
-            getNonce().ifPresent(session::setNonce);
+            getNonce().ifPresent(ISession::setNonce);
 
             var rc = getResponse().statusCode();
             if (rc != HTTP_OK && rc != HTTP_CREATED && (rc != HTTP_NOT_MODIFIED || ifModifiedSince == null)) {
@@ -195,9 +196,9 @@ public class DefaultConnection implements Connection {
     }
 
     @Override
-    public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair)
+    public int sendSignedRequest(URL url, JSONBuilder claims, ISession ISession, KeyPair keypair)
             throws AcmeException {
-        return sendSignedRequest(url, claims, session, keypair, null, MIME_JSON);
+        return sendSignedRequest(url, claims, ISession, keypair, null, MIME_JSON);
     }
 
     @Override
@@ -317,7 +318,7 @@ public class DefaultConnection implements Connection {
      * sending. It will create a {@link HttpRequest} by using the request builder,
      * configure commnon headers, and then send the request via {@link HttpClient}.
      *
-     * @param session
+     * @param ISession
      *         {@link Session} to be used for sending
      * @param url
      *         Target {@link URL}
@@ -325,13 +326,13 @@ public class DefaultConnection implements Connection {
      *         Callback that completes the {@link HttpRequest.Builder} with the request
      *         body (e.g. HTTP method, request body, more headers).
      */
-    protected void sendRequest(Session session, URL url, Consumer<HttpRequest.Builder> body) throws IOException {
+    protected void sendRequest(ISession ISession, URL url, Consumer<HttpRequest.Builder> body) throws IOException {
         try {
             var builder = httpConnector.createRequestBuilder(url)
                     .header(ACCEPT_CHARSET_HEADER, DEFAULT_CHARSET)
-                    .header(ACCEPT_LANGUAGE_HEADER, session.getLanguageHeader());
+                    .header(ACCEPT_LANGUAGE_HEADER, ISession.getLanguageHeader());
 
-            if (session.networkSettings().isCompressionEnabled()) {
+            if (ISession.networkSettings().isCompressionEnabled()) {
                 builder.header(ACCEPT_ENCODING_HEADER, "gzip");
             }
 
@@ -351,7 +352,7 @@ public class DefaultConnection implements Connection {
      * @param claims
      *         {@link JSONBuilder} containing claims. {@code null} for POST-as-GET
      *         request.
-     * @param session
+     * @param ISession
      *         {@link Session} instance to be used for signing and tracking
      * @param keypair
      *         {@link KeyPair} to be used for signing
@@ -362,10 +363,10 @@ public class DefaultConnection implements Connection {
      *         Accept header
      * @return HTTP 200 class status that was returned
      */
-    protected int sendSignedRequest(URL url, @Nullable JSONBuilder claims, Session session,
+    protected int sendSignedRequest(URL url, @Nullable JSONBuilder claims, ISession ISession,
                                     KeyPair keypair, @Nullable URL accountLocation, String accept) throws AcmeException {
         Objects.requireNonNull(url, "url");
-        Objects.requireNonNull(session, "session");
+        Objects.requireNonNull(ISession, "session");
         Objects.requireNonNull(keypair, "keypair");
         Objects.requireNonNull(accept, "accept");
         assertConnectionIsClosed();
@@ -373,7 +374,7 @@ public class DefaultConnection implements Connection {
         var attempt = 1;
         while (true) {
             try {
-                return performRequest(url, claims, session, keypair, accountLocation, accept);
+                return performRequest(url, claims, ISession, keypair, accountLocation, accept);
             } catch (AcmeServerException ex) {
                 if (!BAD_NONCE_ERROR.equals(ex.getType())) {
                     throw ex;
@@ -395,7 +396,7 @@ public class DefaultConnection implements Connection {
      * @param claims
      *         {@link JSONBuilder} containing claims. {@code null} for POST-as-GET
      *         request.
-     * @param session
+     * @param ISession
      *         {@link Session} instance to be used for signing and tracking
      * @param keypair
      *         {@link KeyPair} to be used for signing
@@ -406,25 +407,25 @@ public class DefaultConnection implements Connection {
      *         Accept header
      * @return HTTP 200 class status that was returned
      */
-    private int performRequest(URL url, @Nullable JSONBuilder claims, Session session,
+    private int performRequest(URL url, @Nullable JSONBuilder claims, ISession ISession,
                                KeyPair keypair, @Nullable URL accountLocation, String accept)
             throws AcmeException {
         try {
-            if (session.getNonce() == null) {
-                resetNonce(session);
+            if (ISession.getNonce() == null) {
+                resetNonce(ISession);
             }
 
             var jose = JoseUtils.createJoseRequest(
                     url,
                     keypair,
                     claims,
-                    session.getNonce(),
+                    ISession.getNonce(),
                     accountLocation != null ? accountLocation.toString() : null
             );
 
             var outputData = jose.toString();
 
-            sendRequest(session, url, builder -> {
+            sendRequest(ISession, url, builder -> {
                 builder.POST(HttpRequest.BodyPublishers.ofString(outputData));
                 builder.header(ACCEPT_HEADER, accept);
                 builder.header(CONTENT_TYPE_HEADER, "application/jose+json");
@@ -432,7 +433,7 @@ public class DefaultConnection implements Connection {
 
             logHeaders();
 
-            session.setNonce(getNonce().orElse(null));
+            ISession.setNonce(getNonce().orElse(null));
 
             var rc = getResponse().statusCode();
             if (rc != HTTP_OK && rc != HTTP_CREATED) {

@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.ServiceLoader;
 
 import org.junit.jupiter.api.Test;
+import org.shredzone.acme4j.ISession;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -92,7 +93,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public JSON directory(Session session, URI serverUri) {
+        public JSON directory(ISession ISession, URI serverUri) {
             throw new UnsupportedOperationException();
         }
 
@@ -120,7 +121,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public JSON directory(Session session, URI serverUri) {
+        public JSON directory(ISession ISession, URI serverUri) {
             throw new UnsupportedOperationException();
         }
 

@@ -47,7 +47,7 @@ public class RenewalInfoTest {
     public void testGetters() throws Exception {
         var provider = new TestableConnectionProvider() {
             @Override
-            public int sendRequest(URL url, Session session, ZonedDateTime ifModifiedSince) {
+            public int sendRequest(URL url, ISession session, ZonedDateTime ifModifiedSince) {
                 assertThat(url).isEqualTo(locationUrl);
                 assertThat(session).isNotNull();
                 assertThat(ifModifiedSince).isNull();

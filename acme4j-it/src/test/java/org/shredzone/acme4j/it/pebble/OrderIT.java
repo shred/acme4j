@@ -26,12 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullSource;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.shredzone.acme4j.AccountBuilder;
-import org.shredzone.acme4j.Authorization;
-import org.shredzone.acme4j.Certificate;
-import org.shredzone.acme4j.RevocationReason;
-import org.shredzone.acme4j.Session;
-import org.shredzone.acme4j.Status;
+import org.shredzone.acme4j.*;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.DnsAccount01Challenge;
@@ -252,19 +247,19 @@ public class OrderIT extends PebbleITBase {
      * Revokes a certificate by calling {@link Certificate#revoke(RevocationReason)}.
      * This is the standard way to revoke a certificate.
      */
-    private static void standardRevoker(Session session, Certificate certificate,
-            KeyPair keyPair, KeyPair domainKeyPair) throws Exception {
+    private static void standardRevoker(ISession ISession, Certificate certificate,
+                                        KeyPair keyPair, KeyPair domainKeyPair) throws Exception {
         certificate.revoke(RevocationReason.KEY_COMPROMISE);
     }
 
     /**
      * Revokes a certificate by calling
-     * {@link Certificate#revoke(Session, KeyPair, X509Certificate, RevocationReason)}.
+     * {@link Certificate#revoke(ISession, KeyPair, X509Certificate, RevocationReason)}.
      * This way can be used when the account key was lost.
      */
-    private static void domainKeyRevoker(Session session, Certificate certificate,
-            KeyPair keyPair, KeyPair domainKeyPair) throws Exception {
-        Certificate.revoke(session, domainKeyPair, certificate.getCertificate(),
+    private static void domainKeyRevoker(ISession ISession, Certificate certificate,
+                                         KeyPair keyPair, KeyPair domainKeyPair) throws Exception {
+        Certificate.revoke(ISession, domainKeyPair, certificate.getCertificate(),
                 RevocationReason.KEY_COMPROMISE);
     }
 
@@ -275,8 +270,8 @@ public class OrderIT extends PebbleITBase {
 
     @FunctionalInterface
     private interface Revoker {
-        void revoke(Session session, Certificate certificate, KeyPair keyPair,
-            KeyPair domainKeyPair) throws Exception;
+        void revoke(ISession ISession, Certificate certificate, KeyPair keyPair,
+                    KeyPair domainKeyPair) throws Exception;
     }
 
 }

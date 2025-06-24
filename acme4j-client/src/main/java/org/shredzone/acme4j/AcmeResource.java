@@ -61,7 +61,7 @@ public abstract class AcmeResource implements Serializable {
     /**
      * Gets the {@link Session} this resource is bound with.
      */
-    protected Session getSession() {
+    protected ISession getSession() {
         return getLogin().getSession();
     }
 

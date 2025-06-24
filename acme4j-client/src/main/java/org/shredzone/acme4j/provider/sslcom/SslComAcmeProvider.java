@@ -18,7 +18,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Map;
 
-import org.shredzone.acme4j.Session;
+import org.shredzone.acme4j.ISession;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.provider.AbstractAcmeProvider;
@@ -74,12 +74,12 @@ public class SslComAcmeProvider extends AbstractAcmeProvider {
 
     @Override
     @SuppressWarnings("unchecked")
-    public JSON directory(Session session, URI serverUri) throws AcmeException {
+    public JSON directory(ISession ISession, URI serverUri) throws AcmeException {
         // This is a workaround for a bug at SSL.com. It requires account registration
         // by EAB, but the "externalAccountRequired" flag in the directory is set to
         // false. This patch reads the directory and forcefully sets the flag to true.
         // The entire method can be removed once it is fixed on SSL.com side.
-        var superdirectory = super.directory(session, serverUri);
+        var superdirectory = super.directory(ISession, serverUri);
         if (superdirectory == null) {
             return null;
         }

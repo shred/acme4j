@@ -48,6 +48,7 @@ import org.jose4j.json.JsonUtil;
 import org.jose4j.jwk.JsonWebKey;
 import org.jose4j.jwk.JsonWebKey.OutputControlLevel;
 import org.jose4j.keys.HmacKey;
+import org.shredzone.acme4j.ISession;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Problem;
 import org.shredzone.acme4j.Session;
@@ -119,7 +120,7 @@ public final class TestUtils {
     /**
      * Creates a {@link Session} instance. It uses {@link #ACME_SERVER_URI} as server URI.
      */
-    public static Session session() {
+    public static ISession session() {
         return new Session(URI.create(ACME_SERVER_URI));
     }
 
@@ -157,7 +158,7 @@ public final class TestUtils {
      * @param provider
      *            {@link AcmeProvider} to be used in this session
      */
-    public static Session session(final AcmeProvider provider) {
+    public static ISession session(final AcmeProvider provider) {
         return new Session(URI.create(ACME_SERVER_URI)) {
             @Override
             public AcmeProvider provider() {

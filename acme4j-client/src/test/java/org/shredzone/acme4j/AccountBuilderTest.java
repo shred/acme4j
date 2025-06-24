@@ -68,7 +68,7 @@ public class AccountBuilderTest {
             }
 
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, ISession session, KeyPair keypair) {
                 assertThat(session).isNotNull();
                 assertThat(url).isEqualTo(resourceUrl);
                 assertThatJson(claims.toString()).isEqualTo(getJSON("newAccount").toString());
@@ -143,7 +143,7 @@ public class AccountBuilderTest {
 
         var provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, ISession session, KeyPair keypair) {
                 assertThat(session).isNotNull();
                 assertThat(url).isEqualTo(resourceUrl);
                 assertThat(keypair).isEqualTo(accountKey);
@@ -217,7 +217,7 @@ public class AccountBuilderTest {
 
         var provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, ISession session, KeyPair keypair) {
                 assertThat(session).isNotNull();
                 assertThat(url).isEqualTo(resourceUrl);
                 assertThatJson(claims.toString()).isEqualTo(getJSON("newAccountOnlyExisting").toString());

@@ -51,7 +51,7 @@ import org.shredzone.acme4j.toolbox.JSON;
  */
 public class Login {
 
-    private final Session session;
+    private final ISession ISession;
     private final URL accountLocation;
     private final Account account;
     private KeyPair keyPair;
@@ -63,13 +63,13 @@ public class Login {
      *            Account location {@link URL}
      * @param keyPair
      *            {@link KeyPair} of the account
-     * @param session
+     * @param ISession
      *            {@link Session} to be used
      */
-    public Login(URL accountLocation, KeyPair keyPair, Session session) {
+    public Login(URL accountLocation, KeyPair keyPair, ISession ISession) {
         this.accountLocation = Objects.requireNonNull(accountLocation, "accountLocation");
         this.keyPair = Objects.requireNonNull(keyPair, "keyPair");
-        this.session = Objects.requireNonNull(session, "session");
+        this.ISession = Objects.requireNonNull(ISession, "session");
         this.account = new Account(this);
     }
 
@@ -77,8 +77,8 @@ public class Login {
      * Gets the {@link Session} that is used.
      */
     @SuppressFBWarnings("EI_EXPOSE_REP")    // behavior is intended
-    public Session getSession() {
-        return session;
+    public ISession getSession() {
+        return ISession;
     }
 
     /**
@@ -186,7 +186,7 @@ public class Login {
      * @see #bindChallenge(URL, Class)
      */
     public Challenge bindChallenge(URL location) {
-        try (var connect = session.connect()) {
+        try (var connect = ISession.connect()) {
             connect.sendSignedPostAsGetRequest(location, this);
             return createChallenge(connect.readJsonResponse());
         } catch (AcmeException ex) {
@@ -225,7 +225,7 @@ public class Login {
      * @return {@link Challenge} instance
      */
     public Challenge createChallenge(JSON data) {
-        var challenge = session.provider().createChallenge(this, data);
+        var challenge = ISession.provider().createChallenge(this, data);
         if (challenge == null) {
             throw new AcmeProtocolException("Could not create challenge for: " + data);
         }

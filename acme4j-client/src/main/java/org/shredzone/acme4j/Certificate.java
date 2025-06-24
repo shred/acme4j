@@ -255,7 +255,7 @@ public class Certificate extends AcmeResource {
      *            used when generating OCSP responses and CRLs. {@code null} to give no
      *            reason.
      * @see #revoke(Login, X509Certificate, RevocationReason)
-     * @see #revoke(Session, KeyPair, X509Certificate, RevocationReason)
+     * @see #revoke(ISession, KeyPair, X509Certificate, RevocationReason)
      */
     public void revoke(@Nullable RevocationReason reason) throws AcmeException {
         revoke(getLogin(), getCertificate(), reason);
@@ -275,7 +275,7 @@ public class Certificate extends AcmeResource {
      * @param reason
      *         {@link RevocationReason} stating the reason of the revocation that is used
      *         when generating OCSP responses and CRLs. {@code null} to give no reason.
-     * @see #revoke(Session, KeyPair, X509Certificate, RevocationReason)
+     * @see #revoke(ISession, KeyPair, X509Certificate, RevocationReason)
      * @since 2.6
      */
     public static void revoke(Login login, X509Certificate cert, @Nullable RevocationReason reason)
@@ -306,7 +306,7 @@ public class Certificate extends AcmeResource {
      * login into your account), but you still have the key pair of the affected domain
      * and the issued certificate.
      *
-     * @param session
+     * @param ISession
      *         {@link Session} connected to the ACME server
      * @param domainKeyPair
      *         Key pair the CSR was signed with
@@ -317,20 +317,20 @@ public class Certificate extends AcmeResource {
      *         when generating OCSP responses and CRLs. {@code null} to give no reason.
      * @see #revoke(Login, X509Certificate, RevocationReason)
      */
-    public static void revoke(Session session, KeyPair domainKeyPair, X509Certificate cert,
-            @Nullable RevocationReason reason) throws AcmeException {
+    public static void revoke(ISession ISession, KeyPair domainKeyPair, X509Certificate cert,
+                              @Nullable RevocationReason reason) throws AcmeException {
         LOG.debug("revoke using the domain key pair");
 
-        var resUrl = session.resourceUrl(Resource.REVOKE_CERT);
+        var resUrl = ISession.resourceUrl(Resource.REVOKE_CERT);
 
-        try (var conn = session.connect()) {
+        try (var conn = ISession.connect()) {
             var claims = new JSONBuilder();
             claims.putBase64("certificate", cert.getEncoded());
             if (reason != null) {
                 claims.put("reason", reason.getReasonCode());
             }
 
-            conn.sendSignedRequest(resUrl, claims, session, domainKeyPair);
+            conn.sendSignedRequest(resUrl, claims, ISession, domainKeyPair);
         } catch (CertificateEncodingException ex) {
             throw new AcmeProtocolException("Invalid certificate", ex);
         }
