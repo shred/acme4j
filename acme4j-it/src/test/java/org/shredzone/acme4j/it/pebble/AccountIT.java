@@ -20,11 +20,7 @@ import java.net.URI;
 import java.security.KeyPair;
 
 import org.junit.jupiter.api.Test;
-import org.shredzone.acme4j.Account;
-import org.shredzone.acme4j.AccountBuilder;
-import org.shredzone.acme4j.Login;
-import org.shredzone.acme4j.Session;
-import org.shredzone.acme4j.Status;
+import org.shredzone.acme4j.*;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeServerException;
 import org.shredzone.acme4j.exception.AcmeUnauthorizedException;
@@ -136,8 +132,8 @@ public class AccountIT extends PebbleITBase {
     public void testNotExisting() {
         var ex = assertThrows(AcmeServerException.class, () -> {
             KeyPair keyPair = createKeyPair();
-            Session session = new Session(pebbleURI());
-            new AccountBuilder().onlyExisting().useKeyPair(keyPair).create(session);
+            ISession ISession = new Session(pebbleURI());
+            new AccountBuilder().onlyExisting().useKeyPair(keyPair).create(ISession);
         });
         assertThat(ex.getType()).isEqualTo(URI.create("urn:ietf:params:acme:error:accountDoesNotExist"));
     }
@@ -189,8 +185,8 @@ public class AccountIT extends PebbleITBase {
         acct.changeKey(newKeyPair);
 
         assertThrows(AcmeServerException.class, () -> {
-            Session sessionOldKey = new Session(pebbleURI());
-            Account oldAccount = sessionOldKey.login(location, keyPair).getAccount();
+            ISession ISessionOldKey = new Session(pebbleURI());
+            Account oldAccount = ISessionOldKey.login(location, keyPair).getAccount();
             oldAccount.fetch();
         }, "Old account key is still accessible");
 
@@ -221,8 +217,8 @@ public class AccountIT extends PebbleITBase {
         // Make sure account cannot be accessed any more...
         var ex = assertThrows(AcmeUnauthorizedException.class,
                 () -> {
-            Session session2 = new Session(pebbleURI());
-            Account acct2 = session2.login(location, keyPair).getAccount();
+            ISession ISession2 = new Session(pebbleURI());
+            Account acct2 = ISession2.login(location, keyPair).getAccount();
             acct2.fetch();
         }, "Account can still be accessed");
         assertThat(ex.getMessage()).isEqualTo("Account has been deactivated");

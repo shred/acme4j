@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
+import org.shredzone.acme4j.ISession;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -41,10 +42,10 @@ public interface Connection extends AutoCloseable {
     /**
      * Resets the session nonce, by fetching a new one.
      *
-     * @param session
+     * @param ISession
      *            {@link Session} instance to fetch a nonce for
      */
-    void resetNonce(Session session) throws AcmeException;
+    void resetNonce(ISession ISession) throws AcmeException;
 
     /**
      * Sends a simple GET request.
@@ -54,14 +55,14 @@ public interface Connection extends AutoCloseable {
      *
      * @param url
      *            {@link URL} to send the request to.
-     * @param session
+     * @param ISession
      *            {@link Session} instance to be used for tracking
      * @param ifModifiedSince
      *            {@link ZonedDateTime} to be sent as "If-Modified-Since" header, or
      *            {@code null} if this header is not to be used
      * @return HTTP status that was returned
      */
-    int sendRequest(URL url, Session session, @Nullable ZonedDateTime ifModifiedSince)
+    int sendRequest(URL url, ISession ISession, @Nullable ZonedDateTime ifModifiedSince)
             throws AcmeException;
 
     /**
@@ -125,13 +126,13 @@ public interface Connection extends AutoCloseable {
      *            {@link URL} to send the request to.
      * @param claims
      *            {@link JSONBuilder} containing claims.
-     * @param session
+     * @param ISession
      *            {@link Session} instance to be used for tracking.
      * @param keypair
      *            {@link KeyPair} to be used for signing.
      * @return HTTP 200 class status that was returned
      */
-    int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair)
+    int sendSignedRequest(URL url, JSONBuilder claims, ISession ISession, KeyPair keypair)
                 throws AcmeException;
 
     /**

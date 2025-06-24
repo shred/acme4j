@@ -21,8 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
 
+import org.shredzone.acme4j.ISession;
 import org.shredzone.acme4j.Login;
-import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.DnsAccount01Challenge;
@@ -54,27 +54,27 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
     }
 
     @Override
-    public JSON directory(Session session, URI serverUri) throws AcmeException {
-        var expires = session.getDirectoryExpires();
+    public JSON directory(ISession ISession, URI serverUri) throws AcmeException {
+        var expires = ISession.getDirectoryExpires();
         if (expires != null && expires.isAfter(ZonedDateTime.now())) {
             // The cached directory is still valid
             return null;
         }
 
-        try (var conn = connect(serverUri, session.networkSettings())) {
-            var lastModified = session.getDirectoryLastModified();
-            var rc = conn.sendRequest(resolve(serverUri), session, lastModified);
+        try (var conn = connect(serverUri, ISession.networkSettings())) {
+            var lastModified = ISession.getDirectoryLastModified();
+            var rc = conn.sendRequest(resolve(serverUri), ISession, lastModified);
             if (lastModified != null && rc == HTTP_NOT_MODIFIED) {
                 // The server has not been modified since
                 return null;
             }
 
             // evaluate caching headers
-            session.setDirectoryLastModified(conn.getLastModified().orElse(null));
-            session.setDirectoryExpires(conn.getExpiration().orElse(null));
+            ISession.setDirectoryLastModified(conn.getLastModified().orElse(null));
+            ISession.setDirectoryExpires(conn.getExpiration().orElse(null));
 
             // use nonce header if there is one, saves a HEAD request...
-            conn.getNonce().ifPresent(session::setNonce);
+            conn.getNonce().ifPresent(ISession::setNonce);
 
             return conn.readJsonResponse();
         }

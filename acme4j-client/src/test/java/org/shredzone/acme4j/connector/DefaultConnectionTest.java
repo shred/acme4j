@@ -47,6 +47,7 @@ import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwx.CompactSerializer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.shredzone.acme4j.ISession;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
@@ -77,7 +78,7 @@ public class DefaultConnectionTest {
     private static final String TEST_USER_AGENT_PATTERN = "^acme4j/.*$";
 
     private final URL accountUrl = TestUtils.url(TestUtils.ACCOUNT_URL);
-    private Session session;
+    private ISession ISession;
     private Login login;
     private KeyPair keyPair;
     private String baseUrl;
@@ -92,12 +93,12 @@ public class DefaultConnectionTest {
         newNonceUrl = URI.create(baseUrl + NEW_NONCE_PATH).toURL();
         requestUrl = URI.create(baseUrl + REQUEST_PATH).toURL();
 
-        session = new Session(directoryUrl.toURI());
-        session.setLocale(Locale.JAPAN);
+        ISession = new Session(directoryUrl.toURI());
+        ISession.setLocale(Locale.JAPAN);
 
         keyPair = TestUtils.createKeyPair();
 
-        login = session.login(accountUrl, keyPair);
+        login = ISession.login(accountUrl, keyPair);
 
         var directory = new JSONBuilder();
         directory.put("newNonce", newNonceUrl);
@@ -113,10 +114,10 @@ public class DefaultConnectionTest {
     public void testNoNonceFromHeader() throws AcmeException {
         stubFor(head(urlEqualTo(NEW_NONCE_PATH)).willReturn(ok()));
 
-        assertThat(session.getNonce()).isNull();
+        assertThat(ISession.getNonce()).isNull();
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(directoryUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(directoryUrl, ISession, null);
             assertThat(conn.getNonce()).isEmpty();
         }
     }
@@ -131,12 +132,12 @@ public class DefaultConnectionTest {
                 .withHeader("Replay-Nonce", TestUtils.DUMMY_NONCE)
         ));
 
-        assertThat(session.getNonce()).isNull();
+        assertThat(ISession.getNonce()).isNull();
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             assertThat(conn.getNonce().orElseThrow()).isEqualTo(TestUtils.DUMMY_NONCE);
-            assertThat(session.getNonce()).isEqualTo(TestUtils.DUMMY_NONCE);
+            assertThat(ISession.getNonce()).isEqualTo(TestUtils.DUMMY_NONCE);
         }
 
         verify(getRequestedFor(urlEqualTo(REQUEST_PATH)));
@@ -155,11 +156,11 @@ public class DefaultConnectionTest {
                 // do not send a body here because it is a HEAD request!
         ));
 
-        assertThat(session.getNonce()).isNull();
+        assertThat(ISession.getNonce()).isNull();
 
         assertThatExceptionOfType(AcmeException.class).isThrownBy(() -> {
-            try (var conn = session.connect()) {
-                conn.resetNonce(session);
+            try (var conn = ISession.connect()) {
+                conn.resetNonce(ISession);
             }
         });
 
@@ -177,11 +178,11 @@ public class DefaultConnectionTest {
                 // do not send a body here because it is a HEAD request!
         ));
 
-        assertThat(session.getNonce()).isNull();
+        assertThat(ISession.getNonce()).isNull();
 
         var ex = assertThrows(AcmeException.class, () -> {
-            try (var conn = session.connect()) {
-                conn.resetNonce(session);
+            try (var conn = ISession.connect()) {
+                conn.resetNonce(ISession);
             }
         });
         assertThat(ex.getMessage()).isEqualTo("Server responded with HTTP 500 while trying to retrieve a nonce");
@@ -202,8 +203,8 @@ public class DefaultConnectionTest {
         ));
 
         var ex = assertThrows(AcmeProtocolException.class, () -> {
-            try (var conn = session.connect()) {
-                conn.sendRequest(requestUrl, session, null);
+            try (var conn = ISession.connect()) {
+                conn.sendRequest(requestUrl, ISession, null);
                 conn.getNonce();
             }
         });
@@ -213,7 +214,7 @@ public class DefaultConnectionTest {
     }
 
     /**
-     * Test that {@link DefaultConnection#resetNonce(Session)} fetches a new nonce via
+     * Test that {@link DefaultConnection#resetNonce(ISession)} fetches a new nonce via
      * new-nonce resource and a HEAD request.
      */
     @Test
@@ -222,32 +223,32 @@ public class DefaultConnectionTest {
                 .withHeader("Replay-Nonce", TestUtils.DUMMY_NONCE)
         ));
 
-        assertThat(session.getNonce()).isNull();
+        assertThat(ISession.getNonce()).isNull();
 
-        try (var conn = session.connect()) {
-            conn.resetNonce(session);
+        try (var conn = ISession.connect()) {
+            conn.resetNonce(ISession);
         }
 
-        assertThat(session.getNonce()).isEqualTo(TestUtils.DUMMY_NONCE);
+        assertThat(ISession.getNonce()).isEqualTo(TestUtils.DUMMY_NONCE);
     }
 
     /**
-     * Test that {@link DefaultConnection#resetNonce(Session)} throws an exception if
+     * Test that {@link DefaultConnection#resetNonce(ISession)} throws an exception if
      * there is no nonce header.
      */
     @Test
     public void testResetNonceThrowsException() {
         stubFor(head(urlEqualTo(NEW_NONCE_PATH)).willReturn(ok()));
 
-        assertThat(session.getNonce()).isNull();
+        assertThat(ISession.getNonce()).isNull();
 
         assertThrows(AcmeProtocolException.class, () -> {
-            try (var conn = session.connect()) {
-                conn.resetNonce(session);
+            try (var conn = ISession.connect()) {
+                conn.resetNonce(ISession);
             }
         });
 
-        assertThat(session.getNonce()).isNull();
+        assertThat(ISession.getNonce()).isNull();
     }
 
     /**
@@ -259,8 +260,8 @@ public class DefaultConnectionTest {
                 .withHeader("Location", "https://example.com/otherlocation")
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             var location = conn.getLocation();
             assertThat(location).isEqualTo(URI.create("https://example.com/otherlocation").toURL());
         }
@@ -275,8 +276,8 @@ public class DefaultConnectionTest {
                 .withHeader("Location", "/otherlocation")
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             var location = conn.getLocation();
             assertThat(location).isEqualTo(URI.create(baseUrl + "/otherlocation").toURL());
         }
@@ -293,8 +294,8 @@ public class DefaultConnectionTest {
                 .withHeader("Link", "<https://example.com/acme/terms>; rel=\"terms-of-service\"")
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             assertThat(conn.getLinks("next")).containsExactly(URI.create("https://example.com/acme/new-authz").toURL());
             assertThat(conn.getLinks("recover")).containsExactly(URI.create(baseUrl + "/recover-acct").toURL());
             assertThat(conn.getLinks("terms-of-service")).containsExactly(URI.create("https://example.com/acme/terms").toURL());
@@ -313,8 +314,8 @@ public class DefaultConnectionTest {
                 .withHeader("Link", "<../terms3>; rel=\"terms-of-service\"")
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             assertThat(conn.getLinks("terms-of-service")).containsExactlyInAnyOrder(
                     url("https://example.com/acme/terms1"),
                     url("https://example.com/acme/terms2"),
@@ -330,8 +331,8 @@ public class DefaultConnectionTest {
     public void testGetNoLink() throws AcmeException {
         stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             assertThat(conn.getLinks("something")).isEmpty();
         }
     }
@@ -343,8 +344,8 @@ public class DefaultConnectionTest {
     public void testNoLocation() throws AcmeException {
         stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             assertThatExceptionOfType(AcmeProtocolException.class)
                     .isThrownBy(conn::getLocation);
         }
@@ -363,8 +364,8 @@ public class DefaultConnectionTest {
                 .withHeader("Retry-After", DATE_FORMATTER.format(retryDate))
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             assertThat(conn.getRetryAfter()).hasValue(retryDate);
         }
     }
@@ -383,8 +384,8 @@ public class DefaultConnectionTest {
                 .withHeader("Date", DATE_FORMATTER.format(now))
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             assertThat(conn.getRetryAfter()).hasValue(now.plusSeconds(delta));
         }
     }
@@ -398,8 +399,8 @@ public class DefaultConnectionTest {
                 .withHeader("Date", DATE_FORMATTER.format(Instant.now()))
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             assertThat(conn.getRetryAfter()).isEmpty();
         }
 
@@ -415,9 +416,9 @@ public class DefaultConnectionTest {
                 .withBody("")
         ));
 
-        session.setNonce(TestUtils.DUMMY_NONCE);
+        ISession.setNonce(TestUtils.DUMMY_NONCE);
 
-        try (var conn = session.connect()) {
+        try (var conn = ISession.connect()) {
             var rc = conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             assertThat(rc).isEqualTo(HttpURLConnection.HTTP_OK);
         }
@@ -440,10 +441,10 @@ public class DefaultConnectionTest {
                 .withBody(problem.toString())
         ));
 
-        session.setNonce(TestUtils.DUMMY_NONCE);
+        ISession.setNonce(TestUtils.DUMMY_NONCE);
 
         var ex = assertThrows(AcmeException.class, () -> {
-            try (var conn = session.connect()) {
+            try (var conn = ISession.connect()) {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
@@ -470,10 +471,10 @@ public class DefaultConnectionTest {
                 .withBody(problem.toString())
         ));
 
-        session.setNonce(TestUtils.DUMMY_NONCE);
+        ISession.setNonce(TestUtils.DUMMY_NONCE);
 
         var ex = assertThrows(AcmeException.class, () -> {
-            try (var conn = session.connect()) {
+            try (var conn = ISession.connect()) {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
@@ -505,10 +506,10 @@ public class DefaultConnectionTest {
                 .withBody(problem.toString())
         ));
 
-        session.setNonce(TestUtils.DUMMY_NONCE);
+        ISession.setNonce(TestUtils.DUMMY_NONCE);
 
         var ex = assertThrows(AcmeRateLimitedException.class, () -> {
-            try (var conn = session.connect()) {
+            try (var conn = ISession.connect()) {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
@@ -536,10 +537,10 @@ public class DefaultConnectionTest {
                 .withBody(problem.toString())
         ));
 
-        session.setNonce(TestUtils.DUMMY_NONCE);
+        ISession.setNonce(TestUtils.DUMMY_NONCE);
 
         var ex = assertThrows(AcmeServerException.class, () -> {
-            try (var conn = session.connect()) {
+            try (var conn = ISession.connect()) {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
@@ -559,10 +560,10 @@ public class DefaultConnectionTest {
                 .withBody("{}")
         ));
 
-        session.setNonce(TestUtils.DUMMY_NONCE);
+        ISession.setNonce(TestUtils.DUMMY_NONCE);
 
         var ex = assertThrows(AcmeProtocolException.class, () -> {
-            try (var conn = session.connect()) {
+            try (var conn = ISession.connect()) {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
@@ -581,10 +582,10 @@ public class DefaultConnectionTest {
                 .withBody("<html><head><title>Infernal Server Error</title></head></html>")
         ));
 
-        session.setNonce(TestUtils.DUMMY_NONCE);
+        ISession.setNonce(TestUtils.DUMMY_NONCE);
 
         var ex = assertThrows(AcmeException.class, () -> {
-            try (var conn = session.connect()) {
+            try (var conn = ISession.connect()) {
                 conn.sendSignedRequest(requestUrl, new JSONBuilder(), login);
             }
         });
@@ -598,8 +599,8 @@ public class DefaultConnectionTest {
     public void testSendRequest() throws AcmeException {
         stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
         }
 
         verify(getRequestedFor(urlEqualTo(REQUEST_PATH))
@@ -621,8 +622,8 @@ public class DefaultConnectionTest {
                 .withStatus(HttpURLConnection.HTTP_NOT_MODIFIED))
         );
 
-        try (var conn = session.connect()) {
-            var rc = conn.sendRequest(requestUrl, session, ifModifiedSince);
+        try (var conn = ISession.connect()) {
+            var rc = conn.sendRequest(requestUrl, ISession, ifModifiedSince);
             assertThat(rc).isEqualTo(HttpURLConnection.HTTP_NOT_MODIFIED);
         }
 
@@ -650,13 +651,13 @@ public class DefaultConnectionTest {
                 .withHeader("Replay-Nonce", nonce2)
         ));
 
-        try (var conn = session.connect()) {
+        try (var conn = ISession.connect()) {
             var cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");
             conn.sendSignedRequest(requestUrl, cb, login);
         }
 
-        assertThat(session.getNonce()).isEqualTo(nonce2);
+        assertThat(ISession.getNonce()).isEqualTo(nonce2);
 
         verify(postRequestedFor(urlEqualTo(REQUEST_PATH))
                 .withHeader("Accept", equalTo("application/json"))
@@ -705,11 +706,11 @@ public class DefaultConnectionTest {
         stubFor(post(urlEqualTo(REQUEST_PATH)).willReturn(ok()
                 .withHeader("Replay-Nonce", nonce2)));
 
-        try (var conn = session.connect()) {
+        try (var conn = ISession.connect()) {
             conn.sendSignedPostAsGetRequest(requestUrl, login);
         }
 
-        assertThat(session.getNonce()).isEqualTo(nonce2);
+        assertThat(ISession.getNonce()).isEqualTo(nonce2);
 
         verify(postRequestedFor(urlEqualTo(REQUEST_PATH))
                 .withHeader("Accept", equalTo("application/json"))
@@ -759,11 +760,11 @@ public class DefaultConnectionTest {
         stubFor(post(urlEqualTo(REQUEST_PATH)).willReturn(ok()
                 .withHeader("Replay-Nonce", nonce2)));
 
-        try (var conn = session.connect()) {
+        try (var conn = ISession.connect()) {
             conn.sendCertificateRequest(requestUrl, login);
         }
 
-        assertThat(session.getNonce()).isEqualTo(nonce2);
+        assertThat(ISession.getNonce()).isEqualTo(nonce2);
 
         verify(postRequestedFor(urlEqualTo(REQUEST_PATH))
                 .withHeader("Accept", equalTo("application/pem-certificate-chain"))
@@ -788,13 +789,13 @@ public class DefaultConnectionTest {
         stubFor(post(urlEqualTo(REQUEST_PATH)).willReturn(ok()
                 .withHeader("Replay-Nonce", nonce2)));
 
-        try (var conn = session.connect()) {
+        try (var conn = ISession.connect()) {
             var cb = new JSONBuilder();
             cb.put("foo", 123).put("bar", "a-string");
-            conn.sendSignedRequest(requestUrl, cb, session, keyPair);
+            conn.sendSignedRequest(requestUrl, cb, ISession, keyPair);
         }
 
-        assertThat(session.getNonce()).isEqualTo(nonce2);
+        assertThat(ISession.getNonce()).isEqualTo(nonce2);
 
         verify(postRequestedFor(urlEqualTo(REQUEST_PATH))
                 .withHeader("Accept", equalTo("application/json"))
@@ -843,8 +844,8 @@ public class DefaultConnectionTest {
         stubFor(head(urlEqualTo(NEW_NONCE_PATH)).willReturn(notFound()));
 
         assertThrows(AcmeException.class, () -> {
-            try (var conn = session.connect()) {
-                conn.sendSignedRequest(requestUrl, new JSONBuilder(), session, keyPair);
+            try (var conn = ISession.connect()) {
+                conn.sendSignedRequest(requestUrl, new JSONBuilder(), ISession, keyPair);
             }
         });
     }
@@ -863,8 +864,8 @@ public class DefaultConnectionTest {
                 .withBody(response.toString())
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
 
             var result = conn.readJsonResponse();
             assertThat(result).isNotNull();
@@ -885,8 +886,8 @@ public class DefaultConnectionTest {
         ));
 
         List<X509Certificate> downloaded;
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             downloaded = conn.readCertificates();
         }
 
@@ -923,8 +924,8 @@ public class DefaultConnectionTest {
         ));
 
         assertThrows(AcmeProtocolException.class, () -> {
-            try (var conn = session.connect()) {
-                conn.sendRequest(requestUrl, session, null);
+            try (var conn = ISession.connect()) {
+                conn.sendRequest(requestUrl, ISession, null);
                 conn.readCertificates();
             }
         });
@@ -937,8 +938,8 @@ public class DefaultConnectionTest {
     public void testLastModifiedUnset() throws AcmeException {
         stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             assertThat(conn.getLastModified().isPresent()).isFalse();
         }
     }
@@ -949,8 +950,8 @@ public class DefaultConnectionTest {
                 .withHeader("Last-Modified", "Thu, 07 May 2020 19:42:46 GMT")
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
 
             var lm = conn.getLastModified();
             assertThat(lm.isPresent()).isTrue();
@@ -965,8 +966,8 @@ public class DefaultConnectionTest {
                 .withHeader("Last-Modified", "iNvAlId")
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             assertThat(conn.getLastModified().isPresent()).isFalse();
         }
     }
@@ -978,8 +979,8 @@ public class DefaultConnectionTest {
     public void testExpirationUnset() throws AcmeException {
         stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             assertThat(conn.getExpiration().isPresent()).isFalse();
         }
     }
@@ -990,8 +991,8 @@ public class DefaultConnectionTest {
                 .withHeader("Cache-Control", "public, no-cache")
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             assertThat(conn.getExpiration().isPresent()).isFalse();
         }
     }
@@ -1002,8 +1003,8 @@ public class DefaultConnectionTest {
                 .withHeader("Cache-Control", "public, max-age=0, no-cache")
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             assertThat(conn.getExpiration().isPresent()).isFalse();
         }
     }
@@ -1014,8 +1015,8 @@ public class DefaultConnectionTest {
                 .withHeader("Cache-Control", "public, max-age=3600, no-cache")
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             assertThat(conn.getExpiration().isPresent()).isFalse();
         }
     }
@@ -1026,8 +1027,8 @@ public class DefaultConnectionTest {
                 .withHeader("Cache-Control", "max-age=3600")
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
 
             var exp = conn.getExpiration();
             assertThat(exp.isPresent()).isTrue();
@@ -1042,8 +1043,8 @@ public class DefaultConnectionTest {
                 .withHeader("Expires", "Thu, 18 Jun 2020 08:43:04 GMT")
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
 
             var exp = conn.getExpiration();
             assertThat(exp.isPresent()).isTrue();
@@ -1058,8 +1059,8 @@ public class DefaultConnectionTest {
                 .withHeader("Expires", "iNvAlId")
         ));
 
-        try (var conn = session.connect()) {
-            conn.sendRequest(requestUrl, session, null);
+        try (var conn = ISession.connect()) {
+            conn.sendRequest(requestUrl, ISession, null);
             assertThat(conn.getExpiration().isPresent()).isFalse();
         }
     }

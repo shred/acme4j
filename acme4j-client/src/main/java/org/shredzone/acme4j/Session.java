@@ -48,7 +48,7 @@ import org.shredzone.acme4j.toolbox.JSON.Value;
  * or {@code https} protocol), or a special URI (via {@code acme} protocol). See the
  * documentation about valid URIs.
  */
-public class Session {
+public class Session implements ISession {
 
     private static final GenericAcmeProvider GENERIC_PROVIDER = new GenericAcmeProvider();
 
@@ -137,6 +137,7 @@ public class Session {
      *            Account {@link KeyPair}
      * @return {@link Login} to this account
      */
+    @Override
     public Login login(URL accountLocation, KeyPair accountKeyPair) {
         return new Login(accountLocation, accountKeyPair, this);
     }
@@ -144,6 +145,7 @@ public class Session {
     /**
      * Gets the ACME server {@link URI} of this session.
      */
+    @Override
     public URI getServerUri() {
         return serverUri;
     }
@@ -153,6 +155,7 @@ public class Session {
      * method is mainly for internal use.
      */
     @Nullable
+    @Override
     public String getNonce() {
         return nonce;
     }
@@ -161,6 +164,7 @@ public class Session {
      * Sets the base64 encoded nonce received by the server. This method is mainly for
      * internal use.
      */
+    @Override
     public void setNonce(@Nullable String nonce) {
         this.nonce = nonce;
     }
@@ -170,6 +174,7 @@ public class Session {
      * selected.
      */
     @Nullable
+    @Override
     public Locale getLocale() {
         return locale;
     }
@@ -180,6 +185,7 @@ public class Session {
      * The default is the system's language. If set to {@code null}, any language will be
      * accepted.
      */
+    @Override
     public void setLocale(@Nullable Locale locale) {
         this.locale = locale;
         this.languageHeader = AcmeUtils.localeToLanguageHeader(locale);
@@ -191,6 +197,7 @@ public class Session {
      *
      * @since 3.0.0
      */
+    @Override
     public String getLanguageHeader() {
         return languageHeader;
     }
@@ -201,7 +208,8 @@ public class Session {
      * @return {@link NetworkSettings}
      * @since 2.8
      */
-    @SuppressFBWarnings("EI_EXPOSE_REP")    // behavior is intended
+    @SuppressFBWarnings("EI_EXPOSE_REP")
+    @Override
     public NetworkSettings networkSettings() {
         return networkSettings;
     }
@@ -211,6 +219,7 @@ public class Session {
      *
      * @return {@link AcmeProvider}
      */
+    @Override
     public AcmeProvider provider() {
         return provider;
     }
@@ -220,6 +229,7 @@ public class Session {
      *
      * @return {@link Connection}
      */
+    @Override
     public Connection connect() {
         return provider.connect(getServerUri(), networkSettings);
     }
@@ -234,6 +244,7 @@ public class Session {
      * @throws AcmeException
      *             if the server does not offer the {@link Resource}
      */
+    @Override
     public URL resourceUrl(Resource resource) throws AcmeException {
         return resourceUrlOptional(resource)
                 .orElseThrow(() -> new AcmeNotSupportedException(resource.path()));
@@ -248,6 +259,7 @@ public class Session {
      * @return {@link URL} of the resource, or empty if the resource is not available.
      * @since 3.0.0
      */
+    @Override
     public Optional<URL> resourceUrlOptional(Resource resource) throws AcmeException {
         readDirectory();
         return Optional.ofNullable(resourceMap.get()
@@ -260,6 +272,7 @@ public class Session {
      *
      * @return {@link Metadata}. May contain no data, but is never {@code null}.
      */
+    @Override
     public Metadata getMetadata() throws AcmeException {
         readDirectory();
         return metadata.get();
@@ -273,6 +286,7 @@ public class Session {
      * @since 2.10
      */
     @Nullable
+    @Override
     public ZonedDateTime getDirectoryLastModified() {
         return directoryLastModified;
     }
@@ -286,6 +300,7 @@ public class Session {
      *         (directory has not been read yet or did not provide this information).
      * @since 2.10
      */
+    @Override
     public void setDirectoryLastModified(@Nullable ZonedDateTime directoryLastModified) {
         this.directoryLastModified = directoryLastModified;
     }
@@ -299,6 +314,7 @@ public class Session {
      * @since 2.10
      */
     @Nullable
+    @Override
     public ZonedDateTime getDirectoryExpires() {
         return directoryExpires;
     }
@@ -312,6 +328,7 @@ public class Session {
      *         information.
      * @since 2.10
      */
+    @Override
     public void setDirectoryExpires(@Nullable ZonedDateTime directoryExpires) {
         this.directoryExpires = directoryExpires;
     }
@@ -323,6 +340,7 @@ public class Session {
      * @return {@code true} if a directory is available.
      * @since 2.10
      */
+    @Override
     public boolean hasDirectory() {
         return resourceMap.get() != null;
     }
@@ -333,6 +351,7 @@ public class Session {
      *
      * @since 3.0.0
      */
+    @Override
     public void purgeDirectoryCache() {
         setDirectoryLastModified(null);
         setDirectoryExpires(null);

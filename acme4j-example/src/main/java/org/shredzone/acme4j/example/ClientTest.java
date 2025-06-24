@@ -30,14 +30,7 @@ import java.util.function.Supplier;
 import javax.swing.JOptionPane;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.shredzone.acme4j.Account;
-import org.shredzone.acme4j.AccountBuilder;
-import org.shredzone.acme4j.Authorization;
-import org.shredzone.acme4j.Certificate;
-import org.shredzone.acme4j.Order;
-import org.shredzone.acme4j.Problem;
-import org.shredzone.acme4j.Session;
-import org.shredzone.acme4j.Status;
+import org.shredzone.acme4j.*;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
 import org.shredzone.acme4j.challenge.Http01Challenge;
@@ -117,11 +110,11 @@ public class ClientTest {
         KeyPair userKeyPair = loadOrCreateUserKeyPair();
 
         // Create a session.
-        Session session = new Session(CA_URI);
+        ISession ISession = new Session(CA_URI);
 
         // Get the Account.
         // If there is no account yet, create a new one.
-        Account acct = findOrRegisterAccount(session, userKeyPair);
+        Account acct = findOrRegisterAccount(ISession, userKeyPair);
 
         // Load or create a key pair for the domains. This should not be the userKeyPair!
         KeyPair domainKeyPair = loadOrCreateDomainKeyPair();
@@ -220,13 +213,13 @@ public class ClientTest {
      * If you need to get access to your account later, reconnect to it via {@link
      * Session#login(URL, KeyPair)} by using the stored location.
      *
-     * @param session
+     * @param ISession
      *         {@link Session} to bind with
      * @return {@link Account}
      */
-    private Account findOrRegisterAccount(Session session, KeyPair accountKey) throws AcmeException {
+    private Account findOrRegisterAccount(ISession ISession, KeyPair accountKey) throws AcmeException {
         // Ask the user to accept the TOS, if server provides us with a link.
-        Optional<URI> tos = session.getMetadata().getTermsOfService();
+        Optional<URI> tos = ISession.getMetadata().getTermsOfService();
         if (tos.isPresent()) {
             acceptAgreement(tos.get());
         }
@@ -245,7 +238,7 @@ public class ClientTest {
             accountBuilder.withKeyIdentifier(EAB_KID, EAB_HMAC);
         }
 
-        Account account = accountBuilder.create(session);
+        Account account = accountBuilder.create(ISession);
         LOG.info("Registered a new user, URL: {}", account.getLocation());
 
         return account;

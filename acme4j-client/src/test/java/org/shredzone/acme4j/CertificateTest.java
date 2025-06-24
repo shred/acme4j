@@ -262,7 +262,7 @@ public class CertificateTest {
 
         var provider = new TestableConnectionProvider() {
             @Override
-            public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
+            public int sendSignedRequest(URL url, JSONBuilder claims, ISession session, KeyPair keypair) {
                 assertThat(url).isEqualTo(resourceUrl);
                 assertThatJson(claims.toString()).isEqualTo(getJSON("revokeCertificateWithReasonRequest").toString());
                 assertThat(session).isNotNull();
@@ -304,7 +304,7 @@ public class CertificateTest {
             }
 
             @Override
-            public int sendRequest(URL url, Session session, ZonedDateTime ifModifiedSince) {
+            public int sendRequest(URL url, ISession session, ZonedDateTime ifModifiedSince) {
                 assertThat(url).isEqualTo(certResourceUrl);
                 assertThat(session).isNotNull();
                 assertThat(ifModifiedSince).isNull();

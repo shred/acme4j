@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.ServiceLoader;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
+import org.shredzone.acme4j.ISession;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
@@ -74,7 +75,7 @@ public interface AcmeProvider {
      * The default implementation resolves the server URI and fetches the directory via
      * HTTP request. Subclasses may override this method, e.g. if the directory is static.
      *
-     * @param session
+     * @param ISession
      *            {@link Session} to be used
      * @param serverUri
      *            Server {@link URI}
@@ -82,7 +83,7 @@ public interface AcmeProvider {
      * been changed since the last request.
      */
     @Nullable
-    JSON directory(Session session, URI serverUri) throws AcmeException;
+    JSON directory(ISession ISession, URI serverUri) throws AcmeException;
 
     /**
      * Creates a {@link Challenge} instance for the given challenge data.

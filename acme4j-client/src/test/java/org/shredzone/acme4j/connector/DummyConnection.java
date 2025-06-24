@@ -22,8 +22,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import org.shredzone.acme4j.ISession;
 import org.shredzone.acme4j.Login;
-import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -35,12 +35,12 @@ import org.shredzone.acme4j.toolbox.JSONBuilder;
 public class DummyConnection implements Connection {
 
     @Override
-    public void resetNonce(Session session) {
+    public void resetNonce(ISession ISession) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public int sendRequest(URL url, Session session, ZonedDateTime ifModifiedSince) {
+    public int sendRequest(URL url, ISession ISession, ZonedDateTime ifModifiedSince) {
         throw new UnsupportedOperationException();
     }
 
@@ -61,7 +61,7 @@ public class DummyConnection implements Connection {
     }
 
     @Override
-    public int sendSignedRequest(URL url, JSONBuilder claims, Session session, KeyPair keypair) {
+    public int sendSignedRequest(URL url, JSONBuilder claims, ISession ISession, KeyPair keypair) {
         throw new UnsupportedOperationException();
     }
 

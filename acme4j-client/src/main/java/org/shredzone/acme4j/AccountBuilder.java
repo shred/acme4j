@@ -241,27 +241,27 @@ public class AccountBuilder {
      * Use this method to finally create your account with the given parameters. Do not
      * use the {@link AccountBuilder} after invoking this method.
      *
-     * @param session
+     * @param ISession
      *         {@link Session} to be used for registration
      * @return {@link Account} referring to the new account
-     * @see #createLogin(Session)
+     * @see #createLogin(ISession)
      */
-    public Account create(Session session) throws AcmeException {
-        return createLogin(session).getAccount();
+    public Account create(ISession ISession) throws AcmeException {
+        return createLogin(ISession).getAccount();
     }
 
     /**
      * Creates a new account.
      * <p>
-     * This method is identical to {@link #create(Session)}, but returns a {@link Login}
+     * This method is identical to {@link #create(ISession)}, but returns a {@link Login}
      * that is ready to be used.
      *
-     * @param session
+     * @param ISession
      *         {@link Session} to be used for registration
      * @return {@link Login} referring to the new account
      */
-    public Login createLogin(Session session) throws AcmeException {
-        requireNonNull(session, "session");
+    public Login createLogin(ISession ISession) throws AcmeException {
+        requireNonNull(ISession, "session");
 
         if (keyPair == null) {
             throw new IllegalStateException("Use AccountBuilder.useKeyPair() to set the account's key pair.");
@@ -269,8 +269,8 @@ public class AccountBuilder {
 
         LOG.debug("create");
 
-        try (var conn = session.connect()) {
-            var resourceUrl = session.resourceUrl(Resource.NEW_ACCOUNT);
+        try (var conn = ISession.connect()) {
+            var resourceUrl = ISession.resourceUrl(Resource.NEW_ACCOUNT);
 
             var claims = new JSONBuilder();
             if (!contacts.isEmpty()) {
@@ -281,7 +281,7 @@ public class AccountBuilder {
             }
             if (keyIdentifier != null && macKey != null) {
                 var algorithm = Optional.ofNullable(macAlgorithm)
-                        .or(session.provider()::getProposedEabMacAlgorithm)
+                        .or(ISession.provider()::getProposedEabMacAlgorithm)
 // FIXME: Cannot use a Supplier here due to a Spotbugs false positive "null pointer dereference"
                         .orElse(macKeyAlgorithm(macKey));
                 claims.put("externalAccountBinding", JoseUtils.createExternalAccountBinding(
@@ -291,9 +291,9 @@ public class AccountBuilder {
                 claims.put("onlyReturnExisting", onlyExisting);
             }
 
-            conn.sendSignedRequest(resourceUrl, claims, session, keyPair);
+            conn.sendSignedRequest(resourceUrl, claims, ISession, keyPair);
 
-            var login = new Login(conn.getLocation(), keyPair, session);
+            var login = new Login(conn.getLocation(), keyPair, ISession);
             login.getAccount().setJSON(conn.readJsonResponse());
             return login;
         }
