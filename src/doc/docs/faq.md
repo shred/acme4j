@@ -85,6 +85,24 @@ You can still revoke certificates without account key pair though, see [here](us
 
 Unfortunately, manual action is required in any case, there is no way to automate this process. This is an intentional protocol decision, and _acme4j_ is just the messenger.
 
+## Can you support us in complying with the EU Cyber Resilience Act (CRA)?
+
+No. I'm not legally required to do so.
+
+_acme4j_ is developed and maintained by one person in their free time, with no company or organization behind it. It is non-commercial, not monetized, and there is no intent to make profit.
+
+In other words: This software is a gift. If you use it in a commercial context, _you_ may have obligations under the CRA, but _I_ don't.
+
+Please understand that while I welcome open collaboration and feedback, I cannot provide legal compliance support for third-party commercial use.
+
+## Development seems to be very slow. Why is that?
+
+There are two main reasons:
+
+1. The code base is mature and stable. First released in December 2015, it has grown into a well-tested and reliable piece of software. With high unit test coverage and regular integration tests against a Pebble server, known issues have been fixed quickly over the years. That's why updates are rare: there's simply not much to do. Which means you get to enjoy a stable, dependable library.
+
+2. It's a volunteer effort. This project is maintained by a single person in their free time, with no company or funding behind it. Development happens when there's time and motivation. But after a decade of work, other priorities sometimes come first. While that means fewer updates, it also means the project isn't driven by deadlines or commercial pressure.
+
 ## Where can I find the _acme4j_ Repository?
 
 * The main repository is hosted at [Codeberg](https://codeberg.org/shred/acme4j).
