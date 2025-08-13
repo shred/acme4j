@@ -243,7 +243,7 @@ To check if your CA supports RFC 9444, read `Metadata.isSubdomainAuthAllowed()`.
 
 ## Profiles
 
-If your CA supports [draft-aaron-acme-profiles](https://www.ietf.org/archive/id/draft-aaron-acme-profiles-00.html), you can select a profile when ordering a certificate:
+If your CA supports [draft-aaron-acme-profiles](https://datatracker.ietf.org/doc/draft-aaron-acme-profiles/), you can select a profile when ordering a certificate:
 
 ```java
 Order order = account.newOrder()

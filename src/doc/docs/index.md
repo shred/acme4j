@@ -20,7 +20,7 @@ Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzo
 * Supports [RFC 8823](https://tools.ietf.org/html/rfc8823) for S/MIME certificates (experimental)
 * Supports [RFC 9444](https://tools.ietf.org/html/rfc9444) for subdomain validation
 * Supports [RFC 9773](https://tools.ietf.org/html/rfc9773) for renewal information
-* Supports [draft-aaron-acme-profiles-00](https://www.ietf.org/archive/id/draft-aaron-acme-profiles-00.html) for certificate profiles (experimental)
+* Supports [draft-aaron-acme-profiles-01](https://datatracker.ietf.org/doc/draft-aaron-acme-profiles/) for certificate profiles (experimental)
 * Supports [draft-ietf-acme-dns-account-label-01](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-account-label/) for DNS labeled with ACME account ID challenges (experimental)
 * Easy to use Java API
 * Requires JRE 17 or higher
