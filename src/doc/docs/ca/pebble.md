@@ -17,11 +17,11 @@ Pebble uses a self-signed certificate for HTTPS connections. The Pebble provider
 
 The Pebble server provides an end-entity certificate for the `localhost` and `pebble` domain.
 
-If your Pebble server can be reached at a different domain (like `pebble.example.com` above), you need to create a correct end-entity certificate on your Pebble server. [See here](https://github.com/letsencrypt/pebble/tree/main/test/certs) for how to use `minica` to create a matching certificate.
+If your Pebble server can be reached at a different domain (like `pebble.example.com` above), you need to create a correct end-entity certificate on your Pebble server. [See here](https://github.com/letsencrypt/pebble/tree/main/test/certs) for how to use `minica` to create a matching certificate, and the section below for how to use it in your integration tests.
 
 Otherwise, you will get an `AcmeNetworkException: Network error` that is caused by a `java.io.IOException: No subject alternative DNS name matching [...] found` when trying to access the Pebble server.
 
-If you cannot create a correct end-entity certificate on your Pebble server, you could also disable host name verification on Java side: `-Djdk.internal.httpclient.disableHostnameVerification`
+If you cannot create a correct end-entity certificate on your Pebble server, you could also globally disable host name verification on Java side: `-Djdk.internal.httpclient.disableHostnameVerification`
 
 !!! warning
     **Disable hostname verification for testing purposes only, never in a production environment!** Create a correct end-entity certificate whenever possible.

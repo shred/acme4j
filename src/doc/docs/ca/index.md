@@ -21,3 +21,6 @@ More CAs may be supported in future releases of _acme4j_.
 
 Also, CAs can publish provider jar files that plug into _acme4j_ and offer extended support.
 
+## Disclaimer
+
+_acme4j_ is an independent software, and not officially supported or endorsed by any of these CAs. If you have _acme4j_ related issues, please do not ask them for support, but [open an issue here](https://codeberg.org/shred/acme4j/issues).
