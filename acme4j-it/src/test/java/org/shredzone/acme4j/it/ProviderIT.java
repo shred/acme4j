@@ -38,6 +38,19 @@ import org.shredzone.acme4j.exception.AcmeException;
 public class ProviderIT {
 
     /**
+     * Test Actalis
+     */
+    @Test
+    public void testActalis() throws AcmeException, MalformedURLException {
+        var session = new Session("acme://actalis.com");
+        assertThat(session.getMetadata().getWebsite()).hasValue(URI.create("https://www.actalis.com").toURL());
+        assertThatNoException().isThrownBy(() -> session.resourceUrl(Resource.NEW_ACCOUNT));
+        assertThat(session.getMetadata().isExternalAccountRequired()).isTrue();
+        assertThat(session.getMetadata().isAutoRenewalEnabled()).isFalse();
+        assertThat(session.resourceUrlOptional(Resource.RENEWAL_INFO)).isNotEmpty();
+    }
+
+    /**
      * Test Buypass
      */
     @Test

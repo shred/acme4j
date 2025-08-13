@@ -36,6 +36,7 @@ module org.shredzone.acme4j {
 
     provides org.shredzone.acme4j.provider.AcmeProvider
             with org.shredzone.acme4j.provider.GenericAcmeProvider,
+                 org.shredzone.acme4j.provider.actalis.ActalisAcmeProvider,
                  org.shredzone.acme4j.provider.buypass.BuypassAcmeProvider,
                  org.shredzone.acme4j.provider.google.GoogleAcmeProvider,
                  org.shredzone.acme4j.provider.letsencrypt.LetsEncryptAcmeProvider,

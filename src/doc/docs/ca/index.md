@@ -9,6 +9,7 @@ _acme4j_ should support any CA that is providing an ACME server.
 
 The _acme4j_ package contains these providers (in alphabetical order):
 
+* [Actalis](actalis.md)
 * [Buypass](buypass.md)
 * [Google](google.md)
 * [Let's Encrypt](letsencrypt.md)

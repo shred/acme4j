@@ -1,8 +1,11 @@
 
-#  Buypass: https://buypass.com/
+# Actalis: https://www.actalis.com/
+org.shredzone.acme4j.provider.actalis.ActalisAcmeProvider
+
+# Buypass: https://buypass.com/
 org.shredzone.acme4j.provider.buypass.BuypassAcmeProvider
 
-#  Google Trust Services: https://pki.goog/
+# Google Trust Services: https://pki.goog/
 org.shredzone.acme4j.provider.google.GoogleAcmeProvider
 
 # Let's Encrypt: https://letsencrypt.org

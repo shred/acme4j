@@ -44,6 +44,7 @@ nav:
     - 'challenge/tls-alpn-01.md'
   - CA:
     - 'ca/index.md'
+    - 'ca/actalis.md'
     - 'ca/buypass.md'
     - 'ca/google.md'
     - 'ca/letsencrypt.md'
