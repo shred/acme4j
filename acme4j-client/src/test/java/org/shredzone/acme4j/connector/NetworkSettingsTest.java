@@ -45,7 +45,7 @@ public class NetworkSettingsTest {
         settings.setProxySelector(null);
         assertThat(settings.getProxySelector()).isEqualTo(HttpClient.Builder.NO_PROXY);
 
-        assertThat(settings.getTimeout()).isEqualTo(Duration.ofSeconds(10));
+        assertThat(settings.getTimeout()).isEqualTo(Duration.ofSeconds(30));
         settings.setTimeout(Duration.ofMillis(5120));
         assertThat(settings.getTimeout()).isEqualTo(Duration.ofMillis(5120));
 

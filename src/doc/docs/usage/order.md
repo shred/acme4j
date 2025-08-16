@@ -122,6 +122,9 @@ It depends on the CA if other CSR properties (like _Organization_, _Organization
 You can also create a custom CSR, and pass it to the order with either `execute(PKCS10CertificationRequest csr)` or `execute(byte[] csr)`.
 
 !!! note
+    Some CAs may take a considerable amount of time (30 seconds or more) for finalizing an order. As this call is synchronous, be prepared that the process is blocked for that time. If you experience frequent timeouts with your CA, you can increase the timeout duration in the [network settings](advanced.md#network-settings).
+
+!!! note
     According to RFC-8555, the correct technical term is _finalization_ of an order. However, Java has a method called `Object.finalize()` which is problematic and should not be used. To avoid confusion with that method, the finalization methods are intentionally called `execute` in _acme4j_.
 
 ## Retrieving the Certificate

@@ -7,6 +7,7 @@ This document will help you migrate your code to the latest _acme4j_ version.
 - Removed all methods that were marked as deprecated.
 - _acme4j_ requires JRE 17 or higher now.
 - In order to keep the API consistent, the static method `Dns01Challenge.toRRName()` is replaced with a class method `Dns01Challenge.getRRName()`. So all you have to do is to invoke `challenge.getRRName()` instead of `Dns01Challenge.toRRName()`.
+- Default network timeout has been increased from 10 seconds to 30 seconds. If you require short timeouts, you can change the duration in the [network settings](usage/advanced.md#network-settings).
 
 ## Migration to Version 3.5.0
 
