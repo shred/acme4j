@@ -48,7 +48,6 @@ public class Order extends AcmeJsonResource implements PollableResource {
     private static final Logger LOG = LoggerFactory.getLogger(Order.class);
 
     private transient @Nullable Certificate certificate = null;
-    private transient @Nullable Certificate autoRenewalCertificate = null;
     private transient @Nullable List<Authorization> authorizations = null;
 
     protected Order(Login login, URL location) {
@@ -429,7 +428,6 @@ public class Order extends AcmeJsonResource implements PollableResource {
     protected void invalidate() {
         super.invalidate();
         certificate = null;
-        autoRenewalCertificate = null;
         authorizations = null;
     }
 }
