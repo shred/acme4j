@@ -51,26 +51,6 @@ public class ProviderIT {
     }
 
     /**
-     * Test Buypass
-     */
-    @Test
-    public void testBuypass() throws AcmeException, MalformedURLException {
-        var session = new Session("acme://buypass.com");
-        assertThat(session.getMetadata().getWebsite()).hasValue(URI.create("https://buypass.com/").toURL());
-        assertThatNoException().isThrownBy(() -> session.resourceUrl(Resource.NEW_ACCOUNT));
-        assertThat(session.getMetadata().isExternalAccountRequired()).isFalse();
-        assertThat(session.getMetadata().isAutoRenewalEnabled()).isFalse();
-        assertThat(session.resourceUrlOptional(Resource.RENEWAL_INFO)).isNotEmpty();
-
-        var sessionStage = new Session("acme://buypass.com/staging");
-        assertThat(sessionStage.getMetadata().getWebsite()).hasValue(URI.create("https://buypass.com/").toURL());
-        assertThatNoException().isThrownBy(() -> sessionStage.resourceUrl(Resource.NEW_ACCOUNT));
-        assertThat(sessionStage.getMetadata().isExternalAccountRequired()).isFalse();
-        assertThat(sessionStage.getMetadata().isAutoRenewalEnabled()).isFalse();
-        assertThat(sessionStage.resourceUrlOptional(Resource.RENEWAL_INFO)).isNotEmpty();
-    }
-
-    /**
      * Test Google CA
      */
     @Test

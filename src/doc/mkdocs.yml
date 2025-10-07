@@ -45,7 +45,6 @@ nav:
   - CA:
     - 'ca/index.md'
     - 'ca/actalis.md'
-    - 'ca/buypass.md'
     - 'ca/google.md'
     - 'ca/letsencrypt.md'
     - 'ca/pebble.md'

@@ -20,7 +20,7 @@ This Java client helps to connect to an ACME server, and performing all necessar
 * Supports [draft-ietf-acme-dns-account-label-01](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-account-label/) for DNS labeled with ACME account ID challenges (experimental)
 * Easy to use Java API
 * Requires JRE 17 or higher
-* Supports [Actalis](https://www.actalis.com/), [Buypass](https://buypass.com/), [Google Trust Services](https://pki.goog/), [Let's Encrypt](https://letsencrypt.org/), [SSL.com](https://www.ssl.com/), [ZeroSSL](https://zerossl.com/), and **all other CAs that comply with the ACME protocol (RFC 8555)**. Note that _acme4j_ is an independent project that is not supported or endorsed by any of the CAs.
+* Supports [Actalis](https://www.actalis.com/), [Google Trust Services](https://pki.goog/), [Let's Encrypt](https://letsencrypt.org/), [SSL.com](https://www.ssl.com/), [ZeroSSL](https://zerossl.com/), and **all other CAs that comply with the ACME protocol (RFC 8555)**. Note that _acme4j_ is an independent project that is not supported or endorsed by any of the CAs.
 * Built with maven, packages available at [Maven Central](http://search.maven.org/#search|ga|1|g%3A%22org.shredzone.acme4j%22)
 * Extensive unit and integration tests
 * Adheres to [Semantic Versioning](https://semver.org/)
