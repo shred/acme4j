@@ -8,7 +8,7 @@ This document will help you migrate your code to the latest _acme4j_ version.
 - _acme4j_ requires JRE 17 or higher now.
 - In order to keep the API consistent, the static method `Dns01Challenge.toRRName()` is replaced with a class method `Dns01Challenge.getRRName()`. So all you have to do is to invoke `challenge.getRRName()` instead of `Dns01Challenge.toRRName()`.
 - Default network timeout has been increased from 10 seconds to 30 seconds. If you require short timeouts, you can change the duration in the [network settings](usage/advanced.md#network-settings).
-- [**Buypass terminates the issuance of GoSSL certificates.**](https://community.buypass.com/t/y4y130p) Starting October 15, 2025, no new certificates will be issued. On April 15, 2026, their ACME services will be terminated. For this reason, Buypass support has been completely removed from _acme4j_. **If you require _acme4j_ for Buypass services (e.g. for revocation), do not update to this version before April 15, 2026.**
+- [**Buypass terminates the issuance of GoSSL certificates.**](https://community.buypass.com/t/y4y130p) Starting October 15, 2025, no new certificates will be issued. On April 15, 2026, their ACME services will be terminated. For this reason, Buypass support has been completely removed from _acme4j_. If you use _acme4j_ for Buypass services (e.g. for revocation), use their directory URL instead of the `acme://buypass.com` URI when opening a session.
 
 ## Migration to Version 3.5.0
 
