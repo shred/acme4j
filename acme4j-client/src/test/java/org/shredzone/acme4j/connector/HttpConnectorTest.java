@@ -93,4 +93,73 @@ public class HttpConnectorTest {
         assertThat(userAgent).contains("Java/");
     }
 
+    /**
+     * Test that getHttpClient returns a new client when reuse is disabled.
+     */
+    @Test
+    public void testGetHttpClientWithoutReuse() {
+        var settings = new NetworkSettings();
+        settings.setClientReuseEnabled(false);
+
+        var connector = new HttpConnector(settings);
+
+        var client1 = connector.getHttpClient();
+        var client2 = connector.getHttpClient();
+
+        // Each call should return a new client instance
+        assertThat(client1).isNotSameAs(client2);
+    }
+
+    /**
+     * Test that getHttpClient returns the same client when reuse is enabled.
+     */
+    @Test
+    public void testGetHttpClientWithReuse() {
+        var settings = new NetworkSettings();
+        settings.setClientReuseEnabled(true);
+
+        var connector = new HttpConnector(settings);
+
+        var client1 = connector.getHttpClient();
+        var client2 = connector.getHttpClient();
+
+        // Both calls should return the same client instance
+        assertThat(client1).isSameAs(client2);
+    }
+
+    /**
+     * Test that getHttpClient with reuse enabled is thread-safe.
+     */
+    @Test
+    public void testGetHttpClientThreadSafety() throws Exception {
+        var settings = new NetworkSettings();
+        settings.setClientReuseEnabled(true);
+
+        var connector = new HttpConnector(settings);
+
+        var threads = new Thread[10];
+        var clients = new java.net.http.HttpClient[threads.length];
+
+        for (int i = 0; i < threads.length; i++) {
+            final int index = i;
+            threads[i] = new Thread(() -> {
+                clients[index] = connector.getHttpClient();
+            });
+        }
+
+        for (var thread : threads) {
+            thread.start();
+        }
+
+        for (var thread : threads) {
+            thread.join();
+        }
+
+        // All threads should get the same client instance
+        var firstClient = clients[0];
+        for (var client : clients) {
+            assertThat(client).isSameAs(firstClient);
+        }
+    }
+
 }

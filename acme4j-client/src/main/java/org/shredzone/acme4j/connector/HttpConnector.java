@@ -33,6 +33,7 @@ public class HttpConnector {
     private static final String USER_AGENT;
 
     private final NetworkSettings networkSettings;
+    private volatile HttpClient httpClient;
 
     static {
         var agent = new StringBuilder("acme4j");
@@ -106,6 +107,37 @@ public class HttpConnector {
         }
 
         return builder;
+    }
+
+    /**
+     * Returns a shared {@link HttpClient} instance. The instance is created lazily on
+     * first access and then cached for reuse. This allows multiple connections to share
+     * the same HTTP client, improving resource utilization and connection pooling.
+     * <p>
+     * The client is configured using {@link #createClientBuilder()}, so subclasses can
+     * customize the configuration by overriding that method.
+     * <p>
+     * If HTTP client reuse is disabled in {@link NetworkSettings}, a new client is created
+     * for each call instead of reusing a cached instance.
+     *
+     * @return {@link HttpClient} instance (shared if reuse is enabled, new otherwise)
+     * @since 3.5.2
+     */
+    public HttpClient getHttpClient() {
+        if (!networkSettings.isClientReuseEnabled()) {
+            return createClientBuilder().build();
+        }
+
+        var result = httpClient;
+        if (result == null) {
+            synchronized (this) {
+                result = httpClient;
+                if (result == null) {
+                    httpClient = result = createClientBuilder().build();
+                }
+            }
+        }
+        return result;
     }
 
 }

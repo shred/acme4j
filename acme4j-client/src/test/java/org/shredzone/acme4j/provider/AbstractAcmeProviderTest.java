@@ -77,6 +77,45 @@ public class AbstractAcmeProviderTest {
     }
 
     /**
+     * Test that HttpConnector instances are cached per NetworkSettings.
+     */
+    @Test
+    public void testHttpConnectorCaching() {
+        var settings1 = new NetworkSettings();
+        var settings2 = new NetworkSettings();
+        var settings3 = new NetworkSettings();
+        settings3.setClientReuseEnabled(true);
+
+        var connectorCount = new java.util.concurrent.atomic.AtomicInteger(0);
+
+        var providerWithCounter = new TestAbstractAcmeProvider() {
+            @Override
+            protected HttpConnector createHttpConnector(NetworkSettings settings) {
+                connectorCount.incrementAndGet();
+                return super.createHttpConnector(settings);
+            }
+        };
+
+        // Same settings instance should reuse the same connector
+        providerWithCounter.connect(SERVER_URI, settings1);
+        providerWithCounter.connect(SERVER_URI, settings1);
+        assertThat(connectorCount.get()).isEqualTo(1);
+
+        // Different settings instance with same values should reuse connector
+        // because equals/hashCode compare by value
+        providerWithCounter.connect(SERVER_URI, settings2);
+        assertThat(connectorCount.get()).isEqualTo(1);
+
+        // Settings with different clientReuse should create new connector
+        providerWithCounter.connect(SERVER_URI, settings3);
+        assertThat(connectorCount.get()).isEqualTo(2);
+
+        // Reusing same settings instance should reuse connector
+        providerWithCounter.connect(SERVER_URI, settings1);
+        assertThat(connectorCount.get()).isEqualTo(2);
+    }
+
+    /**
      * Verify that the resources directory is read.
      */
     @Test

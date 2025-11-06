@@ -110,7 +110,7 @@ public class DefaultConnection implements Connection {
      */
     public DefaultConnection(HttpConnector httpConnector) {
         this.httpConnector = Objects.requireNonNull(httpConnector, "httpConnector");
-        this.httpClient = httpConnector.createClientBuilder().build();
+        this.httpClient = httpConnector.getHttpClient();
     }
 
     @Override
