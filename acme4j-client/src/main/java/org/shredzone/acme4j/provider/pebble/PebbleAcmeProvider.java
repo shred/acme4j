@@ -13,16 +13,28 @@
  */
 package org.shredzone.acme4j.provider.pebble;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.http.HttpClient;
+import java.security.KeyManagementException;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
-import org.shredzone.acme4j.connector.HttpConnector;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
+
 import org.shredzone.acme4j.connector.NetworkSettings;
 import org.shredzone.acme4j.provider.AbstractAcmeProvider;
-import org.shredzone.acme4j.provider.AcmeProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An {@link AcmeProvider} for <em>Pebble</em>.
@@ -36,7 +48,7 @@ import org.shredzone.acme4j.provider.AcmeProvider;
  * port. The port is optional, and if omitted, the standard port is used.
  */
 public class PebbleAcmeProvider extends AbstractAcmeProvider {
-
+    private static final Logger LOG = LoggerFactory.getLogger(PebbleAcmeProvider.class);
     private static final Pattern HOST_PATTERN = Pattern.compile("^/([^:/]+)(?:\\:(\\d+))?/?$");
     private static final int PEBBLE_DEFAULT_PORT = 14000;
 
@@ -89,8 +101,84 @@ public class PebbleAcmeProvider extends AbstractAcmeProvider {
     }
 
     @Override
-    protected HttpConnector createHttpConnector(NetworkSettings settings) {
-        return new PebbleHttpConnector(settings);
+    public HttpClient createHttpClient(NetworkSettings networkSettings) {
+        var builder = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(networkSettings.getTimeout())
+                .proxy(networkSettings.getProxySelector())
+                .sslContext(createPebbleSSLContext());
+
+        if (networkSettings.getAuthenticator() != null) {
+            builder.authenticator(networkSettings.getAuthenticator());
+        }
+
+        return builder.build();
+    }
+
+    /**
+     * Creates a TrustManagerFactory configured with the Pebble root certificate.
+     * <p>
+     * This method loads the Pebble root certificate from the PEM file and creates
+     * a TrustManagerFactory that trusts certificates signed by Pebble's CA.
+     *
+     * @return TrustManagerFactory configured for Pebble
+     * @throws RuntimeException if the Pebble certificate cannot be found or loaded
+     * @since 4.0.0
+     */
+    protected TrustManagerFactory createPebbleTrustManagerFactory() {
+        try {
+            var keystore = readPemFile("/pebble.minica.pem")
+                    .or(() -> readPemFile("/META-INF/pebble.minica.pem"))
+                    .or(() -> readPemFile("/org/shredzone/acme4j/provider/pebble/pebble.minica.pem"))
+                    .orElseThrow(() -> new RuntimeException("Could not find a Pebble root certificate"));
+
+            var tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+            tmf.init(keystore);
+            return tmf;
+        } catch (KeyStoreException | NoSuchAlgorithmException ex) {
+            throw new RuntimeException("Could not create truststore", ex);
+        }
+    }
+
+    /**
+     * Creates the Pebble SSL context.
+     * <p>
+     * Since the HTTP client is cached at the session level, this method is only called
+     * once per session, so no additional caching is needed.
+     *
+     * @return SSLContext configured for Pebble
+     */
+    private SSLContext createPebbleSSLContext() {
+        try {
+            var tmf = createPebbleTrustManagerFactory();
+
+            var sslContext = SSLContext.getInstance("TLS");
+            sslContext.init(null, tmf.getTrustManagers(), null);
+            return sslContext;
+        } catch (NoSuchAlgorithmException | KeyManagementException ex) {
+            throw new RuntimeException("Could not create SSL context", ex);
+        }
+    }
+
+    /**
+     * Reads a PEM file from a resource for Pebble SSL context creation.
+     */
+    private Optional<KeyStore> readPemFile(String resource) {
+        try (var in = PebbleAcmeProvider.class.getResourceAsStream(resource)) {
+            if (in == null) {
+                return Optional.empty();
+            }
+            var cf = CertificateFactory.getInstance("X.509");
+            var cert = cf.generateCertificate(in);
+            var keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            keystore.load(null, "acme4j".toCharArray());
+            keystore.setCertificateEntry("pebble", cert);
+            return Optional.of(keystore);
+        } catch (IOException | KeyStoreException | CertificateException
+                 | NoSuchAlgorithmException ex) {
+            LOG.error("Failed to read PEM from resource '{}'", resource, ex);
+            return Optional.empty();
+        }
     }
 
 }

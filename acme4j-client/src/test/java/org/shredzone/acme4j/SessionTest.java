@@ -273,4 +273,69 @@ public class SessionTest {
         assertThat(session.getLanguageHeader()).isEqualTo("fr-CA,fr;q=0.8,*;q=0.1");
     }
 
+    /**
+     * Test that getHttpClient returns a shared client instance.
+     */
+    @Test
+    public void testGetHttpClientWithReuse() {
+        var session = new Session(URI.create(TestUtils.ACME_SERVER_URI));
+
+        var client1 = session.getHttpClient();
+        var client2 = session.getHttpClient();
+
+        // Both calls should return the same client instance
+        assertThat(client1).isSameAs(client2);
+    }
+
+    /**
+     * Test that getHttpClient is thread-safe.
+     */
+    @Test
+    public void testGetHttpClientThreadSafety() throws Exception {
+        var session = new Session(URI.create(TestUtils.ACME_SERVER_URI));
+
+        var threads = new Thread[10];
+        var clients = new java.net.http.HttpClient[threads.length];
+
+        for (int i = 0; i < threads.length; i++) {
+            final int index = i;
+            threads[i] = new Thread(() -> {
+                clients[index] = session.getHttpClient();
+            });
+        }
+
+        for (var thread : threads) {
+            thread.start();
+        }
+
+        for (var thread : threads) {
+            thread.join();
+        }
+
+        // All threads should get the same client instance
+        var firstClient = clients[0];
+        for (var client : clients) {
+            assertThat(client).isSameAs(firstClient);
+        }
+    }
+
+    /**
+     * Test that connections from the same session share the same HttpClient.
+     */
+    @Test
+    public void testConnectionsShareHttpClient() throws AcmeException {
+        var session = new Session(URI.create(TestUtils.ACME_SERVER_URI));
+
+        var conn1 = session.connect();
+        var conn2 = session.connect();
+
+        // Both connections should use the same HttpClient from the session
+        var client1 = session.getHttpClient();
+        var client2 = session.getHttpClient();
+        assertThat(client1).isSameAs(client2);
+
+        conn1.close();
+        conn2.close();
+    }
+
 }

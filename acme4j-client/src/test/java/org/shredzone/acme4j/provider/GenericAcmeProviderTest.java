@@ -18,6 +18,7 @@ import static org.shredzone.acme4j.toolbox.TestUtils.DEFAULT_NETWORK_SETTINGS;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.http.HttpClient;
 
 import org.junit.jupiter.api.Test;
 import org.shredzone.acme4j.connector.DefaultConnection;
@@ -51,7 +52,8 @@ public class GenericAcmeProviderTest {
         var resolvedUrl = provider.resolve(serverUri);
         assertThat(resolvedUrl.toString()).isEqualTo(serverUri.toString());
 
-        var connection = provider.connect(serverUri, DEFAULT_NETWORK_SETTINGS);
+        var httpClient = HttpClient.newBuilder().build();
+        var connection = provider.connect(serverUri, DEFAULT_NETWORK_SETTINGS, httpClient);
         assertThat(connection).isInstanceOf(DefaultConnection.class);
     }
 

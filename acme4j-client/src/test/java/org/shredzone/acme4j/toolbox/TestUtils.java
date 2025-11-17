@@ -166,7 +166,7 @@ public final class TestUtils {
 
             @Override
             public Connection connect() {
-                return provider.connect(getServerUri(), DEFAULT_NETWORK_SETTINGS);
+                return provider.connect(getServerUri(), DEFAULT_NETWORK_SETTINGS, getHttpClient());
             }
         };
     }

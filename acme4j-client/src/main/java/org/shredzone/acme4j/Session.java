@@ -17,6 +17,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
 import java.security.KeyPair;
 import java.time.ZonedDateTime;
 import java.util.EnumMap;
@@ -58,6 +59,7 @@ public class Session {
     private final URI serverUri;
     private final AcmeProvider provider;
 
+    private volatile HttpClient httpClient;
     private @Nullable String nonce;
     private @Nullable Locale locale = Locale.getDefault();
     private String languageHeader = AcmeUtils.localeToLanguageHeader(Locale.getDefault());
@@ -221,7 +223,23 @@ public class Session {
      * @return {@link Connection}
      */
     public Connection connect() {
-        return provider.connect(getServerUri(), networkSettings);
+        return provider.connect(getServerUri(), networkSettings, getHttpClient());
+    }
+
+    /**
+     * Returns the shared {@link HttpClient} instance for this session. The instance is
+     * created lazily on first access and then cached for reuse. This allows multiple
+     * connections to share the same HTTP client, improving resource utilization and
+     * connection pooling.
+     *
+     * @return Shared {@link HttpClient} instance
+     * @since 4.0.0
+     */
+    public synchronized HttpClient getHttpClient() {
+        if (httpClient == null) {
+            httpClient = provider.createHttpClient(networkSettings);
+        }
+        return httpClient;
     }
 
     /**

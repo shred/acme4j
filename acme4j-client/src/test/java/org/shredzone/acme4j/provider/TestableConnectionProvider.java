@@ -25,6 +25,8 @@ import java.util.function.BiFunction;
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
+import java.net.http.HttpClient;
+
 import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DummyConnection;
 import org.shredzone.acme4j.connector.NetworkSettings;
@@ -127,7 +129,7 @@ public class TestableConnectionProvider extends DummyConnection implements AcmeP
     }
 
     @Override
-    public Connection connect(URI serverUri, NetworkSettings networkSettings) {
+    public Connection connect(URI serverUri, NetworkSettings networkSettings, HttpClient httpClient) {
         return this;
     }
 

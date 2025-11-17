@@ -23,9 +23,8 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.slf4j.LoggerFactory;
 
 /**
- * A generic HTTP connector. It creates {@link HttpClient.Builder} and
- * {@link HttpRequest.Builder} that can be individually customized according to the needs
- * of the CA.
+ * A generic HTTP connector. It creates {@link HttpRequest.Builder} that can be
+ * individually customized according to the user's needs.
  *
  * @since 3.0.0
  */
@@ -33,7 +32,7 @@ public class HttpConnector {
     private static final String USER_AGENT;
 
     private final NetworkSettings networkSettings;
-    private volatile HttpClient httpClient;
+    private final HttpClient httpClient;
 
     static {
         var agent = new StringBuilder("acme4j");
@@ -62,11 +61,16 @@ public class HttpConnector {
 
     /**
      * Creates a new {@link HttpConnector} that is using the given
-     * {@link NetworkSettings}.
+     * {@link NetworkSettings} and {@link HttpClient}.
+     *
+     * @param networkSettings Network settings to use
+     * @param httpClient HTTP client to use for requests
+     * @since 4.0.0
      */
     @SuppressFBWarnings("EI_EXPOSE_REP2")   // behavior is intended
-    public HttpConnector(NetworkSettings networkSettings) {
+    public HttpConnector(NetworkSettings networkSettings, HttpClient httpClient) {
         this.networkSettings = networkSettings;
+        this.httpClient = httpClient;
     }
 
     /**
@@ -89,55 +93,13 @@ public class HttpConnector {
     }
 
     /**
-     * Creates a new {@link HttpClient.Builder}.
-     * <p>
-     * The {@link HttpClient.Builder} is already preconfigured with a reasonable timeout,
-     * the proxy settings, authenticator, and that it follows normal redirects.
-     * Subclasses can override this method to extend the configuration, or to create a
-     * different builder.
-     */
-    public HttpClient.Builder createClientBuilder() {
-        var builder = HttpClient.newBuilder()
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .connectTimeout(networkSettings.getTimeout())
-                .proxy(networkSettings.getProxySelector());
-
-        if (networkSettings.getAuthenticator() != null) {
-            builder.authenticator(networkSettings.getAuthenticator());
-        }
-
-        return builder;
-    }
-
-    /**
-     * Returns a shared {@link HttpClient} instance. The instance is created lazily on
-     * first access and then cached for reuse. This allows multiple connections to share
-     * the same HTTP client, improving resource utilization and connection pooling.
-     * <p>
-     * The client is configured using {@link #createClientBuilder()}, so subclasses can
-     * customize the configuration by overriding that method.
-     * <p>
-     * If HTTP client reuse is disabled in {@link NetworkSettings}, a new client is created
-     * for each call instead of reusing a cached instance.
+     * Returns the {@link HttpClient} instance used by this connector.
      *
-     * @return {@link HttpClient} instance (shared if reuse is enabled, new otherwise)
-     * @since 3.5.2
+     * @return {@link HttpClient} instance
+     * @since 4.0.0
      */
     public HttpClient getHttpClient() {
-        if (!networkSettings.isClientReuseEnabled()) {
-            return createClientBuilder().build();
-        }
-
-        var result = httpClient;
-        if (result == null) {
-            synchronized (this) {
-                result = httpClient;
-                if (result == null) {
-                    httpClient = result = createClientBuilder().build();
-                }
-            }
-        }
-        return result;
+        return httpClient;
     }
 
 }

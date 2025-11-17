@@ -57,12 +57,6 @@ public class NetworkSettingsTest {
         assertThat(settings.isCompressionEnabled()).isTrue();
         settings.setCompressionEnabled(false);
         assertThat(settings.isCompressionEnabled()).isFalse();
-
-        assertThat(settings.isClientReuseEnabled()).isFalse();
-        settings.setClientReuseEnabled(true);
-        assertThat(settings.isClientReuseEnabled()).isTrue();
-        settings.setClientReuseEnabled(false);
-        assertThat(settings.isClientReuseEnabled()).isFalse();
     }
 
     @Test
@@ -101,39 +95,6 @@ public class NetworkSettingsTest {
         System.setProperty(NetworkSettings.GZIP_PROPERTY_NAME, "1234");
         var settingsNonBoolean = new NetworkSettings();
         assertThat(settingsNonBoolean.isCompressionEnabled()).isFalse();
-    }
-
-    /**
-     * Test that client reuse defaults to false for backward compatibility.
-     */
-    @Test
-    public void testClientReuseDefault() {
-        var settings = new NetworkSettings();
-        assertThat(settings.isClientReuseEnabled()).isFalse();
-    }
-
-    /**
-     * Test that equals and hashCode include clientReuse.
-     */
-    @Test
-    public void testClientReuseEqualsAndHashCode() {
-        var settings1 = new NetworkSettings();
-        var settings2 = new NetworkSettings();
-        var settings3 = new NetworkSettings();
-
-        // Same default values should be equal
-        assertThat(settings1).isEqualTo(settings2);
-        assertThat(settings1.hashCode()).isEqualTo(settings2.hashCode());
-
-        // Different clientReuse should not be equal
-        settings3.setClientReuseEnabled(true);
-        assertThat(settings1).isNotEqualTo(settings3);
-        assertThat(settings1.hashCode()).isNotEqualTo(settings3.hashCode());
-
-        // Same clientReuse should be equal again
-        settings1.setClientReuseEnabled(true);
-        assertThat(settings1).isEqualTo(settings3);
-        assertThat(settings1.hashCode()).isEqualTo(settings3.hashCode());
     }
 
 }

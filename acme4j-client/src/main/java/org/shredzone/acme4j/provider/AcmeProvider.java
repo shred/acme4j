@@ -15,6 +15,7 @@ package org.shredzone.acme4j.provider;
 
 import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
 import java.util.Optional;
 import java.util.ServiceLoader;
 
@@ -57,15 +58,42 @@ public interface AcmeProvider {
     URL resolve(URI serverUri);
 
     /**
+     * Creates an {@link HttpClient} instance configured with the given network settings.
+     * <p>
+     * The default implementation creates a standard HttpClient with the network settings.
+     * Subclasses can override this method to create a customized HttpClient, for example
+     * to configure SSL context or other provider-specific requirements.
+     *
+     * @param networkSettings The network settings to use
+     * @return {@link HttpClient} instance
+     * @since 4.0.0
+     */
+    default HttpClient createHttpClient(NetworkSettings networkSettings) {
+        var builder = HttpClient.newBuilder()
+                .followRedirects(HttpClient.Redirect.NORMAL)
+                .connectTimeout(networkSettings.getTimeout())
+                .proxy(networkSettings.getProxySelector());
+
+        if (networkSettings.getAuthenticator() != null) {
+            builder.authenticator(networkSettings.getAuthenticator());
+        }
+
+        return builder.build();
+    }
+
+    /**
      * Creates a {@link Connection} for communication with the ACME server.
      *
      * @param serverUri
      *         Server {@link URI}
      * @param networkSettings
      *         {@link NetworkSettings} to be used for the connection
+     * @param httpClient
+     *         {@link HttpClient} to be used for HTTP requests
      * @return {@link Connection} that was generated
+     * @since 4.0.0
      */
-    Connection connect(URI serverUri, NetworkSettings networkSettings);
+    Connection connect(URI serverUri, NetworkSettings networkSettings, HttpClient httpClient);
 
     /**
      * Returns the provider's directory. The structure must contain resource URLs, and may

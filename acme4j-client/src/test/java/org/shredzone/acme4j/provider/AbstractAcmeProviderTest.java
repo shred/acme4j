@@ -40,6 +40,8 @@ import org.shredzone.acme4j.connector.Connection;
 import org.shredzone.acme4j.connector.DefaultConnection;
 import org.shredzone.acme4j.connector.HttpConnector;
 import org.shredzone.acme4j.connector.NetworkSettings;
+
+import java.net.http.HttpClient;
 import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeProtocolException;
 import org.shredzone.acme4j.toolbox.JSONBuilder;
@@ -60,59 +62,22 @@ public class AbstractAcmeProviderTest {
     @Test
     public void testConnect() {
         var invoked = new AtomicBoolean();
+        var httpClient = HttpClient.newBuilder().build();
 
         var provider = new TestAbstractAcmeProvider() {
             @Override
-            protected HttpConnector createHttpConnector(NetworkSettings settings) {
+            protected HttpConnector createHttpConnector(NetworkSettings settings, HttpClient client) {
                 assertThat(settings).isSameAs(NETWORK_SETTINGS);
+                assertThat(client).isSameAs(httpClient);
                 invoked.set(true);
-                return super.createHttpConnector(settings);
+                return super.createHttpConnector(settings, client);
             }
         };
 
-        var connection = provider.connect(SERVER_URI, NETWORK_SETTINGS);
+        var connection = provider.connect(SERVER_URI, NETWORK_SETTINGS, httpClient);
         assertThat(connection).isNotNull();
         assertThat(connection).isInstanceOf(DefaultConnection.class);
         assertThat(invoked).isTrue();
-    }
-
-    /**
-     * Test that HttpConnector instances are cached per NetworkSettings.
-     */
-    @Test
-    public void testHttpConnectorCaching() {
-        var settings1 = new NetworkSettings();
-        var settings2 = new NetworkSettings();
-        var settings3 = new NetworkSettings();
-        settings3.setClientReuseEnabled(true);
-
-        var connectorCount = new java.util.concurrent.atomic.AtomicInteger(0);
-
-        var providerWithCounter = new TestAbstractAcmeProvider() {
-            @Override
-            protected HttpConnector createHttpConnector(NetworkSettings settings) {
-                connectorCount.incrementAndGet();
-                return super.createHttpConnector(settings);
-            }
-        };
-
-        // Same settings instance should reuse the same connector
-        providerWithCounter.connect(SERVER_URI, settings1);
-        providerWithCounter.connect(SERVER_URI, settings1);
-        assertThat(connectorCount.get()).isEqualTo(1);
-
-        // Different settings instance with same values should reuse connector
-        // because equals/hashCode compare by value
-        providerWithCounter.connect(SERVER_URI, settings2);
-        assertThat(connectorCount.get()).isEqualTo(1);
-
-        // Settings with different clientReuse should create new connector
-        providerWithCounter.connect(SERVER_URI, settings3);
-        assertThat(connectorCount.get()).isEqualTo(2);
-
-        // Reusing same settings instance should reuse connector
-        providerWithCounter.connect(SERVER_URI, settings1);
-        assertThat(connectorCount.get()).isEqualTo(2);
     }
 
     /**
@@ -155,6 +120,8 @@ public class AbstractAcmeProviderTest {
         when(connection.getExpiration()).thenReturn(Optional.of(expiryDate));
         when(session.getDirectoryExpires()).thenReturn(null);
         when(session.getDirectoryLastModified()).thenReturn(null);
+        when(session.networkSettings()).thenReturn(NETWORK_SETTINGS);
+        when(session.getHttpClient()).thenReturn(HttpClient.newBuilder().build());
 
         var provider = new TestAbstractAcmeProvider(connection);
         var map = provider.directory(session, SERVER_URI);
@@ -166,6 +133,7 @@ public class AbstractAcmeProviderTest {
         verify(session).getDirectoryExpires();
         verify(session).getDirectoryLastModified();
         verify(session).networkSettings();
+        verify(session).getHttpClient();
         verifyNoMoreInteractions(session);
 
         verify(connection).sendRequest(RESOLVED_URL, session, null);
@@ -215,6 +183,8 @@ public class AbstractAcmeProviderTest {
         when(connection.getExpiration()).thenReturn(Optional.of(expiryDate));
         when(connection.getLastModified()).thenReturn(Optional.empty());
         when(session.getDirectoryExpires()).thenReturn(pastExpiryDate);
+        when(session.networkSettings()).thenReturn(NETWORK_SETTINGS);
+        when(session.getHttpClient()).thenReturn(HttpClient.newBuilder().build());
 
         var provider = new TestAbstractAcmeProvider(connection);
         var map = provider.directory(session, SERVER_URI);
@@ -226,6 +196,7 @@ public class AbstractAcmeProviderTest {
         verify(session).getDirectoryExpires();
         verify(session).getDirectoryLastModified();
         verify(session).networkSettings();
+        verify(session).getHttpClient();
         verifyNoMoreInteractions(session);
 
         verify(connection).sendRequest(RESOLVED_URL, session, null);
@@ -251,6 +222,8 @@ public class AbstractAcmeProviderTest {
                 .thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
         when(connection.getLastModified()).thenReturn(Optional.of(modifiedSinceDate));
         when(session.getDirectoryLastModified()).thenReturn(modifiedSinceDate);
+        when(session.networkSettings()).thenReturn(NETWORK_SETTINGS);
+        when(session.getHttpClient()).thenReturn(HttpClient.newBuilder().build());
 
         var provider = new TestAbstractAcmeProvider(connection);
         var map = provider.directory(session, SERVER_URI);
@@ -260,6 +233,7 @@ public class AbstractAcmeProviderTest {
         verify(session).getDirectoryExpires();
         verify(session).getDirectoryLastModified();
         verify(session).networkSettings();
+        verify(session).getHttpClient();
         verifyNoMoreInteractions(session);
 
         verify(connection).sendRequest(RESOLVED_URL, session, modifiedSinceDate);
@@ -346,9 +320,9 @@ public class AbstractAcmeProviderTest {
         }
 
         @Override
-        public Connection connect(URI serverUri, NetworkSettings networkSettings) {
+        public Connection connect(URI serverUri, NetworkSettings networkSettings, HttpClient httpClient) {
             assertThat(serverUri).isEqualTo(SERVER_URI);
-            return connection != null ? connection : super.connect(serverUri, networkSettings);
+            return connection != null ? connection : super.connect(serverUri, networkSettings, httpClient);
         }
     }
 

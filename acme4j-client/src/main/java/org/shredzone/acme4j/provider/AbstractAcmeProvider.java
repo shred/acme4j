@@ -14,13 +14,13 @@
 package org.shredzone.acme4j.provider;
 
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
-import java.util.WeakHashMap;
 
 import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
@@ -49,11 +49,9 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
 
     private static final Map<String, ChallengeProvider> CHALLENGES = challengeMap();
 
-    private final Map<NetworkSettings, HttpConnector> httpConnectorCache = Collections.synchronizedMap(new WeakHashMap<>());
-
     @Override
-    public Connection connect(URI serverUri, NetworkSettings networkSettings) {
-        return new DefaultConnection(getHttpConnector(networkSettings));
+    public Connection connect(URI serverUri, NetworkSettings networkSettings, HttpClient httpClient) {
+        return new DefaultConnection(createHttpConnector(networkSettings, httpClient));
     }
 
     @Override
@@ -64,7 +62,7 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
             return null;
         }
 
-        try (var conn = connect(serverUri, session.networkSettings())) {
+        try (var conn = connect(serverUri, session.networkSettings(), session.getHttpClient())) {
             var lastModified = session.getDirectoryLastModified();
             var rc = conn.sendRequest(resolve(serverUri), session, lastModified);
             if (lastModified != null && rc == HTTP_NOT_MODIFIED) {
@@ -145,25 +143,18 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
     }
 
     /**
-     * Gets a cached {@link HttpConnector} for the given {@link NetworkSettings}.
-     * If no connector exists for these settings, a new one is created using
-     * {@link #createHttpConnector(NetworkSettings)} and cached for future use.
-     *
-     * @param settings The network settings to use
-     * @return A cached or new {@link HttpConnector} instance
-     * @since 3.5.2
-     */
-    protected HttpConnector getHttpConnector(NetworkSettings settings) {
-        return httpConnectorCache.computeIfAbsent(settings, this::createHttpConnector);
-    }
-
-    /**
-     * Creates a {@link HttpConnector}.
+     * Creates a {@link HttpConnector} with the given {@link NetworkSettings} and
+     * {@link HttpClient}.
      * <p>
      * Subclasses may override this method to configure the {@link HttpConnector}.
+     *
+     * @param settings The network settings to use
+     * @param httpClient The HTTP client to use
+     * @return A new {@link HttpConnector} instance
+     * @since 4.0.0
      */
-    protected HttpConnector createHttpConnector(NetworkSettings settings) {
-        return new HttpConnector(settings);
+    protected HttpConnector createHttpConnector(NetworkSettings settings, HttpClient httpClient) {
+        return new HttpConnector(settings, httpClient);
     }
 
 }

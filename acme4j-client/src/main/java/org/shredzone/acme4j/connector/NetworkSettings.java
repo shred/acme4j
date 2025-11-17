@@ -17,7 +17,6 @@ import java.net.Authenticator;
 import java.net.ProxySelector;
 import java.net.http.HttpClient;
 import java.time.Duration;
-import java.util.Objects;
 import java.util.Optional;
 
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -39,7 +38,6 @@ public class NetworkSettings {
     private Duration timeout = Duration.ofSeconds(30);
     private @Nullable Authenticator authenticator = null;
     private boolean compression = true;
-    private boolean clientReuse = false;
 
     public NetworkSettings() {
         try {
@@ -133,57 +131,6 @@ public class NetworkSettings {
      */
     public void setCompressionEnabled(boolean compression) {
         this.compression = compression;
-    }
-
-    /**
-     * Checks if HTTP client reuse is enabled.
-     * <p>
-     * When enabled, HTTP clients are shared across connections for better resource
-     * utilization and connection pooling. When disabled (default), a new HTTP client is
-     * created for each connection, maintaining backward compatibility with the original
-     * behavior.
-     *
-     * @return {@code true} if HTTP client reuse is enabled, {@code false} otherwise
-     * @since 3.5.2
-     */
-    public boolean isClientReuseEnabled() {
-        return clientReuse;
-    }
-
-    /**
-     * Sets if HTTP client reuse is enabled.
-     * <p>
-     * When enabled, HTTP clients are shared across connections for better resource
-     * utilization and connection pooling. When disabled (default), a new HTTP client is
-     * created for each connection, maintaining backward compatibility with the original
-     * behavior.
-     *
-     * @param clientReuse {@code true} to enable HTTP client reuse, {@code false} to disable
-     * @since 3.5.2
-     */
-    public void setClientReuseEnabled(boolean clientReuse) {
-        this.clientReuse = clientReuse;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        NetworkSettings that = (NetworkSettings) obj;
-        return compression == that.compression
-                && clientReuse == that.clientReuse
-                && Objects.equals(proxySelector, that.proxySelector)
-                && Objects.equals(timeout, that.timeout)
-                && Objects.equals(authenticator, that.authenticator);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(proxySelector, timeout, authenticator, compression, clientReuse);
     }
 
 }

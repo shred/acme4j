@@ -18,6 +18,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 
 import java.net.URI;
 import java.net.URL;
+import java.net.http.HttpClient;
 import java.util.ServiceLoader;
 
 import org.junit.jupiter.api.Test;
@@ -82,7 +83,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public Connection connect(URI serverUri, NetworkSettings networkSettings) {
+        public Connection connect(URI serverUri, NetworkSettings networkSettings, HttpClient httpClient) {
             throw new UnsupportedOperationException();
         }
 
@@ -110,7 +111,7 @@ public class SessionProviderTest {
         }
 
         @Override
-        public Connection connect(URI serverUri, NetworkSettings networkSettings) {
+        public Connection connect(URI serverUri, NetworkSettings networkSettings, HttpClient httpClient) {
             throw new UnsupportedOperationException();
         }
 
