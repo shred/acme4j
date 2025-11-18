@@ -159,7 +159,7 @@ public class Authorization extends AcmeJsonResource implements PollableResource 
     /**
      * Waits until the authorization is completed.
      * <p>
-     * Is is completed if it reaches either {@link Status#VALID} or
+     * It is completed if it reaches either {@link Status#VALID} or
      * {@link Status#INVALID}.
      * <p>
      * This method is synchronous and blocks the current thread.
