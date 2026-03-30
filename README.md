@@ -18,7 +18,7 @@ This Java client helps to connect to an ACME server, and performing all necessar
 * Supports [RFC 9773](https://tools.ietf.org/html/rfc9773) for renewal information
 * Supports [draft-ietf-acme-profiles-01](https://datatracker.ietf.org/doc/draft-ietf-acme-profiles/) for certificate profiles (experimental)
 * Supports [draft-ietf-acme-dns-account-label-02](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-account-label/) for DNS labeled with ACME account ID challenges (experimental)
-* Supports [draft-ietf-acme-dns-persist-00](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/) for dns-persist-01 challenges (experimental)
+* Supports [draft-ietf-acme-dns-persist-01](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/) for dns-persist-01 challenges (experimental)
 * Easy to use Java API
 * Requires JRE 17 or higher
 * Supports [Actalis](https://www.actalis.com/), [Google Trust Services](https://pki.goog/), [Let's Encrypt](https://letsencrypt.org/), [SSL.com](https://www.ssl.com/), [ZeroSSL](https://zerossl.com/), and **all other CAs that comply with the ACME protocol (RFC 8555)**. Note that _acme4j_ is an independent project that is not supported or endorsed by any of the CAs.

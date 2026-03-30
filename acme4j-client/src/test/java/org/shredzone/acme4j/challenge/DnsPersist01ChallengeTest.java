@@ -58,6 +58,9 @@ class DnsPersist01ChallengeTest {
         assertThat(challenge.getRData())
                 .isEqualTo("\"authority.example;\" \" accounturi=" + ACCOUNT_URL + "\"");
 
+        assertThat(challenge.getAccountUrl().toString())
+                .isEqualTo(ACCOUNT_URL);
+
         var response = new JSONBuilder();
         challenge.prepareResponse(response);
 

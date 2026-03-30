@@ -2,5 +2,6 @@
   "type": "dns-persist-01",
   "url": "https://ca.example/acme/authz/1234/0",
   "status": "pending",
+  "accounturi": "https://example.com/acme/account/1",
   "issuer-domain-names": ["authority.example", "ca.example.net"]
 }

@@ -4,7 +4,7 @@ With the `dns-persist-01` challenge, you prove to the CA that you are able to co
 
 In contrast to the [`dns-01`](dns-01.md) challenge, the DNS TXT records are long-term and can be created manually, so your services do not need the access credentials of your DNS server.
 
-This challenge is specified in [draft-ietf-acme-dns-persist-00](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/).
+This challenge is specified in [draft-ietf-acme-dns-persist-01](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/).
 
 !!! warning
     The support of this challenge is **experimental**. The implementation is only unit tested for compliance with the specification, but is not integration tested yet. There may be breaking changes in this part of the API in future releases. Semantic versioning does not apply here.

@@ -16,6 +16,7 @@ package org.shredzone.acme4j.challenge;
 import static java.util.Objects.requireNonNull;
 
 import java.io.Serial;
+import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +48,7 @@ public class DnsPersist01Challenge extends Challenge {
 
     protected static final String KEY_ISSUER_DOMAIN_NAMES = "issuer-domain-names";
     protected static final String RECORD_NAME_PREFIX = "_validation-persist";
+    protected static final String KEY_ACCOUNT_URI = "accounturi";
 
     private static final int ISSUER_SIZE_LIMIT = 10;        // according to the specs
     private static final int DOMAIN_LENGTH_LIMIT = 253;     // according to the specs
@@ -142,6 +144,15 @@ public class DnsPersist01Challenge extends Challenge {
      */
     public String getRData() {
         return buildRData().build();
+    }
+
+    /**
+     * Returns the Account URI that is expected to request the validation.
+     *
+     * @since 5.1.0
+     */
+    public URL getAccountUrl() {
+        return getJSON().get(KEY_ACCOUNT_URI).asURL();
     }
 
     @Override

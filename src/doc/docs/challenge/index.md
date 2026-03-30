@@ -12,6 +12,6 @@ The ACME specifications define these standard challenges:
 _acme4j_ also supports these non-standard challenges:
 
 * [dns-account-01](dns-account-01.md) ([draft-ietf-acme-dns-account-label-02](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-account-label/))
-* [dns-persist-01](dns-persist-01.md) ([draft-ietf-acme-dns-persist-00](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/))
+* [dns-persist-01](dns-persist-01.md) ([draft-ietf-acme-dns-persist-01](https://datatracker.ietf.org/doc/draft-ietf-acme-dns-persist/))
 * [email-reply-00](email-reply-00.md) ([RFC 8823](https://tools.ietf.org/html/rfc8823))
 * [tls-alpn-01](tls-alpn-01.md) ([RFC 8737](https://tools.ietf.org/html/rfc8737))
