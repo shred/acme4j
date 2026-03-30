@@ -582,12 +582,12 @@ public class DefaultConnection implements Connection {
      * @return Collection of links, unconverted
      */
     private Collection<String> collectLinks(String relation) {
-        var p = Pattern.compile("<(.*?)>\\s*;\\s*rel=\"?" + Pattern.quote(relation) + "\"?");
-
+        var p = Pattern.compile("<([^>]+)>\\s*;[^<]*?\\brel=\"?" + Pattern.quote(relation) + "\"?(?:[\\s,;]|$)");
+        
         return getResponse().headers().allValues(LINK_HEADER)
                 .stream()
                 .map(p::matcher)
-                .filter(Matcher::matches)
+                .flatMap(Matcher::results)
                 .map(m -> m.group(1))
                 .peek(location -> LOG.debug("Link: {} -> {}", relation, location))
                 .toList();
