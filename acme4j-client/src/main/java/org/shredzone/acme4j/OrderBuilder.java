@@ -279,7 +279,7 @@ public class OrderBuilder {
      * @param profile
      *         Identifier of the desired profile
      * @return itself
-     * @draft This method is currently based on RFC draft draft-aaron-acme-profiles. It
+     * @draft This method is currently based on RFC draft draft-ietf-acme-profiles. It
      * may be changed or removed without notice to reflect future changes to the draft.
      * SemVer rules do not apply here.
      * @since 3.5.0
