@@ -116,14 +116,14 @@ public class ProviderIT {
         assertThatNoException().isThrownBy(() -> sessionEcc.resourceUrl(Resource.NEW_ACCOUNT));
         assertThat(sessionEcc.getMetadata().isExternalAccountRequired()).isTrue();
         assertThat(sessionEcc.getMetadata().isAutoRenewalEnabled()).isFalse();
-        assertThat(sessionEcc.resourceUrlOptional(Resource.RENEWAL_INFO)).isEmpty();
+        assertThat(sessionEcc.resourceUrlOptional(Resource.RENEWAL_INFO)).isNotEmpty();
 
         var sessionRsa = new Session("acme://ssl.com/rsa");
         assertThat(sessionRsa.getMetadata().getWebsite()).hasValue(URI.create("https://www.ssl.com").toURL());
         assertThatNoException().isThrownBy(() -> sessionRsa.resourceUrl(Resource.NEW_ACCOUNT));
         assertThat(sessionRsa.getMetadata().isExternalAccountRequired()).isTrue();
         assertThat(sessionRsa.getMetadata().isAutoRenewalEnabled()).isFalse();
-        assertThat(sessionRsa.resourceUrlOptional(Resource.RENEWAL_INFO)).isEmpty();
+        assertThat(sessionRsa.resourceUrlOptional(Resource.RENEWAL_INFO)).isNotEmpty();
 
         // If this test fails, the metadata has been fixed on server side. Then remove
         // the patch at ZeroSSLAcmeProvider, and update the documentation.
