@@ -329,6 +329,27 @@ public class DefaultConnectionTest {
     }
 
     /**
+     * Test that link headers with multiple header fields are evaluated
+     */
+    @Test
+    public void testGetMultiHeaderFieldLink() throws AcmeException {
+        stubFor(get(urlEqualTo(REQUEST_PATH)).willReturn(ok()
+                .withHeader("Link", "<https://example.com/acme/terms1>; rel=\"terms-of-service\"; title=\"Please Read\"")
+                .withHeader("Link", "<https://example.com/acme/terms2>; title=\"Please read and accept\"; rel=\"terms-of-service\"")
+                .withHeader("Link", "<../terms3>;  anchor=\"foo\";  rel=\"terms-of-service\" ; title=\"More ToS to read\"")
+        ));
+
+        try (var conn = session.connect()) {
+            conn.sendRequest(requestUrl, session, null);
+            assertThat(conn.getLinks("terms-of-service")).containsExactlyInAnyOrder(
+                    url("https://example.com/acme/terms1"),
+                    url("https://example.com/acme/terms2"),
+                    url(baseUrl + "/terms3")
+            );
+        }
+    }
+
+    /**
      * Test that no link headers are properly handled.
      */
     @Test
