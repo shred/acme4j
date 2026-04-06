@@ -29,7 +29,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Test;
-import org.shredzone.acme4j.Login;
 import org.shredzone.acme4j.Session;
 import org.shredzone.acme4j.challenge.Challenge;
 import org.shredzone.acme4j.challenge.Dns01Challenge;
@@ -254,7 +253,7 @@ public class AbstractAcmeProviderTest {
      */
     @Test
     public void testCreateChallenge() {
-        var login = mock(Login.class);
+        var login = TestUtils.login();
 
         var provider = new TestAbstractAcmeProvider();
 

@@ -16,6 +16,7 @@ package org.shredzone.acme4j.challenge;
 import static java.util.Objects.requireNonNull;
 
 import java.io.Serial;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -164,6 +165,24 @@ public class DnsPersist01Challenge extends Challenge {
     @Override
     protected boolean acceptable(String type) {
         return TYPE.equals(type);
+    }
+
+    @Override
+    protected void setJSON(JSON json) {
+        super.setJSON(json);
+        // TODO: In a future release, KEY_ACCOUNT_URI is expected to be mandatory,
+        //   and this check will always apply!
+        if (getJSON().contains(KEY_ACCOUNT_URI)) {
+            try {
+                var expectedAccount = getJSON().get(KEY_ACCOUNT_URI).asURI();
+                var actualAccount = getLogin().getAccount().getLocation().toURI();
+                if (!actualAccount.equals(expectedAccount)) {
+                    throw new AcmeProtocolException("challenge is intended for a different account: " + expectedAccount);
+                }
+            } catch (URISyntaxException ex) {
+                throw new IllegalStateException("Account URL is not an URI?", ex);
+            }
+        }
     }
 
     /**

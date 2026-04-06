@@ -162,6 +162,20 @@ class DnsPersist01ChallengeTest {
         assertThatExceptionOfType(AcmeProtocolException.class)
                 .isThrownBy(challenge5::getIssuerDomainNames)
                 .withMessage("issuer-domain-names must not have trailing dots");
+
+        // Must fail if accounturi is wrong
+        var json6 = new TreeMap<>(json);
+        json6.put("accounturi", "https://wrong.example.com/bad/account/1234");
+        assertThatExceptionOfType(AcmeProtocolException.class)
+                .isThrownBy(() -> new DnsPersist01Challenge(login, JSON.fromMap(json6)))
+                .withMessage("challenge is intended for a different account: https://wrong.example.com/bad/account/1234");
+
+        // Must not fail at the moment if accounturi is missing
+        // (downward compatiblilty for draft-ietf-acme-dns-persist-00)
+        var json7 = new TreeMap<>(json);
+        json7.remove("accounturi");
+        assertThatNoException()
+                .isThrownBy(() -> new DnsPersist01Challenge(login, JSON.fromMap(json7)));
     }
 
     private String[] createDomainList(int length) {
