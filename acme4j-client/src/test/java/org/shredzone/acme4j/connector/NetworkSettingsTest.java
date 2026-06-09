@@ -36,14 +36,14 @@ public class NetworkSettingsTest {
     public void testGettersAndSetters() {
         var settings = new NetworkSettings();
 
-        //var proxyAddress = new InetSocketAddress("198.51.100.1", 8080);
-        //var proxySelector = ProxySelector.of(proxyAddress);
+        var proxyAddress = new InetSocketAddress("198.51.100.1", 8080);
+        var proxySelector = ProxySelector.of(proxyAddress);
 
-        // assertThat(settings.getProxySelector()).isSameAs(HttpClient.Builder.NO_PROXY);
-        // settings.setProxySelector(proxySelector);
-        // assertThat(settings.getProxySelector()).isSameAs(proxySelector);
-        // settings.setProxySelector(null);
-        // assertThat(settings.getProxySelector()).isEqualTo(HttpClient.Builder.NO_PROXY);
+        assertThat(settings.getProxySelector()).isSameAs(HttpClient.Builder.NO_PROXY);
+        settings.setProxySelector(proxySelector);
+        assertThat(settings.getProxySelector()).isSameAs(proxySelector);
+        settings.setProxySelector(null);
+        assertThat(settings.getProxySelector()).isEqualTo(HttpClient.Builder.NO_PROXY);
 
         assertThat(settings.getTimeout()).isEqualTo(Duration.ofSeconds(30));
         settings.setTimeout(Duration.ofMillis(5120));

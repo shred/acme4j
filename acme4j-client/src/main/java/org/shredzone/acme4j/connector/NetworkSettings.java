@@ -57,13 +57,11 @@ public class NetworkSettings {
      * @since 3.0.0
      */
     public ProxySelector getProxySelector() {
-        //return proxySelector;
-        //return ProxySelector.of(null);
-        if (proxySelector == null) {
-            return ProxySelector.of(null);
-        } else {
-            return proxySelector;
+        if (this.proxySelector == null) {
+            this.proxySelector = HttpClient.Builder.NO_PROXY;
         }
+
+        return proxySelector;
     }
 
     /**
