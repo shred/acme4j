@@ -63,8 +63,7 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
             return null;
         }
 
-        try (var nonceHolder = session.lockNonce();
-             var conn = connect(serverUri, session.networkSettings(), session.getHttpClient())) {
+        try (var nonceHolder = session.lockNonce(); var conn = doConnect(session, serverUri)) {
             var lastModified = session.getDirectoryLastModified();
             var rc = conn.sendRequest(resolve(serverUri), session, lastModified);
             if (lastModified != null && rc == HTTP_NOT_MODIFIED) {
@@ -81,6 +80,14 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
 
             return conn.readJsonResponse();
         }
+    }
+
+    private Connection doConnect(Session session, URI serverUri) {
+        if (this instanceof AcmeProviderManagingHttpClient p) {
+            return p.connect(serverUri, session.networkSettings());
+        }
+
+        return connect(serverUri, session.networkSettings(), session.getHttpClient());
     }
 
     private static Map<String, ChallengeProvider> challengeMap() {
@@ -159,5 +166,4 @@ public abstract class AbstractAcmeProvider implements AcmeProvider {
     protected HttpConnector createHttpConnector(NetworkSettings settings, HttpClient httpClient) {
         return new HttpConnector(settings, httpClient);
     }
-
 }

@@ -39,6 +39,7 @@ import org.shredzone.acme4j.exception.AcmeException;
 import org.shredzone.acme4j.exception.AcmeNotSupportedException;
 import org.shredzone.acme4j.provider.AcmeProvider;
 import org.shredzone.acme4j.provider.GenericAcmeProvider;
+import org.shredzone.acme4j.provider.AcmeProviderManagingHttpClient;
 import org.shredzone.acme4j.toolbox.AcmeUtils;
 import org.shredzone.acme4j.toolbox.JSON;
 import org.shredzone.acme4j.toolbox.JSON.Value;
@@ -241,6 +242,10 @@ public class Session {
      * @return {@link Connection}
      */
     public Connection connect() {
+        if (provider instanceof AcmeProviderManagingHttpClient p) {
+            return p.connect(serverUri, networkSettings);
+        }
+
         return provider.connect(getServerUri(), networkSettings, getHttpClient());
     }
 
