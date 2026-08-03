@@ -6,7 +6,7 @@ ACME is a protocol that a certificate authority (CA) and an applicant can use to
 
 This Java client helps to connect to an ACME server, and performing all necessary steps to manage certificates.
 
-The source code can be found at [Codeberg](https://codeberg.org/shred/acme4j) and is distributed under the terms of [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
+The source code can be found at [CodeFloe](https://codefloe.com/shred/acme4j) and is distributed under the terms of [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0).
 
 Latest version: ![maven central](https://shredzone.org/maven-central/org.shredzone.acme4j/acme4j/badge.svg)
 
@@ -43,7 +43,7 @@ There is an [example source code](example.md) included in this project. It gives
 
 ## Modules
 
-_acme4j_ consists of four modules. All modules are [available at Maven Central](https://mvnrepository.com/artifact/org.shredzone.acme4j) and can easily be added to the dependency list of your project. You can also download the jar files [at Codeberg](https://codeberg.org/shred/acme4j/releases/latest).
+_acme4j_ consists of four modules. All modules are [available at Maven Central](https://mvnrepository.com/artifact/org.shredzone.acme4j) and can easily be added to the dependency list of your project. You can also download the jar files [at CodeFloe](https://codefloe.com/shred/acme4j/releases/latest).
 
 acme4j-client
 :   [`acme4j-client`](https://mvnrepository.com/artifact/org.shredzone.acme4j/acme4j-client/latest) is the main module. It contains everything that is required to get certificates for domains.
@@ -72,8 +72,8 @@ Follow our Mastodon feed for release notes and other acme4j related news.
 
 ## Contribute
 
-* Fork the [Source code at Codeberg](https://codeberg.org/shred/acme4j) or [GitHub](https://github.com/shred/acme4j). Feel free to send pull requests.
-* Found a bug? [File a bug report!](https://codeberg.org/shred/acme4j/issues) ([GitHub](https://github.com/shred/acme4j/issues))
+* Fork the [Source code at CodeFloe](https://codefloe.com/shred/acme4j) or [GitHub](https://github.com/shred/acme4j). Feel free to send pull requests.
+* Found a bug? [File a bug report!](https://codefloe.com/shred/acme4j/issues) ([GitHub](https://github.com/shred/acme4j/issues))
 
 ## License
 
