@@ -34,7 +34,7 @@ public class NetworkSettings {
      */
     public static final String GZIP_PROPERTY_NAME = "org.shredzone.acme4j.gzip_compression";
 
-    private ProxySelector proxySelector = HttpClient.Builder.NO_PROXY;
+    private ProxySelector proxySelector = null;
     private Duration timeout = Duration.ofSeconds(30);
     private @Nullable Authenticator authenticator = null;
     private boolean compression = true;
@@ -57,6 +57,10 @@ public class NetworkSettings {
      * @since 3.0.0
      */
     public ProxySelector getProxySelector() {
+        if (this.proxySelector == null) {
+            this.proxySelector = HttpClient.Builder.NO_PROXY;
+        }
+
         return proxySelector;
     }
 
